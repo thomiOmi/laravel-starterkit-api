@@ -2,6 +2,7 @@
 
 namespace Modules\User\Models;
 
+use App\Traits\Models\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,17 +11,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\User\Database\Factories\UserFactory;
 
-/**
- * @property string $id
- * @property string $name
- * @property string $email
- * @property string $password
- */
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasDefaultBehavior, HasFactory, Notifiable;
 
     protected function casts(): array
     {

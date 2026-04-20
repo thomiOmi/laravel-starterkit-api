@@ -3,7 +3,6 @@
 namespace Modules\User\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Traits\ApiResponser;
 use Modules\User\Actions\RegisterUserAction;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Repositories\UserRepository;
@@ -12,11 +11,7 @@ use Modules\User\Resources\UserResource;
 
 class UserController extends Controller
 {
-    use ApiResponser;
-
-    public function __construct(
-        protected UserRepository $userRepository
-    ) {}
+    public function __construct(protected UserRepository $userRepository) {}
 
     public function index()
     {

@@ -15,6 +15,6 @@ class UserModuleSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
 
-        User::factory(10)->create();
+        // User::factory(10)->create();
     }
 }
