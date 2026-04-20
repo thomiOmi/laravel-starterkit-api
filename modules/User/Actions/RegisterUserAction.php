@@ -15,7 +15,7 @@ class RegisterUserAction
 
     public function execute(UserDTO $dto): User
     {
-        return $this->userRepository->create([
+        return $this->userRepository->registerUser([
             'name' => $dto->name,
             'email' => $dto->email,
             'password' => Hash::make($dto->password),

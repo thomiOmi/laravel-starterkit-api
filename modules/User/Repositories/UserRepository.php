@@ -16,4 +16,9 @@ class UserRepository extends BaseRepository
     {
         return $this->model->where('email', $email)->first();
     }
+
+    public function registerUser(array $details): User
+    {
+        return $this->model->create($details);
+    }
 }

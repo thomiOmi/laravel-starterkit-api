@@ -2,10 +2,10 @@
 
 namespace Modules\User\Resources;
 
+use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class UserResource extends BaseResource
 {
     public function toArray(Request $request): array
     {
