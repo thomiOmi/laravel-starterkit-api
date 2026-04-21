@@ -10,7 +10,7 @@ interface BaseRepositoryInterface
 {
     public function all(array $columns = ['*'], array $relations = []): Collection;
 
-    public function paginate(int $perPage = 15, array $columns = ['*'], array $relations = []): LengthAwarePaginator;
+    public function paginate(int $perPage = 10, array $columns = ['*'], array $relations = []): LengthAwarePaginator;
 
     public function findById(string|int $id, array $columns = ['*'], array $relations = []): ?Model;
 

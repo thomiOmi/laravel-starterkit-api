@@ -24,7 +24,10 @@ class UserResource extends BaseResource
             'permissions' => $this->whenLoaded('permissions', function () {
                 return $this->getPermissionNames();
             }),
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'email_verified_at' => $this->email_verified_at?->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
+            'deleted_at' => $this->deleted_at?->format('Y-m-d H:i:s'),
         ];
     }
 }
