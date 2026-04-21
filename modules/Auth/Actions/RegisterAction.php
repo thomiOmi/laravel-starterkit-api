@@ -3,22 +3,27 @@
 namespace Modules\Auth\Actions;
 
 use Illuminate\Support\Facades\Hash;
+use Modules\User\DTOs\UserDTO;
 use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 
 class RegisterAction
 {
+    public function __construct(
+        protected UserRepository $userRepository
+    ) {}
+
     /**
      * Execute the register action.
      *
-     * @param  array  $data  The user registration data (name, email, password).
      * @return array{user: User, access_token: string, token_type: string}
      */
-    public function execute(array $data): array
+    public function execute(UserDTO $dto): array
     {
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+        $user = $this->userRepository->registerUser([
+            'name' => $dto->name,
+            'email' => $dto->email,
+            'password' => Hash::make($dto->password),
         ]);
 
         $user->sendEmailVerificationNotification();

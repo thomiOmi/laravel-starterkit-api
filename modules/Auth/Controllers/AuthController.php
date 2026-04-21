@@ -10,7 +10,15 @@ use Modules\Auth\Actions\ForgotPasswordAction;
 use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Actions\ResetPasswordAction;
+use Modules\Auth\DTOs\ForgotPasswordDTO;
+use Modules\Auth\DTOs\LoginDTO;
+use Modules\Auth\DTOs\ResetPasswordDTO;
+use Modules\Auth\Requests\ForgotPasswordRequest;
+use Modules\Auth\Requests\LoginRequest;
+use Modules\Auth\Requests\ResetPasswordRequest;
+use Modules\User\DTOs\UserDTO;
 use Modules\User\Models\User;
+use Modules\User\Requests\RegisterRequest;
 use Modules\User\Resources\UserResource;
 
 class AuthController extends Controller
@@ -20,15 +28,10 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function register(Request $request, RegisterAction $action)
+    public function register(RegisterRequest $request, RegisterAction $action)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $result = $action->execute($request->all());
+        $dto = UserDTO::fromRequest($request);
+        $result = $action->execute($dto);
 
         return $this->successResponse([
             'user' => new UserResource($result['user']),
@@ -42,14 +45,10 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function login(Request $request, LoginAction $action)
+    public function login(LoginRequest $request, LoginAction $action)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        $result = $action->execute($request->only('email', 'password'));
+        $dto = LoginDTO::fromRequest($request);
+        $result = $action->execute($dto);
 
         return $this->successResponse([
             'user' => new UserResource($result['user']),
@@ -86,11 +85,10 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function forgotPassword(Request $request, ForgotPasswordAction $action)
+    public function forgotPassword(ForgotPasswordRequest $request, ForgotPasswordAction $action)
     {
-        $request->validate(['email' => 'required|email']);
-
-        $message = $action->execute($request->only('email'));
+        $dto = ForgotPasswordDTO::fromRequest($request);
+        $message = $action->execute($dto);
 
         return $this->successResponse(null, $message);
     }
@@ -100,15 +98,10 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function resetPassword(Request $request, ResetPasswordAction $action)
+    public function resetPassword(ResetPasswordRequest $request, ResetPasswordAction $action)
     {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
-        ]);
-
-        $message = $action->execute($request->all());
+        $dto = ResetPasswordDTO::fromRequest($request);
+        $message = $action->execute($dto);
 
         return $this->successResponse(null, $message);
     }

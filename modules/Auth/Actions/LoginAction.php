@@ -4,6 +4,7 @@ namespace Modules\Auth\Actions;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Modules\Auth\DTOs\LoginDTO;
 use Modules\User\Models\User;
 
 class LoginAction
@@ -11,23 +12,19 @@ class LoginAction
     /**
      * Execute the login action.
      *
-     * @param  array  $credentials  The user credentials (email, password).
      * @return array{user: User, access_token: string, token_type: string}
      *
      * @throws ValidationException
      */
-    public function execute(array $credentials): array
+    public function execute(LoginDTO $dto): array
     {
-        $user = User::query()->where('email', $credentials['email'])->first();
+        $user = User::query()->where('email', $dto->email)->first();
 
-        if (! $user instanceof User || ! Hash::check($credentials['password'], $user->password)) {
+        if (! $user instanceof User || ! Hash::check($dto->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
-
-        // Delete old tokens if you want single-device login (optional)
-        // $user->tokens()->delete();
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

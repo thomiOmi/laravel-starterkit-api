@@ -3,7 +3,8 @@
 namespace Modules\User\Controllers;
 
 use App\Http\Controllers\Controller;
-use Modules\User\Actions\RegisterUserAction;
+use Illuminate\Http\JsonResponse;
+use Modules\Auth\Actions\RegisterAction;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\RegisterRequest;
@@ -16,7 +17,7 @@ class UserController extends Controller
     /**
      * Display a listing of the users.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function index()
     {
@@ -28,17 +29,15 @@ class UserController extends Controller
     /**
      * Handle a user registration request.
      *
-     * @param  \Modules\User\Requests\RegisterRequest  $request
-     * @param  \Modules\User\Actions\RegisterUserAction  $action
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function register(RegisterRequest $request, RegisterUserAction $action)
+    public function register(RegisterRequest $request, RegisterAction $action)
     {
         $dto = UserDTO::fromRequest($request);
-        $user = $action->execute($dto);
+        $result = $action->execute($dto);
 
         return $this->successResponse(
-            new UserResource($user),
+            new UserResource($result['user']),
             'User registered successfully',
             201
         );
