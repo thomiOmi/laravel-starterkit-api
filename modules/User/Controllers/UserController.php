@@ -6,6 +6,7 @@ use App\DTOs\DataTableDTO;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\User\Actions\BulkDeleteUserAction;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Actions\DeleteUserAction;
 use Modules\User\Actions\UpdateUserAction;
@@ -107,6 +108,24 @@ class UserController extends Controller
         return $this->successResponse(
             null,
             'User deleted successfully'
+        );
+    }
+
+    /**
+     * Remove the specified users from storage in bulk.
+     *
+     * @param  Request  $request  The incoming HTTP request.
+     * @param  BulkDeleteUserAction  $action  The bulk delete user action.
+     * @return JsonResponse
+     */
+    public function bulkDestroy(Request $request, BulkDeleteUserAction $action)
+    {
+        $dto = DataTableDTO::fromRequest($request);
+        $count = $action->execute($dto->ids);
+
+        return $this->successResponse(
+            ['count' => $count],
+            'Users deleted successfully'
         );
     }
 }

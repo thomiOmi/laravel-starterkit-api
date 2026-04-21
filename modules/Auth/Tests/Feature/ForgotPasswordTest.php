@@ -1,0 +1,51 @@
+<?php
+
+use Database\Seeders\RoleSeeder;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
+use Modules\User\Models\User;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+});
+
+test('user can request password reset link', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+
+    $response = $this->postJson('/api/v1/auth/forgot-password', [
+        'email' => $user->email,
+    ]);
+
+    $response->assertStatus(200);
+
+    Notification::assertSentTo(
+        $user,
+        ResetPassword::class
+    );
+});
+
+test('user can reset password with valid token', function () {
+    $user = User::factory()->create([
+        'password' => bcrypt('old-password'),
+    ]);
+
+    $token = Password::createToken($user);
+
+    $response = $this->postJson('/api/v1/auth/reset-password', [
+        'token' => $token,
+        'email' => $user->email,
+        'password' => 'new-password123',
+        'password_confirmation' => 'new-password123',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('message', 'Your password has been reset.');
+
+    $this->assertTrue(Hash::check('new-password123', $user->fresh()->password));
+});
