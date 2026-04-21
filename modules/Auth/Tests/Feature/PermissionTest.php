@@ -25,12 +25,12 @@ class PermissionTest extends TestCase
         $this->assertTrue($admin->hasRole('admin'));
     }
 
-    public function test_writer_cannot_access_admin_protected_role()
+    public function test_user_cannot_access_admin_protected_role()
     {
-        $writer = User::factory()->create();
-        $writer->assignRole('writer');
+        $user = User::factory()->create();
+        $user->assignRole('user');
 
-        $this->assertFalse($writer->hasRole('admin'));
-        $this->assertTrue($writer->hasRole('writer'));
+        $this->assertFalse($user->hasRole('admin'));
+        $this->assertTrue($user->hasRole('user'));
     }
 }
