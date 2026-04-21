@@ -6,6 +6,9 @@ use App\Repositories\BaseRepository;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\User\Models\User;
 
+/**
+ * @extends BaseRepository<User>
+ */
 class UserRepository extends BaseRepository
 {
     public function __construct(User $model)
@@ -19,14 +22,6 @@ class UserRepository extends BaseRepository
     public function findByEmail(string $email): ?User
     {
         return $this->model->where('email', $email)->first();
-    }
-
-    /**
-     * Create a new user record.
-     */
-    public function registerUser(array $details): User
-    {
-        return $this->model->create($details);
     }
 
     /**
