@@ -2,44 +2,111 @@
 
 namespace Modules\User\Controllers;
 
+use App\DTOs\DataTableDTO;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Modules\Auth\Actions\RegisterAction;
+use Illuminate\Http\Request;
+use Modules\User\Actions\CreateUserAction;
+use Modules\User\Actions\DeleteUserAction;
+use Modules\User\Actions\UpdateUserAction;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Repositories\UserRepository;
-use Modules\User\Requests\RegisterRequest;
+use Modules\User\Requests\UserRequest;
 use Modules\User\Resources\UserResource;
 
 class UserController extends Controller
 {
+    /**
+     * Create a new UserController instance.
+     *
+     * @param  UserRepository  $userRepository  The user repository.
+     */
     public function __construct(protected UserRepository $userRepository) {}
 
     /**
-     * Display a listing of the users.
+     * Display a paginated listing of the users for a data table.
      *
+     * @param  Request  $request  The incoming HTTP request.
      * @return JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->userRepository->paginate(15);
+        $dto = DataTableDTO::fromRequest($request);
+        $users = $this->userRepository->getDataTable($dto, relations: ['roles']);
 
         return $this->paginateResponse($users, UserResource::class, 'Users retrieved successfully');
     }
 
     /**
-     * Handle a user registration request.
+     * Store a newly created user in storage.
      *
+     * @param  UserRequest  $request  The user request.
+     * @param  CreateUserAction  $action  The create user action.
      * @return JsonResponse
      */
-    public function register(RegisterRequest $request, RegisterAction $action)
+    public function store(UserRequest $request, CreateUserAction $action)
     {
         $dto = UserDTO::fromRequest($request);
-        $result = $action->execute($dto);
+        $user = $action->execute($dto);
 
         return $this->successResponse(
-            new UserResource($result['user']),
-            'User registered successfully',
+            new UserResource($user),
+            'User created successfully',
             201
+        );
+    }
+
+    /**
+     * Display the specified user.
+     *
+     * @param  string|int  $id  The user ID.
+     * @return JsonResponse
+     */
+    public function show(string|int $id)
+    {
+        $user = $this->userRepository->findById($id, relations: ['roles', 'permissions']);
+
+        return $this->successResponse(
+            new UserResource($user),
+            'User retrieved successfully'
+        );
+    }
+
+    /**
+     * Update the specified user in storage.
+     *
+     * @param  UserRequest  $request  The user request.
+     * @param  string|int  $id  The user ID.
+     * @param  UpdateUserAction  $action  The update user action.
+     * @return JsonResponse
+     */
+    public function update(UserRequest $request, string|int $id, UpdateUserAction $action)
+    {
+        $dto = UserDTO::fromRequest($request);
+        $action->execute($id, $dto);
+
+        $user = $this->userRepository->findById($id);
+
+        return $this->successResponse(
+            new UserResource($user),
+            'User updated successfully'
+        );
+    }
+
+    /**
+     * Remove the specified user from storage.
+     *
+     * @param  string|int  $id  The user ID.
+     * @param  DeleteUserAction  $action  The delete user action.
+     * @return JsonResponse
+     */
+    public function destroy(string|int $id, DeleteUserAction $action)
+    {
+        $action->execute($id);
+
+        return $this->successResponse(
+            null,
+            'User deleted successfully'
         );
     }
 }
