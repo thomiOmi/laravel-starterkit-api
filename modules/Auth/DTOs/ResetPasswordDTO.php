@@ -8,7 +8,7 @@ readonly class ResetPasswordDTO
         public string $token,
         public string $email,
         public string $password,
-        public string $password_confirmation
+        public ?string $password_confirmation = null
     ) {}
 
     public static function fromRequest($request): self
@@ -17,7 +17,7 @@ readonly class ResetPasswordDTO
             token: $request->validated('token'),
             email: $request->validated('email'),
             password: $request->validated('password'),
-            password_confirmation: $request->validated('password_confirmation')
+            password_confirmation: $request->validated('password_confirmation') ?? $request->input('password_confirmation')
         );
     }
 

@@ -43,4 +43,12 @@ class UserRepository extends BaseRepository
                 ->orWhere('email', 'like', "%{$search}%");
         });
     }
+
+    /**
+     * Get the columns that can be filtered for users.
+     */
+    protected function getFilterableColumns(): array
+    {
+        return ['name', 'email'];
+    }
 }
