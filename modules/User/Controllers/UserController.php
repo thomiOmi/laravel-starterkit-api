@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\User\Controllers;
 
 use App\DTOs\DataTableDTO;
@@ -28,9 +30,8 @@ class UserController extends Controller
      * Display a paginated listing of the users for a data table.
      *
      * @param  Request  $request  The incoming HTTP request.
-     * @return JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $dto = DataTableDTO::fromRequest($request);
         $users = $this->userRepository->getDataTable($dto, relations: ['roles']);
@@ -43,9 +44,8 @@ class UserController extends Controller
      *
      * @param  UserRequest  $request  The user request.
      * @param  CreateUserAction  $action  The create user action.
-     * @return JsonResponse
      */
-    public function store(UserRequest $request, CreateUserAction $action)
+    public function store(UserRequest $request, CreateUserAction $action): JsonResponse
     {
         $dto = UserDTO::fromRequest($request);
         $user = $action->execute($dto);
@@ -61,9 +61,8 @@ class UserController extends Controller
      * Display the specified user.
      *
      * @param  string|int  $id  The user ID.
-     * @return JsonResponse
      */
-    public function show(string|int $id)
+    public function show(string|int $id): JsonResponse
     {
         $user = $this->userRepository->findById($id, relations: ['roles', 'permissions']);
 
@@ -79,9 +78,8 @@ class UserController extends Controller
      * @param  UserRequest  $request  The user request.
      * @param  string|int  $id  The user ID.
      * @param  UpdateUserAction  $action  The update user action.
-     * @return JsonResponse
      */
-    public function update(UserRequest $request, string|int $id, UpdateUserAction $action)
+    public function update(UserRequest $request, string|int $id, UpdateUserAction $action): JsonResponse
     {
         $dto = UserDTO::fromRequest($request);
         $action->execute($id, $dto);
@@ -99,9 +97,8 @@ class UserController extends Controller
      *
      * @param  string|int  $id  The user ID.
      * @param  DeleteUserAction  $action  The delete user action.
-     * @return JsonResponse
      */
-    public function destroy(string|int $id, DeleteUserAction $action)
+    public function destroy(string|int $id, DeleteUserAction $action): JsonResponse
     {
         $action->execute($id);
 
@@ -116,9 +113,8 @@ class UserController extends Controller
      *
      * @param  Request  $request  The incoming HTTP request.
      * @param  BulkDeleteUserAction  $action  The bulk delete user action.
-     * @return JsonResponse
      */
-    public function bulkDestroy(Request $request, BulkDeleteUserAction $action)
+    public function bulkDestroy(Request $request, BulkDeleteUserAction $action): JsonResponse
     {
         $dto = DataTableDTO::fromRequest($request);
         $count = $action->execute($dto->ids);

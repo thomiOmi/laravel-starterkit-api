@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Role\Actions;
 
 use Modules\Role\DTOs\RoleDTO;

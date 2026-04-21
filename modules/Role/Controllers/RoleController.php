@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Role\Controllers;
 
 use App\DTOs\DataTableDTO;
