@@ -9,6 +9,11 @@ use Modules\User\Models\User;
 class LoginAction
 {
     /**
+     * Execute the login action.
+     *
+     * @param  array  $credentials  The user credentials (email, password).
+     * @return array{user: User, access_token: string, token_type: string}
+     *
      * @throws ValidationException
      */
     public function execute(array $credentials): array
@@ -17,11 +22,11 @@ class LoginAction
 
         if (! $user instanceof User || ! Hash::check($credentials['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Kredensial yang Anda berikan salah.'],
+                'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        // Hapus token lama jika ingin single-device login (opsional)
+        // Delete old tokens if you want single-device login (optional)
         // $user->tokens()->delete();
 
         $token = $user->createToken('auth_token')->plainTextToken;

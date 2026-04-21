@@ -1,6 +1,6 @@
 <?php
 
-test('pengguna baru dapat mendaftar melalui api', function () {
+test('new users can register via api', function () {
     $payload = [
         'name' => 'User Test',
         'email' => 'test'.time().'@example.com',
@@ -13,10 +13,10 @@ test('pengguna baru dapat mendaftar melalui api', function () {
         ->assertJsonPath('status', 'Success');
 });
 
-test('pendaftaran gagal jika email tidak valid', function () {
+test('registration fails if email is invalid', function () {
     $response = $this->postJson('/api/v1/users/register', [
         'name' => 'User',
-        'email' => 'bukan-email',
+        'email' => 'not-an-email',
         'password' => '123',
     ]);
 

@@ -13,6 +13,12 @@ class RegisterUserAction
         protected UserRepository $userRepository
     ) {}
 
+    /**
+     * Execute the user registration action.
+     *
+     * @param  \Modules\User\DTOs\UserDTO  $dto
+     * @return \Modules\User\Models\User
+     */
     public function execute(UserDTO $dto): User
     {
         return $this->userRepository->registerUser([

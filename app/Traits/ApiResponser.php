@@ -8,7 +8,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
 trait ApiResponser
 {
     /**
-     * Response sukses standar
+     * Return a standardized success response.
+     *
+     * @param  mixed  $data  The data to be returned in the response.
+     * @param  string|null  $message  A descriptive message for the response.
+     * @param  int  $code  The HTTP status code (default: 200).
      */
     protected function successResponse($data, ?string $message = null, int $code = 200): JsonResponse
     {
@@ -20,7 +24,11 @@ trait ApiResponser
     }
 
     /**
-     * Response error standar
+     * Return a standardized error response.
+     *
+     * @param  string  $message  A descriptive error message.
+     * @param  int  $code  The HTTP status code (default: 400).
+     * @param  array  $errors  An array of validation or other errors.
      */
     protected function errorResponse(string $message, int $code = 400, array $errors = []): JsonResponse
     {
@@ -32,11 +40,15 @@ trait ApiResponser
     }
 
     /**
-     * Response khusus Paginasi
+     * Return a standardized paginated response.
+     *
+     * @param  LengthAwarePaginator  $paginator  The paginator instance.
+     * @param  string  $resourceClass  The resource class to transform the data.
+     * @param  string|null  $message  A descriptive message for the response.
      */
     protected function paginateResponse(LengthAwarePaginator $paginator, $resourceClass, ?string $message = null): JsonResponse
     {
-        // Mengonversi koleksi data menggunakan Resource Class yang ditentukan
+        // Convert the collection using the specified Resource Class
         $resourceData = $resourceClass::collection($paginator->getCollection());
 
         return response()->json([

@@ -10,7 +10,10 @@ trait HasDefaultBehavior
     use HasUlids, SoftDeletes;
 
     /**
-     * Set default properti untuk ULID
+     * Initialize the trait.
+     * Sets default properties for models using ULIDs.
+     *
+     * @return void
      */
     public function initializeHasDefaultBehavior()
     {
@@ -19,7 +22,9 @@ trait HasDefaultBehavior
     }
 
     /**
-     * Standarisasi format tanggal untuk API response
+     * Standardize date formats for API responses.
+     *
+     * @return array<string, string>
      */
     protected function casts(): array
     {

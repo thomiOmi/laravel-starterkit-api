@@ -13,6 +13,11 @@ class UserController extends Controller
 {
     public function __construct(protected UserRepository $userRepository) {}
 
+    /**
+     * Display a listing of the users.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index()
     {
         $users = $this->userRepository->paginate(15);
@@ -20,6 +25,13 @@ class UserController extends Controller
         return $this->paginateResponse($users, UserResource::class, 'Users retrieved successfully');
     }
 
+    /**
+     * Handle a user registration request.
+     *
+     * @param  \Modules\User\Requests\RegisterRequest  $request
+     * @param  \Modules\User\Actions\RegisterUserAction  $action
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function register(RegisterRequest $request, RegisterUserAction $action)
     {
         $dto = UserDTO::fromRequest($request);
@@ -27,7 +39,7 @@ class UserController extends Controller
 
         return $this->successResponse(
             new UserResource($user),
-            'User berhasil didaftarkan',
+            'User registered successfully',
             201
         );
     }
