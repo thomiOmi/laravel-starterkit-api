@@ -1,0 +1,30 @@
+<?php
+
+namespace Modules\Role\Actions;
+
+use Modules\Role\DTOs\RoleDTO;
+use Modules\Role\Repositories\RoleRepository;
+use Spatie\Permission\Models\Role;
+
+class CreateRoleAction
+{
+    /**
+     * Create a new CreateRoleAction instance.
+     */
+    public function __construct(protected RoleRepository $repository) {}
+
+    /**
+     * Execute the create role action.
+     */
+    public function execute(RoleDTO $dto): Role
+    {
+        /** @var Role $role */
+        $role = $this->repository->create(['name' => $dto->name]);
+
+        if (! empty($dto->permissions)) {
+            $role->syncPermissions($dto->permissions);
+        }
+
+        return $role;
+    }
+}

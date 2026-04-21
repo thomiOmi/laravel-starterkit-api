@@ -3,6 +3,7 @@
 namespace Modules\User\Repositories;
 
 use App\Repositories\BaseRepository;
+use Illuminate\Database\Eloquent\Builder;
 use Modules\User\Models\User;
 
 class UserRepository extends BaseRepository
@@ -14,9 +15,6 @@ class UserRepository extends BaseRepository
 
     /**
      * Find a user by their email address.
-     *
-     * @param  string  $email
-     * @return \Modules\User\Models\User|null
      */
     public function findByEmail(string $email): ?User
     {
@@ -25,12 +23,24 @@ class UserRepository extends BaseRepository
 
     /**
      * Create a new user record.
-     *
-     * @param  array  $details
-     * @return \Modules\User\Models\User
      */
     public function registerUser(array $details): User
     {
         return $this->model->create($details);
+    }
+
+    /**
+     * Apply a search query to the database query for users.
+     *
+     * @param  Builder  $query  The query builder.
+     * @param  string  $search  The search query.
+     * @return Builder
+     */
+    protected function applySearch($query, string $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+        });
     }
 }
