@@ -1,8 +1,8 @@
 <?php
 
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
+use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 
 uses(RefreshDatabase::class);

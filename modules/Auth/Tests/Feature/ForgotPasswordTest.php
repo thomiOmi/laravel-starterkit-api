@@ -1,10 +1,10 @@
 <?php
 
-use Database\Seeders\RoleSeeder;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
+use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 
 uses(RefreshDatabase::class);
