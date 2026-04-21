@@ -40,7 +40,7 @@ abstract class BaseRepository
      * @param  array  $relations  The relations to eager load.
      * @return LengthAwarePaginator<T>
      */
-    public function paginate(int $perPage = 15, array $columns = ['*'], array $relations = []): LengthAwarePaginator
+    public function paginate(int $perPage = 10, array $columns = ['*'], array $relations = []): LengthAwarePaginator
     {
         return $this->model->with($relations)->paginate($perPage, $columns);
     }
@@ -80,9 +80,8 @@ abstract class BaseRepository
      *
      * @param  Builder  $query  The query builder.
      * @param  string  $search  The search query.
-     * @return Builder
      */
-    protected function applySearch($query, string $search)
+    protected function applySearch(Builder $query, string $search): Builder
     {
         return $query;
     }
@@ -92,9 +91,8 @@ abstract class BaseRepository
      *
      * @param  Builder  $query  The query builder.
      * @param  array  $filters  The filters to apply.
-     * @return Builder
      */
-    protected function applyFilters($query, array $filters)
+    protected function applyFilters(Builder $query, array $filters): Builder
     {
         $allowedColumns = $this->getFilterableColumns();
 

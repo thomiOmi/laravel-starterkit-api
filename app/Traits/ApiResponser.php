@@ -46,7 +46,7 @@ trait ApiResponser
      * @param  string  $resourceClass  The resource class to transform the data.
      * @param  string|null  $message  A descriptive message for the response.
      */
-    protected function paginateResponse(LengthAwarePaginator $paginator, $resourceClass, ?string $message = null): JsonResponse
+    protected function paginateResponse(LengthAwarePaginator $paginator, string $resourceClass, ?string $message = null): JsonResponse
     {
         // Convert the collection using the specified Resource Class
         $resourceData = $resourceClass::collection($paginator->getCollection());

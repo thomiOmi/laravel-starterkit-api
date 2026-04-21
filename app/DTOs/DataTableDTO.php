@@ -19,7 +19,7 @@ readonly class DataTableDTO
      */
     public function __construct(
         public int $page = 1,
-        public int $per_page = 15,
+        public int $per_page = 10,
         public ?string $search = null,
         public ?string $sort_by = null,
         public string $sort_direction = 'asc',
@@ -36,7 +36,7 @@ readonly class DataTableDTO
     {
         return new self(
             page: (int) $request->query('page', 1),
-            per_page: (int) $request->query('per_page', 15),
+            per_page: (int) $request->query('per_page', 10),
             search: $request->query('search'),
             sort_by: $request->query('sort_by'),
             sort_direction: $request->query('sort_direction', 'asc'),

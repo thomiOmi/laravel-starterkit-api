@@ -15,7 +15,7 @@ use Tests\TestCase;
 */
 
 uses(TestCase::class, RefreshDatabase::class)
-    ->in('Feature', '../modules/*/Tests/Feature');
+    ->in('Feature', '../modules/*/Tests');
 
 /*
 |--------------------------------------------------------------------------
