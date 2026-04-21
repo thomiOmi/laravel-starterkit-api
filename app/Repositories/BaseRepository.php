@@ -103,8 +103,6 @@ abstract class BaseRepository implements BaseRepositoryInterface
 
     /**
      * Get the columns that can be filtered.
-     *
-     * @return array
      */
     protected function getFilterableColumns(): array
     {

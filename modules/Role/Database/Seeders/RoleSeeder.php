@@ -3,6 +3,7 @@
 namespace Modules\Role\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Modules\User\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -58,5 +59,36 @@ class RoleSeeder extends Seeder
         $userSanctum->givePermissionTo([
             'user.view',
         ]);
+
+        // Assign roles to users if they exist
+        $this->assignRolesToExistingUsers();
+    }
+
+    /**
+     * Assign roles to existing users.
+     */
+    private function assignRolesToExistingUsers(): void
+    {
+        $superAdmin = User::where('email', 'superadmin@example.com')->first();
+        if ($superAdmin) {
+            $superAdmin->assignRole('super-admin');
+        }
+
+        $admin = User::where('email', 'admin@example.com')->first();
+        if ($admin) {
+            $admin->assignRole('admin');
+        }
+
+        $user = User::where('email', 'user@example.com')->first();
+        if ($user) {
+            $user->assignRole('user');
+        }
+
+        // Assign 'user' role to all other users that don't have a role
+        User::all()->each(function ($u) {
+            if ($u->roles()->count() === 0) {
+                $u->assignRole('user');
+            }
+        });
     }
 }
