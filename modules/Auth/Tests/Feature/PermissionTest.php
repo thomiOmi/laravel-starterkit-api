@@ -1,0 +1,36 @@
+<?php
+
+namespace Modules\Auth\Tests\Feature;
+
+use Database\Seeders\RoleSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\User\Models\User;
+use Tests\TestCase;
+
+class PermissionTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RoleSeeder::class);
+    }
+
+    public function test_admin_can_access_protected_role()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $this->assertTrue($admin->hasRole('admin'));
+    }
+
+    public function test_writer_cannot_access_admin_protected_role()
+    {
+        $writer = User::factory()->create();
+        $writer->assignRole('writer');
+
+        $this->assertFalse($writer->hasRole('admin'));
+        $this->assertTrue($writer->hasRole('writer'));
+    }
+}

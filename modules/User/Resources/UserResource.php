@@ -18,6 +18,12 @@ class UserResource extends BaseResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'roles' => $this->whenLoaded('roles', function () {
+                return $this->roles->pluck('name');
+            }),
+            'permissions' => $this->whenLoaded('permissions', function () {
+                return $this->getPermissionNames();
+            }),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
         ];
     }

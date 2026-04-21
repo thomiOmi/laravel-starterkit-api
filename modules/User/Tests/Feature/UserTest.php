@@ -5,6 +5,7 @@ test('new users can register via api', function () {
         'name' => 'User Test',
         'email' => 'test'.time().'@example.com',
         'password' => 'password123',
+        'password_confirmation' => 'password123',
     ];
 
     $response = $this->postJson('/api/v1/users/register', $payload);
@@ -18,6 +19,7 @@ test('registration fails if email is invalid', function () {
         'name' => 'User',
         'email' => 'not-an-email',
         'password' => '123',
+        'password_confirmation' => '123',
     ]);
 
     $response->assertStatus(422);

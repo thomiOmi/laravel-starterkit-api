@@ -7,20 +7,20 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Modules\Auth\DTOs\ResetPasswordDTO;
 
 class ResetPasswordAction
 {
     /**
      * Execute the reset password action.
      *
-     * @param  array  $data  The password reset data (email, token, password, password_confirmation).
      *
      * @throws ValidationException
      */
-    public function execute(array $data): string
+    public function execute(ResetPasswordDTO $dto): string
     {
         $status = Password::broker()->reset(
-            $data,
+            $dto->toArray(),
             function ($user, $password) {
                 $user->forceFill([
                     'password' => Hash::make($password),

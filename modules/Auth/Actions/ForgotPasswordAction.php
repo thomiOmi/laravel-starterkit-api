@@ -4,19 +4,19 @@ namespace Modules\Auth\Actions;
 
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+use Modules\Auth\DTOs\ForgotPasswordDTO;
 
 class ForgotPasswordAction
 {
     /**
      * Execute the forgot password action.
      *
-     * @param  array  $credentials  The user credentials (email).
      *
      * @throws ValidationException
      */
-    public function execute(array $credentials): string
+    public function execute(ForgotPasswordDTO $dto): string
     {
-        $status = Password::broker()->sendResetLink($credentials);
+        $status = Password::broker()->sendResetLink(['email' => $dto->email]);
 
         if ($status !== Password::RESET_LINK_SENT) {
             throw ValidationException::withMessages([
