@@ -65,7 +65,7 @@ class UserController extends Controller
      */
     public function show(string|int $id)
     {
-        $user = $this->userRepository->view($id, relations: ['roles', 'permissions']);
+        $user = $this->userRepository->findById($id, relations: ['roles', 'permissions']);
 
         return $this->successResponse(
             new UserResource($user),
@@ -86,7 +86,7 @@ class UserController extends Controller
         $dto = UserDTO::fromRequest($request);
         $action->execute($id, $dto);
 
-        $user = $this->userRepository->view($id);
+        $user = $this->userRepository->findById($id);
 
         return $this->successResponse(
             new UserResource($user),

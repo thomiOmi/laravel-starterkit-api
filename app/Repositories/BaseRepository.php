@@ -114,14 +114,14 @@ abstract class BaseRepository
     }
 
     /**
-     * View a record by its ID.
+     * Find a record by its ID.
      *
      * @param  string|int  $id  The record ID.
      * @param  array  $columns  The columns to retrieve.
      * @param  array  $relations  The relations to eager load.
      * @return T
      */
-    public function view(string|int $id, array $columns = ['*'], array $relations = []): Model
+    public function findById(string|int $id, array $columns = ['*'], array $relations = []): Model
     {
         return $this->model->with($relations)->findOrFail($id, $columns);
     }
@@ -145,7 +145,7 @@ abstract class BaseRepository
      */
     public function update(string|int $id, array $details): bool
     {
-        return $this->view($id)->update($details);
+        return $this->findById($id)->update($details);
     }
 
     /**
@@ -155,7 +155,7 @@ abstract class BaseRepository
      */
     public function delete(string|int $id): bool
     {
-        return $this->view($id)->delete();
+        return $this->findById($id)->delete();
     }
 
     /**

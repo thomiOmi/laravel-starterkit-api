@@ -19,7 +19,7 @@ class UpdateRoleAction
     public function execute(string|int $id, RoleDTO $dto): bool
     {
         /** @var Role $role */
-        $role = $this->repository->view($id);
+        $role = $this->repository->findById($id);
 
         $updated = $role->update(['name' => $dto->name]);
 
