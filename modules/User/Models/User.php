@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\User\Models;
 
 use App\Traits\Models\HasDefaultBehavior;
@@ -34,10 +36,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Create a new factory instance for the model.
-     *
-     * @return UserFactory
      */
-    protected static function newFactory()
+    protected static function newFactory(): UserFactory
     {
         return UserFactory::new();
     }

@@ -14,7 +14,7 @@ trait ApiResponser
      * @param  string|null  $message  A descriptive message for the response.
      * @param  int  $code  The HTTP status code (default: 200).
      */
-    protected function successResponse($data, ?string $message = null, int $code = 200): JsonResponse
+    protected function successResponse(mixed $data, ?string $message = null, int $code = 200): JsonResponse
     {
         return response()->json([
             'status' => 'Success',

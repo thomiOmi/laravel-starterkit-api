@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\Role\Repositories;
 
 use App\Repositories\BaseRepository;
@@ -21,10 +23,10 @@ class RoleRepository extends BaseRepository
     /**
      * Apply search to the role query.
      *
-     * @param  Builder  $query
-     * @return Builder
+     * @param  Builder  $query  The query builder.
+     * @param  string  $search  The search query.
      */
-    protected function applySearch($query, string $search)
+    protected function applySearch(Builder $query, string $search): Builder
     {
         return $query->where('name', 'like', "%{$search}%");
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Modules\User\Repositories;
 
 use App\Repositories\BaseRepository;
@@ -18,6 +20,8 @@ class UserRepository extends BaseRepository
 
     /**
      * Find a user by their email address.
+     *
+     * @param  string  $email  The email address.
      */
     public function findByEmail(string $email): ?User
     {
@@ -29,11 +33,10 @@ class UserRepository extends BaseRepository
      *
      * @param  Builder  $query  The query builder.
      * @param  string  $search  The search query.
-     * @return Builder
      */
-    protected function applySearch($query, string $search)
+    protected function applySearch(Builder $query, string $search): Builder
     {
-        return $query->where(function ($q) use ($search) {
+        return $query->where(function (Builder $q) use ($search) {
             $q->where('name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%");
         });
