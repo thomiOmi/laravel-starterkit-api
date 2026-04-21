@@ -8,12 +8,15 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-abstract class BaseRepository implements BaseRepositoryInterface
+/**
+ * @template T of Model
+ */
+abstract class BaseRepository
 {
     /**
      * Create a new repository instance.
      *
-     * @param  Model  $model  The model instance.
+     * @param  T  $model  The model instance.
      */
     public function __construct(protected Model $model) {}
 
@@ -22,6 +25,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
      *
      * @param  array  $columns  The columns to retrieve.
      * @param  array  $relations  The relations to eager load.
+     * @return Collection<int, T>
      */
     public function all(array $columns = ['*'], array $relations = []): Collection
     {
@@ -34,6 +38,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
      * @param  int  $perPage  The number of items per page.
      * @param  array  $columns  The columns to retrieve.
      * @param  array  $relations  The relations to eager load.
+     * @return LengthAwarePaginator<T>
      */
     public function paginate(int $perPage = 15, array $columns = ['*'], array $relations = []): LengthAwarePaginator
     {
@@ -46,6 +51,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
      * @param  DataTableDTO  $dto  The data table parameters.
      * @param  array  $columns  The columns to retrieve.
      * @param  array  $relations  The relations to eager load.
+     * @return LengthAwarePaginator<T>
      */
     public function getDataTable(DataTableDTO $dto, array $columns = ['*'], array $relations = []): LengthAwarePaginator
     {
@@ -110,13 +116,14 @@ abstract class BaseRepository implements BaseRepositoryInterface
     }
 
     /**
-     * Find a record by its ID.
+     * View a record by its ID.
      *
      * @param  string|int  $id  The record ID.
      * @param  array  $columns  The columns to retrieve.
      * @param  array  $relations  The relations to eager load.
+     * @return T
      */
-    public function findById(string|int $id, array $columns = ['*'], array $relations = []): ?Model
+    public function view(string|int $id, array $columns = ['*'], array $relations = []): Model
     {
         return $this->model->with($relations)->findOrFail($id, $columns);
     }
@@ -125,6 +132,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
      * Create a new record.
      *
      * @param  array  $details  The record details.
+     * @return T
      */
     public function create(array $details): Model
     {
@@ -139,7 +147,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
      */
     public function update(string|int $id, array $details): bool
     {
-        return $this->findById($id)->update($details);
+        return $this->view($id)->update($details);
     }
 
     /**
@@ -149,17 +157,27 @@ abstract class BaseRepository implements BaseRepositoryInterface
      */
     public function delete(string|int $id): bool
     {
-        return $this->findById($id)->delete();
+        return $this->view($id)->delete();
     }
 
     /**
-     * Bulk delete records.
+     * Perform bulk actions on records.
      *
-     * @param  array  $ids  The record IDs to delete.
-     * @return int The number of deleted records.
+     * @param  array<int|string>  $ids  The record IDs.
+     * @param  string  $action  The action to perform (delete, update, restore, forceDelete).
+     * @param  array  $data  The data for update action.
+     * @return int The number of affected records.
      */
-    public function bulkDelete(array $ids): int
+    public function bulk(array $ids, string $action, array $data = []): int
     {
-        return $this->model->whereIn($this->model->getKeyName(), $ids)->delete();
+        $query = $this->model->whereIn($this->model->getKeyName(), $ids);
+
+        return match ($action) {
+            'delete' => $query->delete(),
+            'update' => $query->update($data),
+            'restore' => $query->restore(),
+            'forceDelete' => $query->forceDelete(),
+            default => 0,
+        };
     }
 }

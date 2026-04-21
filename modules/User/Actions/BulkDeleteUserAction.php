@@ -21,6 +21,6 @@ class BulkDeleteUserAction
      */
     public function execute(array $ids): int
     {
-        return $this->userRepository->bulkDelete($ids);
+        return $this->userRepository->bulk($ids, 'delete');
     }
 }

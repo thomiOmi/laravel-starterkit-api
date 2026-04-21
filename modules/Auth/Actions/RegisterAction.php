@@ -20,7 +20,7 @@ class RegisterAction
      */
     public function execute(UserDTO $dto): array
     {
-        $user = $this->userRepository->registerUser([
+        $user = $this->userRepository->create([
             'name' => $dto->name,
             'email' => $dto->email,
             'password' => Hash::make($dto->password),

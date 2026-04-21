@@ -51,7 +51,7 @@ class RoleController extends Controller
      */
     public function show(string|int $id): JsonResponse
     {
-        $role = $this->repository->findById($id, relations: ['permissions']);
+        $role = $this->repository->view($id, relations: ['permissions']);
 
         return $this->successResponse(
             new RoleResource($role),
@@ -67,7 +67,7 @@ class RoleController extends Controller
         $dto = RoleDTO::fromRequest($request);
         $action->execute($id, $dto);
 
-        $role = $this->repository->findById($id, relations: ['permissions']);
+        $role = $this->repository->view($id, relations: ['permissions']);
 
         return $this->successResponse(
             new RoleResource($role),
