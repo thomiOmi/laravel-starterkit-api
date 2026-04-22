@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Agents\Antigravity;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Boost\Boost;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Boost::registerAgent('antigravity', Antigravity::class);
+
         $this->configureRateLimiting();
 
         // Implicitly grant "super-admin" role all permissions

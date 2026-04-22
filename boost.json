@@ -1,13 +1,18 @@
 {
     "agents": [
-        "gemini"
+        "antigravity"
     ],
     "guidelines": true,
     "mcp": true,
     "nightwatch_mcp": false,
+    "packages": [
+        "spatie/laravel-permission"
+    ],
     "sail": false,
     "skills": [
         "laravel-best-practices",
-        "pest-testing"
+        "pest-testing",
+        "laravel-permission-development",
+        "laravel-specialist"
     ]
 }
