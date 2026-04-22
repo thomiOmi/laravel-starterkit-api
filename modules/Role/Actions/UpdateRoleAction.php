@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\Role\Actions;
 
 use Modules\Role\DTOs\RoleDTO;
+use Modules\Role\Models\Role;
 use Modules\Role\Repositories\RoleRepository;
-use Spatie\Permission\Models\Role;
 
 class UpdateRoleAction
 {
@@ -21,20 +21,16 @@ class UpdateRoleAction
      * @param  string|int  $id  The role ID.
      * @param  RoleDTO  $dto  The role data transfer object.
      */
-    public function execute(string|int $id, RoleDTO $dto): bool
+    public function execute(string|int $id, RoleDTO $dto): Role
     {
         /** @var Role $role */
-        $role = $this->repository->findById($id);
-
-        $updated = $role->update([
+        $role = $this->repository->update($id, [
             'name' => $dto->name,
             'description' => $dto->description,
         ]);
 
-        if ($updated) {
-            $role->syncPermissions($dto->permissions);
-        }
+        $role->syncPermissions($dto->permissions);
 
-        return $updated;
+        return $role->load('permissions');
     }
 }

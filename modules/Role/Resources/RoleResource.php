@@ -6,7 +6,11 @@ namespace Modules\Role\Resources;
 
 use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
+use Modules\Role\Models\Role;
 
+/**
+ * @mixin Role
+ */
 class RoleResource extends BaseResource
 {
     /**
@@ -21,8 +25,8 @@ class RoleResource extends BaseResource
             'permissions' => $this->whenLoaded('permissions', function () {
                 return $this->permissions->pluck('name');
             }),
-            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
+            'created_at' => $this->formatDate($this->created_at),
+            'updated_at' => $this->formatDate($this->updated_at),
         ];
     }
 }

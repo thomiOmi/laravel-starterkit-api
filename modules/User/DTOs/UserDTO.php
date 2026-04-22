@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\User\DTOs;
 
+use Illuminate\Foundation\Http\FormRequest;
+
 readonly class UserDTO
 {
     /**
@@ -24,9 +26,9 @@ readonly class UserDTO
     /**
      * Create a UserDTO instance from a request.
      *
-     * @param  mixed  $request  The incoming HTTP request.
+     * @param  FormRequest  $request  The incoming HTTP request.
      */
-    public static function fromRequest($request): self
+    public static function fromRequest(FormRequest $request): self
     {
         return new self(
             name: $request->validated('name'),

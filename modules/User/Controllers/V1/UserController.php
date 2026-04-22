@@ -82,9 +82,7 @@ class UserController extends Controller
     public function update(UserRequest $request, string|int $id, UpdateUserAction $action): JsonResponse
     {
         $dto = UserDTO::fromRequest($request);
-        $action->execute($id, $dto);
-
-        $user = $this->userRepository->findById($id);
+        $user = $action->execute($id, $dto);
 
         return $this->successResponse(
             new UserResource($user),

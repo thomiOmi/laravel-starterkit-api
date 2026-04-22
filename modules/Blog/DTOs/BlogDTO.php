@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Blog\DTOs;
 
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
 readonly class BlogDTO
 {
@@ -14,7 +14,7 @@ readonly class BlogDTO
         public ?string $user_id = null,
     ) {}
 
-    public static function fromRequest(Request $request): self
+    public static function fromRequest(FormRequest $request): self
     {
         return new self(
             title: $request->validated('title'),

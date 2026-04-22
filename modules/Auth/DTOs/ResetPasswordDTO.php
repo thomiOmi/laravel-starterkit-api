@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\DTOs;
 
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
 readonly class ResetPasswordDTO
 {
@@ -15,7 +15,7 @@ readonly class ResetPasswordDTO
         public ?string $password_confirmation = null
     ) {}
 
-    public static function fromRequest(Request $request): self
+    public static function fromRequest(FormRequest $request): self
     {
         return new self(
             token: $request->validated('token'),

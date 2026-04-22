@@ -6,7 +6,11 @@ namespace Modules\User\Resources;
 
 use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
+use Modules\User\Models\User;
 
+/**
+ * @mixin User
+ */
 class UserResource extends BaseResource
 {
     /**
@@ -27,10 +31,10 @@ class UserResource extends BaseResource
             'permissions' => $this->whenLoaded('permissions', function () {
                 return $this->getPermissionNames();
             }),
-            'email_verified_at' => $this->email_verified_at?->format('Y-m-d H:i:s'),
-            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
-            'deleted_at' => $this->deleted_at?->format('Y-m-d H:i:s'),
+            'email_verified_at' => $this->formatDate($this->email_verified_at),
+            'created_at' => $this->formatDate($this->created_at),
+            'updated_at' => $this->formatDate($this->updated_at),
+            'deleted_at' => $this->formatDate($this->deleted_at),
         ];
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\DTOs;
 
-use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\FormRequest;
 
 readonly class LoginDTO
 {
@@ -13,7 +13,7 @@ readonly class LoginDTO
         public string $password
     ) {}
 
-    public static function fromRequest(Request $request): self
+    public static function fromRequest(FormRequest $request): self
     {
         return new self(
             email: $request->validated('email'),

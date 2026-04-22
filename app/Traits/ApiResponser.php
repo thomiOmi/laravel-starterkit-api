@@ -25,10 +25,20 @@ trait ApiResponser
             'status' => 'Success',
             'message' => $message,
             'data' => $data,
-            'meta' => [
-                'api_version' => config('app.api_version', '1.0.0'),
-            ],
+            'meta' => $this->apiMeta(),
         ], $code);
+    }
+
+    /**
+     * Get the standardized API meta data.
+     *
+     * @return array<string, mixed>
+     */
+    protected function apiMeta(): array
+    {
+        return [
+            'api_version' => config('app.api_version', '1.0.0'),
+        ];
     }
 
     /**
@@ -71,9 +81,7 @@ trait ApiResponser
                 'from' => $paginator->firstItem(),
                 'to' => $paginator->lastItem(),
             ],
-            'meta' => [
-                'api_version' => config('app.api_version', '1.0.0'),
-            ],
+            'meta' => $this->apiMeta(),
         ]);
     }
 }

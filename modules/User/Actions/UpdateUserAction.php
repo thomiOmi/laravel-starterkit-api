@@ -25,7 +25,7 @@ class UpdateUserAction
      * @param  string|int  $id  The user ID.
      * @param  UserDTO  $dto  The user data transfer object.
      */
-    public function execute(string|int $id, UserDTO $dto): bool
+    public function execute(string|int $id, UserDTO $dto): User
     {
         $data = [
             'name' => $dto->name,
@@ -36,6 +36,7 @@ class UpdateUserAction
             $data['password'] = $dto->password;
         }
 
+        /** @var User */
         return $this->userRepository->update($id, $data);
     }
 }

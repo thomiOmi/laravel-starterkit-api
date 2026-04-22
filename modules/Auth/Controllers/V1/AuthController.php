@@ -70,7 +70,7 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         // Revoke the token that was used to authenticate the request
-        $request->user()->currentAccessToken()->delete();
+        $request->user()?->currentAccessToken()?->delete();
 
         return $this->successResponse(null, 'Logout successful');
     }

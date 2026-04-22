@@ -79,9 +79,7 @@ class RoleController extends Controller
     public function update(RoleRequest $request, string|int $id, UpdateRoleAction $action): JsonResponse
     {
         $dto = RoleDTO::fromRequest($request);
-        $action->execute($id, $dto);
-
-        $role = $this->repository->findById($id, relations: ['permissions']);
+        $role = $action->execute($id, $dto);
 
         return $this->successResponse(
             new RoleResource($role),

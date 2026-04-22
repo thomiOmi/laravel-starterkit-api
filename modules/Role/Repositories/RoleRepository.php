@@ -6,8 +6,11 @@ namespace Modules\Role\Repositories;
 
 use App\Repositories\BaseRepository;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Permission\Models\Role;
+use Modules\Role\Models\Role;
 
+/**
+ * @extends BaseRepository<Role>
+ */
 class RoleRepository extends BaseRepository
 {
     /**

@@ -20,7 +20,6 @@ readonly class DataTableDTO
      * @param  string|null  $sort_by  The column to sort by.
      * @param  string  $sort_direction  The direction to sort (asc or desc).
      * @param  array  $filters  Key-value pairs for column filtering.
-     * @param  array  $ids  List of IDs for bulk actions.
      */
     public function __construct(
         public int $page = 1,
@@ -28,8 +27,7 @@ readonly class DataTableDTO
         public ?string $search = null,
         public ?string $sort_by = null,
         public string $sort_direction = 'asc',
-        public array $filters = [],
-        public array $ids = []
+        public array $filters = []
     ) {}
 
     /**
@@ -47,8 +45,7 @@ readonly class DataTableDTO
             sort_direction: in_array(strtolower((string) $request->query('sort_direction', 'asc')), ['asc', 'desc'], true)
                 ? strtolower((string) $request->query('sort_direction', 'asc'))
                 : 'asc',
-            filters: (array) $request->query('filters', []),
-            ids: (array) $request->input('ids', [])
+            filters: (array) $request->query('filters', [])
         );
     }
 
@@ -66,7 +63,6 @@ readonly class DataTableDTO
             'sort_by' => $this->sort_by,
             'sort_direction' => $this->sort_direction,
             'filters' => $this->filters,
-            'ids' => $this->ids,
         ];
     }
 }

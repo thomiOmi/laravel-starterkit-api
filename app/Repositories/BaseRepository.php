@@ -8,7 +8,6 @@ use App\DTOs\DataTableDTO;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -34,7 +33,10 @@ abstract class BaseRepository
      */
     public function all(array $columns = ['*'], array $relations = []): Collection
     {
-        return $this->model->with($relations)->get($columns);
+        /** @var Collection<int, T> $collection */
+        $collection = $this->model->with($relations)->get($columns);
+
+        return $collection;
     }
 
     /**
@@ -102,7 +104,7 @@ abstract class BaseRepository
         $allowedColumns = $this->getFilterableColumns();
 
         foreach ($filters as $column => $value) {
-            if (in_array($column, $allowedColumns) && $value !== null && $value !== '') {
+            if (in_array($column, $allowedColumns, true) && $value !== null && $value !== '') {
                 $query->where($column, 'like', "%{$value}%");
             }
         }
@@ -155,10 +157,14 @@ abstract class BaseRepository
      *
      * @param  string|int  $id  The record ID.
      * @param  array  $details  The record details.
+     * @return T
      */
-    public function update(string|int $id, array $details): bool
+    public function update(string|int $id, array $details): Model
     {
-        return $this->findById($id)->update($details);
+        $record = $this->findById($id);
+        $record->update($details);
+
+        return $record->refresh();
     }
 
     /**
@@ -181,7 +187,7 @@ abstract class BaseRepository
      */
     public function bulk(array $ids, string $action, array $data = []): int
     {
-        /** @var Builder|SoftDeletes $query */
+        /** @var mixed $query */
         $query = $this->model->whereIn($this->model->getKeyName(), $ids);
 
         return match ($action) {

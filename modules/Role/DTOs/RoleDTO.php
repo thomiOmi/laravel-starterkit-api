@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Role\DTOs;
 
+use Illuminate\Foundation\Http\FormRequest;
+
 readonly class RoleDTO
 {
     /**
@@ -21,10 +23,8 @@ readonly class RoleDTO
 
     /**
      * Create a RoleDTO instance from a request.
-     *
-     * @param  mixed  $request
      */
-    public static function fromRequest($request): self
+    public static function fromRequest(FormRequest $request): self
     {
         return new self(
             name: $request->validated('name'),

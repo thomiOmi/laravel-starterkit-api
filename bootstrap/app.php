@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Middleware\SecurityHeaders;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -7,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->api(append: [
+            SecurityHeaders::class,
+        ]);
+
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
@@ -34,6 +43,38 @@ return Application::configure(basePath: dirname(__DIR__))
                 'message' => 'Validation Failed',
                 'errors' => $e->errors(),
             ], 422);
+        });
+
+        $exceptions->render(function (ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'Error',
+                'message' => 'Resource not found',
+                'errors' => [],
+            ], 404);
+        });
+
+        $exceptions->render(function (AuthenticationException $e) {
+            return response()->json([
+                'status' => 'Error',
+                'message' => 'Unauthenticated',
+                'errors' => [],
+            ], 401);
+        });
+
+        $exceptions->render(function (AuthorizationException $e) {
+            return response()->json([
+                'status' => 'Error',
+                'message' => 'Unauthorized',
+                'errors' => [],
+            ], 403);
+        });
+
+        $exceptions->render(function (NotFoundHttpException $e) {
+            return response()->json([
+                'status' => 'Error',
+                'message' => 'Route not found',
+                'errors' => [],
+            ], 404);
         });
     })
     ->create();

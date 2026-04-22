@@ -30,6 +30,10 @@ jobs:
       run: |
         mkdir -p database
         touch database/database.sqlite
+    - name: Check Code Formatting (Pint)
+      run: vendor/bin/pint --test
+    - name: Static Analysis (Larastan)
+      run: vendor/bin/phpstan analyse
     - name: Execute tests (Unit and Feature tests) via PHPUnit/Pest
       env:
         DB_CONNECTION: sqlite
