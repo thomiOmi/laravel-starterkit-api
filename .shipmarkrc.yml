@@ -1,0 +1,22 @@
+changelog:
+  file: "CHANGELOG.md"
+  includeHash: true
+  includeDate: true
+
+version:
+  files:
+    - path: "composer.json"
+      key: "version"
+  tagPrefix: "v"
+  tagMessage: "Release {version}"
+  commitMessage: "chore(release): {version}"
+  syncCheck: false
+
+commits:
+  conventional: true
+
+git:
+  push: true
+  pushTags: true
+  signTags: false
+  signCommits: false
