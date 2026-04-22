@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+declare(strict_types=1);
 
-Route::get('/', function () {
-    return response()->json(['message' => 'API is running']);
-});
+// use Illuminate\Support\Facades\Route;
+
+// Web routes disabled - API only application
+// Scramble documentation available at /docs/api

@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+declare(strict_types=1);
 
-Route::get('/health', function () {
-    return response()->json(['status' => 'up', 'timestamp' => now()]);
-});
+// use Illuminate\Support\Facades\Route;
+
+// Versioned API routes will be loaded from modules
