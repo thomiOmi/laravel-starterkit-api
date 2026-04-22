@@ -17,6 +17,8 @@ class CreateRoleAction
 
     /**
      * Execute the create role action.
+     *
+     * @param  RoleDTO  $dto  The role data transfer object.
      */
     public function execute(RoleDTO $dto): Role
     {

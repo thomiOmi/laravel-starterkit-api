@@ -24,6 +24,8 @@ class RoleController extends Controller
 
     /**
      * Display a listing of the roles.
+     *
+     * @param  Request  $request  The request.
      */
     public function index(Request $request): JsonResponse
     {
@@ -35,6 +37,9 @@ class RoleController extends Controller
 
     /**
      * Store a newly created role.
+     *
+     * @param  RoleRequest  $request  The role request.
+     * @param  CreateRoleAction  $action  The create role action.
      */
     public function store(RoleRequest $request, CreateRoleAction $action): JsonResponse
     {
@@ -50,6 +55,8 @@ class RoleController extends Controller
 
     /**
      * Display the specified role.
+     *
+     * @param  string|int  $id  The role ID.
      */
     public function show(string|int $id): JsonResponse
     {
@@ -63,6 +70,10 @@ class RoleController extends Controller
 
     /**
      * Update the specified role.
+     *
+     * @param  RoleRequest  $request  The role request.
+     * @param  string|int  $id  The role ID.
+     * @param  UpdateRoleAction  $action  The update role action.
      */
     public function update(RoleRequest $request, string|int $id, UpdateRoleAction $action): JsonResponse
     {
@@ -79,6 +90,8 @@ class RoleController extends Controller
 
     /**
      * Remove the specified role.
+     *
+     * @param  string|int  $id  The role ID.
      */
     public function destroy(string|int $id): JsonResponse
     {
@@ -89,6 +102,8 @@ class RoleController extends Controller
 
     /**
      * Perform bulk action on roles.
+     *
+     * @param  Request  $request  The request.
      */
     public function bulkAction(Request $request): JsonResponse
     {

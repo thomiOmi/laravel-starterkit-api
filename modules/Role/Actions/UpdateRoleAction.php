@@ -17,6 +17,9 @@ class UpdateRoleAction
 
     /**
      * Execute the update role action.
+     *
+     * @param  string|int  $id  The role ID.
+     * @param  RoleDTO  $dto  The role data transfer object.
      */
     public function execute(string|int $id, RoleDTO $dto): bool
     {

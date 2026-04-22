@@ -14,6 +14,7 @@ class VerifyEmailAction
     /**
      * Execute the verify email action.
      *
+     * @param  VerifyEmailDTO  $dto  The verify email data transfer object.
      *
      * @throws ValidationException
      */

@@ -21,6 +21,7 @@ class RegisterAction
     /**
      * Execute the register action.
      *
+     * @param  UserDTO  $dto  The user data transfer object.
      * @return array{user: User, access_token: string, token_type: string}
      */
     public function execute(UserDTO $dto): array

@@ -109,6 +109,8 @@ class UserController extends Controller
 
     /**
      * Perform bulk action on users.
+     *
+     * @param  Request  $request  The request.
      */
     public function bulkAction(Request $request): JsonResponse
     {

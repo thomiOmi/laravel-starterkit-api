@@ -45,8 +45,8 @@ readonly class DataTableDTO
             search: $request->query('search'),
             sort_by: $request->query('sort_by'),
             sort_direction: $request->query('sort_direction', 'asc'),
-            filters: $request->query('filters', []),
-            ids: $request->input('ids', [])
+            filters: (array) $request->query('filters', []),
+            ids: (array) $request->input('ids', [])
         );
     }
 

@@ -16,6 +16,7 @@ class ResetPasswordAction
     /**
      * Execute the reset password action.
      *
+     * @param  ResetPasswordDTO  $dto  The reset password data transfer object.
      *
      * @throws ValidationException
      */

@@ -12,6 +12,7 @@ class ResendVerificationEmailAction
     /**
      * Execute the resend verification email action.
      *
+     * @param  User  $user  The user model.
      *
      * @throws ValidationException
      */

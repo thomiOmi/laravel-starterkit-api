@@ -13,6 +13,7 @@ class ForgotPasswordAction
     /**
      * Execute the forgot password action.
      *
+     * @param  ForgotPasswordDTO  $dto  The forgot password data transfer object.
      *
      * @throws ValidationException
      */

@@ -14,6 +14,7 @@ class LoginAction
     /**
      * Execute the login action.
      *
+     * @param  LoginDTO  $dto  The login data transfer object.
      * @return array{user: User, access_token: string, token_type: string}
      *
      * @throws ValidationException
