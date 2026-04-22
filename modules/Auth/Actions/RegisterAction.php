@@ -11,6 +11,9 @@ use Modules\User\Repositories\UserRepository;
 
 class RegisterAction
 {
+    /**
+     * Create a new RegisterAction instance.
+     */
     public function __construct(
         protected UserRepository $userRepository
     ) {}

@@ -51,3 +51,41 @@ test('user can reset password with valid token', function () {
 
     $this->assertTrue(Hash::check('new-password123', $user->fresh()->password));
 });
+
+test('forgot password fails with non-existent email', function () {
+    $response = $this->postJson('/api/v1/auth/forgot-password', [
+        'email' => 'nonexistent@example.com',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
+});
+
+test('reset password fails with invalid token', function () {
+    $user = User::factory()->create();
+
+    $response = $this->postJson('/api/v1/auth/reset-password', [
+        'token' => 'invalid-token',
+        'email' => $user->email,
+        'password' => 'new-password123',
+        'password_confirmation' => 'new-password123',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
+});
+
+test('reset password fails with mismatched passwords', function () {
+    $user = User::factory()->create();
+    $token = Password::createToken($user);
+
+    $response = $this->postJson('/api/v1/auth/reset-password', [
+        'token' => $token,
+        'email' => $user->email,
+        'password' => 'new-password123',
+        'password_confirmation' => 'mismatched-password',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['password']);
+});

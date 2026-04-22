@@ -11,10 +11,13 @@ use Illuminate\Http\Request;
 use Modules\Auth\Actions\ForgotPasswordAction;
 use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\Actions\RegisterAction;
+use Modules\Auth\Actions\ResendVerificationEmailAction;
 use Modules\Auth\Actions\ResetPasswordAction;
+use Modules\Auth\Actions\VerifyEmailAction;
 use Modules\Auth\DTOs\ForgotPasswordDTO;
 use Modules\Auth\DTOs\LoginDTO;
 use Modules\Auth\DTOs\ResetPasswordDTO;
+use Modules\Auth\DTOs\VerifyEmailDTO;
 use Modules\Auth\Requests\ForgotPasswordRequest;
 use Modules\Auth\Requests\LoginRequest;
 use Modules\Auth\Requests\RegisterRequest;
@@ -110,41 +113,22 @@ class AuthController extends Controller
 
     /**
      * Mark the user's email address as verified.
-     *
-     * @return JsonResponse
      */
-    public function verifyEmail(Request $request)
+    public function verifyEmail(Request $request, VerifyEmailAction $action): JsonResponse
     {
-        $user = User::findOrFail($request->route('id'));
+        $dto = VerifyEmailDTO::fromRequest($request);
+        $message = $action->execute($dto);
 
-        if (! hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
-            return $this->errorResponse('Invalid verification link.', 403);
-        }
-
-        if ($user->hasVerifiedEmail()) {
-            return $this->successResponse(null, 'Email already verified.');
-        }
-
-        if ($user->markEmailAsVerified()) {
-            event(new Verified($user));
-        }
-
-        return $this->successResponse(null, 'Email verified successfully');
+        return $this->successResponse(null, $message);
     }
 
     /**
      * Resend the email verification notification.
-     *
-     * @return JsonResponse
      */
-    public function resendVerificationEmail(Request $request)
+    public function resendVerificationEmail(Request $request, ResendVerificationEmailAction $action): JsonResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return $this->errorResponse('Email already verified.', 400);
-        }
+        $message = $action->execute($request->user());
 
-        $request->user()->sendEmailVerificationNotification();
-
-        return $this->successResponse(null, 'Verification link sent');
+        return $this->successResponse(null, $message);
     }
 }

@@ -18,7 +18,7 @@ Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     });
 
     Route::post('email/verify/resend', [AuthController::class, 'resendVerificationEmail'])
-        ->middleware('throttle:6,1')
+        ->middleware(['auth:sanctum', 'throttle:6,1'])
         ->name('verification.send');
     Route::get('email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
         ->middleware(['signed'])

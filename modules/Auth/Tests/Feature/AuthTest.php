@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Modules\Role\Database\Seeders\RoleSeeder;
@@ -35,6 +36,27 @@ test('user can register', function () {
     $this->assertDatabaseHas('users', [
         'email' => 'john@example.com',
     ]);
+});
+
+test('registration fails with missing fields', function () {
+    $response = $this->postJson('/api/v1/auth/register', []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['name', 'email', 'password']);
+});
+
+test('registration fails with duplicate email', function () {
+    User::factory()->create(['email' => 'john@example.com']);
+
+    $response = $this->postJson('/api/v1/auth/register', [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
 });
 
 test('user can login', function () {
@@ -99,6 +121,61 @@ test('user can verify email', function () {
         ->assertJsonPath('message', 'Email verified successfully');
 
     $this->assertTrue($user->fresh()->hasVerifiedEmail());
+});
+
+test('email verification fails with invalid hash', function () {
+    $user = User::factory()->unverified()->create();
+
+    $url = URL::temporarySignedRoute(
+        'api.v1.auth.verification.verify',
+        now()->addMinutes(60),
+        ['id' => $user->id, 'hash' => 'invalid-hash']
+    );
+
+    $response = $this->getJson($url);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['hash']);
+});
+
+test('email verification fails with expired link', function () {
+    $user = User::factory()->unverified()->create();
+
+    $url = URL::temporarySignedRoute(
+        'api.v1.auth.verification.verify',
+        now()->subMinutes(60),
+        ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
+    );
+
+    $response = $this->getJson($url);
+
+    $response->assertStatus(403); // Signed middleware returns 403 for expired links
+});
+
+test('user can resend verification email', function () {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+    $token = $user->createToken('test')->plainTextToken;
+
+    $response = $this->withHeader('Authorization', "Bearer $token")
+        ->postJson('/api/v1/auth/email/verify/resend');
+
+    $response->assertStatus(200)
+        ->assertJsonPath('message', 'Verification link sent');
+
+    Notification::assertSentTo($user, VerifyEmail::class);
+});
+
+test('user cannot resend verification email if already verified', function () {
+    $user = User::factory()->create();
+    $token = $user->createToken('test')->plainTextToken;
+
+    $response = $this->withHeader('Authorization', "Bearer $token")
+        ->postJson('/api/v1/auth/email/verify/resend');
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
 });
 
 test('auth routes are rate limited', function () {
