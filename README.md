@@ -26,7 +26,7 @@ A robust and opinionated Laravel starter kit for building scalable APIs using Mo
 
 - PHP >= 8.3
 - Composer
-- SQLite (default) or other supported database (MySQL, PostgreSQL, etc.)
+- MySQL (default) or other supported database (SQLite, PostgreSQL, etc.)
 
 ---
 
@@ -43,32 +43,36 @@ composer run setup
 ### Manual Installation
 
 1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd laravel-staterkit-api
-   ```
+
+    ```bash
+    git clone <repository-url>
+    cd laravel-staterkit-api
+    ```
 
 2. **Install dependencies**:
-   ```bash
-   composer install
-   ```
+
+    ```bash
+    composer install
+    ```
 
 3. **Environment Setup**:
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
+
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
 
 4. **Database Configuration**:
    Create a SQLite database (or configure your `.env` for other databases):
-   ```bash
-   touch database/database.sqlite
-   ```
+
+    ```bash
+    touch database/database.sqlite
+    ```
 
 5. **Run Migrations & Seeders**:
-   ```bash
-   php artisan migrate --seed
-   ```
+    ```bash
+    php artisan migrate --seed
+    ```
 
 ---
 
@@ -105,9 +109,9 @@ All business logic lives inside the `modules/` directory. Each module should hav
 - **Return Types**: All methods must have explicit return type declarations.
 - **Documentation**: Use PHPDoc blocks for classes and methods.
 - **Formatting**: Run Laravel Pint to format your code:
-  ```bash
-  vendor/bin/pint
-  ```
+    ```bash
+    vendor/bin/pint
+    ```
 
 ---
 
