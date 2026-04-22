@@ -86,4 +86,28 @@ class RoleController extends Controller
 
         return $this->successResponse(null, 'Role deleted successfully');
     }
+
+    /**
+     * Perform bulk action on roles.
+     */
+    public function bulkAction(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['required', 'string', 'exists:roles,id'],
+            'action' => ['required', 'string', 'in:delete,update,restore,forceDelete'],
+            'data' => ['nullable', 'array'],
+        ]);
+
+        $count = $this->repository->bulk(
+            $request->input('ids'),
+            $request->input('action'),
+            $request->input('data', [])
+        );
+
+        return $this->successResponse(
+            ['count' => $count],
+            "Roles {$request->input('action')} successfully"
+        );
+    }
 }

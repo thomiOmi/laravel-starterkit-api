@@ -11,10 +11,12 @@ readonly class RoleDTO
      *
      * @param  string  $name  The role name.
      * @param  array  $permissions  The list of permissions.
+     * @param  string|null  $description  The role description.
      */
     public function __construct(
         public string $name,
-        public array $permissions = []
+        public array $permissions = [],
+        public ?string $description = null
     ) {}
 
     /**
@@ -26,7 +28,8 @@ readonly class RoleDTO
     {
         return new self(
             name: $request->validated('name'),
-            permissions: $request->validated('permissions', [])
+            permissions: $request->validated('permissions', []),
+            description: $request->validated('description')
         );
     }
 }

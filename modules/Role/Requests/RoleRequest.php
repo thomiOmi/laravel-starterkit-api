@@ -33,6 +33,7 @@ class RoleRequest extends FormRequest
             ],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', 'exists:permissions,name'],
+            'description' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

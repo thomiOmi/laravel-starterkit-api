@@ -6,6 +6,7 @@ use App\DTOs\DataTableDTO;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -168,13 +169,14 @@ abstract class BaseRepository
      */
     public function bulk(array $ids, string $action, array $data = []): int
     {
+        /** @var Builder|SoftDeletes $query */
         $query = $this->model->whereIn($this->model->getKeyName(), $ids);
 
         return match ($action) {
-            'delete' => $query->delete(),
-            'update' => $query->update($data),
-            'restore' => $query->restore(),
-            'forceDelete' => $query->forceDelete(),
+            'delete' => (int) $query->delete(),
+            'update' => (int) $query->update($data),
+            'restore' => (int) $query->restore(),
+            'forceDelete' => (int) $query->forceDelete(),
             default => 0,
         };
     }

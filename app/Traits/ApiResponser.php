@@ -20,6 +20,9 @@ trait ApiResponser
             'status' => 'Success',
             'message' => $message,
             'data' => $data,
+            'meta' => [
+                'api_version' => config('app.api_version', '1.0.0'),
+            ],
         ], $code);
     }
 
@@ -62,6 +65,9 @@ trait ApiResponser
                 'last_page' => $paginator->lastPage(),
                 'from' => $paginator->firstItem(),
                 'to' => $paginator->lastItem(),
+            ],
+            'meta' => [
+                'api_version' => config('app.api_version', '1.0.0'),
             ],
         ]);
     }
