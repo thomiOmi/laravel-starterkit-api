@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Auth\Controllers;
+namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;

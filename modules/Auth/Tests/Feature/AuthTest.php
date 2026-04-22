@@ -88,7 +88,7 @@ test('user can verify email', function () {
     $user = User::factory()->unverified()->create();
 
     $url = URL::temporarySignedRoute(
-        'verification.verify',
+        'api.v1.auth.verification.verify',
         now()->addMinutes(60),
         ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
     );

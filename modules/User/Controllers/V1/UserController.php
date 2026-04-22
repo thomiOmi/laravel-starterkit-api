@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\User\Controllers;
+namespace Modules\User\Controllers\V1;
 
 use App\DTOs\DataTableDTO;
 use App\Http\Controllers\Controller;

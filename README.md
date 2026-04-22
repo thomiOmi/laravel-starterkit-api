@@ -19,6 +19,9 @@ A robust and opinionated Laravel starter kit for building scalable APIs using Mo
     - **Soft Deletes**: Enabled by default for data persistence safety.
 - **Testing**: Integrated with **Pest PHP** for an elegant testing experience.
 - **Code Quality**: Pre-configured with **Laravel Pint** for consistent coding style.
+- **Auto API Documentation**: Integrated with **Scramble** for zero-annotation OpenAPI documentation.
+- **Release Management**: Integrated with **ShipMark** for automated versioning and changelogs.
+- **Manual API Versioning**: Lightweight, folder-based API versioning support.
 
 ---
 
@@ -29,6 +32,31 @@ A robust and opinionated Laravel starter kit for building scalable APIs using Mo
 - Database (MySQL, PostgreSQL, SQLite, etc.)
 
 ---
+
+## API Documentation
+
+Once the application is running, you can access the automatic API documentation:
+
+- **Swagger UI**: `/docs/api`
+
+## Release Management
+
+This project uses [ShipMark](https://github.com/Grazulex/shipmark) for managing releases. To create a new release:
+
+```bash
+composer run release
+```
+
+This will guide you through version bumping, changelog generation, and tagging.
+
+## API Versioning
+
+API versioning is managed manually via `config/apiroute.php`. Routes are located in `modules/*/Routes/{version}.php`.
+
+### Adding a New Version
+1. Create a new route file (e.g., `modules/Blog/Routes/v2.php`).
+2. Define your controllers in a corresponding namespace (e.g., `Modules\Blog\Controllers\V2`).
+3. Register the new version in `config/apiroute.php`.
 
 ## Installation
 

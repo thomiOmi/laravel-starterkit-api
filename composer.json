@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "dedoc/scramble": "*",
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
@@ -45,6 +46,7 @@
             "@php artisan key:generate",
             "@php artisan migrate --force"
         ],
+        "release": "npx @grazulex/shipmark release",
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan serve"
