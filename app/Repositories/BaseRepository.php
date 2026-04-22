@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories;
 
 use App\DTOs\DataTableDTO;
@@ -10,6 +12,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
+ * Base Repository class providing common data access logic.
+ *
  * @template T of Model
  */
 abstract class BaseRepository

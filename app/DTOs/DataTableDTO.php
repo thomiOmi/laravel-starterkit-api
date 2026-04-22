@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\DTOs;
 
 use Illuminate\Http\Request;
 
+/**
+ * Data Transfer Object for DataTable parameters.
+ */
 readonly class DataTableDTO
 {
     /**

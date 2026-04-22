@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Agents\Antigravity;
@@ -10,6 +12,9 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Boost\Boost;
 
+/**
+ * General application service provider.
+ */
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -36,6 +41,9 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Configure the rate limiters for the application.
+     */
     protected function configureRateLimiting(): void
     {
         RateLimiter::for('api', function (Request $request) {

@@ -196,6 +196,36 @@ Include the new field in the response.
 
 ---
 
+## Middleware Best Practices
+
+### Global Middleware
+Global middleware are executed for every HTTP request. Register them in `bootstrap/app.php`:
+
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->append(MyGlobalMiddleware::class);
+})
+```
+
+### Route-Specific Middleware
+For modular route-specific middleware, it is best practice to define them in your module's route file.
+
+1.  **Register Alias** (Optional): In `bootstrap/app.php` if you want a shorthand.
+    ```php
+    $middleware->alias([
+        'my-middleware' => \App\Http\Middleware\MyMiddleware::class,
+    ]);
+    ```
+
+2.  **Apply to Module Routes**: In `modules/*/Routes/v1.php`.
+    ```php
+    Route::middleware(['auth:sanctum', 'my-middleware'])->group(function () {
+        Route::get('/feature', [MyController::class, 'index']);
+    });
+    ```
+
+---
+
 ## Coding Standards
 
 - **Strict Typing**: All files must include `declare(strict_types=1);`.
