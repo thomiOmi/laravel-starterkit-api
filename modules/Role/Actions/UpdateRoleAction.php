@@ -23,7 +23,10 @@ class UpdateRoleAction
         /** @var Role $role */
         $role = $this->repository->findById($id);
 
-        $updated = $role->update(['name' => $dto->name]);
+        $updated = $role->update([
+            'name' => $dto->name,
+            'description' => $dto->description,
+        ]);
 
         if ($updated) {
             $role->syncPermissions($dto->permissions);

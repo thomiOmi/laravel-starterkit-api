@@ -17,10 +17,10 @@ use Modules\Auth\DTOs\LoginDTO;
 use Modules\Auth\DTOs\ResetPasswordDTO;
 use Modules\Auth\Requests\ForgotPasswordRequest;
 use Modules\Auth\Requests\LoginRequest;
+use Modules\Auth\Requests\RegisterRequest;
 use Modules\Auth\Requests\ResetPasswordRequest;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Models\User;
-use Modules\User\Requests\RegisterRequest;
 use Modules\User\Resources\UserResource;
 
 class AuthController extends Controller

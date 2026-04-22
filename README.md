@@ -26,7 +26,7 @@ A robust and opinionated Laravel starter kit for building scalable APIs using Mo
 
 - PHP >= 8.3
 - Composer
-- MySQL (default) or other supported database (SQLite, PostgreSQL, etc.)
+- Database (MySQL, PostgreSQL, SQLite, etc.)
 
 ---
 
@@ -63,11 +63,7 @@ composer run setup
     ```
 
 4. **Database Configuration**:
-   Create a SQLite database (or configure your `.env` for other databases):
-
-    ```bash
-    touch database/database.sqlite
-    ```
+   Configure your `.env` for your database (MySQL, PostgreSQL, SQLite, etc.).
 
 5. **Run Migrations & Seeders**:
     ```bash
@@ -100,6 +96,75 @@ All business logic lives inside the `modules/` directory. Each module should hav
 1.  Create a new directory in `modules/` (e.g., `modules/Blog`).
 2.  Create a Service Provider (e.g., `modules/Blog/Providers/BlogServiceProvider.php`).
 3.  The `App\Providers\ModuleServiceProvider` will automatically detect and register your module if the naming convention is followed.
+
+---
+
+## Extending Modules (Adding New Fields)
+
+To add new fields to an existing module, follow these steps:
+
+### 1. Create a New Migration
+
+```bash
+php artisan make:migration add_avatar_to_users_table --table=users
+```
+
+```php
+public function up(): void
+{
+    Schema::table('users', function (Blueprint $table) {
+        $table->string('avatar')->nullable()->after('email');
+    });
+}
+```
+
+### 2. Update the Model
+
+Add the new field to the `#[Fillable]` attribute.
+
+```php
+#[Fillable(['name', 'email', 'password', 'avatar'])]
+class User extends Authenticatable { ... }
+```
+
+### 3. Update the DTO
+
+Add the property and update the `fromRequest` method.
+
+```php
+public function __construct(
+    public string $name,
+    public string $email,
+    public ?string $password = null,
+    public ?string $avatar = null
+) {}
+
+public static function fromRequest($request): self
+{
+    return new self(
+        name: $request->validated('name'),
+        email: $request->validated('email'),
+        password: $request->validated('password'),
+        avatar: $request->validated('avatar')
+    );
+}
+```
+
+### 4. Update the Form Request
+
+Add validation rules for the new field.
+
+```php
+'avatar' => ['nullable', 'string', 'max:255'],
+```
+
+### 5. Update the API Resource
+
+Include the new field in the response.
+
+```php
+'avatar' => $this->avatar,
+```
 
 ---
 

@@ -21,7 +21,10 @@ class CreateRoleAction
     public function execute(RoleDTO $dto): Role
     {
         /** @var Role $role */
-        $role = $this->repository->create(['name' => $dto->name]);
+        $role = $this->repository->create([
+            'name' => $dto->name,
+            'description' => $dto->description,
+        ]);
 
         if (! empty($dto->permissions)) {
             $role->syncPermissions($dto->permissions);

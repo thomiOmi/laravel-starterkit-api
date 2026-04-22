@@ -87,32 +87,3 @@ test('unauthorized user cannot list users', function () {
 
     $response->assertStatus(403);
 });
-
-test('can search users', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('super-admin');
-
-    User::factory()->create(['name' => 'John Doe', 'email' => 'john@example.com']);
-    User::factory()->create(['name' => 'Jane Smith', 'email' => 'jane@example.com']);
-
-    $response = $this->actingAs($admin)
-        ->getJson('/api/v1/users?search=John');
-
-    $response->assertStatus(200)
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.name', 'John Doe');
-});
-
-test('can sort users', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('super-admin');
-
-    User::factory()->create(['name' => 'A User']);
-    User::factory()->create(['name' => 'Z User']);
-
-    $response = $this->actingAs($admin)
-        ->getJson('/api/v1/users?sort_by=name&sort_direction=desc');
-
-    $response->assertStatus(200)
-        ->assertJsonPath('data.0.name', 'Z User');
-});

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Role\Providers;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class RoleServiceProvider extends ServiceProvider
@@ -22,16 +21,6 @@ class RoleServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->registerRoutes();
-    }
-
-    /**
-     * Register the module routes.
-     */
-    protected function registerRoutes(): void
-    {
-        Route::middleware('api')
-            ->prefix('api')
-            ->group(__DIR__.'/../Routes/api.php');
+        // Routes are registered via App\Providers\RouteServiceProvider
     }
 }

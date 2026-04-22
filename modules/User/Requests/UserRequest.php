@@ -42,6 +42,7 @@ class UserRequest extends FormRequest
                 'min:8',
                 'confirmed',
             ],
+            'avatar' => ['nullable', 'string', 'max:255'],
         ];
 
         return $rules;
