@@ -73,6 +73,17 @@ return [
         // ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Email Verification
+    |--------------------------------------------------------------------------
+    |
+    | Here you may define the number of minutes that a verification email
+    | link will be considered valid. This security feature keeps tokens
+    | short-lived so they have less time to be used.
+    |
+    */
+
     'verification' => [
         'expire' => env('AUTH_VERIFICATION_EXPIRE', 60),
     ],

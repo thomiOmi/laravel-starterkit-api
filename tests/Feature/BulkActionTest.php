@@ -34,7 +34,26 @@ test('admin can bulk delete users', function () {
     }
 });
 
-test('admin can bulk update roles', function () {
+test('admin can bulk delete roles', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('super-admin');
+
+    $roles = [];
+    $roles[] = Role::create(['name' => 'role1']);
+    $roles[] = Role::create(['name' => 'role2']);
+    $ids = collect($roles)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+
+    $response = $this->actingAs($admin)
+        ->postJson('/api/v1/roles/bulk', [
+            'ids' => $ids,
+            'action' => 'delete',
+        ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.count', 2);
+});
+
+test('bulk update action is rejected for security', function () {
     $admin = User::factory()->create();
     $admin->assignRole('super-admin');
 
@@ -50,9 +69,6 @@ test('admin can bulk update roles', function () {
             'data' => ['description' => 'Bulk updated description'],
         ]);
 
-    $response->assertStatus(200)
-        ->assertJsonPath('data.count', 2);
-
-    $this->assertDatabaseHas('roles', ['name' => 'role1', 'description' => 'Bulk updated description']);
-    $this->assertDatabaseHas('roles', ['name' => 'role2', 'description' => 'Bulk updated description']);
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['action']);
 });

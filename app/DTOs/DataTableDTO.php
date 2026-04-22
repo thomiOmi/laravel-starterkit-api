@@ -40,11 +40,13 @@ readonly class DataTableDTO
     public static function fromRequest(Request $request): self
     {
         return new self(
-            page: (int) $request->query('page', 1),
-            per_page: (int) $request->query('per_page', 10),
+            page: (int) $request->query('page', '1'),
+            per_page: (int) $request->query('per_page', '10'),
             search: $request->query('search'),
             sort_by: $request->query('sort_by'),
-            sort_direction: $request->query('sort_direction', 'asc'),
+            sort_direction: in_array(strtolower((string) $request->query('sort_direction', 'asc')), ['asc', 'desc'], true)
+                ? strtolower((string) $request->query('sort_direction', 'asc'))
+                : 'asc',
             filters: (array) $request->query('filters', []),
             ids: (array) $request->input('ids', [])
         );

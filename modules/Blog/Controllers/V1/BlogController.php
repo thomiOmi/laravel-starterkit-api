@@ -14,13 +14,13 @@ use Modules\Blog\Resources\BlogResource;
 class BlogController extends Controller
 {
     /**
-     * Display a listing of the blogs.
+     * Display a paginated listing of the blogs.
      */
     public function index(): JsonResponse
     {
         $blogs = Blog::with('user')->latest()->paginate();
 
-        return $this->successResponse(BlogResource::collection($blogs));
+        return $this->paginateResponse($blogs, BlogResource::class, 'Blogs retrieved successfully');
     }
 
     /**
@@ -29,9 +29,14 @@ class BlogController extends Controller
     public function store(BlogRequest $request): JsonResponse
     {
         $dto = BlogDTO::fromRequest($request);
-        $blog = Blog::create((array) $dto);
 
-        return $this->successResponse(new BlogResource($blog), 'Blog created successfully', 201);
+        $blog = Blog::create([
+            'title' => $dto->title,
+            'content' => $dto->content,
+            'user_id' => $dto->user_id,
+        ]);
+
+        return $this->successResponse(new BlogResource($blog->load('user')), 'Blog created successfully', 201);
     }
 
     /**
@@ -39,6 +44,6 @@ class BlogController extends Controller
      */
     public function show(Blog $blog): JsonResponse
     {
-        return $this->successResponse(new BlogResource($blog->load('user')));
+        return $this->successResponse(new BlogResource($blog->load('user')), 'Blog retrieved successfully');
     }
 }

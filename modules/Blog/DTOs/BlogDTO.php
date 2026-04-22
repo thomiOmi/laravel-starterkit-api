@@ -6,7 +6,7 @@ namespace Modules\Blog\DTOs;
 
 use Illuminate\Http\Request;
 
-class BlogDTO
+readonly class BlogDTO
 {
     public function __construct(
         public string $title,
@@ -19,7 +19,7 @@ class BlogDTO
         return new self(
             title: $request->validated('title'),
             content: $request->validated('content'),
-            user_id: $request->user()?->id,
+            user_id: $request->user()?->getKey(),
         );
     }
 }

@@ -6,7 +6,7 @@ namespace Modules\Auth\DTOs;
 
 use Illuminate\Http\Request;
 
-class VerifyEmailDTO
+readonly class VerifyEmailDTO
 {
     /**
      * Create a new DTO instance.

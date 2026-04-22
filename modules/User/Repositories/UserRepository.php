@@ -49,4 +49,12 @@ class UserRepository extends BaseRepository
     {
         return ['name', 'email'];
     }
+
+    /**
+     * Get the columns that can be sorted for users.
+     */
+    protected function getSortableColumns(): array
+    {
+        return ['name', 'email', 'created_at'];
+    }
 }

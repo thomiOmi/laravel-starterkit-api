@@ -70,7 +70,7 @@ abstract class BaseRepository
             $query = $this->applyFilters($query, $dto->filters);
         }
 
-        if ($dto->sort_by) {
+        if ($dto->sort_by && in_array($dto->sort_by, $this->getSortableColumns(), true)) {
             $query->orderBy($dto->sort_by, $dto->sort_direction);
         }
 
@@ -114,6 +114,14 @@ abstract class BaseRepository
      * Get the columns that can be filtered.
      */
     protected function getFilterableColumns(): array
+    {
+        return [];
+    }
+
+    /**
+     * Get the columns that can be sorted.
+     */
+    protected function getSortableColumns(): array
     {
         return [];
     }

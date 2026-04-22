@@ -15,7 +15,7 @@ class BlogController extends Controller
      */
     public function index(): JsonResponse
     {
-        $blogs = Blog::latest()->get(['id', 'title']);
+        $blogs = Blog::latest()->limit(50)->get(['id', 'title']);
 
         return $this->successResponse([
             'items' => $blogs,

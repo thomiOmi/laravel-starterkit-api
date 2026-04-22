@@ -30,4 +30,12 @@ class RoleRepository extends BaseRepository
     {
         return $query->where('name', 'like', "%{$search}%");
     }
+
+    /**
+     * Get the columns that can be sorted for roles.
+     */
+    protected function getSortableColumns(): array
+    {
+        return ['name', 'created_at'];
+    }
 }

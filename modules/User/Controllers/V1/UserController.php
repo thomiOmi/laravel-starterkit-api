@@ -6,6 +6,7 @@ namespace Modules\User\Controllers\V1;
 
 use App\DTOs\DataTableDTO;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BulkActionRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\User\Actions\CreateUserAction;
@@ -110,26 +111,20 @@ class UserController extends Controller
     /**
      * Perform bulk action on users.
      *
-     * @param  Request  $request  The request.
+     * @param  BulkActionRequest  $request  The validated bulk action request.
      */
-    public function bulkAction(Request $request): JsonResponse
+    public function bulkAction(BulkActionRequest $request): JsonResponse
     {
-        $request->validate([
-            'ids' => ['required', 'array'],
-            'ids.*' => ['required', 'string', 'exists:users,id'],
-            'action' => ['required', 'string', 'in:delete,update,restore,forceDelete'],
-            'data' => ['nullable', 'array'],
-        ]);
+        $validated = $request->validated();
 
         $count = $this->userRepository->bulk(
-            $request->input('ids'),
-            $request->input('action'),
-            $request->input('data', [])
+            $validated['ids'],
+            $validated['action'],
         );
 
         return $this->successResponse(
             ['count' => $count],
-            "Users {$request->input('action')} successfully"
+            "Users {$validated['action']} successfully"
         );
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\User\Actions;
 
-use Illuminate\Support\Facades\Hash;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
@@ -34,7 +33,7 @@ class UpdateUserAction
         ];
 
         if ($dto->password) {
-            $data['password'] = Hash::make($dto->password);
+            $data['password'] = $dto->password;
         }
 
         return $this->userRepository->update($id, $data);
