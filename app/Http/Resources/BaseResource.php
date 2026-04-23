@@ -14,25 +14,28 @@ use Illuminate\Support\Carbon;
 class BaseResource extends JsonResource
 {
     /** @var string|null */
-    public static $wrap = 'data';
+    // public static $wrap = 'data';
 
     /**
      * Get any additional data that should be returned with the resource array.
      *
      * @return array<string, mixed>
      */
-    public function with(Request $request): array
-    {
-        return [
-            'status' => 'Success',
-            'meta' => [
-                'api_version' => config('app.api_version', '1.0.0'),
-            ],
-        ];
-    }
+    // public function with(Request $request): array
+    // {
+    //     return [
+    //         'status' => 'Success',
+    //         'meta' => [
+    //             'api_version' => config('app.api_version', '1.0.0'),
+    //         ],
+    //     ];
+    // }
 
     /**
-     * Format a date consistently for API responses.
+     * Format a date time consistently for API responses.
+     *
+     * @param  \DateTimeInterface|string|null  $date  The date time to format.
+     * @return string|null The formatted date "YYYY-MM-DD HH:mm:ss" or null if the input is null.
      */
     protected function formatDate(\DateTimeInterface|string|null $date): ?string
     {

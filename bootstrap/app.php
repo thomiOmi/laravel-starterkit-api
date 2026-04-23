@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -21,10 +20,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->api(append: [
-            SecurityHeaders::class,
-        ]);
-
         $middleware->alias([
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
@@ -39,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ValidationException $e) {
             return response()->json([
-                'status' => 'Error',
+                'status' => 'error',
                 'message' => 'Validation Failed',
                 'errors' => $e->errors(),
             ], 422);
@@ -47,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ModelNotFoundException $e) {
             return response()->json([
-                'status' => 'Error',
+                'status' => 'error',
                 'message' => 'Resource not found',
                 'errors' => [],
             ], 404);
@@ -55,7 +50,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthenticationException $e) {
             return response()->json([
-                'status' => 'Error',
+                'status' => 'error',
                 'message' => 'Unauthenticated',
                 'errors' => [],
             ], 401);
@@ -63,7 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthorizationException $e) {
             return response()->json([
-                'status' => 'Error',
+                'status' => 'error',
                 'message' => 'Unauthorized',
                 'errors' => [],
             ], 403);
@@ -71,7 +66,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (NotFoundHttpException $e) {
             return response()->json([
-                'status' => 'Error',
+                'status' => 'error',
                 'message' => 'Route not found',
                 'errors' => [],
             ], 404);

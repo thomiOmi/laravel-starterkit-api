@@ -24,12 +24,12 @@ return [
         /*
          * API version.
          */
-        'version' => env('API_VERSION', '0.0.1'),
+        'version' => '1.0.0',
 
         /*
          * Description rendered on the home page of the API documentation (`/docs/api`).
          */
-        'description' => '',
+        'description' => 'Laravel Starterkit API - A modular, secure, and standardized RESTful API build with Laravel 13, Sanctum, and Spatie Permissions.',
     ],
 
     /*
@@ -39,7 +39,7 @@ return [
         /*
          * Define the title of the documentation's website. App name is used when this config is `null`.
          */
-        'title' => null,
+        'title' => 'Starterkit API Docs',
 
         /*
          * Define the theme of the documentation. Available options are `light`, `dark`, and `system`.

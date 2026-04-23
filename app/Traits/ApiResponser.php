@@ -22,23 +22,10 @@ trait ApiResponser
     protected function successResponse(mixed $data, ?string $message = null, int $code = 200): JsonResponse
     {
         return response()->json([
-            'status' => 'Success',
+            'status' => 'success',
             'message' => $message,
             'data' => $data,
-            'meta' => $this->apiMeta(),
         ], $code);
-    }
-
-    /**
-     * Get the standardized API meta data.
-     *
-     * @return array<string, mixed>
-     */
-    protected function apiMeta(): array
-    {
-        return [
-            'api_version' => config('app.api_version', '1.0.0'),
-        ];
     }
 
     /**
@@ -51,7 +38,7 @@ trait ApiResponser
     protected function errorResponse(string $message, int $code = 400, array $errors = []): JsonResponse
     {
         return response()->json([
-            'status' => 'Error',
+            'status' => 'error',
             'message' => $message,
             'errors' => $errors,
         ], $code);
@@ -70,7 +57,7 @@ trait ApiResponser
         $resourceData = $resourceClass::collection($paginator->getCollection());
 
         return response()->json([
-            'status' => 'Success',
+            'status' => 'success',
             'message' => $message,
             'data' => $resourceData,
             'pagination' => [
@@ -81,7 +68,6 @@ trait ApiResponser
                 'from' => $paginator->firstItem(),
                 'to' => $paginator->lastItem(),
             ],
-            'meta' => $this->apiMeta(),
         ]);
     }
 }

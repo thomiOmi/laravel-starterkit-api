@@ -44,20 +44,16 @@ class RouteServiceProvider extends ServiceProvider
         }
 
         $modules = File::directories($modulePath);
-        $versions = config('apiroute.versions', ['v1']);
 
         foreach ($modules as $module) {
             $moduleName = basename($module);
+            $routeFile = $module.'/Routes/api.php';
 
-            foreach ($versions as $version) {
-                $routeFile = $module."/Routes/{$version}.php";
-
-                if (File::exists($routeFile)) {
-                    Route::prefix("api/{$version}")
-                        ->middleware('api')
-                        ->name("api.{$version}.".strtolower($moduleName).'.')
-                        ->group($routeFile);
-                }
+            if (File::exists($routeFile)) {
+                Route::prefix('api')
+                    ->middleware('api')
+                    ->name('api.'.strtolower($moduleName).'.')
+                    ->group($routeFile);
             }
         }
     }

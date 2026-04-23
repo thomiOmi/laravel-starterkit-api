@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Modules\User\Controllers\V1\UserController;
+use Modules\User\Controllers\UserController;
 
 Route::prefix('users')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/', [UserController::class, 'index'])->middleware('can:user.view')->name('index');

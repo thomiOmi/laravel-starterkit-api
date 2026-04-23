@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Role\Controllers\V1;
+namespace Modules\Role\Controllers;
 
 use App\DTOs\DataTableDTO;
 use App\Http\Controllers\Controller;
@@ -16,6 +16,9 @@ use Modules\Role\Repositories\RoleRepository;
 use Modules\Role\Requests\RoleRequest;
 use Modules\Role\Resources\RoleResource;
 
+/**
+ * @tags Role
+ */
 class RoleController extends Controller
 {
     /**

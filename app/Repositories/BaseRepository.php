@@ -105,7 +105,15 @@ abstract class BaseRepository
 
         foreach ($filters as $column => $value) {
             if (in_array($column, $allowedColumns, true) && $value !== null && $value !== '') {
-                $query->where($column, 'like', "%{$value}%");
+                // Support exact match with '=' prefix
+                if (is_string($value) && str_starts_with($value, '=')) {
+                    $exactValue = ltrim($value, '=');
+                    $query->where($column, $exactValue);
+                } elseif (is_bool($value) || is_numeric($value)) {
+                    $query->where($column, $value);
+                } else {
+                    $query->where($column, 'like', "%{$value}%");
+                }
             }
         }
 

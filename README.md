@@ -21,8 +21,6 @@ A robust and opinionated Laravel starter kit for building scalable APIs using Mo
 - **Code Quality**: Pre-configured with **Laravel Pint** for consistent coding style.
 - **Auto API Documentation**: Integrated with **Scramble** for zero-annotation OpenAPI documentation.
 - **Release Management**: Integrated with **ShipMark** for automated versioning and changelogs.
-- **Manual API Versioning**: Lightweight, folder-based API versioning support.
-
 ---
 
 ## Requirements
@@ -48,15 +46,6 @@ composer run release
 ```
 
 This will guide you through version bumping, changelog generation, and tagging.
-
-## API Versioning
-
-API versioning is managed manually via `config/apiroute.php`. Routes are located in `modules/*/Routes/{version}.php`.
-
-### Adding a New Version
-1. Create a new route file (e.g., `modules/Blog/Routes/v2.php`).
-2. Define your controllers in a corresponding namespace (e.g., `Modules\Blog\Controllers\V2`).
-3. Register the new version in `config/apiroute.php`.
 
 ## Installation
 
@@ -217,7 +206,7 @@ For modular route-specific middleware, it is best practice to define them in you
     ]);
     ```
 
-2.  **Apply to Module Routes**: In `modules/*/Routes/v1.php`.
+2.  **Apply to Module Routes**: In `modules/*/Routes/api.php`.
     ```php
     Route::middleware(['auth:sanctum', 'my-middleware'])->group(function () {
         Route::get('/feature', [MyController::class, 'index']);

@@ -6,6 +6,11 @@ namespace Modules\Auth\DTOs;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Login DTO
+ *
+ * Data transfer object for login request
+ */
 readonly class LoginDTO
 {
     public function __construct(

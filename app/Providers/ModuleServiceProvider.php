@@ -17,18 +17,43 @@ class ModuleServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->registerModules();
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        //
+    }
+
+    /**
+     * Register modules and their providers.
+     */
+    protected function registerModules(): void
+    {
         $modulePath = base_path('modules');
 
-        if (File::exists($modulePath)) {
-            $modules = File::directories($modulePath);
+        if (! File::exists($modulePath)) {
+            return;
+        }
 
-            foreach ($modules as $module) {
-                $moduleName = basename($module);
-                $provider = "Modules\\{$moduleName}\\Providers\\{$moduleName}ServiceProvider";
+        $modules = File::directories($modulePath);
 
-                if (class_exists($provider)) {
-                    $this->app->register($provider);
-                }
+        foreach ($modules as $module) {
+            $moduleName = basename($module);
+
+            // Register Service Provider
+            $provider = "Modules\\{$moduleName}\\Providers\\{$moduleName}ServiceProvider";
+            if (class_exists($provider)) {
+                $this->app->register($provider);
+            }
+
+            // Load Migrations
+            $migrationPath = "{$module}/Database/Migrations";
+            if (File::exists($migrationPath)) {
+                $this->loadMigrationsFrom($migrationPath);
             }
         }
     }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Auth\Controllers\V1;
+namespace Modules\Auth\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -24,45 +24,74 @@ use Modules\Auth\Requests\ResetPasswordRequest;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Resources\UserResource;
 
+/**
+ * @tags Auth
+ */
 class AuthController extends Controller
 {
     /**
-     * Handle a registration request for the application.
+     * Login
      *
-     * @param  RegisterRequest  $request  The user request.
-     * @param  RegisterAction  $action  The register action.
-     */
-    public function register(RegisterRequest $request, RegisterAction $action): JsonResponse
-    {
-        $dto = UserDTO::fromRequest($request);
-        $result = $action->execute($dto);
-
-        return $this->successResponse([
-            'user' => new UserResource($result['user']),
-            'access_token' => $result['access_token'],
-            'token_type' => $result['token_type'],
-        ], 'User registered successfully. Please verify your email.');
-    }
-
-    /**
      * Handle an authentication attempt.
      *
      * @param  LoginRequest  $request  The login request.
      * @param  LoginAction  $action  The login action.
+     *
+     * @unauthenticated
      */
     public function login(LoginRequest $request, LoginAction $action): JsonResponse
     {
         $dto = LoginDTO::fromRequest($request);
         $result = $action->execute($dto);
 
-        return $this->successResponse([
-            'user' => new UserResource($result['user']),
-            'access_token' => $result['access_token'],
-            'token_type' => $result['token_type'],
-        ], 'Login successful');
+        return $this->successResponse(
+            [
+                'user' => new UserResource($result['user']->load(['roles.permissions', 'permissions'])),
+                /**
+                 * @example "1|8d8t2qmIbLUkwylh5aktEXGXVPMwYucUAOYPtihpf9bd84c8"
+                 */
+                'access_token' => $result['access_token'],
+                'token_type' => $result['token_type'],
+            ],
+            'Login successful'
+        );
     }
 
     /**
+     * Register
+     *
+     * Handle a registration request for the application.
+     *
+     * @param  RegisterRequest  $request  The user request.
+     * @param  RegisterAction  $action  The register action.
+     *
+     * @response 422 {
+     *  "status": "error",
+     *  "message": "Validation Failed",
+     *  "errors": {
+     *      "email": ["The email has already been taken."],
+     *      "password": ["The password field is required."]
+     *  }
+     * }
+     */
+    public function register(RegisterRequest $request, RegisterAction $action): JsonResponse
+    {
+        $dto = UserDTO::fromRequest($request);
+        $result = $action->execute($dto);
+
+        return $this->successResponse(
+            [
+                'user' => new UserResource($result['user']->load(['roles.permissions', 'permissions'])),
+                'access_token' => $result['access_token'],
+                'token_type' => $result['token_type'],
+            ],
+            'User registered successfully. Please verify your email.'
+        );
+    }
+
+    /**
+     * Logout
+     *
      * Log the user out of the application.
      *
      * @param  Request  $request  The request.
@@ -76,16 +105,23 @@ class AuthController extends Controller
     }
 
     /**
+     * Me
+     *
      * Get the authenticated user profile.
      *
      * @param  Request  $request  The request.
      */
     public function me(Request $request): JsonResponse
     {
-        return $this->successResponse(new UserResource($request->user()), 'User profile retrieved successfully');
+        return $this->successResponse(
+            new UserResource($request->user()->load(['roles.permissions', 'permissions'])),
+            'User profile retrieved successfully'
+        );
     }
 
     /**
+     * Forgot Password
+     *
      * Send a reset link to the given user.
      *
      * @param  ForgotPasswordRequest  $request  The user request.
@@ -100,6 +136,8 @@ class AuthController extends Controller
     }
 
     /**
+     * Reset Password
+     *
      * Reset the given user's password.
      *
      * @param  ResetPasswordRequest  $request  The user request.
@@ -114,6 +152,8 @@ class AuthController extends Controller
     }
 
     /**
+     * Verify Email
+     *
      * Mark the user's email address as verified.
      *
      * @param  Request  $request  The request.
@@ -128,6 +168,8 @@ class AuthController extends Controller
     }
 
     /**
+     * Resend Email Verification
+     *
      * Resend the email verification notification.
      *
      * @param  Request  $request  The request.

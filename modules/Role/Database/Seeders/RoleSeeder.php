@@ -6,8 +6,8 @@ namespace Modules\Role\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\User\Models\User;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Modules\Role\Models\Permission;
+use Modules\Role\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder
@@ -31,6 +31,17 @@ class RoleSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
         Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
 
+        // Create permissions for Role module
+        Permission::firstOrCreate(['name' => 'role.view', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'role.create', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'role.edit', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'role.delete', 'guard_name' => 'web']);
+
+        Permission::firstOrCreate(['name' => 'role.view', 'guard_name' => 'sanctum']);
+        Permission::firstOrCreate(['name' => 'role.create', 'guard_name' => 'sanctum']);
+        Permission::firstOrCreate(['name' => 'role.edit', 'guard_name' => 'sanctum']);
+        Permission::firstOrCreate(['name' => 'role.delete', 'guard_name' => 'sanctum']);
+
         // Create roles and assign permissions
         $superAdmin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
         $superAdminSanctum = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'sanctum']);
@@ -42,6 +53,10 @@ class RoleSeeder extends Seeder
             'user.create',
             'user.edit',
             'user.delete',
+            'role.view',
+            'role.create',
+            'role.edit',
+            'role.delete',
         ]);
 
         $adminSanctum = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'sanctum']);
@@ -50,6 +65,10 @@ class RoleSeeder extends Seeder
             'user.create',
             'user.edit',
             'user.delete',
+            'role.view',
+            'role.create',
+            'role.edit',
+            'role.delete',
         ]);
 
         $user = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);

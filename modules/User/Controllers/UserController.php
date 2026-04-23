@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\User\Controllers\V1;
+namespace Modules\User\Controllers;
 
 use App\DTOs\DataTableDTO;
 use App\Http\Controllers\Controller;
@@ -17,6 +17,9 @@ use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\UserRequest;
 use Modules\User\Resources\UserResource;
 
+/**
+ * @tags User
+ */
 class UserController extends Controller
 {
     /**
@@ -34,7 +37,7 @@ class UserController extends Controller
     public function index(Request $request): JsonResponse
     {
         $dto = DataTableDTO::fromRequest($request);
-        $users = $this->userRepository->getDataTable($dto, relations: ['roles']);
+        $users = $this->userRepository->getDataTable($dto, relations: ['roles.permissions', 'permissions']);
 
         return $this->paginateResponse($users, UserResource::class, 'Users retrieved successfully');
     }

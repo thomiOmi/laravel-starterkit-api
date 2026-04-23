@@ -9,6 +9,8 @@ use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role as SpatieRole;
 
+use App\Traits\Models\HasDefaultBehavior;
+
 /**
  * @property string $id
  * @property string $name
@@ -20,5 +22,9 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole
 {
-    //
+    use HasDefaultBehavior;
+
+    protected $keyType = 'string';
+
+    public $incrementing = false;
 }
