@@ -6,13 +6,14 @@ namespace Modules\AuditLog\Resources;
 
 use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
+use Modules\AuditLog\Models\AuditLog;
 
 /**
  * Class AuditLogResource
  *
  * Resource for AuditLog model.
  *
- * @mixin \Modules\AuditLog\Models\AuditLog
+ * @mixin AuditLog
  */
 class AuditLogResource extends BaseResource
 {

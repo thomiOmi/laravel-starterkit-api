@@ -6,6 +6,7 @@ namespace Modules\AuditLog\Listeners;
 
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
 
 /**
@@ -20,7 +21,7 @@ class AuditAuthActivity
      */
     public function handleLogin(Login $event): void
     {
-        /** @var \Illuminate\Database\Eloquent\Model $user */
+        /** @var Model $user */
         $user = $event->user;
 
         activity('auth')
@@ -35,7 +36,7 @@ class AuditAuthActivity
      */
     public function handleLogout(Logout $event): void
     {
-        /** @var \Illuminate\Database\Eloquent\Model|null $user */
+        /** @var Model|null $user */
         $user = $event->user;
 
         if ($user) {
