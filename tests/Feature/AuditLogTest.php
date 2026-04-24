@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\User\Models\User;
 use Spatie\Activitylog\Models\Activity;
 
