@@ -17,7 +17,7 @@ test('authenticated user with view permission can list users', function () {
     $user->assignRole('super-admin');
 
     $response = $this->actingAs($user)
-        ->getJson('/api/users');
+        ->getJson('/api/v1/users');
 
     $response->assertStatus(200)
         ->assertJsonPath('status', 'success')
@@ -39,7 +39,7 @@ test('admin can create new user', function () {
     ];
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/users', $payload);
+        ->postJson('/api/v1/users', $payload);
 
     $response->assertStatus(201)
         ->assertJsonPath('status', 'success');
@@ -59,7 +59,7 @@ test('admin can update user', function () {
     ];
 
     $response = $this->actingAs($admin)
-        ->putJson("/api/users/{$user->id}", $payload);
+        ->putJson("/api/v1/users/{$user->id}", $payload);
 
     $response->assertStatus(200);
     $this->assertDatabaseHas('users', ['id' => $user->id, 'name' => 'Updated Name']);
@@ -72,7 +72,7 @@ test('admin can delete user', function () {
     $user = User::factory()->create();
 
     $response = $this->actingAs($admin)
-        ->deleteJson("/api/users/{$user->id}");
+        ->deleteJson("/api/v1/users/{$user->id}");
 
     $response->assertStatus(200);
     $this->assertSoftDeleted('users', ['id' => $user->id]);
@@ -83,7 +83,7 @@ test('unauthorized user cannot list users', function () {
     // No role assigned
 
     $response = $this->actingAs($user)
-        ->getJson('/api/users');
+        ->getJson('/api/v1/users');
 
     $response->assertStatus(403);
 });

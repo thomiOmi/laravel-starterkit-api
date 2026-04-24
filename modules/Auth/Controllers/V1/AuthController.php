@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Auth\Controllers;
+namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -54,7 +54,7 @@ class AuthController extends Controller
                 'access_token' => $result['access_token'],
                 'token_type' => $result['token_type'],
             ],
-            'Login successful'
+            __('messages.login_successful')
         );
     }
 
@@ -82,7 +82,7 @@ class AuthController extends Controller
                 'access_token' => $result['access_token'],
                 'token_type' => $result['token_type'],
             ],
-            'User registered successfully. Please verify your email.'
+            __('messages.registered_successfully')
         );
     }
 
@@ -98,7 +98,7 @@ class AuthController extends Controller
         // Revoke the token that was used to authenticate the request
         $request->user()?->currentAccessToken()?->delete();
 
-        return $this->successResponse(null, 'Logout successful');
+        return $this->successResponse(null, __('messages.logout_successful'));
     }
 
     /**
@@ -112,7 +112,7 @@ class AuthController extends Controller
     {
         return $this->successResponse(
             new UserResource($request->user()->load(['roles.permissions', 'permissions'])),
-            'User profile retrieved successfully'
+            __('messages.profile_retrieved')
         );
     }
 

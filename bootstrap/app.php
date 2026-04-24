@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SetLocaleMiddleware;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -26,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
 
+        $middleware->append(SetLocaleMiddleware::class);
+
         $middleware->statefulApi();
         // $middleware->throttleApi(); // We will define custom throttle in routes
     })
@@ -35,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ValidationException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation Failed',
+                'message' => __('messages.validation_failed'),
                 'errors' => $e->errors(),
             ], 422);
         });
@@ -43,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Resource not found',
+                'message' => __('messages.resource_not_found'),
                 'errors' => [],
             ], 404);
         });
@@ -51,7 +54,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthenticationException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Unauthenticated',
+                'message' => __('messages.unauthenticated'),
                 'errors' => [],
             ], 401);
         });
@@ -59,7 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthorizationException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Unauthorized',
+                'message' => __('messages.unauthorized'),
                 'errors' => [],
             ], 403);
         });
@@ -67,7 +70,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Route not found',
+                'message' => __('messages.route_not_found'),
                 'errors' => [],
             ], 404);
         });

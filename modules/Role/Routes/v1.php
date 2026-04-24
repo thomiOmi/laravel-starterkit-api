@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Modules\Role\Controllers\RoleController;
+use Modules\Role\Controllers\V1\RoleController;
 
 Route::prefix('roles')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/', [RoleController::class, 'index'])->middleware('can:role.view')->name('index');
