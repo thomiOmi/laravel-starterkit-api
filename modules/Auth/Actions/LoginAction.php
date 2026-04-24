@@ -25,6 +25,7 @@ class LoginAction
      */
     public function execute(LoginDTO $dto, ?LoginRequest $request = null): array
     {
+        /** @var User|null $user */
         $user = User::query()->where('email', $dto->email)->first();
 
         if (! $user instanceof User || ! Hash::check($dto->password, $user->password)) {

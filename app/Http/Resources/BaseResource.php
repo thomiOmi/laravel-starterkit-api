@@ -13,7 +13,6 @@ use Illuminate\Support\Carbon;
  */
 class BaseResource extends JsonResource
 {
-    /** @var string|null */
     // public static $wrap = 'data';
 
     /**
