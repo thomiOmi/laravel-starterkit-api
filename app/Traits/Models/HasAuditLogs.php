@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Traits\Models;
 
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * Trait HasAuditLogs
