@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
  * Class AuditLogResource
  *
  * Resource for AuditLog model.
+ *
+ * @mixin \Modules\AuditLog\Models\AuditLog
  */
 class AuditLogResource extends BaseResource
 {

@@ -20,9 +20,12 @@ class AuditAuthActivity
      */
     public function handleLogin(Login $event): void
     {
+        /** @var \Illuminate\Database\Eloquent\Model $user */
+        $user = $event->user;
+
         activity('auth')
-            ->causedBy($event->user)
-            ->performedOn($event->user)
+            ->causedBy($user)
+            ->performedOn($user)
             ->event('login')
             ->log('User logged in');
     }
@@ -32,10 +35,13 @@ class AuditAuthActivity
      */
     public function handleLogout(Logout $event): void
     {
-        if ($event->user) {
+        /** @var \Illuminate\Database\Eloquent\Model|null $user */
+        $user = $event->user;
+
+        if ($user) {
             activity('auth')
-                ->causedBy($event->user)
-                ->performedOn($event->user)
+                ->causedBy($user)
+                ->performedOn($user)
                 ->event('logout')
                 ->log('User logged out');
         }
