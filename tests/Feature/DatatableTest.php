@@ -35,8 +35,8 @@ class DatatableTest extends TestCase
             ->getJson("{$endpoint}?per_page=10&page=2");
 
         $response->assertStatus(200)
-            ->assertJsonPath('pagination.current_page', 2)
-            ->assertJsonPath('pagination.per_page', 10)
+            ->assertJsonPath('meta.pagination.current_page', 2)
+            ->assertJsonPath('meta.pagination.per_page', 10)
             ->assertJsonCount(10, 'data');
 
         // 2. Test Sorting
@@ -63,7 +63,7 @@ class DatatableTest extends TestCase
 
     public function test_user_datatable(): void
     {
-        $this->runDatatableTests('/api/v1/users', User::class);
+        $this->runDatatableTests('/api/users', User::class);
     }
 
     public function test_role_datatable(): void
@@ -71,13 +71,13 @@ class DatatableTest extends TestCase
         // Spatie Role doesn't have a factory by default in this setup,
         // but we can test the endpoint exists and returns the structure
         $response = $this->actingAs($this->admin)
-            ->getJson('/api/v1/roles');
+            ->getJson('/api/roles');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'status',
                 'data',
-                'pagination',
+                'meta' => ['pagination'],
                 'meta',
             ]);
     }

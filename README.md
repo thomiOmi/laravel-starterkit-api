@@ -11,6 +11,7 @@ A robust and opinionated Laravel starter kit for building scalable APIs using Mo
     - **Actions**: Encapsulated business logic.
 - **Authentication & Authorization**:
     - **Laravel Sanctum**: Secure API token authentication.
+    - **Device Management**: Supports both Multi-Device (default) and Single-Device login strategies. Configurable in `LoginAction.php`.
     - **Spatie Laravel Permission**: Robust Role-Based Access Control (RBAC).
 - **Modern PHP & Laravel**:
     - **PHP 8.3/8.4 Support**: Leveraging the latest language features.
@@ -91,97 +92,63 @@ composer run setup
 
 ## Architecture & Data Flow
 
-This starter kit follows a strict data flow to ensure maintainability and testability:
+This starter kit follows a strict data flow to ensure scalability and ease of testing:
 
-`Controller` -> `FormRequest` -> `DTO` -> `Action` -> `Repository` -> `Model`
+`Controller` -> `Filter` -> `Repository` -> `Model`
+`Controller` -> `FormRequest` -> `DTO` -> `Service` -> `Action` -> `Repository` -> `Model`
 
-1.  **Controller**: Handles HTTP requests and returns standardized API responses using the `ApiResponser` trait.
-2.  **FormRequest**: Handles validation and authorization for the request.
-3.  **DTO**: Transfers validated data from the controller to the Action.
-4.  **Action**: Contains the business logic for a specific task.
-5.  **Repository**: Manages data persistence and retrieval, extending a `BaseRepository`.
-6.  **Model**: Defines the database schema and relationships, utilizing the `HasDefaultBehavior` trait.
-
----
-
-## Working with Modules
-
-All business logic lives inside the `modules/` directory. Each module should have its own structure (Actions, Controllers, DTOs, Models, Providers, etc.).
-
-### Creating a New Module
-
-1.  Create a new directory in `modules/` (e.g., `modules/Blog`).
-2.  Create a Service Provider (e.g., `modules/Blog/Providers/BlogServiceProvider.php`).
-3.  The `App\Providers\ModuleServiceProvider` will automatically detect and register your module if the naming convention is followed.
+1.  **Controller**: Handles HTTP requests, validates input, and returns standardized API responses.
+2.  **Filter**: Handles data filtering logic (searching, sorting) declaratively in `modules/*/Filters`.
+3.  **DTO (Data Transfer Object)**: Typed data containers for moving data between layers safely.
+4.  **Service**: Orchestrator for complex business logic involving multiple actions or database transactions.
+5.  **Action**: Single Responsibility units of work that can be reused across the application.
+6.  **Repository**: Data access abstraction, supporting query state and filtering.
+7.  **Model**: Database schema definitions using **ULID** and **Soft Deletes** by default.
 
 ---
 
-## Extending Modules (Adding New Fields)
+## Modularity Standards
 
-To add new fields to an existing module, follow these steps:
+### 1. Module Directory Structure
+Every module inside the `modules/` directory follows this standard structure:
+- `Actions/`: Atomic business logic.
+- `Controllers/`: API entry points.
+- `DTOs/`: Data containers.
+- `Events/ & Listeners/`: Cross-module communication (decoupled).
+- `Filters/`: Query filtering logic (search, sort).
+- `Models/`: Eloquent models.
+- `Providers/`: Local module service registration.
+- `Repositories/`: Database abstractions.
+- `Resources/`: API output transformations.
+- `Routes/`: API route definitions.
 
-### 1. Create a New Migration
+### 2. Module Generator (Highly Recommended)
+Use the interactive custom artisan command to generate new modules:
 
 ```bash
-php artisan make:migration add_avatar_to_users_table --table=users
+php artisan make:module {ModuleName}
 ```
 
-```php
-public function up(): void
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('avatar')->nullable()->after('email');
-    });
-}
-```
+This command will prompt you for the components you want to create and automatically wire up the integration between Controller, Filter, and Repository.
 
-### 2. Update the Model
+---
 
-Add the new field to the `#[Fillable]` attribute.
+## Cross-Module Communication (Decoupling)
 
-```php
-#[Fillable(['name', 'email', 'password', 'avatar'])]
-class User extends Authenticatable { ... }
-```
+Avoid calling classes across modules directly whenever possible. Use **Events & Listeners**:
+- **Event**: Placed in the source module (e.g., `UserCreated` in the User module).
+- **Listener**: Placed in the reacting module (e.g., `AssignDefaultRole` in the Role module).
 
-### 3. Update the DTO
+Register these relationships in the `boot()` method of the reacting module's `ServiceProvider`.
 
-Add the property and update the `fromRequest` method.
+---
 
-```php
-public function __construct(
-    public string $name,
-    public string $email,
-    public ?string $password = null,
-    public ?string $avatar = null
-) {}
+## Action vs Service: When to Use?
 
-public static function fromRequest($request): self
-{
-    return new self(
-        name: $request->validated('name'),
-        email: $request->validated('email'),
-        password: $request->validated('password'),
-        avatar: $request->validated('avatar')
-    );
-}
-```
+- **Use ACTION** for single, atomic tasks (e.g., `UpdatePassword`). One class, one `execute()` method.
+- **Use SERVICE** for business processes involving multiple steps, database transactions (`DB::transaction`), or coordination between multiple actions/modules.
 
-### 4. Update the Form Request
-
-Add validation rules for the new field.
-
-```php
-'avatar' => ['nullable', 'string', 'max:255'],
-```
-
-### 5. Update the API Resource
-
-Include the new field in the response.
-
-```php
-'avatar' => $this->avatar,
-```
+---
 
 ---
 

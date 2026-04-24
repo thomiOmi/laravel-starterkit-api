@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Role\Providers;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Modules\Role\Listeners\AssignDefaultRole;
+use Modules\User\Events\UserCreated;
 
 class RoleServiceProvider extends ServiceProvider
 {
@@ -21,6 +24,9 @@ class RoleServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Routes are registered via App\Providers\RouteServiceProvider
+        Event::listen(
+            UserCreated::class,
+            AssignDefaultRole::class
+        );
     }
 }

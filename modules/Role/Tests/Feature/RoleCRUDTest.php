@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Role\Database\Seeders\RoleSeeder;
+use Modules\Role\Models\Role;
 use Modules\User\Models\User;
-use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
@@ -18,11 +18,11 @@ test('admin can list roles', function () {
     $admin->assignRole('super-admin');
 
     $response = $this->actingAs($admin)
-        ->getJson('/api/v1/roles');
+        ->getJson('/api/roles');
 
     $response->assertStatus(200)
-        ->assertJsonPath('status', 'Success')
-        ->assertJsonStructure(['data', 'pagination']);
+        ->assertJsonPath('status', 'success')
+        ->assertJsonStructure(['data', 'meta' => ['pagination']]);
 });
 
 test('admin can create role', function () {
@@ -35,7 +35,7 @@ test('admin can create role', function () {
     ];
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles', $payload);
+        ->postJson('/api/roles', $payload);
 
     $response->assertStatus(201);
     $this->assertDatabaseHas('roles', ['name' => 'manager']);
@@ -53,7 +53,7 @@ test('admin can update role', function () {
     ];
 
     $response = $this->actingAs($admin)
-        ->putJson("/api/v1/roles/{$role->id}", $payload);
+        ->putJson("/api/roles/{$role->id}", $payload);
 
     $response->assertStatus(200);
     $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => 'new-role-name']);
@@ -66,8 +66,8 @@ test('admin can delete role', function () {
     $role = Role::create(['name' => 'to-delete']);
 
     $response = $this->actingAs($admin)
-        ->deleteJson("/api/v1/roles/{$role->id}");
+        ->deleteJson("/api/roles/{$role->id}");
 
     $response->assertStatus(200);
-    $this->assertDatabaseMissing('roles', ['id' => $role->id]);
+    $this->assertSoftDeleted('roles', ['id' => $role->id]);
 });

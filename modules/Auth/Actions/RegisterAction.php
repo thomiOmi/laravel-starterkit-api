@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
+use Illuminate\Auth\Events\Registered;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
@@ -31,7 +32,7 @@ class RegisterAction
             'password' => $dto->password,
         ]);
 
-        $user->sendEmailVerificationNotification();
+        event(new Registered($user));
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

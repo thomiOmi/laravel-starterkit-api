@@ -19,7 +19,7 @@ test('user has avatar field', function () {
     $admin->assignRole('super-admin');
 
     $response = $this->actingAs($admin)
-        ->getJson("/api/v1/users/{$user->id}");
+        ->getJson("/api/users/{$user->id}");
 
     $response->assertStatus(200)
         ->assertJsonPath('data.avatar', 'my-avatar.png');
@@ -36,7 +36,7 @@ test('role has description field', function () {
     ];
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles', $payload);
+        ->postJson('/api/roles', $payload);
 
     $response->assertStatus(201)
         ->assertJsonPath('data.description', 'Manager of the system');

@@ -28,4 +28,15 @@ Activate these contextually:
 - Concise replies only. Focus on implementation over explanation.
 - No new base directories or dependency changes without approval.
 - No custom verification scripts if Pest tests can handle it.
+
+## 6. Modular Architecture Standards (CRITICAL)
+- **Modularity:** All domain code MUST reside in `modules/`. Never use `app/Http/Controllers` for domain logic.
+- **Generator:** ALWAYS prefer `php artisan make:module {Name}` for creating new modules. It ensures correct wiring of Controller, Filter, and Repository.
+- **Data Flow:**
+    - **Actions:** Use for single, atomic tasks (one `execute()` method).
+    - **Services:** Use for complex orchestration or multi-step logic requiring `DB::transaction`.
+    - **Filters:** Use `App\Filters\BaseFilter` pattern for all searching/sorting. Inject into Controller index methods.
+- **Database:** Use **ULIDs** for primary keys and **Soft Deletes** for all domain models via `App\Traits\Models\HasDefaultBehavior`.
+- **Communication:** Use **Events & Listeners** for cross-module interaction to maintain decoupling. Listeners should be registered in the reacting module's `ServiceProvider`.
+- **Routing:** No versioning in routes (`v1/v2`). Use flat modular routes in `modules/*/Routes/api.php`.
 </laravel-boost-guidelines>

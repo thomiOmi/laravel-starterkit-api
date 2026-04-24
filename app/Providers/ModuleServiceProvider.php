@@ -55,6 +55,18 @@ class ModuleServiceProvider extends ServiceProvider
             if (File::exists($migrationPath)) {
                 $this->loadMigrationsFrom($migrationPath);
             }
+
+            // Discovery Events/Listeners (Simple implementation)
+            $this->registerModularEvents($module);
         }
+    }
+
+    /**
+     * Register modular events and listeners.
+     */
+    protected function registerModularEvents(string $modulePath): void
+    {
+        // For now, we rely on manual registration in module's own ServiceProvider if needed,
+        // or we can implement a specific event discovery here.
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Role\Database\Seeders\RoleSeeder;
+use Modules\Role\Models\Role;
 use Modules\User\Models\User;
-use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
@@ -21,7 +21,7 @@ test('admin can bulk delete users', function () {
     $ids = $users->pluck('id')->map(fn ($id) => (string) $id)->toArray();
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/users/bulk', [
+        ->postJson('/api/users/bulk', [
             'ids' => $ids,
             'action' => 'delete',
         ]);
@@ -44,7 +44,7 @@ test('admin can bulk delete roles', function () {
     $ids = collect($roles)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles/bulk', [
+        ->postJson('/api/roles/bulk', [
             'ids' => $ids,
             'action' => 'delete',
         ]);
@@ -63,7 +63,7 @@ test('bulk update action is rejected for security', function () {
     $ids = collect($roles)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles/bulk', [
+        ->postJson('/api/roles/bulk', [
             'ids' => $ids,
             'action' => 'update',
             'data' => ['description' => 'Bulk updated description'],

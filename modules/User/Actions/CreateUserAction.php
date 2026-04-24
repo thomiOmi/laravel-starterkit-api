@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\User\Actions;
 
 use Modules\User\DTOs\UserDTO;
+use Modules\User\Events\UserCreated;
 use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
 
@@ -26,10 +27,14 @@ class CreateUserAction
      */
     public function execute(UserDTO $dto): User
     {
-        return $this->userRepository->create([
+        $user = $this->userRepository->create([
             'name' => $dto->name,
             'email' => $dto->email,
             'password' => $dto->password,
         ]);
+
+        UserCreated::dispatch($user);
+
+        return $user;
     }
 }

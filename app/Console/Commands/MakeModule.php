@@ -37,6 +37,7 @@ class MakeModule extends Command
 
         if (! $name) {
             $this->error('Module name is required!');
+
             return;
         }
 
@@ -46,6 +47,7 @@ class MakeModule extends Command
         if (File::exists($modulePath) && ! $this->option('force')) {
             if (! $this->confirm("Module {$name} already exists. Do you want to overwrite it?", false)) {
                 $this->info('Aborted.');
+
                 return;
             }
         }
@@ -56,6 +58,7 @@ class MakeModule extends Command
             'action' => $this->confirm('Create a sample Action?', true),
             'dto' => $this->confirm('Create a sample DTO?', true),
             'request' => $this->confirm('Create a sample Form Request?', true),
+            'filter' => $this->confirm('Create a sample Query Filter?', true),
             'migration' => $this->confirm('Create Migration?', true),
             'factory' => $this->confirm('Create Factory?', true),
             'seeder' => $this->confirm('Create Seeder?', true),
@@ -83,14 +86,35 @@ class MakeModule extends Command
             'Routes',
         ];
 
-        if ($options['repository']) $directories[] = 'Repositories';
-        if ($options['action']) $directories[] = 'Actions';
-        if ($options['dto']) $directories[] = 'DTOs';
-        if ($options['request']) $directories[] = 'Requests';
+        if ($options['repository']) {
+            $directories[] = 'Repositories';
+        }
+        if ($options['action']) {
+            $directories[] = 'Actions';
+        }
+        if ($options['dto']) {
+            $directories[] = 'DTOs';
+        }
+        if ($options['request']) {
+            $directories[] = 'Requests';
+        }
+        if ($options['filter']) {
+            $directories[] = 'Filters';
+        }
+
+        // Standard Modular Communication Directories
+        $directories[] = 'Events';
+        $directories[] = 'Listeners';
+        $directories[] = 'Services';
+
         if ($options['migration'] || $options['factory'] || $options['seeder']) {
             $directories[] = 'Database/Migrations';
-            if ($options['factory']) $directories[] = 'Database/Factories';
-            if ($options['seeder']) $directories[] = 'Database/Seeders';
+            if ($options['factory']) {
+                $directories[] = 'Database/Factories';
+            }
+            if ($options['seeder']) {
+                $directories[] = 'Database/Seeders';
+            }
         }
 
         foreach ($directories as $dir) {
@@ -104,33 +128,35 @@ class MakeModule extends Command
     protected function createFiles(string $name, string $path, array $options): void
     {
         // Essential Files
-        $this->createFile($path . "/Providers/{$name}ServiceProvider.php", $this->getServiceProviderTemplate($name));
-        $this->createFile($path . "/Routes/api.php", $this->getRouteTemplate($name));
-        $this->createFile($path . "/Models/{$name}.php", $this->getModelTemplate($name));
-        $this->createFile($path . "/Controllers/{$name}Controller.php", $this->getControllerTemplate($name, $options));
-        $this->createFile($path . "/Resources/{$name}Resource.php", $this->getResourceTemplate($name));
+        $this->createFile($path."/Providers/{$name}ServiceProvider.php", $this->getServiceProviderTemplate($name));
+        $this->createFile($path.'/Routes/api.php', $this->getRouteTemplate($name));
+        $this->createFile($path."/Models/{$name}.php", $this->getModelTemplate($name));
+        $this->createFile($path."/Controllers/{$name}Controller.php", $this->getControllerTemplate($name, $options));
+        $this->createFile($path."/Resources/{$name}Resource.php", $this->getResourceTemplate($name));
 
         // Optional Files
         if ($options['repository']) {
-            $this->createFile($path . "/Repositories/{$name}Repository.php", $this->getRepositoryTemplate($name));
+            $this->createFile($path."/Repositories/{$name}Repository.php", $this->getRepositoryTemplate($name));
         }
 
         if ($options['dto']) {
-            $this->createFile($path . "/DTOs/{$name}DTO.php", $this->getDTOTemplate($name));
+            $this->createFile($path."/DTOs/{$name}DTO.php", $this->getDTOTemplate($name));
         }
 
         if ($options['request']) {
-            $this->createFile($path . "/Requests/{$name}Request.php", $this->getRequestTemplate($name));
+            $this->createFile($path."/Requests/{$name}Request.php", $this->getRequestTemplate($name));
+        }
+
+        if ($options['filter']) {
+            $this->createFile($path."/Filters/{$name}Filter.php", $this->getFilterTemplate($name));
         }
 
         if ($options['migration']) {
-            $tableName = Str::snake(Str::plural($name));
-            $fileName = date('Y_m_d_His') . "_create_{$tableName}_table.php";
-            $this->createFile($path . "/Database/Migrations/{$fileName}", $this->getMigrationTemplate($name, $tableName));
+            $this->generateMigration($name, $path.'/Database/Migrations', $options);
         }
-        
+
         if ($options['seeder']) {
-            $this->createFile($path . "/Database/Seeders/{$name}Seeder.php", $this->getSeederTemplate($name));
+            $this->createFile($path."/Database/Seeders/{$name}Seeder.php", $this->getSeederTemplate($name));
         }
     }
 
@@ -149,6 +175,7 @@ class MakeModule extends Command
                 ['Model', 'Created'],
                 ['Repository', $options['repository'] ? 'Created' : 'Skipped'],
                 ['DTO', $options['dto'] ? 'Created' : 'Skipped'],
+                ['Filter', $options['filter'] ? 'Created' : 'Skipped'],
                 ['Migration', $options['migration'] ? 'Created' : 'Skipped'],
                 ['Seeder', $options['seeder'] ? 'Created' : 'Skipped'],
             ]
@@ -185,6 +212,7 @@ PHP;
     protected function getRouteTemplate(string $name): string
     {
         $slug = Str::kebab(Str::plural($name));
+
         return <<<PHP
 <?php
 
@@ -244,9 +272,19 @@ PHP;
 
     protected function getControllerTemplate(string $name, array $options): string
     {
-        $repoImport = $options['repository'] ? "use Modules\\{$name}\\Repositories\\{$name}Repository;" : "";
-        $repoParam = $options['repository'] ? "protected {$name}Repository \$repository" : "";
-        $repoBody = $options['repository'] ? "\$data = \$this->repository->paginate();" : "\$data = [];";
+        $repoImport = $options['repository'] ? "use Modules\\{$name}\\Repositories\\{$name}Repository;" : '';
+        $repoParam = $options['repository'] ? "protected {$name}Repository \$repository" : '';
+
+        $filterImport = $options['filter'] ? "use Modules\\{$name}\\Filters\\{$name}Filter;" : '';
+        $filterParam = $options['filter'] ? ", {$name}Filter \$filter" : '';
+
+        if ($options['repository']) {
+            $repoBody = $options['filter']
+                ? "\$data = \$this->repository->applyFilter(\$filter)->paginate((int) \$request->input('per_page', 15));"
+                : "\$data = \$this->repository->paginate((int) \$request->input('per_page', 15));";
+        } else {
+            $repoBody = '$data = [];';
+        }
 
         return <<<PHP
 <?php
@@ -259,6 +297,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 {$repoImport}
+{$filterImport}
 use Modules\\{$name}\\Resources\\{$name}Resource;
 
 /**
@@ -270,7 +309,7 @@ class {$name}Controller extends Controller
     {
     }
 
-    public function index(Request \$request): JsonResponse
+    public function index(Request \$request{$filterParam}): JsonResponse
     {
         {$repoBody}
 
@@ -317,7 +356,7 @@ namespace Modules\\{$name}\\DTOs;
 
 use Illuminate\Http\Request;
 
-class {$name}DTO
+readonly class {$name}DTO
 {
     public function __construct(
         public array \$data
@@ -404,5 +443,49 @@ class {$name}Seeder extends Seeder
     }
 }
 PHP;
+    }
+
+    protected function getFilterTemplate(string $name): string
+    {
+        return <<<PHP
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\\{$name}\\Filters;
+
+use App\Filters\BaseFilter;
+use Illuminate\Database\Eloquent\Builder;
+
+class {$name}Filter extends BaseFilter
+{
+    /**
+     * Filter by search term.
+     */
+    public function search(string \$value): Builder
+    {
+        return \$this->builder->where('name', 'like', "%\$value%");
+    }
+}
+PHP;
+    }
+
+    protected function generateMigration(string $name, string $path, array $options): void
+    {
+        $tableName = Str::snake(Str::plural($name));
+        $fileName = date('Y_m_d_His')."_create_{$tableName}_table.php";
+        $fullPath = "{$path}/{$fileName}";
+
+        if ($this->option('force')) {
+            $files = File::files($path);
+            foreach ($files as $file) {
+                if (str_contains($file->getFilename(), "_create_{$tableName}_table.php")) {
+                    File::delete($file->getPathname());
+                    $this->warn('Deleted old migration: '.$file->getFilename());
+                }
+            }
+        }
+
+        $this->createFile($fullPath, $this->getMigrationTemplate($name, $tableName));
     }
 }

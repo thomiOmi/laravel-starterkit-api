@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\DTOs\DataTableDTO;
+use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -18,11 +19,43 @@ use Illuminate\Pagination\LengthAwarePaginator;
 abstract class BaseRepository
 {
     /**
+     * The query builder instance.
+     */
+    protected ?Builder $query = null;
+
+    /**
      * Create a new repository instance.
      *
      * @param  T  $model  The model instance.
      */
-    public function __construct(protected Model $model) {}
+    public function __construct(protected Model $model)
+    {
+        $this->newQuery();
+    }
+
+    /**
+     * Initialize a new query.
+     *
+     * @return $this
+     */
+    public function newQuery(): self
+    {
+        $this->query = $this->model->newQuery();
+
+        return $this;
+    }
+
+    /**
+     * Apply query filters.
+     *
+     * @return $this
+     */
+    public function applyFilter(BaseFilter $filters): self
+    {
+        $this->query = $filters->apply($this->query);
+
+        return $this;
+    }
 
     /**
      * Get all records.
@@ -34,7 +67,9 @@ abstract class BaseRepository
     public function all(array $columns = ['*'], array $relations = []): Collection
     {
         /** @var Collection<int, T> $collection */
-        $collection = $this->model->with($relations)->get($columns);
+        $collection = $this->query->with($relations)->get($columns);
+
+        $this->newQuery();
 
         return $collection;
     }
@@ -49,7 +84,11 @@ abstract class BaseRepository
      */
     public function paginate(int $perPage = 10, array $columns = ['*'], array $relations = []): LengthAwarePaginator
     {
-        return $this->model->with($relations)->paginate($perPage, $columns);
+        $paginator = $this->query->with($relations)->paginate($perPage, $columns);
+
+        $this->newQuery();
+
+        return $paginator;
     }
 
     /**

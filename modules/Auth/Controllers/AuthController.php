@@ -41,15 +41,16 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request, LoginAction $action): JsonResponse
     {
+        $request->ensureIsNotRateLimited();
         $dto = LoginDTO::fromRequest($request);
-        $result = $action->execute($dto);
+        $result = $action->execute($dto, $request);
 
+        /**
+         * Success response with user and access token.
+         */
         return $this->successResponse(
             [
                 'user' => new UserResource($result['user']->load(['roles.permissions', 'permissions'])),
-                /**
-                 * @example "1|8d8t2qmIbLUkwylh5aktEXGXVPMwYucUAOYPtihpf9bd84c8"
-                 */
                 'access_token' => $result['access_token'],
                 'token_type' => $result['token_type'],
             ],
@@ -65,20 +66,16 @@ class AuthController extends Controller
      * @param  RegisterRequest  $request  The user request.
      * @param  RegisterAction  $action  The register action.
      *
-     * @response 422 {
-     *  "status": "error",
-     *  "message": "Validation Failed",
-     *  "errors": {
-     *      "email": ["The email has already been taken."],
-     *      "password": ["The password field is required."]
-     *  }
-     * }
+     * @unauthenticated
      */
     public function register(RegisterRequest $request, RegisterAction $action): JsonResponse
     {
         $dto = UserDTO::fromRequest($request);
         $result = $action->execute($dto);
 
+        /**
+         * Success response with user and access token.
+         */
         return $this->successResponse(
             [
                 'user' => new UserResource($result['user']->load(['roles.permissions', 'permissions'])),
@@ -126,6 +123,8 @@ class AuthController extends Controller
      *
      * @param  ForgotPasswordRequest  $request  The user request.
      * @param  ForgotPasswordAction  $action  The forgot password action.
+     *
+     * @unauthenticated
      */
     public function forgotPassword(ForgotPasswordRequest $request, ForgotPasswordAction $action): JsonResponse
     {
@@ -142,6 +141,8 @@ class AuthController extends Controller
      *
      * @param  ResetPasswordRequest  $request  The user request.
      * @param  ResetPasswordAction  $action  The reset password action.
+     *
+     * @unauthenticated
      */
     public function resetPassword(ResetPasswordRequest $request, ResetPasswordAction $action): JsonResponse
     {

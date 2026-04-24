@@ -20,7 +20,7 @@ class VerifyEmail extends BaseVerifyEmail
     protected function verificationUrl($notifiable): string
     {
         return URL::temporarySignedRoute(
-            'api.v1.auth.verification.verify',
+            'api.auth.verification.verify',
             now()->addMinutes(config('auth.verification.expire', 60)),
             [
                 'id' => $notifiable->getKey(),

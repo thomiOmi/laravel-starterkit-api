@@ -9,14 +9,14 @@ use Modules\User\Models\User;
 uses(RefreshDatabase::class);
 
 test('system returns 404 for non-existent routes', function () {
-    $response = $this->getJson('/api/v1/non-existent-route');
+    $response = $this->getJson('/api/non-existent-route');
 
     $response->assertStatus(404);
 });
 
 test('system handles validation errors consistently', function () {
     // We use a known route with validation
-    $response = $this->postJson('/api/v1/auth/register', []);
+    $response = $this->postJson('/api/auth/register', []);
 
     $response->assertStatus(422)
         ->assertJsonStructure([
@@ -24,12 +24,12 @@ test('system handles validation errors consistently', function () {
             'message',
             'errors',
         ])
-        ->assertJsonPath('status', 'Error')
+        ->assertJsonPath('status', 'error')
         ->assertJsonPath('message', 'Validation Failed');
 });
 
 test('system handles unauthenticated access', function () {
-    $response = $this->getJson('/api/v1/auth/me');
+    $response = $this->getJson('/api/auth/me');
 
     $response->assertStatus(401);
 });
@@ -37,7 +37,7 @@ test('system handles unauthenticated access', function () {
 test('system handles unauthorized access', function () {
     // We need a route that requires a specific role/permission
     // Let's assume there is a route that requires 'admin' role
-    Route::get('/api/v1/test-admin', function () {
+    Route::get('/api/test-admin', function () {
         return response()->json(['message' => 'admin only']);
     })->middleware(['auth:sanctum', 'role:admin']);
 
@@ -45,17 +45,17 @@ test('system handles unauthorized access', function () {
     $token = $user->createToken('test')->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer $token")
-        ->getJson('/api/v1/test-admin');
+        ->getJson('/api/test-admin');
 
     $response->assertStatus(403);
 });
 
 test('system handles server errors', function () {
-    Route::get('/api/v1/test-error', function () {
+    Route::get('/api/test-error', function () {
         throw new Exception('Test Server Error');
     });
 
-    $response = $this->getJson('/api/v1/test-error');
+    $response = $this->getJson('/api/test-error');
 
     $response->assertStatus(500);
 });

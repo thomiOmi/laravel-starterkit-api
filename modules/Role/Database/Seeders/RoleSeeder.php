@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Modules\Role\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\User\Models\User;
 use Modules\Role\Models\Permission;
 use Modules\Role\Models\Role;
+use Modules\User\Models\User;
 use Spatie\Permission\PermissionRegistrar;
 
 class RoleSeeder extends Seeder

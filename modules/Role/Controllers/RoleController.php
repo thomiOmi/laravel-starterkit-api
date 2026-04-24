@@ -7,6 +7,7 @@ namespace Modules\Role\Controllers;
 use App\DTOs\DataTableDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BulkActionRequest;
+use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\CreateRoleAction;
@@ -27,10 +28,17 @@ class RoleController extends Controller
     public function __construct(protected RoleRepository $repository) {}
 
     /**
-     * Display a listing of the roles.
+     * List All Roles
+     *
+     * Retrieves a paginated list of all roles with filtering and sorting.
      *
      * @param  Request  $request  The request.
      */
+    #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
+    #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
+    #[QueryParameter(name: 'search', description: 'Search keyword to filter roles by name.', type: 'string', required: false, example: 'admin')]
+    #[QueryParameter(name: 'sort', description: 'Column name to sort by.', type: 'string', required: false, default: 'created_at', example: 'name')]
+    #[QueryParameter(name: 'order', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
     public function index(Request $request): JsonResponse
     {
         $dto = DataTableDTO::fromRequest($request);
