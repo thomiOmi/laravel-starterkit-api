@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Role\Models;
 
+use App\Traits\Models\HasAuditLogs;
 use App\Traits\Models\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role as SpatieRole;
-
 /**
  * @property string $id
  * @property string $name
@@ -19,9 +18,11 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Permission> $permissions
  */
+use Spatie\Permission\Models\Role as SpatieRole;
+
 class Role extends SpatieRole
 {
-    use HasDefaultBehavior;
+    use HasAuditLogs, HasDefaultBehavior;
 
     protected $keyType = 'string';
 
