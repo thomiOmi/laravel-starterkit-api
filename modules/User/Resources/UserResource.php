@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Modules\User\Models\User;
 
 /**
+ * @property-read User $resource
+ *
  * @mixin User
  */
 class UserResource extends BaseResource
@@ -28,14 +30,14 @@ class UserResource extends BaseResource
              *
              * @format "ULID"
              */
-            'id' => $this->id,
+            'id' => $this->resource->id,
 
             /**
              * The full name of the user.
              *
              * @example "User"
              */
-            'name' => $this->name,
+            'name' => $this->resource->name,
 
             /**
              * The email address of the user.
@@ -44,7 +46,7 @@ class UserResource extends BaseResource
              *
              * @format email
              */
-            'email' => $this->email,
+            'email' => $this->resource->email,
 
             /**
              * The URL or path to the user's avatar image.
@@ -53,21 +55,21 @@ class UserResource extends BaseResource
              *
              * @default null
              */
-            'avatar' => $this->avatar,
+            'avatar' => $this->resource->avatar,
 
             /**
              * The list of roles assigned to the user.
              *
              * @example ["user"]
              */
-            'roles' => $this->whenLoaded('roles', fn () => $this->roles->pluck('name')),
+            'roles' => $this->whenLoaded('roles', fn () => $this->resource->roles->pluck('name')),
 
             /**
              * The list of all permissions granted to the user (aggregated from roles and direct permissions).
              *
              * @example ["user.view", "user.create", "role.view"]
              */
-            'permissions' => $this->when($this->relationLoaded('roles') || $this->relationLoaded('permissions'), fn () => $this->getAllPermissions()->pluck('name')),
+            'permissions' => $this->when($this->relationLoaded('roles') || $this->relationLoaded('permissions'), fn () => $this->resource->getAllPermissions()->pluck('name')),
 
             /**
              * The date time when the user's email was verified.
@@ -78,7 +80,7 @@ class UserResource extends BaseResource
              *
              * @default null
              */
-            'email_verified_at' => $this->formatDate($this->email_verified_at),
+            'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
 
             /**
              * The date time when the user was created.
@@ -87,7 +89,7 @@ class UserResource extends BaseResource
              *
              * @format "YYYY-MM-DD HH:mm:ss"
              */
-            'created_at' => $this->formatDate($this->created_at),
+            'created_at' => $this->formatDate($this->resource->created_at),
 
             /**
              * The date time when the user was updated.
@@ -96,7 +98,7 @@ class UserResource extends BaseResource
              *
              * @format "YYYY-MM-DD HH:mm:ss"
              */
-            'updated_at' => $this->formatDate($this->updated_at),
+            'updated_at' => $this->formatDate($this->resource->updated_at),
 
             /**
              * The date time when the user was deleted.
@@ -107,7 +109,7 @@ class UserResource extends BaseResource
              *
              * @default null
              */
-            'deleted_at' => $this->formatDate($this->deleted_at),
+            'deleted_at' => $this->formatDate($this->resource->deleted_at),
         ];
     }
 }

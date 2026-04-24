@@ -11,8 +11,7 @@ parameters:
     level: 5
 
     ignoreErrors:
-        # Example of ignoring specific errors
-        # - '#Unsafe usage of new static\(\).#'
+        - '#Access to an undefined property Modules\\User\\Models\\User::\$#'
 
     excludePaths:
         - modules/*/Tests/*

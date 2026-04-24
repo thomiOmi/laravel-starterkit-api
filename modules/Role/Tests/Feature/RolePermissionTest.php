@@ -19,7 +19,7 @@ test('user with user.view permission cannot list roles', function () {
     $user->givePermissionTo('user.view');
 
     $response = $this->actingAs($user)
-        ->getJson('/api/roles');
+        ->getJson('/api/v1/roles');
 
     // Should fail with 403 because we fixed the route to use role.view
     $response->assertStatus(403);
@@ -30,7 +30,7 @@ test('user with role.view permission can list roles', function () {
     $user->givePermissionTo('role.view');
 
     $response = $this->actingAs($user)
-        ->getJson('/api/roles');
+        ->getJson('/api/v1/roles');
 
     $response->assertStatus(200);
 });
@@ -45,7 +45,7 @@ test('unauthorized user cannot create role', function () {
     ];
 
     $response = $this->actingAs($user)
-        ->postJson('/api/roles', $payload);
+        ->postJson('/api/v1/roles', $payload);
 
     $response->assertStatus(403);
 });
@@ -60,7 +60,7 @@ test('user with role.create permission can create role', function () {
     ];
 
     $response = $this->actingAs($user)
-        ->postJson('/api/roles', $payload);
+        ->postJson('/api/v1/roles', $payload);
 
     $response->assertStatus(201);
 });

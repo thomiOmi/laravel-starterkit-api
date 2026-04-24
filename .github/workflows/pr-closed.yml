@@ -22,8 +22,6 @@ jobs:
             ## Merge Successful
 
             Thanks for your contribution!
-
-            The changes will be part of the upcoming release of bunup.
         with:
           script: |
             github.rest.issues.createComment({

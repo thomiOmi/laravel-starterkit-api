@@ -20,7 +20,7 @@ test('user can request password reset link', function () {
 
     $user = User::factory()->create();
 
-    $response = $this->postJson('/api/auth/forgot-password', [
+    $response = $this->postJson('/api/v1/auth/forgot-password', [
         'email' => $user->email,
     ]);
 
@@ -39,7 +39,7 @@ test('user can reset password with valid token', function () {
 
     $token = Password::createToken($user);
 
-    $response = $this->postJson('/api/auth/reset-password', [
+    $response = $this->postJson('/api/v1/auth/reset-password', [
         'token' => $token,
         'email' => $user->email,
         'password' => 'new-password123',
@@ -53,7 +53,7 @@ test('user can reset password with valid token', function () {
 });
 
 test('forgot password fails with non-existent email', function () {
-    $response = $this->postJson('/api/auth/forgot-password', [
+    $response = $this->postJson('/api/v1/auth/forgot-password', [
         'email' => 'nonexistent@example.com',
     ]);
 
@@ -64,7 +64,7 @@ test('forgot password fails with non-existent email', function () {
 test('reset password fails with invalid token', function () {
     $user = User::factory()->create();
 
-    $response = $this->postJson('/api/auth/reset-password', [
+    $response = $this->postJson('/api/v1/auth/reset-password', [
         'token' => 'invalid-token',
         'email' => $user->email,
         'password' => 'new-password123',
@@ -79,7 +79,7 @@ test('reset password fails with mismatched passwords', function () {
     $user = User::factory()->create();
     $token = Password::createToken($user);
 
-    $response = $this->postJson('/api/auth/reset-password', [
+    $response = $this->postJson('/api/v1/auth/reset-password', [
         'token' => $token,
         'email' => $user->email,
         'password' => 'new-password123',

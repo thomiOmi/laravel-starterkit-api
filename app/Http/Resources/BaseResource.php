@@ -13,7 +13,6 @@ use Illuminate\Support\Carbon;
  */
 class BaseResource extends JsonResource
 {
-    /** @var string|null */
     // public static $wrap = 'data';
 
     /**
@@ -21,15 +20,15 @@ class BaseResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    // public function with(Request $request): array
-    // {
-    //     return [
-    //         'status' => 'Success',
-    //         'meta' => [
-    //             'api_version' => config('app.api_version', '1.0.0'),
-    //         ],
-    //     ];
-    // }
+    public function with(Request $request): array
+    {
+        return [
+            'status' => 'success',
+            'meta' => [
+                'api_version' => config('apiroute.default_version', 'v1'),
+            ],
+        ];
+    }
 
     /**
      * Format a date time consistently for API responses.

@@ -23,7 +23,7 @@ trait ApiResponser
     {
         return response()->json([
             'status' => 'success',
-            'message' => $message,
+            'message' => $message ?? __('messages.success'),
             'data' => $data,
         ], $code);
     }
@@ -35,11 +35,11 @@ trait ApiResponser
      * @param  int  $code  The HTTP status code (default: 400).
      * @param  array  $errors  An array of validation or other errors.
      */
-    protected function errorResponse(string $message, int $code = 400, array $errors = []): JsonResponse
+    protected function errorResponse(?string $message = null, int $code = 400, array $errors = []): JsonResponse
     {
         return response()->json([
             'status' => 'error',
-            'message' => $message,
+            'message' => $message ?? __('messages.error'),
             'errors' => $errors,
         ], $code);
     }

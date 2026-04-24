@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\User\Controllers;
+namespace Modules\User\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BulkActionRequest;

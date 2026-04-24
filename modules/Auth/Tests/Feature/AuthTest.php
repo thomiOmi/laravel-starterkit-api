@@ -15,7 +15,7 @@ beforeEach(function () {
 });
 
 test('user can register', function () {
-    $response = $this->postJson('/api/auth/register', [
+    $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'John Doe',
         'email' => 'john@example.com',
         'password' => 'password123',
@@ -39,7 +39,7 @@ test('user can register', function () {
 });
 
 test('registration fails with missing fields', function () {
-    $response = $this->postJson('/api/auth/register', []);
+    $response = $this->postJson('/api/v1/auth/register', []);
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['name', 'email', 'password']);
@@ -48,7 +48,7 @@ test('registration fails with missing fields', function () {
 test('registration fails with duplicate email', function () {
     User::factory()->create(['email' => 'john@example.com']);
 
-    $response = $this->postJson('/api/auth/register', [
+    $response = $this->postJson('/api/v1/auth/register', [
         'name' => 'John Doe',
         'email' => 'john@example.com',
         'password' => 'password123',
@@ -64,7 +64,7 @@ test('user can login', function () {
         'password' => bcrypt('password123'),
     ]);
 
-    $response = $this->postJson('/api/auth/login', [
+    $response = $this->postJson('/api/v1/auth/login', [
         'email' => $user->email,
         'password' => 'password123',
     ]);
@@ -86,7 +86,7 @@ test('login fails with wrong credentials', function () {
         'password' => bcrypt('password123'),
     ]);
 
-    $response = $this->postJson('/api/auth/login', [
+    $response = $this->postJson('/api/v1/auth/login', [
         'email' => $user->email,
         'password' => 'wrongpassword',
     ]);
@@ -100,7 +100,7 @@ test('user can get profile', function () {
     $token = $user->createToken('test')->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer $token")
-        ->getJson('/api/auth/me');
+        ->getJson('/api/v1/auth/me');
 
     $response->assertStatus(200)
         ->assertJsonPath('data.email', $user->email);
@@ -110,7 +110,7 @@ test('user can verify email', function () {
     $user = User::factory()->unverified()->create();
 
     $url = URL::temporarySignedRoute(
-        'api.auth.verification.verify',
+        'api.v1.auth.verification.verify',
         now()->addMinutes(60),
         ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
     );
@@ -127,7 +127,7 @@ test('email verification fails with invalid hash', function () {
     $user = User::factory()->unverified()->create();
 
     $url = URL::temporarySignedRoute(
-        'api.auth.verification.verify',
+        'api.v1.auth.verification.verify',
         now()->addMinutes(60),
         ['id' => $user->id, 'hash' => 'invalid-hash']
     );
@@ -142,7 +142,7 @@ test('email verification fails with expired link', function () {
     $user = User::factory()->unverified()->create();
 
     $url = URL::temporarySignedRoute(
-        'api.auth.verification.verify',
+        'api.v1.auth.verification.verify',
         now()->subMinutes(60),
         ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
     );
@@ -159,7 +159,7 @@ test('user can resend verification email', function () {
     $token = $user->createToken('test')->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer $token")
-        ->postJson('/api/auth/email/verify/resend');
+        ->postJson('/api/v1/auth/email/verify/resend');
 
     $response->assertStatus(200)
         ->assertJsonPath('message', 'Verification link sent');
@@ -172,7 +172,7 @@ test('user cannot resend verification email if already verified', function () {
     $token = $user->createToken('test')->plainTextToken;
 
     $response = $this->withHeader('Authorization', "Bearer $token")
-        ->postJson('/api/auth/email/verify/resend');
+        ->postJson('/api/v1/auth/email/verify/resend');
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['email']);
@@ -182,7 +182,7 @@ test('auth routes are rate limited', function () {
     // This is hard to test accurately in feature tests without complex mocks,
     // but we can at least ensure the middleware is present in routes
     $route = collect(Route::getRoutes())->filter(function ($route) {
-        return $route->uri() == 'api/auth/login';
+        return $route->uri() == 'api/v1/auth/login';
     })->first();
 
     expect($route->middleware())->toContain('throttle:auth');
