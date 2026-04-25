@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace App\Traits\Models;
 
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * Trait to automatically log model activities.
+ * Trait HasAuditLogs
+ *
+ * Provides automatic activity logging for models.
  */
 trait HasAuditLogs
 {
     use LogsActivity;
 
     /**
-     * Configure the activity log options.
+     * Get the options for logging activity.
      */
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logAll()
-            ->logOnlyDirty()
-            ->dontLogIfAttributesChangedOnly(['updated_at'])
-            ->useLogName($this->getTable());
+            ->logOnlyDirty();
     }
 }
