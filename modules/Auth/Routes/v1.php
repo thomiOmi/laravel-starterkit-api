@@ -12,7 +12,7 @@ Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     Route::post('forgot-password', [AuthController::class, 'forgotPassword'])->name('password.email');
     Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('password.reset');
 
-    Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function () {
+    Route::middleware(['auth:sanctum', 'api_key', 'throttle:authenticated'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('me', [AuthController::class, 'me'])->name('me');
     });
