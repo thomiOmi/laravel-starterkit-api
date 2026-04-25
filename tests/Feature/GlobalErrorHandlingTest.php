@@ -25,7 +25,7 @@ test('system handles validation errors consistently', function () {
             'errors',
         ])
         ->assertJsonPath('status', 'error')
-        ->assertJsonPath('message', __('messages.validation_failed'));
+        ->assertJsonPath('message', 'Validation Failed');
 });
 
 test('system handles unauthenticated access', function () {
