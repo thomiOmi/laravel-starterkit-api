@@ -6,6 +6,7 @@ namespace Modules\ApiKey\Models;
 
 use App\Traits\Models\HasAuditLogs;
 use App\Traits\Models\HasDefaultBehavior;
+use App\Traits\Models\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,7 +30,7 @@ use Modules\User\Models\User;
  */
 class ApiKey extends Model
 {
-    use HasAuditLogs, HasDefaultBehavior, HasFactory;
+    use HasAuditLogs, HasDefaultBehavior, HasFactory, HasTenant;
 
     /**
      * The attributes that are mass assignable.

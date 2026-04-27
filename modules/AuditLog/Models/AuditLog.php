@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\AuditLog\Models;
 
+use App\Traits\Models\HasTenant;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
 
 /**
@@ -13,6 +14,8 @@ use Spatie\Activitylog\Models\Activity as SpatieActivity;
  */
 class AuditLog extends SpatieActivity
 {
+    use HasTenant;
+
     /**
      * The table associated with the model.
      *

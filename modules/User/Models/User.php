@@ -7,6 +7,7 @@ namespace Modules\User\Models;
 use App\Notifications\VerifyEmail;
 use App\Traits\Models\HasAuditLogs;
 use App\Traits\Models\HasDefaultBehavior;
+use App\Traits\Models\HasTenant;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -37,7 +38,7 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasAuditLogs, HasDefaultBehavior, HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasAuditLogs, HasDefaultBehavior, HasFactory, HasRoles, HasTenant, Notifiable;
 
     /**
      * Send the email verification notification.
