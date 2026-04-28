@@ -1,14 +1,17 @@
 <?php
 
-use App\Http\Middleware\AuthenticateApiKey;
 use App\Http\Middleware\SetLocaleMiddleware;
+use App\Http\Middleware\TenancyByHeaderMiddleware;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -26,7 +29,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
-            'api_key' => AuthenticateApiKey::class,
+            'tenancy.request' => TenancyByHeaderMiddleware::class,
+        ]);
+
+        $middleware->priority([
+            TenancyByHeaderMiddleware::class,
+            AuthenticatesRequests::class,
+            Authenticate::class,
+            EnsureFrontendRequestsAreStateful::class,
         ]);
 
         $middleware->append(SetLocaleMiddleware::class);

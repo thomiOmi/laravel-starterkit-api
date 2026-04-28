@@ -54,7 +54,7 @@ class RouteServiceProvider extends ServiceProvider
 
                 if (File::exists($routeFile)) {
                     Route::prefix("api/{$version}")
-                        ->middleware('api')
+                        ->middleware(['api', 'tenancy.request'])
                         ->name("api.{$version}.".strtolower($moduleName).'.')
                         ->group($routeFile);
                 }

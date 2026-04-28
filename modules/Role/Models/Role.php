@@ -6,6 +6,7 @@ namespace Modules\Role\Models;
 
 use App\Traits\Models\HasAuditLogs;
 use App\Traits\Models\HasDefaultBehavior;
+use App\Traits\Models\HasTenant;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Permission;
@@ -22,7 +23,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole
 {
-    use HasAuditLogs, HasDefaultBehavior;
+    use HasAuditLogs, HasDefaultBehavior, HasTenant;
 
     protected $keyType = 'string';
 

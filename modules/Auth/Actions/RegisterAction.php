@@ -8,6 +8,7 @@ use Illuminate\Auth\Events\Registered;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
+use Modules\Webhook\Services\WebhookService;
 
 class RegisterAction
 {
@@ -15,7 +16,8 @@ class RegisterAction
      * Create a new RegisterAction instance.
      */
     public function __construct(
-        protected UserRepository $userRepository
+        protected UserRepository $userRepository,
+        protected WebhookService $webhookService
     ) {}
 
     /**
@@ -33,6 +35,13 @@ class RegisterAction
         ]);
 
         event(new Registered($user));
+
+        $this->webhookService->dispatch('user.registered', [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'created_at' => $user->created_at,
+        ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
