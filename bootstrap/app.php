@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\PasswordExpiredMiddleware;
+use App\Http\Middleware\PlanFeatureMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\TenancyByHeaderMiddleware;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -30,6 +32,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'tenancy.request' => TenancyByHeaderMiddleware::class,
+            'password.expired' => PasswordExpiredMiddleware::class,
+            'plan.feature' => PlanFeatureMiddleware::class,
         ]);
 
         $middleware->priority([
