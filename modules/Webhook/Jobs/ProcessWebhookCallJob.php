@@ -10,6 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Modules\Webhook\Models\Webhook;
 use Modules\Webhook\Models\WebhookCall;
 
 class ProcessWebhookCallJob implements ShouldQueue
@@ -37,6 +38,7 @@ class ProcessWebhookCallJob implements ShouldQueue
 
     public function handle(): void
     {
+        /** @var Webhook|null $webhook */
         $webhook = $this->webhookCall->webhook;
 
         if (! $webhook || ! $webhook->is_active) {
@@ -90,6 +92,6 @@ class ProcessWebhookCallJob implements ShouldQueue
             return '';
         }
 
-        return hash_hmac('sha256', json_encode($payload), $secret);
+        return hash_hmac('sha256', (string) json_encode($payload), $secret);
     }
 }
