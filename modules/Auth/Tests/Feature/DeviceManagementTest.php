@@ -25,7 +25,7 @@ class DeviceManagementTest extends TestCase
 
         $response = $this->getJson('/api/v1/auth/devices', [
             'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer ' . $user->createToken('Current Device', [], null, $tenant->id)->plainTextToken,
+            'Authorization' => 'Bearer '.$user->createToken('Current Device', [], null, $tenant->id)->plainTextToken,
         ]);
 
         $response->assertStatus(200)
@@ -44,7 +44,7 @@ class DeviceManagementTest extends TestCase
 
         $response = $this->postJson('/api/v1/auth/devices/logout-others', [], [
             'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer ' . $currentToken,
+            'Authorization' => 'Bearer '.$currentToken,
         ]);
 
         $response->assertStatus(200);

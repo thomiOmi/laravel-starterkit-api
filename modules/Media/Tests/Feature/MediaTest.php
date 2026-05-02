@@ -34,7 +34,7 @@ class MediaTest extends TestCase
             'collection' => 'avatars',
         ], [
             'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ]);
 
         $response->assertStatus(200)
@@ -60,12 +60,12 @@ class MediaTest extends TestCase
             'file' => UploadedFile::fake()->image('image1.jpg'),
         ], [
             'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ]);
 
         $response = $this->getJson('/api/v1/media', [
             'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ]);
 
         $response->assertStatus(200)
@@ -84,14 +84,14 @@ class MediaTest extends TestCase
             'file' => UploadedFile::fake()->image('to_delete.jpg'),
         ], [
             'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ]);
 
         $mediaId = $uploadResponse->json('data.id');
 
         $response = $this->deleteJson("/api/v1/media/{$mediaId}", [], [
             'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ]);
 
         $response->assertStatus(200);
