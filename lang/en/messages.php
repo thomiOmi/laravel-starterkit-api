@@ -12,4 +12,7 @@ return [
     'logout_successful' => 'Logout successful',
     'registered_successfully' => 'User registered successfully. Please verify your email.',
     'profile_retrieved' => 'User profile retrieved successfully',
+    'devices_retrieved' => 'Active devices retrieved successfully',
+    'device_logged_out' => 'Device logged out successfully',
+    'other_devices_logged_out' => 'Other devices logged out successfully',
 ];

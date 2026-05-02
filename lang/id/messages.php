@@ -12,4 +12,7 @@ return [
     'logout_successful' => 'Logout berhasil',
     'registered_successfully' => 'Pendaftaran berhasil. Silakan verifikasi email Anda.',
     'profile_retrieved' => 'Profil berhasil diambil',
+    'devices_retrieved' => 'Daftar perangkat aktif berhasil diambil',
+    'device_logged_out' => 'Perangkat berhasil dikeluarkan',
+    'other_devices_logged_out' => 'Perangkat lain berhasil dikeluarkan',
 ];

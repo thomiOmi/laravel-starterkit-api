@@ -7,18 +7,24 @@ namespace Modules\Subscription\Controllers\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Modules\Subscription\Models\Subscription;
-use Modules\Subscription\Models\SubscriptionPlan;
-use Modules\Tenant\Models\Tenant;
+use Modules\Subscription\Repositories\SubscriptionPlanRepository;
+use Modules\Subscription\Repositories\SubscriptionRepository;
 
+/**
+ * @tags Tenant Subscriptions
+ */
 class TenantSubscriptionController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        protected SubscriptionRepository $subscriptionRepository,
+        protected SubscriptionPlanRepository $planRepository
+    ) {
         $this->middleware(['auth:sanctum', 'role:super-admin']);
     }
 
     /**
+     * Assign Plan
+     *
      * Manually assign a plan to a tenant.
      */
     public function assign(Request $request): JsonResponse
@@ -30,18 +36,13 @@ class TenantSubscriptionController extends Controller
             'duration_days' => 'sometimes|integer|min:1',
         ]);
 
-        $plan = SubscriptionPlan::findOrFail($request->plan_id);
+        $plan = $this->planRepository->findById($request->plan_id);
         $duration = $request->duration_days ?: $plan->billing_cycle;
 
         // Cancel previous active subscriptions
-        Subscription::where('tenant_id', $request->tenant_id)
-            ->where('status', 'active')
-            ->update([
-                'status' => 'cancelled',
-                'cancelled_at' => now(),
-            ]);
+        $this->subscriptionRepository->cancelActiveSubscriptions($request->tenant_id);
 
-        $subscription = Subscription::create([
+        $subscription = $this->subscriptionRepository->create([
             'tenant_id' => $request->tenant_id,
             'plan_id' => $plan->id,
             'status' => $request->status ?: 'active',

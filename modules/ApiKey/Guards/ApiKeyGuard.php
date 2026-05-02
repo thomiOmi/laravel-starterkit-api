@@ -100,9 +100,11 @@ class ApiKeyGuard implements Guard
     /**
      * Set the current user.
      */
-    public function setUser(Authenticatable $user): void
+    public function setUser(Authenticatable $user): static
     {
         $this->user = $user;
+
+        return $this;
     }
 
     /**

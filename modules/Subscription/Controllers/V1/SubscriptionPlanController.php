@@ -8,23 +8,37 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Modules\Subscription\Models\SubscriptionPlan;
+use Modules\Subscription\Repositories\SubscriptionPlanRepository;
 use Modules\Subscription\Resources\SubscriptionPlanResource;
 
+/**
+ * @tags Subscription Plans
+ */
 class SubscriptionPlanController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        protected SubscriptionPlanRepository $repository
+    ) {
         $this->middleware(['auth:sanctum', 'role:super-admin']);
     }
 
+    /**
+     * List Plans
+     *
+     * Get all subscription plans.
+     */
     public function index(): JsonResponse
     {
-        $plans = SubscriptionPlan::all();
+        $plans = $this->repository->all();
 
         return $this->successResponse(SubscriptionPlanResource::collection($plans));
     }
 
+    /**
+     * Create Plan
+     *
+     * Create a new subscription plan.
+     */
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -38,22 +52,30 @@ class SubscriptionPlanController extends Controller
 
         $data['slug'] = Str::slug($data['name']);
 
-        $plan = SubscriptionPlan::create($data);
+        $plan = $this->repository->create($data);
 
         return $this->successResponse(new SubscriptionPlanResource($plan), 'Subscription plan created successfully.', 201);
     }
 
+    /**
+     * Show Plan
+     *
+     * Get a subscription plan by ID.
+     */
     public function show(string $id): JsonResponse
     {
-        $plan = SubscriptionPlan::findOrFail($id);
+        $plan = $this->repository->findById($id);
 
         return $this->successResponse(new SubscriptionPlanResource($plan));
     }
 
+    /**
+     * Update Plan
+     *
+     * Update an existing subscription plan.
+     */
     public function update(Request $request, string $id): JsonResponse
     {
-        $plan = SubscriptionPlan::findOrFail($id);
-
         $data = $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -67,15 +89,19 @@ class SubscriptionPlanController extends Controller
             $data['slug'] = Str::slug($data['name']);
         }
 
-        $plan->update($data);
+        $plan = $this->repository->update($id, $data);
 
         return $this->successResponse(new SubscriptionPlanResource($plan), 'Subscription plan updated successfully.');
     }
 
+    /**
+     * Delete Plan
+     *
+     * Delete a subscription plan.
+     */
     public function destroy(string $id): JsonResponse
     {
-        $plan = SubscriptionPlan::findOrFail($id);
-        $plan->delete();
+        $this->repository->delete($id);
 
         return $this->successResponse(null, 'Subscription plan deleted successfully.');
     }

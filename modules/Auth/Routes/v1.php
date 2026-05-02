@@ -15,6 +15,10 @@ Route::prefix('auth')->middleware('throttle:auth')->group(function () {
     Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('me', [AuthController::class, 'me'])->name('me');
+
+        Route::get('devices', [AuthController::class, 'devices'])->name('devices');
+        Route::delete('devices/{id}', [AuthController::class, 'logoutDevice'])->name('devices.logout');
+        Route::post('devices/logout-others', [AuthController::class, 'logoutOtherDevices'])->name('devices.logout-others');
     });
 
     Route::post('email/verify/resend', [AuthController::class, 'resendVerificationEmail'])

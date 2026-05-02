@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\Tenant\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Modules\Subscription\Models\Subscription;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
 
+/**
+ * @property string $id
+ * @property array $data
+ * @property int|null $rate_limit
+ * @property-read Subscription|null $subscription
+ */
 class Tenant extends BaseTenant implements TenantWithDatabase
 {
     use HasDatabase, HasDomains;
@@ -17,7 +24,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'id',
@@ -41,7 +48,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     /**
      * Get the tenant's current subscription.
      */
-    public function subscription()
+    public function subscription(): HasOne
     {
         return $this->hasOne(Subscription::class, 'tenant_id')->where('status', 'active')->latestOfMany();
     }

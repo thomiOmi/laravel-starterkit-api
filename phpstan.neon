@@ -13,7 +13,7 @@ parameters:
     ignoreErrors:
         - '#Access to an undefined property Modules\\User\\Models\\User::\$#'
 
+    reportUnmatchedIgnoredErrors: false
+
     excludePaths:
         - modules/*/Tests/*
-
-

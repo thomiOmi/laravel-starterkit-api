@@ -14,7 +14,7 @@ class Activity extends SpatieActivity
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var list<string>
      */
     protected $fillable = [
         'log_name',
