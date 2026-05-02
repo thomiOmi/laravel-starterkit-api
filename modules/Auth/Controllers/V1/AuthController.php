@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\ForgotPasswordAction;
 use Modules\Auth\Actions\LoginAction;
+use Modules\Auth\Actions\LogoutDeviceAction;
+use Modules\Auth\Actions\LogoutOtherDevicesAction;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Actions\ResendVerificationEmailAction;
 use Modules\Auth\Actions\ResetPasswordAction;
@@ -21,6 +23,7 @@ use Modules\Auth\Requests\ForgotPasswordRequest;
 use Modules\Auth\Requests\LoginRequest;
 use Modules\Auth\Requests\RegisterRequest;
 use Modules\Auth\Requests\ResetPasswordRequest;
+use Modules\Auth\Resources\DeviceResource;
 use Modules\User\DTOs\UserDTO;
 use Modules\User\Resources\UserResource;
 
@@ -114,6 +117,54 @@ class AuthController extends Controller
             new UserResource($request->user()->load(['roles.permissions', 'permissions'])),
             __('messages.profile_retrieved')
         );
+    }
+
+    /**
+     * Devices
+     *
+     * Get the list of active devices/sessions.
+     *
+     * @param  Request  $request  The request.
+     */
+    public function devices(Request $request): JsonResponse
+    {
+        $devices = $request->user()->tokens()->orderBy('last_used_at', 'desc')->get();
+
+        return $this->successResponse(
+            DeviceResource::collection($devices),
+            __('messages.devices_retrieved')
+        );
+    }
+
+    /**
+     * Logout Device
+     *
+     * Log out a specific device.
+     *
+     * @param  Request  $request  The request.
+     * @param  LogoutDeviceAction  $action  The logout device action.
+     * @param  string  $id  The token ID.
+     */
+    public function logoutDevice(Request $request, LogoutDeviceAction $action, string $id): JsonResponse
+    {
+        $action->execute($request, $id);
+
+        return $this->successResponse(null, __('messages.device_logged_out'));
+    }
+
+    /**
+     * Logout Other Devices
+     *
+     * Log out all other devices except the current one.
+     *
+     * @param  Request  $request  The request.
+     * @param  LogoutOtherDevicesAction  $action  The logout other devices action.
+     */
+    public function logoutOtherDevices(Request $request, LogoutOtherDevicesAction $action): JsonResponse
+    {
+        $action->execute($request);
+
+        return $this->successResponse(null, __('messages.other_devices_logged_out'));
     }
 
     /**

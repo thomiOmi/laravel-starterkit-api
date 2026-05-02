@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
+use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
@@ -18,7 +20,7 @@ class LoginAction
      * Execute the login action.
      *
      * @param  LoginDTO  $dto  The login data transfer object.
-     * @param  LoginRequest|null  $request  The optional request to clear rate limits.
+     * @param  LoginRequest|null  $request  The optional request to clear rate limits and get device info.
      * @return array{user: User, access_token: string, token_type: string}
      *
      * @throws ValidationException
@@ -43,34 +45,25 @@ class LoginAction
             RateLimiter::clear($request->throttleKey());
         }
 
-        // =========================================================================
-        // DEVICE MANAGEMENT (Multi-Device vs Single-Device)
-        // =========================================================================
-        // This starterkit supports MULTI-DEVICE login by default.
-        // Each login generates a unique token for the device.
-        //
-        // If you want to enforce SINGLE-DEVICE login (logging in on a new device
-        // automatically logs out all other devices), simply UNCOMMENT the line below:
-        // =========================================================================
-        // $user->tokens()->delete();
+        $deviceName = $dto->device_name ?? 'auth_token';
+        $ipAddress = $request ? $request->ip() : null;
+        $userAgent = $request ? $request->userAgent() : null;
 
-        $token = $user->createToken($dto->device_name ?? 'auth_token')->plainTextToken;
+        $tokenInstance = $user->createToken($deviceName);
+
+        // Update the token with additional device info
+        /** @var PersonalAccessToken $accessToken */
+        $accessToken = $tokenInstance->accessToken;
+        $accessToken->forceFill([
+            'ip_address' => $ipAddress,
+            'user_agent' => $userAgent,
+        ])->save();
 
         event(new Login('sanctum', $user, false));
 
         return [
             'user' => $user,
-            /**
-             * The access token for authentication.
-             *
-             * @example "1|8d8t2qmIbLUkwylh5aktEXGXVPMwYucUAOYPtihpf9bd84c8"
-             */
-            'access_token' => $token,
-            /**
-             * The type of token.
-             *
-             * @example "Bearer"
-             */
+            'access_token' => $tokenInstance->plainTextToken,
             'token_type' => 'Bearer',
         ];
     }

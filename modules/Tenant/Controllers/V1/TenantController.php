@@ -7,14 +7,23 @@ namespace Modules\Tenant\Controllers\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Tenant\Actions\CreateTenantAction;
 use Modules\Tenant\DTOs\TenantDTO;
 use Modules\Tenant\Repositories\TenantRepository;
 use Modules\Tenant\Resources\TenantResource;
 
+/**
+ * @tags Tenant
+ */
 class TenantController extends Controller
 {
     public function __construct(protected TenantRepository $repository) {}
 
+    /**
+     * List Tenants
+     *
+     * Get all tenants.
+     */
     public function index(Request $request): JsonResponse
     {
         $tenants = $this->repository->all(['*'], ['domains']);
@@ -25,7 +34,12 @@ class TenantController extends Controller
         );
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Store Tenant
+     *
+     * Create a new tenant.
+     */
+    public function store(Request $request, CreateTenantAction $action): JsonResponse
     {
         $request->validate([
             'id' => 'required|string|unique:tenants,id',
@@ -33,9 +47,7 @@ class TenantController extends Controller
         ]);
 
         $dto = TenantDTO::fromRequest($request);
-
-        $tenant = $this->repository->create(['id' => $dto->id]);
-        $tenant->createDomain(['domain' => $dto->domain]);
+        $tenant = $action->execute($dto);
 
         return $this->successResponse(
             new TenantResource($tenant->load('domains')),
@@ -44,6 +56,11 @@ class TenantController extends Controller
         );
     }
 
+    /**
+     * Show Tenant
+     *
+     * Get a tenant by ID.
+     */
     public function show(string $id): JsonResponse
     {
         $tenant = $this->repository->findById($id, ['*'], ['domains']);
@@ -54,6 +71,11 @@ class TenantController extends Controller
         );
     }
 
+    /**
+     * Delete Tenant
+     *
+     * Delete a tenant.
+     */
     public function destroy(string $id): JsonResponse
     {
         $this->repository->delete($id);

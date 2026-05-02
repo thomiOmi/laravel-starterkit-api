@@ -16,8 +16,11 @@ use Illuminate\Support\Carbon;
  * @property string $webhook_id
  * @property string $event
  * @property array $payload
+ * @property array|null $request_headers
  * @property int|null $status_code
+ * @property array|null $response_headers
  * @property string|null $response_body
+ * @property string|null $exception
  * @property string $status
  * @property int $tries
  * @property Carbon|null $last_attempt_at
@@ -30,8 +33,11 @@ class WebhookCall extends Model
         'webhook_id',
         'event',
         'payload',
+        'request_headers',
         'status_code',
+        'response_headers',
         'response_body',
+        'exception',
         'status',
         'tries',
         'last_attempt_at',
@@ -40,6 +46,8 @@ class WebhookCall extends Model
 
     protected $casts = [
         'payload' => 'array',
+        'request_headers' => 'array',
+        'response_headers' => 'array',
         'last_attempt_at' => 'datetime',
     ];
 
