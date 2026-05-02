@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 
 /**
- * @property string $id
+ * @property mixed $id
  * @property string $name
  * @property string|null $ip_address
  * @property string|null $user_agent
@@ -32,7 +32,7 @@ class DeviceResource extends JsonResource
             'user_agent' => $this->user_agent,
             'last_used_at' => $this->last_used_at,
             'created_at' => $this->created_at,
-            'is_current' => $request->user()->currentAccessToken()->id === $this->id,
+            'is_current' => (string) $request->user()->currentAccessToken()->id === (string) $this->id,
         ];
     }
 }

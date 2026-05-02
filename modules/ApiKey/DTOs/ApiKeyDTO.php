@@ -21,9 +21,9 @@ readonly class ApiKeyDTO
     /**
      * Create a DTO from a request.
      */
-    public static function fromRequest(Request $request): static
+    public static function fromRequest(Request $request): self
     {
-        return new static(
+        return new self(
             name: $request->string('name')->toString(),
             abilities: $request->input('abilities', ['*']),
             ip_whitelist: $request->input('ip_whitelist'),
