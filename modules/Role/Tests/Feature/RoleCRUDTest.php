@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Modules\Role\Tests\Feature;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\Role\Models\Role;
@@ -11,63 +13,53 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
+    $this->admin = User::factory()->create();
+    $this->admin->assignRole('super-admin');
 });
 
-test('admin can list roles', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('super-admin');
+describe('Role CRUD Operations', function () {
+    it('allows admin to list roles', function () {
+        $this->actingAs($this->admin)
+            ->getJson('/api/v1/roles')
+            ->assertSuccessful()
+            ->assertJsonPath('status', 'success')
+            ->assertJsonStructure(['data', 'meta' => ['pagination']]);
+    });
 
-    $response = $this->actingAs($admin)
-        ->getJson('/api/v1/roles');
+    it('allows admin to create a new role', function () {
+        $payload = [
+            'name' => 'manager',
+            'permissions' => ['user.view'],
+        ];
 
-    $response->assertStatus(200)
-        ->assertJsonPath('status', 'success')
-        ->assertJsonStructure(['data', 'meta' => ['pagination']]);
-});
+        $this->actingAs($this->admin)
+            ->postJson('/api/v1/roles', $payload)
+            ->assertCreated();
 
-test('admin can create role', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('super-admin');
+        $this->assertDatabaseHas('roles', ['name' => 'manager']);
+    });
 
-    $payload = [
-        'name' => 'manager',
-        'permissions' => ['user.view'],
-    ];
+    it('allows admin to update an existing role', function () {
+        $role = Role::create(['name' => 'old-role']);
+        $payload = [
+            'name' => 'new-role-name',
+            'permissions' => ['user.view', 'user.create'],
+        ];
 
-    $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles', $payload);
+        $this->actingAs($this->admin)
+            ->putJson("/api/v1/roles/{$role->id}", $payload)
+            ->assertSuccessful();
 
-    $response->assertStatus(201);
-    $this->assertDatabaseHas('roles', ['name' => 'manager']);
-});
+        $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => 'new-role-name']);
+    });
 
-test('admin can update role', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('super-admin');
+    it('allows admin to delete a role', function () {
+        $role = Role::create(['name' => 'to-delete']);
 
-    $role = Role::create(['name' => 'old-role']);
+        $this->actingAs($this->admin)
+            ->deleteJson("/api/v1/roles/{$role->id}")
+            ->assertSuccessful();
 
-    $payload = [
-        'name' => 'new-role-name',
-        'permissions' => ['user.view', 'user.create'],
-    ];
-
-    $response = $this->actingAs($admin)
-        ->putJson("/api/v1/roles/{$role->id}", $payload);
-
-    $response->assertStatus(200);
-    $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => 'new-role-name']);
-});
-
-test('admin can delete role', function () {
-    $admin = User::factory()->create();
-    $admin->assignRole('super-admin');
-
-    $role = Role::create(['name' => 'to-delete']);
-
-    $response = $this->actingAs($admin)
-        ->deleteJson("/api/v1/roles/{$role->id}");
-
-    $response->assertStatus(200);
-    $this->assertSoftDeleted('roles', ['id' => $role->id]);
+        $this->assertSoftDeleted('roles', ['id' => $role->id]);
+    });
 });

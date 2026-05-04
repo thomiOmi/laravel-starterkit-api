@@ -9,92 +9,69 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\Tenant\Models\Tenant;
 use Modules\User\Models\User;
-use Tests\TestCase;
 
-class MediaTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+describe('Media Management', function () {
+    beforeEach(function () {
         Storage::fake('public');
-    }
+        $this->tenant = Tenant::create(['id' => 'test-tenant']);
+        tenancy()->initialize($this->tenant);
+        $this->user = User::factory()->create();
+        $this->token = $this->user->createToken('test', [], null, $this->tenant->id)->plainTextToken;
+    });
 
-    public function test_user_can_upload_media(): void
-    {
-        $tenant = Tenant::create(['id' => 'test-tenant']);
-        tenancy()->initialize($tenant);
-
-        $user = User::factory()->create();
-        $token = $user->createToken('test', [], null, $tenant->id)->plainTextToken;
-
+    it('can upload media files', function () {
         $response = $this->postJson('/api/v1/media', [
             'file' => UploadedFile::fake()->image('avatar.jpg'),
             'collection' => 'avatars',
         ], [
-            'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer '.$token,
+            'X-Tenant' => $this->tenant->id,
+            'Authorization' => 'Bearer '.$this->token,
         ]);
 
-        $response->assertStatus(200)
+        $response->assertSuccessful()
             ->assertJsonPath('data.name', 'avatar')
             ->assertJsonPath('data.mime_type', 'image/jpeg');
 
         $this->assertDatabaseHas('media', [
-            'tenant_id' => $tenant->id,
+            'tenant_id' => $this->tenant->id,
             'collection_name' => 'avatars',
         ]);
-    }
+    });
 
-    public function test_user_can_list_media(): void
-    {
-        $tenant = Tenant::create(['id' => 'test-tenant']);
-        tenancy()->initialize($tenant);
-
-        $user = User::factory()->create();
-        $token = $user->createToken('test', [], null, $tenant->id)->plainTextToken;
-
-        // Upload first
+    it('can list uploaded media', function () {
         $this->postJson('/api/v1/media', [
             'file' => UploadedFile::fake()->image('image1.jpg'),
         ], [
-            'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer '.$token,
+            'X-Tenant' => $this->tenant->id,
+            'Authorization' => 'Bearer '.$this->token,
         ]);
 
         $response = $this->getJson('/api/v1/media', [
-            'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer '.$token,
+            'X-Tenant' => $this->tenant->id,
+            'Authorization' => 'Bearer '.$this->token,
         ]);
 
-        $response->assertStatus(200)
+        $response->assertSuccessful()
             ->assertJsonCount(1, 'data');
-    }
+    });
 
-    public function test_user_can_delete_media(): void
-    {
-        $tenant = Tenant::create(['id' => 'test-tenant']);
-        tenancy()->initialize($tenant);
-
-        $user = User::factory()->create();
-        $token = $user->createToken('test', [], null, $tenant->id)->plainTextToken;
-
+    it('can soft delete media', function () {
         $uploadResponse = $this->postJson('/api/v1/media', [
             'file' => UploadedFile::fake()->image('to_delete.jpg'),
         ], [
-            'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer '.$token,
+            'X-Tenant' => $this->tenant->id,
+            'Authorization' => 'Bearer '.$this->token,
         ]);
 
         $mediaId = $uploadResponse->json('data.id');
 
-        $response = $this->deleteJson("/api/v1/media/{$mediaId}", [], [
-            'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer '.$token,
-        ]);
+        $this->deleteJson("/api/v1/media/{$mediaId}", [], [
+            'X-Tenant' => $this->tenant->id,
+            'Authorization' => 'Bearer '.$this->token,
+        ])->assertSuccessful();
 
-        $response->assertStatus(200);
         $this->assertSoftDeleted('media', ['id' => $mediaId]);
-    }
-}
+    });
+});

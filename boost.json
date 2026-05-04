@@ -10,7 +10,9 @@
     ],
     "sail": false,
     "skills": [
+        "fortify-development",
         "laravel-best-practices",
+        "pulse-development",
         "pest-testing",
         "laravel-permission-development"
     ]

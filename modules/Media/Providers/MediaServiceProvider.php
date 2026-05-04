@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace Modules\Media\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Modules\Media\Models\Media;
-use Modules\Media\Models\Observers\MediaObserver;
 
 class MediaServiceProvider extends ServiceProvider
 {
+    public function boot(): void
+    {
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
+    }
+
     public function register(): void
     {
         //
-    }
-
-    public function boot(): void
-    {
-        Media::observe(MediaObserver::class);
     }
 }

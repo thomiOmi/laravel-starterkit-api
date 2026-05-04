@@ -8,26 +8,17 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Modules\AuditLog\Listeners\AuditAuthActivity;
 
-/**
- * Class AuditLogServiceProvider
- *
- * Service provider for AuditLog module.
- */
 class AuditLogServiceProvider extends ServiceProvider
 {
-    /**
-     * Register services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap services.
-     */
     public function boot(): void
     {
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
+
         Event::subscribe(AuditAuthActivity::class);
     }
 }
