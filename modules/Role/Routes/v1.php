@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Modules\Role\Controllers\V1\RoleController;
 
-Route::prefix('roles')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
+Route::prefix('roles')->middleware(['auth:sanctum,tenancy.request', 'throttle:api'])->group(function () {
     Route::get('/', [RoleController::class, 'index'])->middleware('can:role.view')->name('index');
     Route::post('/', [RoleController::class, 'store'])->middleware('can:role.create')->name('store');
     Route::post('/bulk', [RoleController::class, 'bulkAction'])->middleware('can:role.edit')->name('bulk');

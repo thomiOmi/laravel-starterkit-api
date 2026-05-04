@@ -10,6 +10,11 @@ class UserServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        // Routes are registered via App\Providers\RouteServiceProvider
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
+    }
+
+    public function register(): void
+    {
+        //
     }
 }

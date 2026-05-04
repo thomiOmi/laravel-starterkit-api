@@ -1,24 +1,41 @@
 # Authentication & Device Management
 
-Sistem autentikasi menggunakan **Laravel Sanctum** yang telah dimodifikasi untuk mendukung skenario SaaS Multi-tenant dan manajemen perangkat.
+Sistem autentikasi dalam proyek ini sepenuhnya menggunakan **Laravel Fortify** sebagai backend logic dan **Laravel Sanctum** untuk pengelolaan token API.
 
-## 1. Registrasi & Login
-- **Registrasi:** User dapat mendaftar melalui `POST /auth/register`. Validasi email bersifat unik per tenant.
-- **Login:** Menggunakan `POST /auth/login`. Respon akan menyertakan `access_token` dan data user.
+## 1. Fitur yang Tersedia
+Seluruh endpoint autentikasi berada di bawah prefix `/api/v1/auth` dan wajib menyertakan header `X-Tenant`.
 
-## 2. Manajemen Perangkat (Multi-Device)
-Secara default, sistem mendukung login dari banyak perangkat sekaligus (**Multi-Device**). Setiap login akan menghasilkan token baru tanpa menghapus token perangkat lain.
+- **Registrasi:** `POST /register`
+- **Login:** `POST /login`
+- **Logout:** `POST /logout`
+- **Reset Password:** `POST /forgot-password` dan `POST /reset-password`
+- **Verifikasi Email:** `POST /email/verification-notification` dan `GET /email/verify/{id}/{hash}`
+- **Two-Factor Authentication (2FA):** Tersedia melalui endpoint standar Fortify.
 
-### Cara Mengubah ke Single-Device:
-Jika Anda ingin user hanya bisa login di satu perangkat saja (login baru akan menendang login lama), edit file `modules/Auth/Actions/LoginAction.php`:
+## 2. Respon JSON Standar
+Meskipun menggunakan Fortify, sistem telah dikonfigurasi untuk mengembalikan respon JSON yang konsisten:
 
-```php
-// Hapus komentar pada baris ini:
-$user->tokens()->delete();
+```json
+{
+    "status": "success",
+    "message": "Login successful.",
+    "data": {
+        "user": { ... },
+        "access_token": "...",
+        "token_type": "Bearer"
+    }
+}
 ```
 
-## 3. Email Verification
-Sistem mendukung verifikasi email secara otomatis setelah registrasi. Pesan email dikirim secara asinkron (queue) menggunakan notification standar Laravel yang telah dilokalisasi.
+## 3. Manajemen Perangkat (Multi-Device)
+Setiap login menghasilkan `PersonalAccessToken` baru yang mencatat informasi perangkat.
 
-## 4. User Profile
-Endpoint `GET /auth/me` menyediakan informasi lengkap user yang sedang login, termasuk daftar permission dan role yang dimiliki.
+- **Daftar Perangkat:** `GET /auth/devices`
+- **Logout Perangkat Spesifik:** `DELETE /auth/devices/{id}`
+- **Logout Perangkat Lain:** `POST /auth/devices/logout-others`
+
+## 4. Keamanan Multi-tenancy
+Setiap token bersifat tenant-aware. User dari Tenant A tidak dapat menggunakan tokennya untuk mengakses data milik Tenant B, meskipun memiliki ID user yang sama (jika ada).
+
+## 5. Lokalisasi (i18n)
+Pesan error dan sukses autentikasi mendukung multi-bahasa melalui header `Accept-Language` (id/en).

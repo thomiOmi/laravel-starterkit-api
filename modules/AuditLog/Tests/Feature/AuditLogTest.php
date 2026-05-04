@@ -9,20 +9,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\Role\Models\Role;
 use Modules\User\Models\User;
-use Tests\TestCase;
 
-class AuditLogTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->seed(RoleSeeder::class);
-    }
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+});
 
-    public function test_it_logs_user_creation(): void
-    {
+describe('Model Activity Logging', function () {
+    it('logs user creation', function () {
         $user = User::factory()->create([
             'name' => 'John Doe',
             'email' => 'john@example.com',
@@ -33,12 +28,10 @@ class AuditLogTest extends TestCase
             'subject_type' => User::class,
             'description' => 'created',
         ]);
-    }
+    });
 
-    public function test_it_logs_user_update(): void
-    {
+    it('logs user update', function () {
         $user = User::factory()->create();
-
         $user->update(['name' => 'Updated Name']);
 
         $this->assertDatabaseHas('activity_log', [
@@ -46,10 +39,9 @@ class AuditLogTest extends TestCase
             'subject_type' => User::class,
             'description' => 'updated',
         ]);
-    }
+    });
 
-    public function test_it_logs_role_creation(): void
-    {
+    it('logs role creation', function () {
         $role = Role::create(['name' => 'manager', 'guard_name' => 'web']);
 
         $this->assertDatabaseHas('activity_log', [
@@ -57,10 +49,11 @@ class AuditLogTest extends TestCase
             'subject_type' => Role::class,
             'description' => 'created',
         ]);
-    }
+    });
+});
 
-    public function test_it_logs_login_event(): void
-    {
+describe('Auth Event Logging', function () {
+    it('logs login event', function () {
         $user = User::factory()->create();
 
         event(new Login('web', $user, false));
@@ -70,20 +63,25 @@ class AuditLogTest extends TestCase
             'log_name' => 'auth',
             'event' => 'login',
         ]);
-    }
+    });
+});
 
-    public function test_only_authorized_users_can_access_audit_logs(): void
-    {
+describe('Audit Log API Access', function () {
+    it('denies access to unauthorized users', function () {
         $user = User::factory()->create();
-        $user->assignRole('user'); // Does not have audit.view permission
+        $user->assignRole('user');
 
-        $response = $this->actingAs($user)->getJson('/api/v1/audit-logs');
-        $response->assertStatus(403);
+        $this->actingAs($user)
+            ->getJson('/api/v1/audit-logs')
+            ->assertForbidden();
+    });
 
+    it('allows access to admin users', function () {
         $admin = User::factory()->create();
-        $admin->assignRole('admin'); // Has audit.view permission
+        $admin->assignRole('admin');
 
-        $response = $this->actingAs($admin)->getJson('/api/v1/audit-logs');
-        $response->assertStatus(200);
-    }
-}
+        $this->actingAs($admin)
+            ->getJson('/api/v1/audit-logs')
+            ->assertSuccessful();
+    });
+});

@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\File;
 
-/**
- * We avoid using $this->property to prevent "Undefined property" errors
- * which can occur in some Pest configurations. Instead, we use local
- * variables and the 'use' keyword for closures.
- */
 beforeEach(function () {
     $modulePath = base_path('modules/TestModule');
 
@@ -34,13 +29,14 @@ it('can create a new module interactively', function () {
         ->expectsConfirmation('Create Migration?', 'yes')
         ->expectsConfirmation('Create Factory?', 'yes')
         ->expectsConfirmation('Create Seeder?', 'yes')
+        ->expectsConfirmation('Create Resource?', 'yes')
         ->assertExitCode(0);
 
     $modulePath = base_path('modules/TestModule');
     expect(File::exists($modulePath))->toBeTrue()
         ->and(File::exists($modulePath.'/Models/TestModule.php'))->toBeTrue()
         ->and(File::exists($modulePath.'/Repositories/TestModuleRepository.php'))->toBeTrue()
-        ->and(File::exists($modulePath.'/Routes/api.php'))->toBeTrue();
+        ->and(File::exists($modulePath.'/Routes/v1.php'))->toBeTrue();
 });
 
 it('can skip optional components', function () {
@@ -53,6 +49,7 @@ it('can skip optional components', function () {
         ->expectsConfirmation('Create Migration?', 'no')
         ->expectsConfirmation('Create Factory?', 'no')
         ->expectsConfirmation('Create Seeder?', 'no')
+        ->expectsConfirmation('Create Resource?', 'no')
         ->assertExitCode(0);
 
     $modulePath = base_path('modules/TestModule');

@@ -11,6 +11,8 @@ class ApiKeyServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
+
         $this->app['auth']->extend('api_key', function ($app, $name, array $config) {
             return new ApiKeyGuard($app['request']);
         });

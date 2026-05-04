@@ -10,6 +10,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\MediaLibrary\MediaCollections\Models\Media as SpatieMedia;
 
+/**
+ * @property string|null $tenant_id
+ */
 class Media extends SpatieMedia
 {
     use HasDefaultBehavior, HasTenant, SoftDeletes;
