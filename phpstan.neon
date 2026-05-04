@@ -10,9 +10,6 @@ parameters:
     # Level 9 is the highest level
     level: 5
 
-    ignoreErrors:
-        - '#Access to an undefined property Modules\\User\\Models\\User::\$#'
-
     reportUnmatchedIgnoredErrors: false
 
     excludePaths:

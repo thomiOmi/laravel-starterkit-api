@@ -41,6 +41,11 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, HasAuditLogs, HasDefaultBehavior, HasFactory, HasRoles, HasTenant, Notifiable;
 
     /**
+     * The user's avatar URL or path.
+     */
+    public ?string $avatar = null;
+
+    /**
      * Send the email verification notification.
      */
     public function sendEmailVerificationNotification(): void

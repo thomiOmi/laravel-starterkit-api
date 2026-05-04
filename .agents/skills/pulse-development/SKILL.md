@@ -22,7 +22,7 @@ php artisan vendor:publish --provider="Laravel\Pulse\PulseServiceProvider"
 php artisan migrate
 ```
 
-The dashboard is available at `/pulse`.
+The dashboard is available at `/pulse`. 
 
 ## Dashboard Authorization
 

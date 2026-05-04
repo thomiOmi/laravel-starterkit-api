@@ -1,12 +1,13 @@
 {
     "agents": [
-        "antigravity"
+        "opencode"
     ],
     "guidelines": true,
     "mcp": true,
     "nightwatch_mcp": false,
     "packages": [
-        "spatie/laravel-permission"
+        "spatie/laravel-permission",
+        "spatie/laravel-medialibrary"
     ],
     "sail": false,
     "skills": [
@@ -14,6 +15,7 @@
         "laravel-best-practices",
         "pulse-development",
         "pest-testing",
+        "medialibrary-development",
         "laravel-permission-development"
     ]
 }
