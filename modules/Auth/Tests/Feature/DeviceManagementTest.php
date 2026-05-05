@@ -20,12 +20,15 @@ class DeviceManagementTest extends TestCase
 
         $user = User::factory()->create();
 
-        $user->createToken('Device 1', [], null, $tenant->id);
-        $user->createToken('Device 2', [], null, $tenant->id);
+        $user->createToken('Device 1')->accessToken->forceFill(['tenant_id' => $tenant->id])->save();
+        $user->createToken('Device 2')->accessToken->forceFill(['tenant_id' => $tenant->id])->save();
+
+        $currentToken = $user->createToken('Current Device');
+        $currentToken->accessToken->forceFill(['tenant_id' => $tenant->id])->save();
 
         $response = $this->getJson('/api/v1/auth/devices', [
             'X-Tenant' => $tenant->id,
-            'Authorization' => 'Bearer '.$user->createToken('Current Device', [], null, $tenant->id)->plainTextToken,
+            'Authorization' => 'Bearer '.$currentToken->plainTextToken,
         ]);
 
         $response->assertStatus(200)
@@ -39,8 +42,10 @@ class DeviceManagementTest extends TestCase
 
         $user = User::factory()->create();
 
-        $user->createToken('Other Device', [], null, $tenant->id);
-        $currentToken = $user->createToken('Current Device', [], null, $tenant->id)->plainTextToken;
+        $user->createToken('Other Device')->accessToken->forceFill(['tenant_id' => $tenant->id])->save();
+        $currentTokenResult = $user->createToken('Current Device');
+        $currentTokenResult->accessToken->forceFill(['tenant_id' => $tenant->id])->save();
+        $currentToken = $currentTokenResult->plainTextToken;
 
         $response = $this->postJson('/api/v1/auth/devices/logout-others', [], [
             'X-Tenant' => $tenant->id,
