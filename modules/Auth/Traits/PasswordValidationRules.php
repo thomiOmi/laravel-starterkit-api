@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Modules\Auth\Actions\Fortify;
+namespace Modules\Auth\Traits;
 
-use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 trait PasswordValidationRules
@@ -12,7 +11,7 @@ trait PasswordValidationRules
     /**
      * Get the validation rules used to validate passwords.
      *
-     * @return array<int, Rule|array<mixed>|string>
+     * @return array<int, mixed>
      */
     protected function passwordRules(): array
     {

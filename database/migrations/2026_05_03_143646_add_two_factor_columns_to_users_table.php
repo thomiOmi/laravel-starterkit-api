@@ -1,5 +1,10 @@
 <?php
 
+// Two factor columns — previously managed by Laravel Fortify
+// Now used by custom TwoFactorService implementation
+
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

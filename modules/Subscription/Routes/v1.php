@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Modules\Subscription\Routes;
-
 use Illuminate\Support\Facades\Route;
 use Modules\Subscription\Controllers\V1\SubscriptionPlanController;
 use Modules\Subscription\Controllers\V1\TenantSubscriptionController;

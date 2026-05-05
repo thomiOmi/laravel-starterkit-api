@@ -62,6 +62,7 @@ class MakeModule extends Command
             'migration' => $this->confirm('Create Migration?', true),
             'factory' => $this->confirm('Create Factory?', true),
             'seeder' => $this->confirm('Create Seeder?', true),
+            'resource' => $this->confirm('Create Resource?', true),
         ];
 
         $this->info("Generating module {$name}...");
@@ -129,7 +130,7 @@ class MakeModule extends Command
     {
         // Essential Files
         $this->createFile($path."/Providers/{$name}ServiceProvider.php", $this->getServiceProviderTemplate($name));
-        $this->createFile($path.'/Routes/api.php', $this->getRouteTemplate($name));
+        $this->createFile($path.'/Routes/v1.php', $this->getRouteTemplate($name));
         $this->createFile($path."/Models/{$name}.php", $this->getModelTemplate($name));
         $this->createFile($path."/Controllers/{$name}Controller.php", $this->getControllerTemplate($name, $options));
         $this->createFile($path."/Resources/{$name}Resource.php", $this->getResourceTemplate($name));

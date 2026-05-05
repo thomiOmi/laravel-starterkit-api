@@ -22,13 +22,14 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'avatar'])]
-#[Hidden(['password', 'remember_token'])]
 /**
  * @property string $id
  * @property string $name
  * @property string $email
  * @property string|null $avatar
+ * @property string|null $provider
+ * @property string|null $provider_id
+ * @property Carbon|null $password_changed_at
  * @property Carbon|null $email_verified_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -36,14 +37,11 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Permission> $permissions
  */
+#[Fillable(['name', 'email', 'password', 'avatar', 'password_changed_at', 'provider', 'provider_id', 'email_verified_at'])]
+#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasAuditLogs, HasDefaultBehavior, HasFactory, HasRoles, HasTenant, Notifiable;
-
-    /**
-     * The user's avatar URL or path.
-     */
-    public ?string $avatar = null;
 
     /**
      * Send the email verification notification.
@@ -62,6 +60,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
+            'password_changed_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

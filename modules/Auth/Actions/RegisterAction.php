@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Modules\Auth\Actions\Fortify;
+namespace Modules\Auth\Actions;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Laravel\Fortify\Contracts\CreatesNewUsers;
+use Modules\Auth\Traits\PasswordValidationRules;
 use Modules\User\Models\User;
 
-class CreateNewUser implements CreatesNewUsers
+class RegisterAction
 {
     use PasswordValidationRules;
 
@@ -22,7 +22,7 @@ class CreateNewUser implements CreatesNewUsers
      *
      * @throws ValidationException
      */
-    public function create(array $input): User
+    public function execute(array $input): User
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
@@ -40,6 +40,7 @@ class CreateNewUser implements CreatesNewUsers
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
+            'password_changed_at' => now(),
         ]);
     }
 }
