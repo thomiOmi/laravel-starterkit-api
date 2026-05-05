@@ -15,6 +15,16 @@ class AuthController extends Controller
     use ApiResponser;
 
     /**
+     * Log the user out of the application.
+     */
+    public function logout(Request $request): JsonResponse
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return $this->successResponse(null, __('auth.logout_success'));
+    }
+
+    /**
      * Get the authenticated User.
      */
     public function me(Request $request): JsonResponse

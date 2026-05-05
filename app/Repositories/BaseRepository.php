@@ -189,6 +189,18 @@ abstract class BaseRepository
     }
 
     /**
+     * Update or create a record.
+     *
+     * @param  array  $attributes  The attributes to find the record.
+     * @param  array  $values  The values to update or create with.
+     * @return T
+     */
+    public function updateOrCreate(array $attributes, array $values = []): Model
+    {
+        return $this->model->updateOrCreate($attributes, $values);
+    }
+
+    /**
      * Create a new record.
      *
      * @param  array  $details  The record details.
