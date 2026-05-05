@@ -9,6 +9,7 @@ use App\Traits\ApiResponser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 use Modules\User\Repositories\UserRepository;
 use Throwable;
 
@@ -20,13 +21,18 @@ class SocialAuthController extends Controller
 
     public function redirect(string $provider): RedirectResponse
     {
-        return Socialite::driver($provider)->stateless()->redirect();
+        /** @var AbstractProvider $driver */
+        $driver = Socialite::driver($provider);
+
+        return $driver->stateless()->redirect();
     }
 
     public function callback(string $provider): JsonResponse
     {
         try {
-            $socialUser = Socialite::driver($provider)->stateless()->user();
+            /** @var AbstractProvider $driver */
+            $driver = Socialite::driver($provider);
+            $socialUser = $driver->stateless()->user();
         } catch (Throwable $e) {
             return $this->errorResponse('Social authentication failed. Please try again.', 422);
         }

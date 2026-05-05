@@ -22,8 +22,6 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'avatar', 'password_changed_at', 'provider', 'provider_id', 'email_verified_at'])]
-#[Hidden(['password', 'remember_token'])]
 /**
  * @property string $id
  * @property string $name
@@ -39,6 +37,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Permission> $permissions
  */
+#[Fillable(['name', 'email', 'password', 'avatar', 'password_changed_at', 'provider', 'provider_id', 'email_verified_at'])]
+#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasAuditLogs, HasDefaultBehavior, HasFactory, HasRoles, HasTenant, Notifiable;

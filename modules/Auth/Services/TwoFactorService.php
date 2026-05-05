@@ -7,6 +7,7 @@ namespace Modules\Auth\Services;
 use BaconQrCode\Renderer\Color\Rgb;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\EyeFill;
 use BaconQrCode\Renderer\RendererStyle\Fill;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
@@ -84,7 +85,7 @@ class TwoFactorService
     {
         $url = $this->engine->getQRCodeUrl($company, $holder, $secret);
         $renderer = new ImageRenderer(
-            new RendererStyle(192, 0, null, null, Fill::withForegroundColor(new Rgb(255, 255, 255), new Rgb(45, 55, 72))),
+            new RendererStyle(192, 0, null, null, Fill::withForegroundColor(new Rgb(255, 255, 255), new Rgb(45, 55, 72), EyeFill::inherit(), EyeFill::inherit(), EyeFill::inherit())),
             new SvgImageBackEnd
         );
 
