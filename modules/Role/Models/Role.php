@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Role\Models;
 
-use App\Traits\Models\HasAuditLogs;
 use App\Traits\Models\HasDefaultBehavior;
 use App\Traits\Models\HasTenant;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,7 +22,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole
 {
-    use HasAuditLogs, HasDefaultBehavior, HasTenant;
+    use HasDefaultBehavior, HasTenant;
 
     protected $keyType = 'string';
 
