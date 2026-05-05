@@ -7,20 +7,26 @@ namespace Modules\Auth\Controllers\V1;
 use App\Http\Controllers\Controller;
 use App\Traits\ApiResponser;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Modules\Auth\Actions\RegisterAction;
+use Modules\Auth\Requests\RegisterRequest;
 
 class RegisterController extends Controller
 {
     use ApiResponser;
 
+    /**
+     * Create a new controller instance.
+     */
     public function __construct(
         protected RegisterAction $registerAction
     ) {}
 
-    public function register(Request $request): JsonResponse
+    /**
+     * Handle registration request.
+     */
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $user = $this->registerAction->execute($request->all());
+        $user = $this->registerAction->execute($request->validated());
         $user->sendEmailVerificationNotification();
 
         return $this->successResponse(

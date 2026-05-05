@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-namespace Modules\Webhook\Routes;
-
 use Illuminate\Support\Facades\Route;
 use Modules\Webhook\Controllers\V1\WebhookController;
 

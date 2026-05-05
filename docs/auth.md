@@ -51,7 +51,7 @@ Alur login saat 2FA aktif:
 > **Note**: Frontend bertanggung jawab merender SVG yang dikembalikan oleh endpoint QR Code.
 
 ## 2. Respon JSON Standar
-Meskipun menggunakan Fortify, sistem telah dikonfigurasi untuk mengembalikan respon JSON yang konsisten:
+Semua endpoint autentikasi mengembalikan respon JSON yang konsisten menggunakan trait `ApiResponser`:
 
 ```json
 {

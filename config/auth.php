@@ -133,4 +133,16 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Password Expiry
+    |--------------------------------------------------------------------------
+    |
+    | Number of days before a password is considered expired.
+    | Set to 0 to disable password expiry.
+    |
+    */
+
+    'password_expiry_days' => env('PASSWORD_EXPIRY_DAYS', 90),
+
 ];

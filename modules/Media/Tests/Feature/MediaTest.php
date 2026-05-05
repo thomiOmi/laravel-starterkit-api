@@ -18,7 +18,9 @@ describe('Media Management', function () {
         $this->tenant = Tenant::create(['id' => 'test-tenant']);
         tenancy()->initialize($this->tenant);
         $this->user = User::factory()->create();
-        $this->token = $this->user->createToken('test', [], null, $this->tenant->id)->plainTextToken;
+        $tokenResult = $this->user->createToken('test');
+        $tokenResult->accessToken->forceFill(['tenant_id' => $this->tenant->id])->save();
+        $this->token = $tokenResult->plainTextToken;
     });
 
     it('can upload media files', function () {
