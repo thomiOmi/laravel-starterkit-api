@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\User\Models;
 
 use App\Notifications\VerifyEmail;
-use App\Traits\Models\HasAuditLogs;
 use App\Traits\Models\HasDefaultBehavior;
 use App\Traits\Models\HasTenant;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -41,7 +40,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasAuditLogs, HasDefaultBehavior, HasFactory, HasRoles, HasTenant, Notifiable;
+    use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, HasTenant, Notifiable;
 
     /**
      * Send the email verification notification.

@@ -33,7 +33,8 @@ sequenceDiagram
 Setiap modul bersifat mandiri (*self-contained*), namun dapat berinteraksi satu sama lain melalui:
 1. **Service Providers:** Untuk mendaftarkan fitur, migrasi, dan rute.
 2. **Global Scopes (HasTenant):** Untuk memastikan isolasi data tenant secara otomatis.
-3. **Common Models:** Modul seperti `User` dan `Tenant` sering dirujuk oleh modul lain (misal: `Subscription` merujuk ke `Tenant`).
+3. **Common Models:** Modul seperti `User` dan `Tenant` sering dirujuk oleh modul lain.
+4. **Feature Flags:** Menggunakan Laravel Pennant untuk kontrol fitur yang dinamis antar tenant atau user.
 
 ## Standar Kode
 

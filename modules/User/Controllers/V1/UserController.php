@@ -9,6 +9,7 @@ use App\Http\Requests\BulkActionRequest;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Pennant\Feature;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Actions\DeleteUserAction;
 use Modules\User\Actions\UpdateUserAction;
@@ -43,6 +44,11 @@ class UserController extends Controller
     #[QueryParameter(name: 'order', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
     public function index(Request $request, UserFilter $filter): JsonResponse
     {
+        // Example usage of Laravel Pennant
+        if (Feature::active('beta-feature')) {
+            // Logic for beta feature
+        }
+
         $users = $this->userRepository
             ->applyFilter($filter)
             ->paginate(

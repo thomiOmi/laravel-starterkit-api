@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "45decd852748c52eec7b9c2496fed21c",
+    "content-hash": "3320d501dfe90c26d260c4d685cb201c",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1708,6 +1708,82 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2026-04-21T13:32:11+00:00"
+        },
+        {
+            "name": "laravel/pennant",
+            "version": "v1.23.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/pennant.git",
+                "reference": "d3d531d0ba640f9d0bd3580990fb205244e956ca"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/pennant/zipball/d3d531d0ba640f9d0bd3580990fb205244e956ca",
+                "reference": "d3d531d0ba640f9d0bd3580990fb205244e956ca",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/console": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/container": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/database": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/queue": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+                "php": "^8.1",
+                "symfony/console": "^6.0|^7.0|^8.0",
+                "symfony/finder": "^6.0|^7.0|^8.0"
+            },
+            "require-dev": {
+                "laravel/octane": "^1.4|^2.0",
+                "orchestra/testbench": "^8.36|^9.15|^10.8|^11.0",
+                "phpstan/phpstan": "^1.10"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Feature": "Laravel\\Pennant\\Feature"
+                    },
+                    "providers": [
+                        "Laravel\\Pennant\\PennantServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Laravel\\Pennant\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "A simple, lightweight library for managing feature flags.",
+            "homepage": "https://github.com/laravel/pennant",
+            "keywords": [
+                "feature",
+                "flags",
+                "laravel",
+                "pennant"
+            ],
+            "support": {
+                "issues": "https://github.com/laravel/pennant/issues",
+                "source": "https://github.com/laravel/pennant"
+            },
+            "time": "2026-03-19T02:27:39+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -4825,97 +4901,6 @@
                 "source": "https://github.com/spatie/image-optimizer/tree/1.8.1"
             },
             "time": "2025-11-26T10:57:19+00:00"
-        },
-        {
-            "name": "spatie/laravel-activitylog",
-            "version": "4.12.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/spatie/laravel-activitylog.git",
-                "reference": "2a2024fcac05628b0d1bfdbb1b94dda8b0661dc0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-activitylog/zipball/2a2024fcac05628b0d1bfdbb1b94dda8b0661dc0",
-                "reference": "2a2024fcac05628b0d1bfdbb1b94dda8b0661dc0",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/config": "^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
-                "illuminate/database": "^8.69 || ^9.27 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
-                "illuminate/support": "^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0 || ^13.0",
-                "php": "^8.1",
-                "spatie/laravel-package-tools": "^1.6.3"
-            },
-            "require-dev": {
-                "ext-json": "*",
-                "orchestra/testbench": "^6.23 || ^7.0 || ^8.0 || ^9.6 || ^10.0 || ^11.0",
-                "pestphp/pest": "^1.20 || ^2.0 || ^3.0 || ^4.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Spatie\\Activitylog\\ActivitylogServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "files": [
-                    "src/helpers.php"
-                ],
-                "psr-4": {
-                    "Spatie\\Activitylog\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Freek Van der Herten",
-                    "email": "freek@spatie.be",
-                    "homepage": "https://spatie.be",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Sebastian De Deyne",
-                    "email": "sebastian@spatie.be",
-                    "homepage": "https://spatie.be",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Tom Witkowski",
-                    "email": "dev.gummibeer@gmail.com",
-                    "homepage": "https://gummibeer.de",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A very simple activity logger to monitor the users of your website or application",
-            "homepage": "https://github.com/spatie/activitylog",
-            "keywords": [
-                "activity",
-                "laravel",
-                "log",
-                "spatie",
-                "user"
-            ],
-            "support": {
-                "issues": "https://github.com/spatie/laravel-activitylog/issues",
-                "source": "https://github.com/spatie/laravel-activitylog/tree/4.12.3"
-            },
-            "funding": [
-                {
-                    "url": "https://spatie.be/open-source/support-us",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/spatie",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-03-24T12:33:53+00:00"
         },
         {
             "name": "spatie/laravel-medialibrary",

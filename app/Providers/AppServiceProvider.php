@@ -11,7 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Pennant\Feature;
 use Laravel\Sanctum\Sanctum;
+use Modules\User\Models\User;
 
 /**
  * General application service provider.
@@ -33,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
+        $this->defineFeatures();
+
         Model::preventLazyLoading(! app()->isProduction());
         Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
 
@@ -42,6 +46,16 @@ class AppServiceProvider extends ServiceProvider
         // This works in the gate layer which is used by $user->can() and @can()
         Gate::before(function ($user, $ability) {
             return $user->hasRole('super-admin') ? true : null;
+        });
+    }
+
+    /**
+     * Define the feature flags for the application.
+     */
+    protected function defineFeatures(): void
+    {
+        Feature::define('beta-feature', function (User $user) {
+            return $user->hasRole('admin');
         });
     }
 
