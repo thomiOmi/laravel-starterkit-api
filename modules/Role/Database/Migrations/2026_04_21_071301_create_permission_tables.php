@@ -13,9 +13,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /** @var bool $teams */
         $teams = config('permission.teams');
+        /** @var array<string, string> $tableNames */
         $tableNames = config('permission.table_names');
+        /** @var array<string, string> $columnNames */
         $columnNames = config('permission.column_names');
+
         $pivotRole = $columnNames['role_pivot_key'] ?? 'role_id';
         $pivotPermission = $columnNames['permission_pivot_key'] ?? 'permission_id';
 
@@ -125,6 +129,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        /** @var array<string, string> $tableNames */
         $tableNames = config('permission.table_names');
 
         if (empty($tableNames)) {

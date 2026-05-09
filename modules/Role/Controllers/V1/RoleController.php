@@ -117,6 +117,7 @@ class RoleController extends Controller
      */
     public function bulkAction(BulkActionRequest $request): JsonResponse
     {
+        /** @var array{ids: array<int, string|int>, action: string} $validated */
         $validated = $request->validated();
 
         $count = $this->repository->bulk(
@@ -124,9 +125,11 @@ class RoleController extends Controller
             $validated['action'],
         );
 
+        $action = $validated['action'];
+
         return $this->successResponse(
             ['count' => $count],
-            "Roles {$validated['action']} successfully"
+            "Roles {$action} successfully"
         );
     }
 }

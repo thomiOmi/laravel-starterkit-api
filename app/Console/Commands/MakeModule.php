@@ -29,10 +29,10 @@ class MakeModule extends Command
      */
     public function handle(): void
     {
-        $name = $this->argument('name');
+        $name = (string) $this->argument('name');
 
         if (! $name) {
-            $name = $this->ask('What is the name of the module? (e.g. Blog)');
+            $name = (string) $this->ask('What is the name of the module? (e.g. Blog)');
         }
 
         if (! $name) {
@@ -76,6 +76,8 @@ class MakeModule extends Command
 
     /**
      * Create module directory structure.
+     *
+     * @param  array<string, bool>  $options
      */
     protected function createDirectories(string $path, array $options): void
     {
@@ -125,6 +127,8 @@ class MakeModule extends Command
 
     /**
      * Create boilerplate files.
+     *
+     * @param  array<string, bool>  $options
      */
     protected function createFiles(string $name, string $path, array $options): void
     {
@@ -166,6 +170,9 @@ class MakeModule extends Command
         File::put($path, $content);
     }
 
+    /**
+     * @param  array<string, bool>  $options
+     */
     protected function showSummary(string $name, array $options): void
     {
         $this->table(
@@ -271,6 +278,9 @@ class {$name}Repository extends BaseRepository
 PHP;
     }
 
+    /**
+     * @param  array<string, bool>  $options
+     */
     protected function getControllerTemplate(string $name, array $options): string
     {
         $repoImport = $options['repository'] ? "use Modules\\{$name}\\Repositories\\{$name}Repository;" : '';
@@ -471,6 +481,9 @@ class {$name}Filter extends BaseFilter
 PHP;
     }
 
+    /**
+     * @param  array<string, bool>  $options
+     */
     protected function generateMigration(string $name, string $path, array $options): void
     {
         $tableName = Str::snake(Str::plural($name));

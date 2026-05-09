@@ -7,6 +7,7 @@ namespace Modules\Role\Requests;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * Role Request
@@ -20,6 +21,8 @@ class RoleRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
+     *
+     * @return array<string, array<int, string|Unique>> The validation rules.
      */
     public function rules(): array
     {

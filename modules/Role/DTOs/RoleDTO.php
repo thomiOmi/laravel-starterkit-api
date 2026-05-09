@@ -12,7 +12,7 @@ readonly class RoleDTO
      * Create a new RoleDTO instance.
      *
      * @param  string  $name  The role name.
-     * @param  array  $permissions  The list of permissions.
+     * @param  array<int, string>  $permissions  The list of permissions.
      * @param  string|null  $description  The role description.
      */
     public function __construct(
@@ -23,13 +23,25 @@ readonly class RoleDTO
 
     /**
      * Create a RoleDTO instance from a request.
+     *
+     * @param  FormRequest  $request  The incoming request.
+     * @return self The created DTO instance.
      */
     public static function fromRequest(FormRequest $request): self
     {
+        /** @var string $name */
+        $name = $request->validated('name');
+
+        /** @var array<int, string> $permissions */
+        $permissions = $request->validated('permissions', []);
+
+        /** @var string|null $description */
+        $description = $request->validated('description');
+
         return new self(
-            name: $request->validated('name'),
-            permissions: $request->validated('permissions', []),
-            description: $request->validated('description')
+            name: $name,
+            permissions: $permissions,
+            description: $description
         );
     }
 }

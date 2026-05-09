@@ -40,6 +40,7 @@ class ModuleList extends Command
         $data = [];
 
         foreach ($modules as $modulePath) {
+            $modulePath = (string) $modulePath;
             $name = basename($modulePath);
 
             // Check for ServiceProvider
