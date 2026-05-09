@@ -24,10 +24,6 @@ class LoginController extends Controller
         $dto = LoginDTO::fromRequest($request);
         $result = $this->loginAction->execute($dto, $request);
 
-        if (isset($result['two_factor']) && $result['two_factor']) {
-            return $this->successResponse($result, __('auth.two_factor_required'));
-        }
-
         return $this->successResponse($result, __('auth.login_success'));
     }
 }
