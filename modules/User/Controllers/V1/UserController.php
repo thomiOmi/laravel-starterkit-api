@@ -40,8 +40,9 @@ class UserController extends Controller
     #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
     #[QueryParameter(name: 'search', description: 'Search keyword to filter users by name or email.', type: 'string', required: false, example: 'john')]
-    #[QueryParameter(name: 'sort', description: 'Column name to sort by.', type: 'string', required: false, default: 'created_at', example: 'name')]
-    #[QueryParameter(name: 'order', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
+    #[QueryParameter(name: 'sort_by', description: 'Column name to sort by.', type: 'string', required: false, default: 'created_at', example: 'name')]
+    #[QueryParameter(name: 'sort_direction', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
+    #[QueryParameter(name: 'role', description: 'Filter by role name.', type: 'string', required: false, example: 'admin')]
     public function index(Request $request, UserFilter $filter): JsonResponse
     {
         // Example usage of Laravel Pennant
@@ -52,7 +53,7 @@ class UserController extends Controller
         $users = $this->userRepository
             ->applyFilter($filter)
             ->paginate(
-                perPage: (int) $request->get('per_page', 10),
+                perPage: $request->integer('per_page', 10),
                 relations: ['roles', 'permissions']
             );
 
@@ -64,6 +65,7 @@ class UserController extends Controller
      *
      * @param  UserRequest  $request  The user request.
      * @param  CreateUserAction  $action  The create user action.
+     * @return JsonResponse The JSON response containing the created user.
      */
     public function store(UserRequest $request, CreateUserAction $action): JsonResponse
     {
@@ -81,6 +83,7 @@ class UserController extends Controller
      * Display the specified user.
      *
      * @param  string|int  $id  The user ID.
+     * @return JsonResponse The JSON response containing the user.
      */
     public function show(string|int $id): JsonResponse
     {
@@ -98,6 +101,7 @@ class UserController extends Controller
      * @param  UserRequest  $request  The user request.
      * @param  string|int  $id  The user ID.
      * @param  UpdateUserAction  $action  The update user action.
+     * @return JsonResponse The JSON response containing the updated user.
      */
     public function update(UserRequest $request, string|int $id, UpdateUserAction $action): JsonResponse
     {
@@ -115,6 +119,7 @@ class UserController extends Controller
      *
      * @param  string|int  $id  The user ID.
      * @param  DeleteUserAction  $action  The delete user action.
+     * @return JsonResponse The JSON response indicating success.
      */
     public function destroy(string|int $id, DeleteUserAction $action): JsonResponse
     {
@@ -130,9 +135,11 @@ class UserController extends Controller
      * Perform bulk action on users.
      *
      * @param  BulkActionRequest  $request  The validated bulk action request.
+     * @return JsonResponse The JSON response containing the result of the bulk action.
      */
     public function bulkAction(BulkActionRequest $request): JsonResponse
     {
+        /** @var array{ids: array<int, string|int>, action: string} $validated */
         $validated = $request->validated();
 
         $count = $this->userRepository->bulk(
@@ -140,9 +147,11 @@ class UserController extends Controller
             $validated['action'],
         );
 
+        $action = $validated['action'];
+
         return $this->successResponse(
             ['count' => $count],
-            "Users {$validated['action']} successfully"
+            "Users {$action} successfully"
         );
     }
 }

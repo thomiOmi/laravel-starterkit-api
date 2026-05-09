@@ -8,6 +8,7 @@ use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 
 /**
  * User Request
@@ -23,13 +24,13 @@ class UserRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, array<int, string|Unique|ValidationRule>> The validation rules.
      */
     public function rules(): array
     {
         $userId = $this->route('user');
 
-        $rules = [
+        return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [
                 'required',
@@ -45,7 +46,5 @@ class UserRequest extends FormRequest
                 'confirmed',
             ],
         ];
-
-        return $rules;
     }
 }

@@ -21,23 +21,29 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
- * @property string $id
- * @property string $name
- * @property string $email
- * @property string|null $provider
- * @property string|null $provider_id
- * @property Carbon|null $password_changed_at
- * @property Carbon|null $email_verified_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
- * @property-read Collection<int, Role> $roles
- * @property-read Collection<int, Permission> $permissions
+ * @property string $id The unique identifier for the user.
+ * @property string $name The name of the user.
+ * @property string $email The email address of the user.
+ * @property string|null $password The hashed password of the user.
+ * @property string|null $remember_token The remember token for the user.
+ * @property string|null $provider The social auth provider.
+ * @property string|null $provider_id The social auth provider ID.
+ * @property Carbon|null $password_changed_at The timestamp when the password was last changed.
+ * @property Carbon|null $email_verified_at The timestamp when the email was verified.
+ * @property Carbon|null $created_at The timestamp when the user was created.
+ * @property Carbon|null $updated_at The timestamp when the user was last updated.
+ * @property Carbon|null $deleted_at The timestamp when the user was soft deleted.
+ * @property-read Collection<int, Role> $roles The roles assigned to the user.
+ * @property-read Collection<int, Permission> $permissions The permissions assigned to the user.
  */
 #[Fillable(['name', 'email', 'password', 'password_changed_at', 'provider', 'provider_id', 'email_verified_at'])]
 #[Hidden(['password', 'remember_token'])]
+/**
+ * @implements MustVerifyEmail
+ */
 class User extends Authenticatable implements MustVerifyEmail
 {
+    /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable;
 
     /**
@@ -51,7 +57,7 @@ class User extends Authenticatable implements MustVerifyEmail
     /**
      * Get the attributes that should be cast.
      *
-     * @return array<string, string>
+     * @return array<string, string> An array of attribute names and their corresponding cast types.
      */
     protected function casts(): array
     {
@@ -64,6 +70,8 @@ class User extends Authenticatable implements MustVerifyEmail
 
     /**
      * Create a new factory instance for the model.
+     *
+     * @return UserFactory The user factory instance.
      */
     protected static function newFactory(): UserFactory
     {

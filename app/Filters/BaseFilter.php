@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * @template TModel of \Illuminate\Database\Eloquent\Model
+ */
 abstract class BaseFilter
 {
     /**
@@ -17,6 +20,8 @@ abstract class BaseFilter
 
     /**
      * The builder instance.
+     *
+     * @var Builder<TModel>
      */
     protected Builder $builder;
 
@@ -30,6 +35,9 @@ abstract class BaseFilter
 
     /**
      * Apply the filters to the builder.
+     *
+     * @param  Builder<TModel>  $builder
+     * @return Builder<TModel>
      */
     public function apply(Builder $builder): Builder
     {
@@ -39,7 +47,9 @@ abstract class BaseFilter
             $method = Str::camel($name);
 
             if (method_exists($this, $method)) {
-                call_user_func_array([$this, $method], array_filter([$value]));
+                /** @var callable $callback */
+                $callback = [$this, $method];
+                call_user_func_array($callback, array_filter([$value]));
             }
         }
 
@@ -53,19 +63,30 @@ abstract class BaseFilter
      */
     protected function applySorting(): void
     {
-        $sortBy = $this->request->input('sort_by');
-        $sortDirection = $this->request->input('sort_direction', 'asc');
+        /** @var string|null $sortByInput */
+        $sortByInput = $this->request->input('sort_by');
+        $sortBy = (string) $sortByInput;
 
-        if ($sortBy) {
+        /** @var string|null $sortDirectionInput */
+        $sortDirectionInput = $this->request->input('sort_direction', 'desc');
+        /** @var 'asc'|'desc' $sortDirection */
+        $sortDirection = strtolower((string) $sortDirectionInput) === 'asc' ? 'asc' : 'desc';
+
+        if ($sortBy !== '') {
             $this->builder->orderBy($sortBy, $sortDirection);
+        } else {
+            $this->builder->latest();
         }
     }
 
     /**
      * Get all applicable filters from the request.
+     *
+     * @return array<string, mixed>
      */
     protected function getFilters(): array
     {
+        /** @var array<string, mixed> */
         return $this->request->except(['sort_by', 'sort_direction', 'page', 'per_page']);
     }
 }

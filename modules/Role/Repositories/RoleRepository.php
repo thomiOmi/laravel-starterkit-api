@@ -26,8 +26,9 @@ class RoleRepository extends BaseRepository
     /**
      * Apply search to the role query.
      *
-     * @param  Builder  $query  The query builder.
+     * @param  Builder<Role>  $query  The query builder.
      * @param  string  $search  The search query.
+     * @return Builder<Role> The updated query builder instance.
      */
     protected function applySearch(Builder $query, string $search): Builder
     {
@@ -36,6 +37,8 @@ class RoleRepository extends BaseRepository
 
     /**
      * Get the columns that can be sorted for roles.
+     *
+     * @return array<int, string> The list of sortable columns.
      */
     protected function getSortableColumns(): array
     {

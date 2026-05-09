@@ -17,9 +17,13 @@ class UserRegistrationService extends BaseService
 
     /**
      * Register a new user with all necessary steps.
+     *
+     * @param  UserDTO  $dto  The user data transfer object.
+     * @return User The newly registered user.
      */
     public function register(UserDTO $dto): User
     {
+        /** @var User */
         return $this->transactional(function () use ($dto) {
             // 1. Create the user using the existing Action
             $user = $this->createUserAction->execute($dto);

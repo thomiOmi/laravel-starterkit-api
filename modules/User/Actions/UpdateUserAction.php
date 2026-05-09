@@ -8,12 +8,15 @@ use Modules\User\DTOs\UserDTO;
 use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
 
+/**
+ * Action for updating an existing user.
+ */
 class UpdateUserAction
 {
     /**
      * Create a new UpdateUserAction instance.
      *
-     * @param  UserRepository  $userRepository  The user repository.
+     * @param  UserRepository  $userRepository  The user repository instance.
      */
     public function __construct(
         protected UserRepository $userRepository
@@ -24,6 +27,7 @@ class UpdateUserAction
      *
      * @param  string|int  $id  The user ID.
      * @param  UserDTO  $dto  The user data transfer object.
+     * @return User The updated user instance.
      */
     public function execute(string|int $id, UserDTO $dto): User
     {

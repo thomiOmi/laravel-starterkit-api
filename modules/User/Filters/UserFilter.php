@@ -6,11 +6,18 @@ namespace Modules\User\Filters;
 
 use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Modules\User\Models\User;
 
+/**
+ * @extends BaseFilter<User>
+ */
 class UserFilter extends BaseFilter
 {
     /**
      * Filter by search term (name or email).
+     *
+     * @param  string  $value  The search term.
+     * @return Builder<User> The updated query builder instance.
      */
     public function search(string $value): Builder
     {
@@ -22,6 +29,9 @@ class UserFilter extends BaseFilter
 
     /**
      * Filter by role name.
+     *
+     * @param  string  $value  The role name.
+     * @return Builder<User> The updated query builder instance.
      */
     public function role(string $value): Builder
     {
@@ -33,6 +43,9 @@ class UserFilter extends BaseFilter
     /**
      * Filter by created date range.
      * Expects: ?created_at[from]=2023-01-01&created_at[to]=2023-12-31
+     *
+     * @param  array<string, string>  $value  The date range values.
+     * @return Builder<User> The updated query builder instance.
      */
     public function createdAt(array $value): Builder
     {

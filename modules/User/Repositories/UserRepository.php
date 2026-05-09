@@ -22,6 +22,7 @@ class UserRepository extends BaseRepository
      * Find a user by their email address.
      *
      * @param  string  $email  The email address.
+     * @return User|null The user instance if found, otherwise null.
      */
     public function findByEmail(string $email): ?User
     {
@@ -31,8 +32,9 @@ class UserRepository extends BaseRepository
     /**
      * Apply a search query to the database query for users.
      *
-     * @param  Builder  $query  The query builder.
-     * @param  string  $search  The search query.
+     * @param  Builder<User>  $query  The query builder instance.
+     * @param  string  $search  The search query string.
+     * @return Builder<User> The updated query builder instance.
      */
     protected function applySearch(Builder $query, string $search): Builder
     {
@@ -44,6 +46,8 @@ class UserRepository extends BaseRepository
 
     /**
      * Get the columns that can be filtered for users.
+     *
+     * @return array<int, string> The list of filterable columns.
      */
     protected function getFilterableColumns(): array
     {
@@ -52,6 +56,8 @@ class UserRepository extends BaseRepository
 
     /**
      * Get the columns that can be sorted for users.
+     *
+     * @return array<int, string> The list of sortable columns.
      */
     protected function getSortableColumns(): array
     {

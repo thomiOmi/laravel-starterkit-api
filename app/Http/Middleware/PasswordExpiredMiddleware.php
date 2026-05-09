@@ -24,7 +24,8 @@ class PasswordExpiredMiddleware
             return $next($request);
         }
 
-        $passwordExpiryDays = (int) config('auth.password_expiry_days', 90);
+        /** @var int $passwordExpiryDays */
+        $passwordExpiryDays = config('auth.password_expiry_days', 90);
 
         /** @var Carbon|null $passwordChangedAt */
         $passwordChangedAt = $user->password_changed_at;

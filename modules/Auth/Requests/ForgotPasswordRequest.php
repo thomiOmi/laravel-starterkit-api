@@ -15,6 +15,9 @@ use Illuminate\Foundation\Http\FormRequest;
 #[BodyParameter(name: 'email', description: 'The email address of the account to reset.', required: true, example: 'user@example.com')]
 class ForgotPasswordRequest extends FormRequest
 {
+    /**
+     * @return array<string, array<int, string>>
+     */
     public function rules(): array
     {
         return [

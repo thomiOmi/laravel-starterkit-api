@@ -25,6 +25,12 @@ class DeviceResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var \Modules\User\Models\User $user */
+        $user = $request->user();
+
+        /** @var \Laravel\Sanctum\PersonalAccessToken $currentToken */
+        $userCurrentToken = $user->currentAccessToken();
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -32,7 +38,7 @@ class DeviceResource extends JsonResource
             'user_agent' => $this->user_agent,
             'last_used_at' => $this->last_used_at,
             'created_at' => $this->created_at,
-            'is_current' => (string) $request->user()->currentAccessToken()->id === (string) $this->id,
+            'is_current' => (string) $userCurrentToken->id === (string) $this->id,
         ];
     }
 }

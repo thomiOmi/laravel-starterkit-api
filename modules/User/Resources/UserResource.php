@@ -18,7 +18,8 @@ class UserResource extends BaseResource
     /**
      * Transform the resource into an array.
      *
-     * @return array<string, mixed>
+     * @param  Request  $request  The incoming HTTP request.
+     * @return array<string, mixed> The transformed resource array.
      */
     public function toArray(Request $request): array
     {
