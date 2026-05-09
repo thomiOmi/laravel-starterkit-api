@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
+/**
+ * @template TModel of \Illuminate\Database\Eloquent\Model
+ */
 abstract class BaseFilter
 {
     /**
@@ -17,6 +20,8 @@ abstract class BaseFilter
 
     /**
      * The builder instance.
+     *
+     * @var Builder<TModel>
      */
     protected Builder $builder;
 
@@ -30,6 +35,9 @@ abstract class BaseFilter
 
     /**
      * Apply the filters to the builder.
+     *
+     * @param  Builder<TModel>  $builder
+     * @return Builder<TModel>
      */
     public function apply(Builder $builder): Builder
     {
@@ -50,14 +58,18 @@ abstract class BaseFilter
 
     /**
      * Apply sorting to the query.
+     *
+     * @return void
      */
     protected function applySorting(): void
     {
         $sortBy = $this->request->input('sort_by');
-        $sortDirection = $this->request->input('sort_direction', 'asc');
+        $sortDirection = $this->request->input('sort_direction', 'desc');
 
         if ($sortBy) {
             $this->builder->orderBy($sortBy, $sortDirection);
+        } else {
+            $this->builder->latest();
         }
     }
 

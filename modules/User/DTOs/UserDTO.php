@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\User\DTOs;
 
-use Illuminate\Foundation\Http\FormRequest;
+use Modules\User\Requests\UserRequest;
 
+/**
+ * Data Transfer Object for User data.
+ */
 readonly class UserDTO
 {
     /**
@@ -24,14 +27,18 @@ readonly class UserDTO
     /**
      * Create a UserDTO instance from a request.
      *
-     * @param  FormRequest  $request  The incoming HTTP request.
+     * @param  UserRequest  $request  The incoming HTTP request.
+     * @return self The created UserDTO instance.
      */
-    public static function fromRequest(FormRequest $request): self
+    public static function fromRequest(UserRequest $request): self
     {
+        /** @var array{name: string, email: string, password: string|null} $validated */
+        $validated = $request->validated();
+
         return new self(
-            name: $request->validated('name'),
-            email: $request->validated('email'),
-            password: $request->validated('password')
+            name: $validated['name'],
+            email: $validated['email'],
+            password: $validated['password']
         );
     }
 }
