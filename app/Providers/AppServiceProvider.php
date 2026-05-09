@@ -68,11 +68,6 @@ class AppServiceProvider extends ServiceProvider
             $limit = 60;
             $by = $request->user()?->id ?: $request->ip();
 
-            if (tenancy()->initialized) {
-                $limit = (int) tenant('rate_limit') ?: 60;
-                $by = 'tenant:'.tenant('id').':'.$by;
-            }
-
             return Limit::perMinute($limit)->by($by);
         });
 

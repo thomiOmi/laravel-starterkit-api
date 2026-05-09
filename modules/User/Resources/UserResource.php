@@ -49,15 +49,6 @@ class UserResource extends BaseResource
             'email' => $this->resource->email,
 
             /**
-             * The URL or path to the user's avatar image.
-             *
-             * @example "https://ui-avatars.com/api/?name=User"
-             *
-             * @default null
-             */
-            'avatar' => $this->resource->avatar,
-
-            /**
              * The list of roles assigned to the user.
              *
              * @example ["user"]

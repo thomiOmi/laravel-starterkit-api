@@ -4,7 +4,7 @@ Sistem otorisasi menggunakan paket **Spatie Laravel Permission** yang telah diin
 
 ## 1. Konsep Dasar
 - **Roles:** Kumpulan izin akses (misal: `super-admin`, `admin`, `user`).
-- **Permissions:** Izin akses spesifik ke fitur tertentu (misal: `user.view`, `webhook.create`).
+- **Permissions:** Izin akses spesifik ke fitur tertentu (misal: `user.view`).
 
 ## 2. Penggunaan di Middleware
 Anda dapat membatasi akses route berdasarkan role atau permission langsung di file route modul:
@@ -14,11 +14,8 @@ Anda dapat membatasi akses route berdasarkan role atau permission langsung di fi
 Route::get('/admin', [AdminController::class, 'index'])->middleware('role:admin');
 
 // Berdasarkan Permission
-Route::post('/webhooks', [WebhookController::class, 'store'])->middleware('permission:webhook.create');
+Route::post('/users', [UserController::class, 'store'])->middleware('permission:user.create');
 ```
 
 ## 3. Super Admin
 User dengan role `super-admin` memiliki hak akses ke **seluruh fitur** secara otomatis. Logika ini diatur di `App\Providers\AppServiceProvider` menggunakan `Gate::before`.
-
-## 4. Tenant Scoping
-Sama seperti data lainnya, data Role dan Permission bersifat **terisolasi per tenant**. Role yang dibuat di Tenant A tidak akan tersedia untuk Tenant B, kecuali didefinisikan sebagai global (central).

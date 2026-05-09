@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\Sanctum;
 
-use App\Traits\Models\HasTenant;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
 class PersonalAccessToken extends SanctumPersonalAccessToken
 {
-    use HasTenant;
-
     /**
      * The attributes that are mass assignable.
      *
@@ -21,7 +18,6 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
         'token',
         'abilities',
         'expires_at',
-        'tenant_id',
         'ip_address',
         'user_agent',
     ];

@@ -1,12 +1,11 @@
-# Laravel Starterkit API (Enterprise & SaaS Ready)
+# Laravel Starterkit API (Enterprise Ready)
 
-A robust and opinionated Laravel starter kit for building scalable APIs and B2B SaaS platforms. Built with Modular Architecture, Repository Pattern, and modern PHP 8.4 practices.
+A robust and opinionated Laravel starter kit for building scalable APIs. Built with Modular Architecture, Repository Pattern, and modern PHP 8.4 practices.
 
 ## 🚀 Key Features
 
--   **Multi-Tenancy**: Automated data and storage isolation per tenant.
 -   **Feature Flags**: Dynamic feature control using Laravel Pennant.
--   **Advanced Security**: 2FA (TOTP), Password History, and mandatory rotation.
+-   **Advanced Security**: Password History and mandatory rotation.
 -   **Enterprise Ready**: Clean Modular Architecture and i18n support.
 -   **Developer Experience**: Modular generator, Auto-API docs, and Pint formatting.
 
@@ -16,7 +15,7 @@ A robust and opinionated Laravel starter kit for building scalable APIs and B2B 
 
 Detailed guides for using and extending the starter kit:
 
-### 🌟 Business & SaaS Features
+### 🌟 Business Features
 -   [Feature Flags](docs/feature-flags.md) - Managing dynamic feature access with Pennant.
 
 ### 🔐 Security & Core
@@ -56,7 +55,6 @@ composer run setup
 
 -   **Swagger UI**: `/docs/api`
 -   **Base URL**: `/api/v1/`
--   **Tenant Header**: `X-Tenant: {tenant_id}`
 
 ## 🧪 Testing
 
