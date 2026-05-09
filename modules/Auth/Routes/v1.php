@@ -11,8 +11,6 @@ use Modules\Auth\Controllers\V1\ProfileController;
 use Modules\Auth\Controllers\V1\RegisterController;
 use Modules\Auth\Controllers\V1\ResetPasswordController;
 use Modules\Auth\Controllers\V1\SocialAuthController;
-use Modules\Auth\Controllers\V1\TwoFactorChallengeController;
-use Modules\Auth\Controllers\V1\TwoFactorController;
 
 Route::prefix('auth')->middleware('tenancy.request')->group(function () {
     Route::post('register', [RegisterController::class, 'register'])->name('register');
@@ -42,18 +40,7 @@ Route::prefix('auth')->middleware('tenancy.request')->group(function () {
 
         Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::put('password', [ProfileController::class, 'updatePassword'])->name('password.change');
-
-        Route::prefix('two-factor')->group(function () {
-            Route::post('enable', [TwoFactorController::class, 'enable'])->name('2fa.enable');
-            Route::post('confirm', [TwoFactorController::class, 'confirm'])->name('2fa.confirm');
-            Route::post('disable', [TwoFactorController::class, 'disable'])->name('2fa.disable');
-            Route::get('recovery-codes', [TwoFactorController::class, 'recoveryCodes'])->name('2fa.recovery-codes');
-            Route::post('recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('2fa.recovery-codes.regenerate');
-        });
     });
-
-    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'challenge'])
-        ->name('2fa.challenge');
 
     Route::prefix('social')->group(function () {
         Route::get('{provider}/redirect', [SocialAuthController::class, 'redirect'])
