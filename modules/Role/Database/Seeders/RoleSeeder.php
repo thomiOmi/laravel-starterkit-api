@@ -42,14 +42,9 @@ class RoleSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'role.edit', 'guard_name' => 'sanctum']);
         Permission::firstOrCreate(['name' => 'role.delete', 'guard_name' => 'sanctum']);
 
-        // Create permissions for Audit Log module
-        Permission::firstOrCreate(['name' => 'audit.view', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'audit.view', 'guard_name' => 'sanctum']);
-
         // Create roles and assign permissions
         $superAdmin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
-        $superAdminSanctum = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'sanctum']);
-        // Super admin usually gets all permissions via a gate in AuthServiceProvider or similar
+        Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'sanctum']);
 
         $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         $admin->givePermissionTo([
@@ -61,7 +56,6 @@ class RoleSeeder extends Seeder
             'role.create',
             'role.edit',
             'role.delete',
-            'audit.view',
         ]);
 
         $adminSanctum = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'sanctum']);
@@ -74,7 +68,6 @@ class RoleSeeder extends Seeder
             'role.create',
             'role.edit',
             'role.delete',
-            'audit.view',
         ]);
 
         $user = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);

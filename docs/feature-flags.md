@@ -1,6 +1,6 @@
 # Feature Flags (Laravel Pennant)
 
-Proyek ini menggunakan **Laravel Pennant** untuk mengelola fitur secara dinamis. Ini memungkinkan Anda untuk mengaktifkan atau menonaktifkan fitur untuk pengguna atau tenant tertentu tanpa mengubah kode.
+Proyek ini menggunakan **Laravel Pennant** untuk mengelola fitur secara dinamis. Ini memungkinkan Anda untuk mengaktifkan atau menonaktifkan fitur untuk pengguna tertentu tanpa mengubah kode.
 
 ## 1. Mendefinisikan Fitur
 
@@ -38,4 +38,3 @@ Secara default, status fitur disimpan di database menggunakan tabel `features`. 
 ## 4. Keuntungan Enterprise Ready
 - **Beta Testing:** Aktifkan fitur baru hanya untuk sekelompok kecil user.
 - **Gradual Rollout:** Luncurkan fitur secara bertahap.
-- **Tenant-specific Features:** Berikan fitur eksklusif untuk tenant tertentu.

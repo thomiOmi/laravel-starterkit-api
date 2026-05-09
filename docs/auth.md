@@ -3,7 +3,7 @@
 Sistem autentikasi dalam proyek ini menggunakan implementasi kustom yang bersih dan **Laravel Sanctum** untuk pengelolaan token API.
 
 ## 1. Fitur yang Tersedia
-Seluruh endpoint autentikasi berada di bawah prefix `/api/v1/auth` dan wajib menyertakan header `X-Tenant`.
+Seluruh endpoint autentikasi berada di bawah prefix `/api/v1/auth`.
 
 - **Registrasi:** `POST /register`
 - **Login:** `POST /login`
@@ -41,8 +41,5 @@ Setiap login menghasilkan `PersonalAccessToken` baru yang mencatat informasi per
 - **Logout Perangkat Spesifik:** `DELETE /auth/devices/{id}`
 - **Logout Perangkat Lain:** `POST /auth/devices/logout-others`
 
-## 4. Keamanan Multi-tenancy
-Setiap token bersifat tenant-aware. User dari Tenant A tidak dapat menggunakan tokennya untuk mengakses data milik Tenant B, meskipun memiliki ID user yang sama (jika ada).
-
-## 5. Lokalisasi (i18n)
+## 4. Lokalisasi (i18n)
 Pesan error dan sukses autentikasi mendukung multi-bahasa melalui header `Accept-Language` (id/en).

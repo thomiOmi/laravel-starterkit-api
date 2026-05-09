@@ -6,7 +6,6 @@ namespace Modules\User\Models;
 
 use App\Notifications\VerifyEmail;
 use App\Traits\Models\HasDefaultBehavior;
-use App\Traits\Models\HasTenant;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -25,7 +24,6 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $id
  * @property string $name
  * @property string $email
- * @property string|null $avatar
  * @property string|null $provider
  * @property string|null $provider_id
  * @property Carbon|null $password_changed_at
@@ -36,11 +34,11 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Permission> $permissions
  */
-#[Fillable(['name', 'email', 'password', 'avatar', 'password_changed_at', 'provider', 'provider_id', 'email_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'password_changed_at', 'provider', 'provider_id', 'email_verified_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, HasTenant, Notifiable;
+    use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable;
 
     /**
      * Send the email verification notification.

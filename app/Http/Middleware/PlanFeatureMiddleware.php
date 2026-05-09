@@ -17,20 +17,8 @@ class PlanFeatureMiddleware
      */
     public function handle(Request $request, Closure $next, string $feature): Response
     {
-        if (! tenancy()->initialized) {
-            return $next($request);
-        }
-
-        $tenant = tenant();
-
-        if (! $tenant->hasFeature($feature)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => "Your current plan does not include the '{$feature}' feature. Please upgrade your subscription.",
-                'code' => 'FEATURE_NOT_IN_PLAN',
-            ], 403);
-        }
-
+        // Multi-tenancy support removed.
+        // For now, we allow all features or you can implement a different check here.
         return $next($request);
     }
 }

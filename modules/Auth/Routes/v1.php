@@ -12,7 +12,7 @@ use Modules\Auth\Controllers\V1\RegisterController;
 use Modules\Auth\Controllers\V1\ResetPasswordController;
 use Modules\Auth\Controllers\V1\SocialAuthController;
 
-Route::prefix('auth')->middleware('tenancy.request')->group(function () {
+Route::prefix('auth')->group(function () {
     Route::post('register', [RegisterController::class, 'register'])->name('register');
     Route::post('login', [LoginController::class, 'login'])->name('login');
     Route::post('logout', [AuthController::class, 'logout'])

@@ -18,7 +18,6 @@ use Illuminate\Validation\Rule;
 #[BodyParameter(name: 'email', description: 'The email address of the user. Must be unique.', required: true, example: 'john@example.com')]
 #[BodyParameter(name: 'password', description: 'The password (min 8 characters). Required on create, optional on update.', example: 'password123')]
 #[BodyParameter(name: 'password_confirmation', description: 'Password confirmation, must match password.', example: 'password123')]
-#[BodyParameter(name: 'avatar', description: 'URL or path to the user avatar image.', required: false, example: 'https://ui-avatars.com/api/?name=John+Doe')]
 class UserRequest extends FormRequest
 {
     /**
@@ -45,7 +44,6 @@ class UserRequest extends FormRequest
                 'min:8',
                 'confirmed',
             ],
-            'avatar' => ['nullable', 'string', 'max:255'],
         ];
 
         return $rules;
