@@ -58,8 +58,6 @@ abstract class BaseFilter
 
     /**
      * Apply sorting to the query.
-     *
-     * @return void
      */
     protected function applySorting(): void
     {

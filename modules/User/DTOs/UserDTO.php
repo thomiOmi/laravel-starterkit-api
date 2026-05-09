@@ -32,13 +32,19 @@ readonly class UserDTO
      */
     public static function fromRequest(UserRequest $request): self
     {
-        /** @var array{name: string, email: string, password: string|null} $validated */
-        $validated = $request->validated();
+        /** @var string $name */
+        $name = $request->validated('name');
+
+        /** @var string $email */
+        $email = $request->validated('email');
+
+        /** @var string|null $password */
+        $password = $request->validated('password');
 
         return new self(
-            name: $validated['name'],
-            email: $validated['email'],
-            password: $validated['password']
+            name: $name,
+            email: $email,
+            password: $password
         );
     }
 }
