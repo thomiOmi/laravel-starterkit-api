@@ -12,14 +12,26 @@ use Modules\Auth\Actions\ForgotPasswordAction;
 use Modules\Auth\DTOs\ForgotPasswordDTO;
 use Modules\Auth\Requests\ForgotPasswordRequest;
 
+/**
+ * @tags Authentication
+ */
 class ForgotPasswordController extends Controller
 {
     use ApiResponser;
 
+    /**
+     * Create a new controller instance.
+     */
     public function __construct(
         protected ForgotPasswordAction $forgotPasswordAction
     ) {}
 
+    /**
+     * Send password reset link.
+     *
+     * @param  ForgotPasswordRequest  $request  The forgot password request.
+     * @return JsonResponse The JSON response.
+     */
     public function sendLink(ForgotPasswordRequest $request): JsonResponse
     {
         try {

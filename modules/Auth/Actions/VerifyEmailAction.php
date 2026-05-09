@@ -9,6 +9,9 @@ use Illuminate\Validation\ValidationException;
 use Modules\Auth\DTOs\VerifyEmailDTO;
 use Modules\User\Models\User;
 
+/**
+ * Action for verifying the user's email address.
+ */
 class VerifyEmailAction
 {
     /**

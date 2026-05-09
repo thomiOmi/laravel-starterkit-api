@@ -12,14 +12,26 @@ use Modules\Auth\Actions\ResetPasswordAction;
 use Modules\Auth\DTOs\ResetPasswordDTO;
 use Modules\Auth\Requests\ResetPasswordRequest;
 
+/**
+ * @tags Authentication
+ */
 class ResetPasswordController extends Controller
 {
     use ApiResponser;
 
+    /**
+     * Create a new controller instance.
+     */
     public function __construct(
         protected ResetPasswordAction $resetPasswordAction
     ) {}
 
+    /**
+     * Reset user password.
+     *
+     * @param  ResetPasswordRequest  $request  The reset password request.
+     * @return JsonResponse The JSON response.
+     */
     public function reset(ResetPasswordRequest $request): JsonResponse
     {
         try {

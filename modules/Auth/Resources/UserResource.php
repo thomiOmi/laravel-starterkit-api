@@ -4,33 +4,32 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Resources;
 
+use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\User\Models\User;
 
 /**
- * @property string $id
- * @property string $name
- * @property string $email
- * @property mixed $email_verified_at
- * @property mixed $created_at
- * @property mixed $updated_at
+ * @property-read User $resource
+ *
+ * @mixin User
  */
-class UserResource extends JsonResource
+class UserResource extends BaseResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @return array<string, mixed>
+     * @param  Request  $request  The incoming request.
+     * @return array<string, mixed> The transformed resource array.
      */
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
-            'email_verified_at' => $this->email_verified_at,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'id' => $this->resource->id,
+            'name' => $this->resource->name,
+            'email' => $this->resource->email,
+            'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
+            'created_at' => $this->formatDate($this->resource->created_at),
+            'updated_at' => $this->formatDate($this->resource->updated_at),
         ];
     }
 }

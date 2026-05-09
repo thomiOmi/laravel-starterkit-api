@@ -8,8 +8,17 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Modules\User\Models\User;
 
+/**
+ * Action for updating the user's profile information.
+ */
 class UpdateProfileAction
 {
+    /**
+     * Execute the update profile action.
+     *
+     * @param  User  $user  The user model instance.
+     * @param  array<string, mixed>  $input  The input data containing name and email.
+     */
     public function execute(User $user, array $input): void
     {
         Validator::make($input, [

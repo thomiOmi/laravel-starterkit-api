@@ -8,17 +8,30 @@ use App\Http\Controllers\Controller;
 use App\Traits\ApiResponser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Laravel\Socialite\Contracts\User;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
 use Modules\User\Repositories\UserRepository;
 use Throwable;
 
+/**
+ * @tags Authentication
+ */
 class SocialAuthController extends Controller
 {
     use ApiResponser;
 
+    /**
+     * Create a new controller instance.
+     */
     public function __construct(protected UserRepository $userRepository) {}
 
+    /**
+     * Redirect to social provider.
+     *
+     * @param  string  $provider  The social provider name (e.g. google, github).
+     * @return RedirectResponse The redirect response to provider.
+     */
     public function redirect(string $provider): RedirectResponse
     {
         /** @var AbstractProvider $driver */
@@ -27,18 +40,29 @@ class SocialAuthController extends Controller
         return $driver->stateless()->redirect();
     }
 
+    /**
+     * Handle social provider callback.
+     *
+     * @param  string  $provider  The social provider name.
+     * @return JsonResponse The JSON response with token.
+     */
     public function callback(string $provider): JsonResponse
     {
         try {
             /** @var AbstractProvider $driver */
             $driver = Socialite::driver($provider);
+            /** @var User $socialUser */
             $socialUser = $driver->stateless()->user();
         } catch (Throwable $e) {
             return $this->errorResponse('Social authentication failed. Please try again.', 422);
         }
 
+        /** @var string $socialEmail */
+        $socialEmail = $socialUser->getEmail();
+
+        /** @var \Modules\User\Models\User $user */
         $user = $this->userRepository->updateOrCreate(
-            ['email' => $socialUser->getEmail()],
+            ['email' => $socialEmail],
             [
                 'name' => $socialUser->getName() ?? $socialUser->getNickname(),
                 'provider' => $provider,
