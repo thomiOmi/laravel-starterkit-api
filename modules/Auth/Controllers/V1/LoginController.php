@@ -11,14 +11,26 @@ use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\DTOs\LoginDTO;
 use Modules\Auth\Requests\LoginRequest;
 
+/**
+ * @tags Authentication
+ */
 class LoginController extends Controller
 {
     use ApiResponser;
 
+    /**
+     * Create a new controller instance.
+     */
     public function __construct(
         protected LoginAction $loginAction
     ) {}
 
+    /**
+     * Handle user login.
+     *
+     * @param  LoginRequest  $request  The login request.
+     * @return JsonResponse The JSON response with token.
+     */
     public function login(LoginRequest $request): JsonResponse
     {
         $dto = LoginDTO::fromRequest($request);

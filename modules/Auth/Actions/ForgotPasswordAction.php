@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\DTOs\ForgotPasswordDTO;
 
+/**
+ * Action for handling forgot password requests.
+ */
 class ForgotPasswordAction
 {
     /**

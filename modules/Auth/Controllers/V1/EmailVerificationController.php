@@ -11,16 +11,31 @@ use Illuminate\Http\Request;
 use Modules\Auth\Actions\ResendVerificationEmailAction;
 use Modules\Auth\Actions\VerifyEmailAction;
 use Modules\Auth\DTOs\VerifyEmailDTO;
+use Modules\User\Models\User;
 
+/**
+ * @tags Authentication
+ */
 class EmailVerificationController extends Controller
 {
     use ApiResponser;
 
+    /**
+     * Create a new controller instance.
+     */
     public function __construct(
         protected VerifyEmailAction $verifyEmailAction,
         protected ResendVerificationEmailAction $resendVerificationEmailAction
     ) {}
 
+    /**
+     * Verify user email.
+     *
+     * @param  Request  $request  The current request.
+     * @param  string  $id  The user ID.
+     * @param  string  $hash  The verification hash.
+     * @return JsonResponse The success response.
+     */
     public function verify(Request $request, string $id, string $hash): JsonResponse
     {
         $dto = new VerifyEmailDTO($id, $hash);
@@ -29,9 +44,18 @@ class EmailVerificationController extends Controller
         return $this->successResponse(null, __('auth.verified'));
     }
 
+    /**
+     * Resend verification email.
+     *
+     * @param  Request  $request  The current request.
+     * @return JsonResponse The success response.
+     */
     public function resend(Request $request): JsonResponse
     {
-        $this->resendVerificationEmailAction->execute($request->user());
+        /** @var User $user */
+        $user = $request->user();
+
+        $this->resendVerificationEmailAction->execute($user);
 
         return $this->successResponse(null, __('auth.verification_link_sent'));
     }

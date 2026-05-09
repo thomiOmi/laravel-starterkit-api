@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Foundation\Http\FormRequest;
 
+#[BodyParameter(name: 'email', description: 'User email address.', required: true, example: 'user@example.com')]
+#[BodyParameter(name: 'password', description: 'User password.', required: true, example: 'password123')]
+#[BodyParameter(name: 'device_name', description: 'Optional device name for the token.', required: false, example: 'my-iphone')]
 class LoginRequest extends FormRequest
 {
     /**
@@ -20,7 +23,7 @@ class LoginRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, array<int, string>>
      */
     public function rules(): array
     {

@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
+use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\DTOs\LoginDTO;
+use Modules\User\Models\User;
 
+/**
+ * Action for handling user login.
+ */
 class LoginAction
 {
     /**
@@ -26,6 +31,7 @@ class LoginAction
             ]);
         }
 
+        /** @var User $user */
         $user = Auth::user();
 
         $token = $user->createToken(
@@ -33,7 +39,10 @@ class LoginAction
             ['*'],
         );
 
-        $token->accessToken->forceFill([
+        /** @var PersonalAccessToken $accessToken */
+        $accessToken = $token->accessToken;
+
+        $accessToken->forceFill([
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ])->save();

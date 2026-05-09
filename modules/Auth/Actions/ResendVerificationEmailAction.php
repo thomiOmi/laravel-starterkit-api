@@ -7,6 +7,9 @@ namespace Modules\Auth\Actions;
 use Illuminate\Validation\ValidationException;
 use Modules\User\Models\User;
 
+/**
+ * Action for resending the verification email.
+ */
 class ResendVerificationEmailAction
 {
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Auth\Requests;
 
 use Dedoc\Scramble\Attributes\BodyParameter;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 #[BodyParameter(name: 'name', description: 'Full name of the user.', required: true, example: 'John Doe')]
@@ -25,7 +24,7 @@ class RegisterRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, array<int, string>>
      */
     public function rules(): array
     {

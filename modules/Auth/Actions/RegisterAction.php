@@ -36,10 +36,13 @@ class RegisterAction
             'password' => $this->passwordRules(),
         ])->validate();
 
+        /** @var string $password */
+        $password = $input['password'];
+
         return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
-            'password' => Hash::make($input['password']),
+            'password' => Hash::make($password),
             'password_changed_at' => now(),
         ]);
     }

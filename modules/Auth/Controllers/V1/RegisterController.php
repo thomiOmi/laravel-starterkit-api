@@ -10,6 +10,9 @@ use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Requests\RegisterRequest;
 
+/**
+ * @tags Authentication
+ */
 class RegisterController extends Controller
 {
     use ApiResponser;
@@ -23,6 +26,9 @@ class RegisterController extends Controller
 
     /**
      * Handle registration request.
+     *
+     * @param  RegisterRequest  $request  The registration request.
+     * @return JsonResponse The JSON response containing created user.
      */
     public function register(RegisterRequest $request): JsonResponse
     {

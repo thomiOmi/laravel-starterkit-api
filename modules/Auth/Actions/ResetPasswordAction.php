@@ -10,7 +10,11 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\DTOs\ResetPasswordDTO;
+use Modules\User\Models\User;
 
+/**
+ * Action for resetting the user's password.
+ */
 class ResetPasswordAction
 {
     /**
@@ -22,17 +26,24 @@ class ResetPasswordAction
      */
     public function execute(ResetPasswordDTO $dto): string
     {
-        $status = Password::broker()->reset(
+        $statusInput = Password::broker()->reset(
             $dto->toArray(),
             function ($user, $password) {
+                /** @var User $user */
+                /** @var string $passwordString */
+                $passwordString = $password;
+
                 $user->forceFill([
-                    'password' => Hash::make($password),
+                    'password' => Hash::make($passwordString),
                     'remember_token' => Str::random(60),
                 ])->save();
 
                 event(new PasswordReset($user));
             }
         );
+
+        /** @var string $status */
+        $status = $statusInput;
 
         if ($status !== Password::PASSWORD_RESET) {
             throw ValidationException::withMessages([
