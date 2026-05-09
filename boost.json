@@ -2,21 +2,19 @@
     "agents": [
         "opencode"
     ],
+    "cloud": false,
     "guidelines": true,
     "mcp": true,
     "nightwatch_mcp": false,
     "packages": [
-        "spatie/laravel-permission",
-        "spatie/laravel-medialibrary"
+        "spatie/laravel-permission"
     ],
     "sail": false,
     "skills": [
         "laravel-best-practices",
         "pennant-development",
-        "pulse-development",
         "socialite-development",
         "pest-testing",
-        "medialibrary-development",
         "laravel-permission-development"
     ]
 }
