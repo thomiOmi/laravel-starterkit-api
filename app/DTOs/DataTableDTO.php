@@ -19,7 +19,7 @@ readonly class DataTableDTO
      * @param  string|null  $search  The search query.
      * @param  string|null  $sort_by  The column to sort by.
      * @param  string  $sort_direction  The direction to sort (asc or desc).
-     * @param  array  $filters  Key-value pairs for column filtering.
+     * @param  array<string, mixed>  $filters  Key-value pairs for column filtering.
      */
     public function __construct(
         public int $page = 1,
@@ -37,15 +37,28 @@ readonly class DataTableDTO
      */
     public static function fromRequest(Request $request): self
     {
+        $filtersInput = $request->query('filters', []);
+        /** @var array<string, mixed> $filters */
+        $filters = is_array($filtersInput) ? $filtersInput : [];
+
+        /** @var string $page */
+        $page = $request->query('page', '1');
+        /** @var string $perPage */
+        $perPage = $request->query('per_page', '10');
+
+        $search = $request->query('search');
+        $sortBy = $request->query('sort_by');
+        $sortDirection = $request->query('sort_direction', 'asc');
+
         return new self(
-            page: (int) $request->query('page', '1'),
-            per_page: (int) $request->query('per_page', '10'),
-            search: $request->query('search'),
-            sort_by: $request->query('sort_by'),
-            sort_direction: in_array(strtolower((string) $request->query('sort_direction', 'asc')), ['asc', 'desc'], true)
-                ? strtolower((string) $request->query('sort_direction', 'asc'))
+            page: (int) $page,
+            per_page: (int) $perPage,
+            search: is_string($search) ? $search : null,
+            sort_by: is_string($sortBy) ? $sortBy : null,
+            sort_direction: in_array(strtolower((string) $sortDirection), ['asc', 'desc'], true)
+                ? strtolower((string) $sortDirection)
                 : 'asc',
-            filters: (array) $request->query('filters', [])
+            filters: $filters
         );
     }
 

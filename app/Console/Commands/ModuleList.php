@@ -40,20 +40,23 @@ class ModuleList extends Command
         $data = [];
 
         foreach ($modules as $modulePath) {
-            $modulePath = (string) $modulePath;
-            $name = basename($modulePath);
+            $modulePathString = is_string($modulePath) ? $modulePath : '';
+            if ($modulePathString === '') {
+                continue;
+            }
+            $name = basename($modulePathString);
 
             // Check for ServiceProvider
-            $hasProvider = File::exists("{$modulePath}/Providers/{$name}ServiceProvider.php");
+            $hasProvider = File::exists("{$modulePathString}/Providers/{$name}ServiceProvider.php");
 
             // Counts
-            $controllers = $this->countFiles("{$modulePath}/Controllers");
-            $actions = $this->countFiles("{$modulePath}/Actions");
-            $services = $this->countFiles("{$modulePath}/Services");
-            $dtos = $this->countFiles("{$modulePath}/DTOs");
-            $migrations = $this->countFiles("{$modulePath}/Database/Migrations");
+            $controllers = $this->countFiles("{$modulePathString}/Controllers");
+            $actions = $this->countFiles("{$modulePathString}/Actions");
+            $services = $this->countFiles("{$modulePathString}/Services");
+            $dtos = $this->countFiles("{$modulePathString}/DTOs");
+            $migrations = $this->countFiles("{$modulePathString}/Database/Migrations");
 
-            $hasRoutes = File::exists("{$modulePath}/Routes/api.php");
+            $hasRoutes = File::exists("{$modulePathString}/Routes/api.php");
 
             $data[] = [
                 $name,

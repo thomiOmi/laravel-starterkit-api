@@ -29,10 +29,12 @@ class MakeModule extends Command
      */
     public function handle(): void
     {
-        $name = (string) $this->argument('name');
+        $nameArgument = $this->argument('name');
+        $name = is_string($nameArgument) ? $nameArgument : '';
 
-        if (! $name) {
-            $name = (string) $this->ask('What is the name of the module? (e.g. Blog)');
+        if ($name === '') {
+            $askedName = $this->ask('What is the name of the module? (e.g. Blog)');
+            $name = is_string($askedName) ? $askedName : '';
         }
 
         if (! $name) {

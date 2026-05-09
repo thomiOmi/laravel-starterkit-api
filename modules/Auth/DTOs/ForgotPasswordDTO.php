@@ -14,8 +14,11 @@ readonly class ForgotPasswordDTO
 
     public static function fromRequest(FormRequest $request): self
     {
+        /** @var string $email */
+        $email = $request->validated('email');
+
         return new self(
-            email: $request->validated('email')
+            email: $email
         );
     }
 }

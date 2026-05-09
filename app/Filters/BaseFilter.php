@@ -47,7 +47,9 @@ abstract class BaseFilter
             $method = Str::camel($name);
 
             if (method_exists($this, $method)) {
-                call_user_func_array([$this, $method], array_filter([$value]));
+                /** @var callable $callback */
+                $callback = [$this, $method];
+                call_user_func_array($callback, array_filter([$value]));
             }
         }
 
@@ -61,10 +63,16 @@ abstract class BaseFilter
      */
     protected function applySorting(): void
     {
-        $sortBy = $this->request->input('sort_by');
-        $sortDirection = $this->request->input('sort_direction', 'desc');
+        /** @var string|null $sortByInput */
+        $sortByInput = $this->request->input('sort_by');
+        $sortBy = (string) $sortByInput;
 
-        if ($sortBy) {
+        /** @var string|null $sortDirectionInput */
+        $sortDirectionInput = $this->request->input('sort_direction', 'desc');
+        /** @var 'asc'|'desc' $sortDirection */
+        $sortDirection = strtolower((string) $sortDirectionInput) === 'asc' ? 'asc' : 'desc';
+
+        if ($sortBy !== '') {
             $this->builder->orderBy($sortBy, $sortDirection);
         } else {
             $this->builder->latest();
@@ -73,9 +81,12 @@ abstract class BaseFilter
 
     /**
      * Get all applicable filters from the request.
+     *
+     * @return array<string, mixed>
      */
     protected function getFilters(): array
     {
+        /** @var array<string, mixed> */
         return $this->request->except(['sort_by', 'sort_direction', 'page', 'per_page']);
     }
 }

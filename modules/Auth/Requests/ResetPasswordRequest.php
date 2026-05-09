@@ -18,6 +18,9 @@ use Illuminate\Foundation\Http\FormRequest;
 #[BodyParameter(name: 'password_confirmation', description: 'Confirm the new password, must match password.', required: true, example: 'newpassword123')]
 class ResetPasswordRequest extends FormRequest
 {
+    /**
+     * @return array<string, array<int, string>>
+     */
     public function rules(): array
     {
         return [

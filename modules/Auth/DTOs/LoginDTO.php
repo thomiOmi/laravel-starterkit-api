@@ -27,10 +27,19 @@ readonly class LoginDTO
      */
     public static function fromRequest(FormRequest $request): self
     {
+        /** @var string $email */
+        $email = $request->validated('email');
+
+        /** @var string $password */
+        $password = $request->validated('password');
+
+        /** @var string|null $deviceName */
+        $deviceName = $request->validated('device_name', $request->userAgent() ?? 'auth_token');
+
         return new self(
-            email: $request->validated('email'),
-            password: $request->validated('password'),
-            device_name: $request->validated('device_name', $request->userAgent() ?? 'auth_token')
+            email: $email,
+            password: $password,
+            device_name: $deviceName
         );
     }
 }
