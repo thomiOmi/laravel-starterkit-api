@@ -42,7 +42,11 @@ class ModuleServiceProvider extends ServiceProvider
         $modules = File::directories($modulePath);
 
         foreach ($modules as $module) {
-            $moduleName = basename($module);
+            $modulePath = is_string($module) ? $module : '';
+            if ($modulePath === '') {
+                continue;
+            }
+            $moduleName = basename($modulePath);
 
             // Register Service Provider
             $provider = "Modules\\{$moduleName}\\Providers\\{$moduleName}ServiceProvider";
@@ -51,18 +55,20 @@ class ModuleServiceProvider extends ServiceProvider
             }
 
             // Load Migrations
-            $migrationPath = "{$module}/Database/Migrations";
+            $migrationPath = "{$modulePath}/Database/Migrations";
             if (File::exists($migrationPath)) {
                 $this->loadMigrationsFrom($migrationPath);
             }
 
             // Discovery Events/Listeners (Simple implementation)
-            $this->registerModularEvents($module);
+            $this->registerModularEvents($modulePath);
         }
     }
 
     /**
      * Register modular events and listeners.
+     *
+     * @param  string  $modulePath  The absolute path to the module directory.
      */
     protected function registerModularEvents(string $modulePath): void
     {

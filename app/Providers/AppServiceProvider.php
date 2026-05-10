@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         // Implicitly grant "super-admin" role all permissions
         // This works in the gate layer which is used by $user->can() and @can()
         Gate::before(function ($user, $ability) {
+            /** @var User $user */
             return $user->hasRole('super-admin') ? true : null;
         });
     }

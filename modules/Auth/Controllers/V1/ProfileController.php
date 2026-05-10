@@ -10,7 +10,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\UpdatePasswordAction;
 use Modules\Auth\Actions\UpdateProfileAction;
-use Modules\User\Models\User;
 
 /**
  * @tags Authentication
@@ -35,8 +34,11 @@ class ProfileController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user) {
+            return $this->errorResponse('Unauthenticated', 401);
+        }
 
         /** @var array<string, mixed> $input */
         $input = $request->all();
@@ -54,8 +56,11 @@ class ProfileController extends Controller
      */
     public function updatePassword(Request $request): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user) {
+            return $this->errorResponse('Unauthenticated', 401);
+        }
 
         /** @var array<string, mixed> $input */
         $input = $request->all();

@@ -47,10 +47,15 @@ class RouteServiceProvider extends ServiceProvider
         $modules = File::directories($modulePath);
 
         foreach ($modules as $module) {
-            $moduleName = basename($module);
+            $modulePathString = is_string($module) ? $module : '';
+            if ($modulePathString === '') {
+                continue;
+            }
+            $moduleName = basename($modulePathString);
 
+            /** @var array<int, string> $supportedVersions */
             foreach ($supportedVersions as $version) {
-                $routeFile = "{$module}/Routes/{$version}.php";
+                $routeFile = "{$modulePathString}/Routes/{$version}.php";
 
                 if (File::exists($routeFile)) {
                     Route::prefix("api/{$version}")
@@ -61,7 +66,7 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             // Fallback for non-versioned routes (optional, for backward compatibility)
-            $legacyRouteFile = $module.'/Routes/api.php';
+            $legacyRouteFile = $modulePathString.'/Routes/api.php';
             if (File::exists($legacyRouteFile)) {
                 Route::prefix('api')
                     ->middleware('api')

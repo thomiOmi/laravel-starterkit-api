@@ -40,7 +40,10 @@ class ForgotPasswordController extends Controller
 
             return $this->successResponse(null, __('passwords.sent'));
         } catch (ValidationException $e) {
-            return $this->errorResponse($e->getMessage(), 422, $e->errors());
+            /** @var array<string, mixed> $errors */
+            $errors = $e->errors();
+
+            return $this->errorResponse($e->getMessage(), 422, $errors);
         }
     }
 }

@@ -31,9 +31,9 @@ trait ApiResponser
     /**
      * Return a standardized error response.
      *
-     * @param  string  $message  A descriptive error message.
+     * @param  string|null  $message  A descriptive error message.
      * @param  int  $code  The HTTP status code (default: 400).
-     * @param  array  $errors  An array of validation or other errors.
+     * @param  array<string, mixed>  $errors  An array of validation or other errors.
      */
     protected function errorResponse(?string $message = null, int $code = 400, array $errors = []): JsonResponse
     {
@@ -47,8 +47,10 @@ trait ApiResponser
     /**
      * Return a standardized paginated response.
      *
-     * @param  LengthAwarePaginator  $paginator  The paginator instance.
-     * @param  string  $resourceClass  The resource class to transform the data.
+     * @template TValue of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  LengthAwarePaginator<int, TValue>  $paginator  The paginator instance.
+     * @param  class-string  $resourceClass  The resource class.
      * @param  string|null  $message  A descriptive message for the response.
      */
     protected function paginateResponse(LengthAwarePaginator $paginator, string $resourceClass, ?string $message = null): JsonResponse
