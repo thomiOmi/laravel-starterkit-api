@@ -60,7 +60,6 @@ class SocialAuthController extends Controller
         /** @var string $socialEmail */
         $socialEmail = $socialUser->getEmail();
 
-        /** @var \Modules\User\Models\User $user */
         $user = $this->userRepository->updateOrCreate(
             ['email' => $socialEmail],
             [

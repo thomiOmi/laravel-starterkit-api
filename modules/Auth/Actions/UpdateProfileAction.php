@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Modules\User\Models\User;
 
 /**
@@ -16,11 +18,17 @@ class UpdateProfileAction
     /**
      * Execute the update profile action.
      *
-     * @param  User  $user  The user model instance.
+     * @param  Authenticatable  $user  The user model instance.
      * @param  array<string, mixed>  $input  The input data containing name and email.
+     *
+     * @throws ValidationException
      */
-    public function execute(User $user, array $input): void
+    public function execute(Authenticatable $user, array $input): void
     {
+        if (! $user instanceof User) {
+            throw new \InvalidArgumentException('User must be an instance of '.User::class);
+        }
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => [

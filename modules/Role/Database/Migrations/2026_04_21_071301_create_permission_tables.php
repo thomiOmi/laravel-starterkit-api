@@ -120,8 +120,8 @@ return new class extends Migration
         });
 
         app('cache')
-            ->store(config('permission.cache.store') != 'default' ? config('permission.cache.store') : null)
-            ->forget(config('permission.cache.key'));
+            ->store(((is_string($s = config('permission.cache.store')) || is_null($s)) ? $s : null) != 'default' ? ((is_string($s = config('permission.cache.store')) || is_null($s)) ? $s : null) : null)
+            ->forget((is_string($k = config('permission.cache.key')) ? $k : ''));
     }
 
     /**

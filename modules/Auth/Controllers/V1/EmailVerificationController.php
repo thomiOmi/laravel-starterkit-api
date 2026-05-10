@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Modules\Auth\Actions\ResendVerificationEmailAction;
 use Modules\Auth\Actions\VerifyEmailAction;
 use Modules\Auth\DTOs\VerifyEmailDTO;
-use Modules\User\Models\User;
 
 /**
  * @tags Authentication
@@ -52,8 +51,11 @@ class EmailVerificationController extends Controller
      */
     public function resend(Request $request): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
+
+        if (! $user) {
+            return $this->errorResponse('Unauthenticated', 401);
+        }
 
         $this->resendVerificationEmailAction->execute($user);
 

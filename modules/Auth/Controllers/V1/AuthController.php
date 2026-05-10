@@ -8,10 +8,12 @@ use App\Http\Controllers\Controller;
 use App\Traits\ApiResponser;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\PersonalAccessToken;
+use Modules\Auth\Actions\GetUserDevicesAction;
+use Modules\Auth\Actions\LogoutAction;
+use Modules\Auth\Actions\LogoutDeviceAction;
+use Modules\Auth\Actions\LogoutOtherDevicesAction;
 use Modules\Auth\Resources\DeviceResource;
 use Modules\Auth\Resources\UserResource;
-use Modules\User\Models\User;
 
 /**
  * @tags Authentication
@@ -21,6 +23,16 @@ class AuthController extends Controller
     use ApiResponser;
 
     /**
+     * Create a new AuthController instance.
+     */
+    public function __construct(
+        protected LogoutAction $logoutAction,
+        protected LogoutDeviceAction $logoutDeviceAction,
+        protected LogoutOtherDevicesAction $logoutOtherDevicesAction,
+        protected GetUserDevicesAction $getUserDevicesAction,
+    ) {}
+
+    /**
      * Log the user out of the application.
      *
      * @param  Request  $request  The current request.
@@ -28,13 +40,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
-
-        /** @var PersonalAccessToken $currentToken */
-        $currentToken = $user->currentAccessToken();
-
-        $currentToken->delete();
+        $this->logoutAction->execute($request);
 
         return $this->successResponse(null, __('auth.logout_success'));
     }
@@ -47,7 +53,6 @@ class AuthController extends Controller
      */
     public function me(Request $request): JsonResponse
     {
-        /** @var User $user */
         $user = $request->user();
 
         return $this->successResponse(new UserResource($user));
@@ -61,10 +66,7 @@ class AuthController extends Controller
      */
     public function devices(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
-
-        $devices = $user->tokens()->orderBy('last_used_at', 'desc')->get();
+        $devices = $this->getUserDevicesAction->execute($request);
 
         return $this->successResponse(DeviceResource::collection($devices));
     }
@@ -78,10 +80,7 @@ class AuthController extends Controller
      */
     public function logoutDevice(Request $request, string $id): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
-
-        $user->tokens()->where('id', $id)->delete();
+        $this->logoutDeviceAction->execute($request, $id);
 
         return $this->successResponse(null, __('auth.device_logout_success'));
     }
@@ -94,13 +93,7 @@ class AuthController extends Controller
      */
     public function logoutOtherDevices(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
-
-        /** @var PersonalAccessToken $currentToken */
-        $currentToken = $user->currentAccessToken();
-
-        $user->tokens()->where('id', '!=', $currentToken->id)->delete();
+        $this->logoutOtherDevicesAction->execute($request);
 
         return $this->successResponse(null, __('auth.other_devices_logout_success'));
     }

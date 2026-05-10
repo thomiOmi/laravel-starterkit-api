@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Modules\Role\Models\Role;
 
 /**
+ * @property-read Role $resource
+ *
  * @mixin Role
  */
 class RoleResource extends BaseResource
@@ -16,7 +18,8 @@ class RoleResource extends BaseResource
     /**
      * Transform the resource into an array.
      *
-     * @return array<string, mixed>
+     * @param  Request  $request  The incoming request.
+     * @return array<string, mixed> The transformed resource array.
      */
     public function toArray(Request $request): array
     {
@@ -52,7 +55,7 @@ class RoleResource extends BaseResource
              * @example ["user.view", "user.create", "role.view"]
              */
             'permissions' => $this->whenLoaded('permissions', function () {
-                return $this->permissions->pluck('name');
+                return $this->resource->permissions->pluck('name');
             }),
 
             /**

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Modules\Auth\Traits\PasswordValidationRules;
 use Modules\User\Models\User;
 
@@ -19,11 +21,17 @@ class UpdatePasswordAction
     /**
      * Execute the update password action.
      *
-     * @param  User  $user  The user model instance.
+     * @param  Authenticatable  $user  The user model instance.
      * @param  array<string, mixed>  $input  The input data containing current and new password.
+     *
+     * @throws ValidationException
      */
-    public function execute(User $user, array $input): void
+    public function execute(Authenticatable $user, array $input): void
     {
+        if (! $user instanceof User) {
+            throw new \InvalidArgumentException('User must be an instance of '.User::class);
+        }
+
         Validator::make($input, [
             'current_password' => ['required', 'string', 'current_password'],
             'password' => $this->passwordRules(),

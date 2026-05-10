@@ -14,12 +14,14 @@ use Illuminate\Pagination\LengthAwarePaginator;
 /**
  * Base Repository class providing common data access logic.
  *
- * @template T of Model
+ * @template T of \Illuminate\Database\Eloquent\Model
  */
 abstract class BaseRepository
 {
     /**
      * The query builder instance.
+     *
+     * @var Builder<T>|null
      */
     protected ?Builder $query = null;
 
@@ -40,7 +42,9 @@ abstract class BaseRepository
      */
     public function newQuery(): self
     {
-        $this->query = $this->model->newQuery();
+        /** @var Builder<T> $query */
+        $query = $this->model->newQuery();
+        $this->query = $query;
 
         return $this;
     }
@@ -48,11 +52,19 @@ abstract class BaseRepository
     /**
      * Apply query filters.
      *
+     * @param  BaseFilter<T>  $filters
      * @return $this
      */
     public function applyFilter(BaseFilter $filters): self
     {
-        $this->query = $filters->apply($this->query);
+        if ($this->query === null) {
+            $this->newQuery();
+        }
+
+        /** @var Builder<T> $query */
+        $query = $this->query;
+
+        $this->query = $filters->apply($query);
 
         return $this;
     }
@@ -60,14 +72,21 @@ abstract class BaseRepository
     /**
      * Get all records.
      *
-     * @param  array  $columns  The columns to retrieve.
-     * @param  array  $relations  The relations to eager load.
+     * @param  array<int, string>  $columns  The columns to retrieve.
+     * @param  array<int, string>|string  $relations  The relations to eager load.
      * @return Collection<int, T>
      */
-    public function all(array $columns = ['*'], array $relations = []): Collection
+    public function all(array $columns = ['*'], array|string $relations = []): Collection
     {
+        if ($this->query === null) {
+            $this->newQuery();
+        }
+
+        /** @var Builder<T> $query */
+        $query = $this->query;
+
         /** @var Collection<int, T> $collection */
-        $collection = $this->query->with($relations)->get($columns);
+        $collection = $query->with($relations)->get($columns);
 
         $this->newQuery();
 
@@ -78,13 +97,21 @@ abstract class BaseRepository
      * Get a paginated list of records.
      *
      * @param  int  $perPage  The number of items per page.
-     * @param  array  $columns  The columns to retrieve.
-     * @param  array  $relations  The relations to eager load.
-     * @return LengthAwarePaginator<T>
+     * @param  array<int, string>  $columns  The columns to retrieve.
+     * @param  array<int, string>|string  $relations  The relations to eager load.
+     * @return LengthAwarePaginator<int, T>
      */
-    public function paginate(int $perPage = 10, array $columns = ['*'], array $relations = []): LengthAwarePaginator
+    public function paginate(int $perPage = 10, array $columns = ['*'], array|string $relations = []): LengthAwarePaginator
     {
-        $paginator = $this->query->with($relations)->paginate($perPage, $columns);
+        if ($this->query === null) {
+            $this->newQuery();
+        }
+
+        /** @var Builder<T> $query */
+        $query = $this->query;
+
+        /** @var LengthAwarePaginator<int, T> $paginator */
+        $paginator = $query->with($relations)->paginate($perPage, $columns);
 
         $this->newQuery();
 
@@ -95,13 +122,14 @@ abstract class BaseRepository
      * Get a paginated list of models suitable for a data table.
      *
      * @param  DataTableDTO  $dto  The data table parameters.
-     * @param  array  $columns  The columns to retrieve.
-     * @param  array  $relations  The relations to eager load.
-     * @return LengthAwarePaginator<T>
+     * @param  array<int, string>  $columns  The columns to retrieve.
+     * @param  array<int, string>|string  $relations  The relations to eager load.
+     * @return LengthAwarePaginator<int, T>
      */
-    public function getDataTable(DataTableDTO $dto, array $columns = ['*'], array $relations = []): LengthAwarePaginator
+    public function getDataTable(DataTableDTO $dto, array $columns = ['*'], array|string $relations = []): LengthAwarePaginator
     {
-        $query = $this->model->with($relations);
+        /** @var Builder<T> $query */
+        $query = $this->model->newQuery()->with($relations);
 
         if ($dto->search) {
             $query = $this->applySearch($query, $dto->search);
@@ -112,10 +140,15 @@ abstract class BaseRepository
         }
 
         if ($dto->sort_by && in_array($dto->sort_by, $this->getSortableColumns(), true)) {
-            $query->orderBy($dto->sort_by, $dto->sort_direction);
+            /** @var 'asc'|'desc' $direction */
+            $direction = $dto->sort_direction;
+            $query->orderBy($dto->sort_by, $direction);
         }
 
-        return $query->paginate($dto->per_page, $columns, 'page', $dto->page);
+        /** @var LengthAwarePaginator<int, T> $paginator */
+        $paginator = $query->paginate($dto->per_page, $columns, 'page', $dto->page);
+
+        return $paginator;
     }
 
     /**
@@ -124,8 +157,9 @@ abstract class BaseRepository
      * This method should be overridden in child repositories to implement
      * specific search logic for the model.
      *
-     * @param  Builder  $query  The query builder.
+     * @param  Builder<T>  $query  The query builder.
      * @param  string  $search  The search query.
+     * @return Builder<T>
      */
     protected function applySearch(Builder $query, string $search): Builder
     {
@@ -135,8 +169,9 @@ abstract class BaseRepository
     /**
      * Apply column filters to the query.
      *
-     * @param  Builder  $query  The query builder.
-     * @param  array  $filters  The filters to apply.
+     * @param  Builder<T>  $query  The query builder.
+     * @param  array<string, mixed>  $filters  The filters to apply.
+     * @return Builder<T>
      */
     protected function applyFilters(Builder $query, array $filters): Builder
     {
@@ -151,7 +186,8 @@ abstract class BaseRepository
                 } elseif (is_bool($value) || is_numeric($value)) {
                     $query->where($column, $value);
                 } else {
-                    $query->where($column, 'like', "%{$value}%");
+                    $valueString = is_string($value) ? $value : (string) (is_scalar($value) ? $value : '');
+                    $query->where($column, 'like', "%{$valueString}%");
                 }
             }
         }
@@ -161,6 +197,8 @@ abstract class BaseRepository
 
     /**
      * Get the columns that can be filtered.
+     *
+     * @return array<int, string>
      */
     protected function getFilterableColumns(): array
     {
@@ -169,6 +207,8 @@ abstract class BaseRepository
 
     /**
      * Get the columns that can be sorted.
+     *
+     * @return array<int, string>
      */
     protected function getSortableColumns(): array
     {
@@ -179,43 +219,46 @@ abstract class BaseRepository
      * Find a record by its ID.
      *
      * @param  string|int  $id  The record ID.
-     * @param  array  $columns  The columns to retrieve.
-     * @param  array  $relations  The relations to eager load.
+     * @param  array<int, string>  $columns  The columns to retrieve.
+     * @param  array<int, string>|string  $relations  The relations to eager load.
      * @return T
      */
-    public function findById(string|int $id, array $columns = ['*'], array $relations = []): Model
+    public function findById(string|int $id, array $columns = ['*'], array|string $relations = []): Model
     {
+        /** @var T */
         return $this->model->with($relations)->findOrFail($id, $columns);
     }
 
     /**
      * Update or create a record.
      *
-     * @param  array  $attributes  The attributes to find the record.
-     * @param  array  $values  The values to update or create with.
+     * @param  array<string, mixed>  $attributes  The attributes to find the record.
+     * @param  array<string, mixed>  $values  The values to update or create with.
      * @return T
      */
     public function updateOrCreate(array $attributes, array $values = []): Model
     {
-        return $this->model->updateOrCreate($attributes, $values);
+        /** @var T */
+        return $this->model->newQuery()->updateOrCreate($attributes, $values);
     }
 
     /**
      * Create a new record.
      *
-     * @param  array  $details  The record details.
+     * @param  array<string, mixed>  $details  The record details.
      * @return T
      */
     public function create(array $details): Model
     {
-        return $this->model->create($details);
+        /** @var T */
+        return $this->model->newQuery()->create($details);
     }
 
     /**
      * Update an existing record.
      *
      * @param  string|int  $id  The record ID.
-     * @param  array  $details  The record details.
+     * @param  array<string, mixed>  $details  The record details.
      * @return T
      */
     public function update(string|int $id, array $details): Model
@@ -223,6 +266,7 @@ abstract class BaseRepository
         $record = $this->findById($id);
         $record->update($details);
 
+        /** @var T */
         return $record->refresh();
     }
 
@@ -233,28 +277,49 @@ abstract class BaseRepository
      */
     public function delete(string|int $id): bool
     {
-        return $this->findById($id)->delete();
+        $deleted = $this->findById($id)->delete();
+
+        return is_bool($deleted) ? $deleted : true;
     }
 
     /**
      * Perform bulk actions on records.
      *
-     * @param  array<int|string>  $ids  The record IDs.
+     * @param  array<int, string|int>  $ids  The record IDs.
      * @param  string  $action  The action to perform (delete, update, restore, forceDelete).
-     * @param  array  $data  The data for update action.
+     * @param  array<string, mixed>  $data  The data for update action.
      * @return int The number of affected records.
      */
     public function bulk(array $ids, string $action, array $data = []): int
     {
-        /** @var mixed $query */
-        $query = $this->model->whereIn($this->model->getKeyName(), $ids);
+        /** @var Builder<T> $query */
+        $query = $this->model->newQuery()->whereIn($this->model->getKeyName(), $ids);
 
-        return match ($action) {
-            'delete' => (int) $query->delete(),
-            'update' => (int) $query->update($data),
-            'restore' => (int) $query->restore(),
-            'forceDelete' => (int) $query->forceDelete(),
+        $result = match ($action) {
+            'delete' => $query->delete(),
+            'update' => $query->update($data),
+            'restore' => $this->callActionOnQuery($query, 'restore'),
+            'forceDelete' => $this->callActionOnQuery($query, 'forceDelete'),
             default => 0,
         };
+
+        return is_numeric($result) ? (int) $result : 0;
+    }
+
+    /**
+     * Helper to call a method on a query if it exists.
+     *
+     * @param  Builder<T>  $query
+     */
+    private function callActionOnQuery(Builder $query, string $method): int
+    {
+        $q = (object) $query;
+
+        if (method_exists($q, $method)) {
+            /** @var int */
+            return $q->{$method}();
+        }
+
+        return 0;
     }
 }
