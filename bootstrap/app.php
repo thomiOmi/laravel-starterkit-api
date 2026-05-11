@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\PasswordExpiredMiddleware;
 use App\Http\Middleware\PlanFeatureMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -30,7 +29,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
-            'password.expired' => PasswordExpiredMiddleware::class,
             'plan.feature' => PlanFeatureMiddleware::class,
         ]);
 

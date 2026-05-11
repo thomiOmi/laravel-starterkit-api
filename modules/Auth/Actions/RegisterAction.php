@@ -43,7 +43,6 @@ class RegisterAction
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($password),
-            'password_changed_at' => now(),
         ]);
     }
 }
