@@ -44,7 +44,6 @@ class UpdatePasswordAction
 
         $user->forceFill([
             'password' => Hash::make($password),
-            'password_changed_at' => now(),
         ])->save();
     }
 }
