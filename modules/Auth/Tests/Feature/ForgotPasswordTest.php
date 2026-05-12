@@ -49,7 +49,9 @@ test('user can reset password with valid token', function () {
     $response->assertStatus(200)
         ->assertJsonPath('message', 'Your password has been reset.');
 
-    $this->assertTrue(Hash::check('new-password123', $user->fresh()->password));
+    $freshUser = $user->fresh();
+    /** @var User $freshUser */
+    $this->assertTrue(Hash::check('new-password123', (string) $freshUser->password));
 });
 
 test('forgot password fails with non-existent email', function () {

@@ -13,6 +13,7 @@ parameters:
         - public
         - routes
         - modules
+        - tests
 
     # Level 9 is the highest level
     level: max
@@ -22,3 +23,27 @@ parameters:
     excludePaths:
         - config/database.php
 
+    reportUnmatchedIgnoredErrors: false
+
+    ignoreErrors:
+        -
+            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::#'
+        -
+            message: '#Access to an undefined property Pest\\PendingCalls\\TestCall::#'
+        -
+            message: '#Cannot call method .* on mixed.#'
+        -
+            message: '#Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage::andReturn\(\).#'
+        -
+            message: '#Call to method .* of internal class Pest\\Mixins\\Expectation.* from outside its root namespace Pest.#'
+        -
+            message: '#Call to method .* of internal class Pest\\Expectation from outside its root namespace Pest.#'
+        -
+            message: '#Cannot access property \$not on mixed.#'
+            path: tests/Feature/ArchitectureTest.php
+        -
+            message: '#Call to method in\(\) of internal class Pest\\PendingCalls\\UsesCall from outside its root namespace Pest.#'
+            path: tests/Pest.php
+        -
+            message: '#Parameter \#. .* of function .* expects string, bool\|string given.#'
+            path: config/*.php

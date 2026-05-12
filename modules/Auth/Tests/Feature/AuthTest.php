@@ -96,7 +96,10 @@ describe('Email Verification', function () {
             ->getJson($url);
 
         $response->assertSuccessful();
-        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+
+        $freshUser = $user->fresh();
+        /** @var User $freshUser */
+        $this->assertTrue($freshUser->hasVerifiedEmail());
     });
 
     it('can resend verification email', function () {

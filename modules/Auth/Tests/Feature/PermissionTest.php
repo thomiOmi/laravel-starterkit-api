@@ -19,7 +19,7 @@ class PermissionTest extends TestCase
         $this->seed(RoleSeeder::class);
     }
 
-    public function test_admin_can_access_protected_role()
+    public function test_admin_can_access_protected_role(): void
     {
         $admin = User::factory()->create();
         $admin->assignRole('admin');
@@ -27,7 +27,7 @@ class PermissionTest extends TestCase
         $this->assertTrue($admin->hasRole('admin'));
     }
 
-    public function test_user_cannot_access_admin_protected_role()
+    public function test_user_cannot_access_admin_protected_role(): void
     {
         $user = User::factory()->create();
         $user->assignRole('user');
