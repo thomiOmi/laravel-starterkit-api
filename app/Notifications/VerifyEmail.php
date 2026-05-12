@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\URL;
 use Modules\User\Models\User;
 
 /**
- * Custom Verify Email notification to use API routes.
+ * Custom Verify Email notification to use API routes and support background queuing.
  */
-class VerifyEmail extends BaseVerifyEmail
+class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
 {
+    use Queueable;
+
     /**
      * Get the verification URL for the given notifiable.
      *

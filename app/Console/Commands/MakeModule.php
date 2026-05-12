@@ -358,9 +358,7 @@ class {$name}Repository extends BaseRepository
 PHP;
     }
 
-    /**
-     * @param  array<string, bool>  $options
-     */
+    /** @param array<string, bool> $options */
     protected function getControllerTemplate(string $name, array $options): string
     {
         $repoImport = $options['repository'] ? "use Modules\\{$name}\\Repositories\\{$name}Repository;" : '';
