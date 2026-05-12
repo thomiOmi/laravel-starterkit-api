@@ -18,7 +18,8 @@ test('admin can bulk delete users', function () {
     $admin->assignRole('super-admin');
 
     $users = User::factory()->count(5)->create();
-    $ids = $users->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+    /** @var array<int, string> $ids */
+    $ids = $users->pluck('id')->map(fn (mixed $id) => is_scalar($id) ? (string) $id : '')->toArray();
 
     $response = $this->actingAs($admin)
         ->postJson('/api/v1/users/bulk', [
@@ -41,7 +42,8 @@ test('admin can bulk delete roles', function () {
     $roles = [];
     $roles[] = Role::create(['name' => 'role1']);
     $roles[] = Role::create(['name' => 'role2']);
-    $ids = collect($roles)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+    /** @var array<int, string> $ids */
+    $ids = collect($roles)->pluck('id')->map(fn (mixed $id) => is_scalar($id) ? (string) $id : '')->toArray();
 
     $response = $this->actingAs($admin)
         ->postJson('/api/v1/roles/bulk', [
@@ -60,7 +62,8 @@ test('bulk update action is rejected for security', function () {
     $roles = [];
     $roles[] = Role::create(['name' => 'role1']);
     $roles[] = Role::create(['name' => 'role2']);
-    $ids = collect($roles)->pluck('id')->map(fn ($id) => (string) $id)->toArray();
+    /** @var array<int, string> $ids */
+    $ids = collect($roles)->pluck('id')->map(fn (mixed $id) => is_scalar($id) ? (string) $id : '')->toArray();
 
     $response = $this->actingAs($admin)
         ->postJson('/api/v1/roles/bulk', [
