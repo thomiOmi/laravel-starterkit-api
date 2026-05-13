@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.1) (2026-05-13)
+
+### Chores
+
+- fix release tagging identity by adding explicit git config ([555f408](https://github.com/thomiOmi/laravel-starterkit-api/commit/555f4081fef428600d2b5a316f73b2fb278f844d))
 ## [0.2.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.0) (2026-05-13)
 
 ### Features
