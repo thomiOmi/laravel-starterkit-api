@@ -136,7 +136,6 @@ class MakeModule extends Command
         $this->createFile($path."/Models/{$name}.php", $this->getModelTemplate($name));
         $this->createFile($path."/Controllers/V1/{$name}Controller.php", $this->getControllerTemplate($name, $options));
         $this->createFile($path."/Resources/{$name}Resource.php", $this->getResourceTemplate($name));
-        $this->createFile($path."/Tests/Feature/{$name}Test.php", $this->getTestTemplate($name, $options));
 
         // Optional Files
         if ($options['repository']) {
@@ -197,7 +196,6 @@ class MakeModule extends Command
                 ['Migration', $options['migration'] ? 'Created' : 'Skipped'],
                 ['Factory', $options['factory'] ? 'Created' : 'Skipped'],
                 ['Seeder', $options['seeder'] ? 'Created' : 'Skipped'],
-                ['Test (Feature)', 'Created'],
             ]
         );
     }
@@ -381,9 +379,9 @@ PHP;
         if ($options['repository']) {
             $constructorParams[] = "protected {$name}Repository \$repository";
         }
-        $constructor = "    public function __construct(".implode(', ', $constructorParams).") {}";
+        $constructor = '    public function __construct('.implode(', ', $constructorParams).') {}';
 
-        $indexParams = ['Request \$request'];
+        $indexParams = ['Request $request'];
         if ($options['filter']) {
             $indexParams[] = "{$name}Filter \$filter";
         }
@@ -465,18 +463,18 @@ PHP;
 
         $bulkMethod = '';
         if ($options['repository']) {
-            $bulkMethod = <<<PHP
+            $bulkMethod = <<<'PHP'
     /**
      * Perform bulk action.
      */
-    public function bulkAction(BulkActionRequest \$request): JsonResponse
+    public function bulkAction(BulkActionRequest $request): JsonResponse
     {
-        /** @var array{ids: array<int, string|int>, action: string} \$validated */
-        \$validated = \$request->validated();
+        /** @var array{ids: array<int, string|int>, action: string} $validated */
+        $validated = $request->validated();
 
-        \$count = \$this->repository->bulk(\$validated['ids'], \$validated['action']);
+        $count = $this->repository->bulk($validated['ids'], $validated['action']);
 
-        return \$this->successResponse(['count' => \$count], "Items {\$validated['action']} successfully");
+        return $this->successResponse(['count' => $count], "Items {$validated['action']} successfully");
     }
 PHP;
         }
@@ -875,52 +873,5 @@ PHP;
         }
 
         $this->createFile($fullPath, $this->getMigrationTemplate($name, $tableName));
-    }
-
-    /** @param array<string, bool> $options */
-    protected function getTestTemplate(string $name, array $options): string
-    {
-        $slug = Str::kebab(Str::plural($name));
-
-        return <<<PHP
-<?php
-
-declare(strict_types=1);
-
-namespace Modules\\{$name}\\Tests\\Feature;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Modules\\{$name}\\Models\\{$name};
-use Modules\\User\\Models\\User;
-
-uses(RefreshDatabase::class);
-
-describe('{$name} CRUD', function () {
-    it('can list {$slug}', function () {
-        {$name}::factory()->count(3)->create();
-        \$admin = User::factory()->create();
-        \$admin->assignRole('super-admin');
-
-        \$response = \$this->actingAs(\$admin)
-            ->getJson("/api/v1/{$slug}");
-
-        \$response->assertStatus(200)
-            ->assertJsonCount(3, 'data');
-    });
-
-    it('can create a {$name}', function () {
-        \$admin = User::factory()->create();
-        \$admin->assignRole('super-admin');
-
-        \$response = \$this->actingAs(\$admin)
-            ->postJson("/api/v1/{$slug}", [
-                'name' => 'New {$name}',
-            ]);
-
-        \$response->assertStatus(201);
-        \$this->assertDatabaseHas('{$slug}', ['name' => 'New {$name}']);
-    });
-});
-PHP;
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Modules\Role\Database\Seeders\RoleSeeder;
@@ -50,7 +51,7 @@ test('user can reset password with valid token', function () {
         ->assertJsonPath('message', 'Your password has been reset.');
 
     $freshUser = $user->fresh();
-    /** @var User $freshUser */
+    /** @var \Modules\User\Models\User $freshUser */
     $this->assertTrue(Hash::check('new-password123', (string) $freshUser->password));
 });
 

@@ -98,7 +98,7 @@ describe('Email Verification', function () {
         $response->assertSuccessful();
 
         $freshUser = $user->fresh();
-        /** @var User $freshUser */
+        /** @var \Modules\User\Models\User $freshUser */
         $this->assertTrue($freshUser->hasVerifiedEmail());
     });
 
