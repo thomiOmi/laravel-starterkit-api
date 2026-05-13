@@ -30,9 +30,14 @@ class RoleRepository extends BaseRepository
      * @param  string  $search  The search query.
      * @return Builder<Role> The updated query builder instance.
      */
-    protected function applySearch(Builder $query, string $search): Builder
+    /**
+     * Get the columns that can be filtered for roles.
+     *
+     * @return array<int, string> The list of filterable columns.
+     */
+    protected function getFilterableColumns(): array
     {
-        return $query->where('name', 'like', "%{$search}%");
+        return ['name'];
     }
 
     /**

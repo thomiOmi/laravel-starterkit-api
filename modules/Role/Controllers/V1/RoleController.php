@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
-use App\DTOs\DataTableDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BulkActionRequest;
 use Dedoc\Scramble\Attributes\QueryParameter;
@@ -13,6 +12,7 @@ use Illuminate\Http\Request;
 use Modules\Role\Actions\CreateRoleAction;
 use Modules\Role\Actions\UpdateRoleAction;
 use Modules\Role\DTOs\RoleDTO;
+use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Repositories\RoleRepository;
 use Modules\Role\Requests\RoleRequest;
 use Modules\Role\Resources\RoleResource;
@@ -33,16 +33,21 @@ class RoleController extends Controller
      * Retrieves a paginated list of all roles with filtering and sorting.
      *
      * @param  Request  $request  The request.
+     * @param  RoleFilter<\Modules\Role\Models\Role>  $filter  The filter.
      */
     #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
     #[QueryParameter(name: 'search', description: 'Search keyword to filter roles by name.', type: 'string', required: false, example: 'admin')]
-    #[QueryParameter(name: 'sort', description: 'Column name to sort by.', type: 'string', required: false, default: 'created_at', example: 'name')]
-    #[QueryParameter(name: 'order', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
-    public function index(Request $request): JsonResponse
+    #[QueryParameter(name: 'sort_by', description: 'Column name to sort by.', type: 'string', required: false, default: 'created_at', example: 'name')]
+    #[QueryParameter(name: 'sort_direction', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
+    public function index(Request $request, RoleFilter $filter): JsonResponse
     {
-        $dto = DataTableDTO::fromRequest($request);
-        $roles = $this->repository->getDataTable($dto, relations: ['permissions']);
+        $roles = $this->repository
+            ->applyFilter($filter)
+            ->paginate(
+                perPage: $request->integer('per_page', 10),
+                relations: ['permissions']
+            );
 
         return $this->paginateResponse($roles, RoleResource::class, 'Roles retrieved successfully');
     }

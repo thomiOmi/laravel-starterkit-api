@@ -45,11 +45,6 @@ class UserController extends Controller
     #[QueryParameter(name: 'role', description: 'Filter by role name.', type: 'string', required: false, example: 'admin')]
     public function index(Request $request, UserFilter $filter): JsonResponse
     {
-        // Example usage of Laravel Pennant
-        if (Feature::active('beta-feature')) {
-            // Logic for beta feature
-        }
-
         $users = $this->userRepository
             ->applyFilter($filter)
             ->paginate(

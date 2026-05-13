@@ -44,12 +44,10 @@ abstract class BaseFilter
         $this->builder = $builder;
 
         foreach ($this->getFilters() as $name => $value) {
-            $method = Str::camel($name);
+            $method = Str::camel((string) $name);
 
-            if (method_exists($this, $method)) {
-                /** @var callable $callback */
-                $callback = [$this, $method];
-                call_user_func_array($callback, array_filter([$value]));
+            if ($value !== null && $value !== '' && method_exists($this, $method)) {
+                $this->{$method}($value);
             }
         }
 
@@ -63,17 +61,13 @@ abstract class BaseFilter
      */
     protected function applySorting(): void
     {
-        /** @var string|null $sortByInput */
-        $sortByInput = $this->request->input('sort_by');
-        $sortBy = (string) $sortByInput;
+        $sortBy = $this->request->string('sort_by')->trim();
+        $sortDirection = $this->request->string('sort_direction', 'desc')->lower()->toString();
+        /** @var 'asc'|'desc' $direction */
+        $direction = in_array($sortDirection, ['asc', 'desc'], true) ? $sortDirection : 'desc';
 
-        /** @var string|null $sortDirectionInput */
-        $sortDirectionInput = $this->request->input('sort_direction', 'desc');
-        /** @var 'asc'|'desc' $sortDirection */
-        $sortDirection = strtolower((string) $sortDirectionInput) === 'asc' ? 'asc' : 'desc';
-
-        if ($sortBy !== '') {
-            $this->builder->orderBy($sortBy, $sortDirection);
+        if ($sortBy->isNotEmpty()) {
+            $this->builder->orderBy($sortBy->toString(), $direction);
         } else {
             $this->builder->latest();
         }
