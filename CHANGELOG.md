@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.1.1) (2026-05-13)
+
+### Chores
+
+- fix release workflow argument and address actions deprecations ([1ad6a77](https://github.com/thomiOmi/laravel-starterkit-api/commit/1ad6a7764c7e18e5482b42fd23f5cebe1c3ce404))
+- Update ci-failure-fix.yml ([6c6306e](https://github.com/thomiOmi/laravel-starterkit-api/commit/6c6306eca3141bb3068b5c0eb4a83215669e5191))
+- update github actions for node 24 and fix workflow triggers ([f79e6f8](https://github.com/thomiOmi/laravel-starterkit-api/commit/f79e6f8787423cef77ff1733b2336621db7b409a))
 ## [0.1.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.1.0) (2026-05-13)
 
 ### Features
