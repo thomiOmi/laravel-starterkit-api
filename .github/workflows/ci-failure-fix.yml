@@ -11,7 +11,7 @@ env:
 jobs:
   fix-failure:
     # Only run when CI fails
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    if: github.event.workflow_run.conclusion == 'failure'
     runs-on: ubuntu-latest
     permissions:
       contents: read
