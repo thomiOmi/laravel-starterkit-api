@@ -32,6 +32,10 @@ parameters:
             message: '#Access to an undefined property Pest\\PendingCalls\\TestCall::#'
         -
             message: '#Cannot call method .* on mixed.#'
+            path: tests/*
+        -
+            message: '#Cannot call method .* on mixed.#'
+            path: modules/*/Tests/*
         -
             message: '#Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage::andReturn\(\).#'
         -
