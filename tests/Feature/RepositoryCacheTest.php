@@ -24,7 +24,7 @@ class RepositoryCacheTest extends TestCase
         config([
             'cache.default' => 'array',
             'cache_enterprise.enabled' => true,
-            'cache_enterprise.default_ttl' => 3600
+            'cache_enterprise.default_ttl' => 3600,
         ]);
 
         Cache::flush();
@@ -52,7 +52,7 @@ class RepositoryCacheTest extends TestCase
 
         // Set version to 1 and cache data
         $baseKey = strtolower(str_replace('\\', '.', get_class($this->repository)));
-        Cache::put($baseKey . '.version', 1);
+        Cache::put($baseKey.'.version', 1);
 
         $this->repository->findById($user->id);
 
@@ -64,8 +64,8 @@ class RepositoryCacheTest extends TestCase
         $reflection->setAccessible(true);
         $reflection->invoke($this->repository);
 
-        $newVersion = Cache::get($baseKey . '.version');
-        $this->assertEquals(2, $newVersion, "Version should have been incremented to 2");
+        $newVersion = Cache::get($baseKey.'.version');
+        $this->assertEquals(2, $newVersion, 'Version should have been incremented to 2');
 
         $fresh = $this->repository->findById($user->id);
         $this->assertEquals('Updated', $fresh->name);
@@ -75,25 +75,25 @@ class RepositoryCacheTest extends TestCase
     {
         $user = User::factory()->create(['name' => 'Original']);
         $baseKey = strtolower(str_replace('\\', '.', get_class($this->repository)));
-        Cache::put($baseKey . '.version', 1);
+        Cache::put($baseKey.'.version', 1);
 
         // 1. Test Update
         $this->repository->findById($user->id);
         $this->repository->update($user->id, ['name' => 'Updated via Repo']);
-        $this->assertEquals(2, Cache::get($baseKey . '.version'));
+        $this->assertEquals(2, Cache::get($baseKey.'.version'));
 
         // 2. Test Create
         $this->repository->findById($user->id);
         $this->repository->create([
             'name' => 'New User',
-            'email' => 'new' . rand() . '@example.com',
-            'password' => 'password123'
+            'email' => 'new'.rand().'@example.com',
+            'password' => 'password123',
         ]);
-        $this->assertEquals(3, Cache::get($baseKey . '.version'));
+        $this->assertEquals(3, Cache::get($baseKey.'.version'));
 
         // 3. Test Delete
         $this->repository->findById($user->id);
         $this->repository->delete($user->id);
-        $this->assertEquals(4, Cache::get($baseKey . '.version'));
+        $this->assertEquals(4, Cache::get($baseKey.'.version'));
     }
 }

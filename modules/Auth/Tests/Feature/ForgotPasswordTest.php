@@ -51,7 +51,7 @@ test('user can reset password with valid token', function () {
         ->assertJsonPath('message', 'Your password has been reset.');
 
     $freshUser = $user->fresh();
-    /** @var \Modules\User\Models\User $freshUser */
+    /** @var User $freshUser */
     $this->assertTrue(Hash::check('new-password123', (string) $freshUser->password));
 });
 
