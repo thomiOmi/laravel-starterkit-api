@@ -10,6 +10,7 @@ use Modules\Role\Models\Role;
 
 /**
  * @template T of Role
+ *
  * @extends BaseFilter<T>
  */
 class RoleFilter extends BaseFilter
