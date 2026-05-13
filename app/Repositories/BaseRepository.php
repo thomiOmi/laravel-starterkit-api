@@ -228,7 +228,7 @@ abstract class BaseRepository
      */
     public function findById(string|int $id, array $columns = ['*'], array|string $relations = []): Model
     {
-        $cacheKey = "find.{$id}." . md5(serialize($columns) . serialize($relations));
+        $cacheKey = "find.{$id}.".md5(serialize($columns).serialize($relations));
 
         /** @var T */
         return $this->cache($cacheKey, function () use ($id, $columns, $relations) {

@@ -5,6 +5,9 @@ on:
     workflows: ["Laravel"]
     types: [completed]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   fix-failure:
     # Only run when CI fails
@@ -29,7 +32,7 @@ jobs:
             return logs.url;
       
       - name: Invoke Jules to fix failure
-        uses: google-labs-code/jules-invoke@v1
+        uses: google-labs-code/jules-action@v1
         with:
           prompt: |
             The CI workflow "${{ github.event.workflow_run.name }}" has failed.

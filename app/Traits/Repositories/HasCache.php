@@ -17,7 +17,6 @@ trait HasCache
      * @param  string  $key  The cache key.
      * @param  \Closure  $callback  The callback to retrieve data.
      * @param  int|null  $ttl  Cache time-to-live in seconds (default: from config).
-     * @return mixed
      */
     protected function cache(string $key, \Closure $callback, ?int $ttl = null): mixed
     {
@@ -47,7 +46,7 @@ trait HasCache
     protected function getCacheKey(string $key): string
     {
         $baseKey = strtolower(str_replace('\\', '.', get_class($this)));
-        $version = Cache::get($baseKey . '.version', '1');
+        $version = Cache::get($baseKey.'.version', '1');
         $versionString = is_scalar($version) ? (string) $version : '1';
 
         return "{$baseKey}.v{$versionString}.{$key}";
@@ -61,9 +60,9 @@ trait HasCache
         $baseKey = strtolower(str_replace('\\', '.', get_class($this)));
 
         try {
-            Cache::increment($baseKey . '.version');
+            Cache::increment($baseKey.'.version');
         } catch (\Throwable $e) {
-            Cache::put($baseKey . '.version', (string) now()->timestamp, 86400 * 30);
+            Cache::put($baseKey.'.version', (string) now()->timestamp, 86400 * 30);
         }
     }
 }
