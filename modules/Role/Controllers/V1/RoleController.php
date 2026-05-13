@@ -33,7 +33,7 @@ class RoleController extends Controller
      * Retrieves a paginated list of all roles with filtering and sorting.
      *
      * @param  Request  $request  The request.
-     * @param  RoleFilter<\Modules\Role\Models\Role>  $filter  The filter.
+     * @param  RoleFilter  $filter  The filter.
      */
     #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]

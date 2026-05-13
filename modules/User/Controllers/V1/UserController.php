@@ -9,7 +9,6 @@ use App\Http\Requests\BulkActionRequest;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Laravel\Pennant\Feature;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Actions\DeleteUserAction;
 use Modules\User\Actions\UpdateUserAction;

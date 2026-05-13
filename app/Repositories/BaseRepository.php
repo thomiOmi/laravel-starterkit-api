@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\DTOs\DataTableDTO;
 use App\Filters\BaseFilter;
 use App\Traits\Repositories\HasCache;
 use Illuminate\Database\Eloquent\Builder;
@@ -120,8 +119,6 @@ abstract class BaseRepository
 
         return $paginator;
     }
-
-
 
     /**
      * Get the columns that can be filtered.
