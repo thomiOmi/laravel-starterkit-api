@@ -35,30 +35,65 @@ class RepositoryCacheTest extends TestCase
     {
         $user = User::factory()->create(['name' => 'Original']);
 
-        // Populate cache
+        // First call to findById will populate cache
         $this->repository->findById($user->id);
 
-        // Update DB directly bypassing cache
+        // Update DB directly bypassing repository/cache
         User::where('id', $user->id)->update(['name' => 'Direct DB Update']);
 
-        // Should still return 'Original' from cache
+        // Repository should return 'Original' from cache, not 'Direct DB Update'
         $cached = $this->repository->findById($user->id);
         $this->assertEquals('Original', $cached->name);
     }
 
     public function test_clear_cache_manually(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['name' => 'Initial']);
+
+        // Set version to 1 and cache data
+        $baseKey = strtolower(str_replace('\\', '.', get_class($this->repository)));
+        Cache::put($baseKey . '.version', 1);
 
         $this->repository->findById($user->id);
 
         // Update DB directly
         User::where('id', $user->id)->update(['name' => 'Updated']);
 
-        // Clear cache via facade (this is what clearCache falls back to for array)
-        Cache::flush();
+        // Trigger cache invalidation via repository helper (protected, use reflection)
+        $reflection = new \ReflectionMethod($this->repository, 'clearCache');
+        $reflection->setAccessible(true);
+        $reflection->invoke($this->repository);
+
+        $newVersion = Cache::get($baseKey . '.version');
+        $this->assertEquals(2, $newVersion, "Version should have been incremented to 2");
 
         $fresh = $this->repository->findById($user->id);
         $this->assertEquals('Updated', $fresh->name);
+    }
+
+    public function test_repository_operations_invalidate_cache(): void
+    {
+        $user = User::factory()->create(['name' => 'Original']);
+        $baseKey = strtolower(str_replace('\\', '.', get_class($this->repository)));
+        Cache::put($baseKey . '.version', 1);
+
+        // 1. Test Update
+        $this->repository->findById($user->id);
+        $this->repository->update($user->id, ['name' => 'Updated via Repo']);
+        $this->assertEquals(2, Cache::get($baseKey . '.version'));
+
+        // 2. Test Create
+        $this->repository->findById($user->id);
+        $this->repository->create([
+            'name' => 'New User',
+            'email' => 'new' . rand() . '@example.com',
+            'password' => 'password123'
+        ]);
+        $this->assertEquals(3, Cache::get($baseKey . '.version'));
+
+        // 3. Test Delete
+        $this->repository->findById($user->id);
+        $this->repository->delete($user->id);
+        $this->assertEquals(4, Cache::get($baseKey . '.version'));
     }
 }
