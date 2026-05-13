@@ -16,25 +16,39 @@ on:
           - minor
           - major
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+# Prevent concurrent release runs to avoid race conditions and tag conflicts
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
+    name: Create Release
     runs-on: ubuntu-latest
+    
+    # Prevent infinite loops: Don't run if the push was created by a release bot
+    if: "!contains(github.event.head_commit.message, 'chore(release)')"
+    
     permissions:
       contents: write
       pull-requests: write
+      issues: write # Often required by release tools to link/close issues in changelogs
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Note: If your release tool creates tags/commits that need to trigger OTHER 
+          # GitHub Actions, replace GITHUB_TOKEN with a Personal Access Token (PAT).
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          # Uncomment this to cache dependencies and speed up 'npx' execution
+          # cache: 'npm' # or 'yarn' / 'pnpm'
 
       - name: Configure Git
         run: |
