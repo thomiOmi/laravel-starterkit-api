@@ -5,7 +5,7 @@ Sistem autentikasi dalam proyek ini menggunakan implementasi kustom yang bersih 
 ## 1. Fitur yang Tersedia
 Seluruh endpoint autentikasi berada di bawah prefix `/api/v1/auth`.
 
-- **Registrasi:** `POST /register`
+- **Registrasi:** `POST /register` (Memicu Event `UserRegistered`).
 - **Login:** `POST /login`
 - **Logout:** `POST /logout`
 - **Reset Password:** `POST /forgot-password` dan `POST /reset-password`
@@ -41,5 +41,9 @@ Setiap login menghasilkan `PersonalAccessToken` baru yang mencatat informasi per
 - **Logout Perangkat Spesifik:** `DELETE /auth/devices/{id}`
 - **Logout Perangkat Lain:** `POST /auth/devices/logout-others`
 
-## 4. Lokalisasi (i18n)
+## 4. Alur Event-Driven
+Proses autentikasi memanfaatkan Laravel Events untuk decoupling:
+- **UserRegistered**: Dipicu setelah registrasi berhasil. Listener `SendEmailVerificationNotification` akan menangani pengiriman email secara asinkron melalui antrean (Queue).
+
+## 5. Lokalisasi (i18n)
 Pesan error dan sukses autentikasi mendukung multi-bahasa melalui header `Accept-Language` (id/en).

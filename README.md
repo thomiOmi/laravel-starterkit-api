@@ -5,9 +5,9 @@ A robust and opinionated Laravel starter kit for building scalable APIs. Built w
 ## 🚀 Key Features
 
 -   **Feature Flags**: Dynamic feature control using Laravel Pennant.
--   **Advanced Security**: Password History and mandatory rotation.
--   **Enterprise Ready**: Clean Modular Architecture and i18n support.
--   **Developer Experience**: Modular generator, Auto-API docs, and Pint formatting.
+-   **Performance Optimized**: Standardized Repository Caching and Background Queue processing.
+-   **Enterprise Ready**: Clean Modular Architecture, Strict Typing (Level 9), and i18n support.
+-   **Developer Experience**: Advanced Modular generator, Auto-API docs, and Pint formatting.
 
 ---
 
@@ -24,7 +24,10 @@ Detailed guides for using and extending the starter kit:
 
 ### 🏗️ Technical Architecture
 -   [Architecture & Data Flow](docs/architecture.md) - The Controller -> Action -> Repository pattern.
+-   [Caching Strategy](docs/caching.md) - Efficient data access with Repository caching.
+-   [Events & Queues](docs/events.md) - Background processing and decoupled logic.
 -   [API Standards](docs/api-standard.md) - Versioning, responses, and error handling.
+-   [Module Generator](docs/module-generator.md) - Rapid development with standard boilerplate.
 
 ---
 

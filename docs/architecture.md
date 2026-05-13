@@ -13,6 +13,7 @@ sequenceDiagram
     participant Controller as Controller
     participant Action as Action
     participant Repo as Repository
+    participant Cache as Cache Layer
     participant DB as Database
 
     Client->>Middleware: Request with Bearer Token
@@ -20,8 +21,12 @@ sequenceDiagram
     Middleware->>Controller: Forward Request
     Controller->>Action: Execute Business Logic
     Action->>Repo: Data Access Request
+    Repo->>Cache: Check Cache
+    Cache-->>Repo: Hit / Miss
+    Note over Repo,DB: If Miss
     Repo->>DB: Query
     DB-->>Repo: Result
+    Repo->>Cache: Store Result
     Repo-->>Action: Model/Collection
     Action-->>Controller: Result Data
     Controller-->>Client: Standardized JSON Response
@@ -39,3 +44,5 @@ Setiap modul bersifat mandiri (*self-contained*), namun dapat berinteraksi satu 
 - **Strict Typing:** Semua file wajib menggunakan `declare(strict_types=1);`.
 - **Logic Placement:** Controller hanya bertugas menerima input dan mengembalikan respon. Logika bisnis wajib diletakkan di kelas **Action**.
 - **Data Access:** Semua interaksi database wajib melalui **Repository**.
+- **Caching Layer:** Repository menggunakan trait `HasCache` untuk menangani caching transparan dengan strategi rotasi versi.
+- **Background Jobs:** Proses yang memakan waktu lama (seperti pengiriman email) diproses secara asinkron menggunakan Laravel Queues.

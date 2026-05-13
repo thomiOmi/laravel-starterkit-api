@@ -10,28 +10,22 @@ Untuk membuat modul baru, jalankan:
 php artisan make:module {ModuleName}
 ```
 
-Command ini akan membuat struktur folder berikut di dalam `modules/{ModuleName}`:
-- `Actions`
-- `Controllers/V1`
-- `Database/Migrations`
-- `DTOs`
-- `Models`
-- `Providers`
-- `Repositories`
-- `Requests`
-- `Resources`
-- `Routes`
-- `Tests`
+Command ini akan membuat struktur folder dan file boilerplate berikut di dalam `modules/{ModuleName}`:
+- **Actions:** Terpisah untuk Create, Update, dan Delete.
+- **Controllers/V1:** Menggunakan dependency injection untuk Action dan Repository.
+- **DTOs:** Untuk transfer data antar layer yang aman (Strict Typing).
+- **Repositories:** Berbasis Generics yang sudah terintegrasi dengan `HasCache`.
+- **Filters:** Untuk penanganan query string (search, sort, filter) yang terpusat.
+- **Tests/Feature:** Template pengetesan CRUD standar yang siap dijalankan.
+- **Database:** Migrations, Factories, dan Seeders.
 
-## Opsi Tambahan
+## Mode Interaktif
 
-Anda dapat menambahkan komponen spesifik secara otomatis menggunakan opsi `--include`:
+Secara default, generator berjalan dalam **mode interaktif**. Anda akan ditanya komponen apa saja yang ingin dibuat. Jika ingin menimpa modul yang sudah ada, gunakan opsi `--force`:
 
 ```bash
-php artisan make:module Product --include=dto,action,repository,request,resource
+php artisan make:module Product --force
 ```
-
-Atau jalankan tanpa opsi untuk masuk ke **mode interaktif** yang akan menanyakan satu per satu komponen yang ingin dibuat.
 
 ## Pendaftaran Modul Otomatis
 

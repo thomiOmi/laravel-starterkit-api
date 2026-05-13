@@ -61,10 +61,8 @@ trait HasCache
         $baseKey = strtolower(str_replace('\\', '.', get_class($this)));
 
         try {
-            // Try to increment existing version
             Cache::increment($baseKey . '.version');
         } catch (\Throwable $e) {
-            // If increment fails or key doesn't exist, set a new timestamp-based version
             Cache::put($baseKey . '.version', (string) now()->timestamp, 86400 * 30);
         }
     }
