@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.0) (2026-05-13)
+
+### Features
+
+- Create weekly-cleanup.yml ([9fad975](https://github.com/thomiOmi/laravel-starterkit-api/commit/9fad97539c98fced5b54a15b4a888c5c6d0a5f2a))
 ## [0.1.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.1.2) (2026-05-13)
 
 ### Chores
