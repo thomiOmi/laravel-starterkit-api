@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.1.2) (2026-05-13)
+
+### Chores
+
+- Update release.yml ([26863bc](https://github.com/thomiOmi/laravel-starterkit-api/commit/26863bcb33631fd8ec01dfe6ff8b339e0d91ad7c))
+- update release workflow with official bot identity and auth ([e845e06](https://github.com/thomiOmi/laravel-starterkit-api/commit/e845e0637a721ad822c74181c15819722d411daa))
+- final adjustments to release workflow configuration ([7e0cfbc](https://github.com/thomiOmi/laravel-starterkit-api/commit/7e0cfbc2d5691b53e09ef99decb21306776047d8))
 ## [0.1.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.1.1) (2026-05-13)
 
 ### Chores
