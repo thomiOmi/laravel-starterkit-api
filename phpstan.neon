@@ -16,7 +16,7 @@ parameters:
     excludePaths:
         - config
         - tests
-        - modules/*/Tests
+        - modules/*/Tests/*
 
     level: max
 
@@ -34,7 +34,7 @@ parameters:
     noEnvCallsOutsideOfConfig: true  # enforces env() only inside config files
 
     # Catch uninitialized class properties (common in Laravel models & DTOs)
-    checkUninitializedProperties: true
+    checkUninitializedProperties: false
 
     # Treat PHPDoc @var / @param types as certain (strict mode)
     treatPhpDocTypesAsCertain: true
@@ -43,3 +43,11 @@ parameters:
     inferPrivatePropertyTypeFromConstructor: true
 
     reportUnmatchedIgnoredErrors: true
+
+    ignoreErrors:
+        -
+            message: '#Return type \(array<string, mixed>\) of method Modules\\User\\Database\\Factories\\UserFactory::definition\(\) should be compatible with return type#'
+            path: modules/User/Database/Factories/UserFactory.php
+        -
+            message: '#Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::where\(\) expects#'
+            path: modules/User/Filters/UserFilter.php

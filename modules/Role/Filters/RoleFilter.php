@@ -9,9 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Modules\Role\Models\Role;
 
 /**
- * @template T of Role
- *
- * @extends BaseFilter<T>
+ * @extends BaseFilter<Role>
  */
 class RoleFilter extends BaseFilter
 {
@@ -19,7 +17,7 @@ class RoleFilter extends BaseFilter
      * Filter by search term.
      *
      * @param  string  $value  The search term.
-     * @return Builder<T>
+     * @return Builder<Role>
      */
     public function search(string $value): Builder
     {

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Modules\User\Models\User;
 
 /**
- * @extends BaseFilter<User>
+ * @extends BaseFilter<\Modules\User\Models\User>
  */
 class UserFilter extends BaseFilter
 {
@@ -17,7 +17,7 @@ class UserFilter extends BaseFilter
      * Filter by search term (name or email).
      *
      * @param  string  $value  The search term.
-     * @return Builder<User> The updated query builder instance.
+     * @return Builder<\Modules\User\Models\User> The updated query builder instance.
      */
     public function search(string $value): Builder
     {
