@@ -16,7 +16,7 @@ parameters:
     excludePaths:
         - config
         - tests
-        - modules/*/Tests
+        - modules/*/Tests/*
 
     level: max
 
