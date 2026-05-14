@@ -21,12 +21,15 @@ Welcome to the AI coding standards for this project. These guidelines are design
 - [06-auth-and-permissions.md](06-auth-and-permissions.md): Authentication (Sanctum) and RBAC (Spatie Permission) standards.
 - [07-model-standards.md](07-model-standards.md): Flexible identifiers and Eloquent strictness.
 - [12-middleware-and-cors.md](12-middleware-and-cors.md): Force JSON, Sunset middleware, and CORS configuration.
+- [18-rate-limiting.md](18-rate-limiting.md): Mandatory throttling for all API endpoints.
 
-### 4. Development Standards & Examples
+### 4. Development Standards, Examples & References
 - [08-code-quality.md](08-code-quality.md): PHP 8.4+ standards, strict typing, and class design.
 - [10-testing-standards.md](10-testing-standards.md): Pest PHP and outside-in testing principles.
 - [11-naming-conventions.md](11-naming-conventions.md): Comprehensive naming guide for all layers.
 - [14-worked-examples.md](14-worked-examples.md): Complete, copy-pasteable implementation examples.
+- [17-anti-patterns.md](17-anti-patterns.md): Prohibited patterns to avoid.
+- [99-references.md](99-references.md): External documentation and RFC links.
 
 ---
 
@@ -35,5 +38,5 @@ Welcome to the AI coding standards for this project. These guidelines are design
 If you are an AI agent:
 1. **Read these guidelines upfront** before suggesting or writing any code.
 2. **Follow the prescriptive rules** (e.g., use `final` classes, `__invoke` controllers, and `Payloads`).
-3. **Avoid the prohibited patterns** listed in the "Anti-Patterns" section of each file.
+3. **Avoid the prohibited patterns** listed in the [Anti-Patterns](17-anti-patterns.md) section.
 4. **Prefer Actions over Repositories** for all business logic.

@@ -4,46 +4,46 @@ We use **Laravel Sanctum** for authentication and **Spatie Laravel Permission** 
 
 ## 1. Authentication (Sanctum)
 
-- **Stateless**: All API routes must use Sanctum's token-based authentication.
-- **Middleware**: Use `auth:sanctum` for all protected routes.
-- **Guard**: The system uses a standard User model for authentication.
+- **Stateless Tokens**: All API routes must use Sanctum's token-based authentication. Never use session-based authentication for APIs.
+- **Middleware**: Use `auth:sanctum` for all protected route groups.
+- **Token Abilities**: Use abilities (scopes) to restrict what a token can do if multiple client types exist.
+    - Example: `$request->user()->tokenCan('posts:create')`.
 
-## 2. Authorization (Permissions & Roles)
+## 2. Authorization (RBAC)
 
 We use the Spatie package to manage Roles and Permissions.
 
 ### Standards:
 - **Gate Layer**: Prefer using the standard Laravel `Gate` and `can` middleware.
-- **Form Request Authorization**: Perform authorization checks inside the `authorize()` method of Form Requests.
+- **Form Request Authorization**: All state-mutating requests must be authorized in the `authorize()` method.
 - **Naming Convention**:
-    - Permissions: `resource.action` (e.g., `user.view`, `user.create`, `post.delete`).
+    - Permissions: `resource.action` (e.g., `user.view`, `user.create`).
     - Roles: `super-admin`, `admin`, `user`.
 
-### Example Form Request Authorization:
+### Implementation Example:
 ```php
+// In Form Request
 public function authorize(): bool
 {
-    // Check if the user has a specific permission
+    // Authorization confirms what the user CAN do.
     return $this->user()->can('user.edit');
 }
 ```
 
-### Route Middleware:
+## 3. Super Admin
+The `super-admin` role is implicitly granted all permissions via a `Gate::before` check in `AppServiceProvider`.
+
 ```php
-Route::put('/{user}', UpdateController::class)
-    ->middleware('can:user.edit')
-    ->name('update');
+Gate::before(function ($user, $ability) {
+    return $user->hasRole('super-admin') ? true : null;
+});
 ```
 
-## 3. Super Admin
-The `super-admin` role is implicitly granted all permissions via a `Gate::before` check in `AppServiceProvider`. You do not need to manually assign every permission to a super-admin.
-
-## 4. Policy vs Middleware
-- Use **Middleware** (`can:permission`) for simple endpoint access control.
-- Use **Policies** for complex logic that depends on the specific model instance (e.g., "only the author can edit this post").
+## 4. Error Handling
+A failed authorization must throw an `AuthorizationException`, which the exception handler renders as a `403 Forbidden` Problem Details response.
 
 ## 5. Anti-Patterns
 - ❌ Do not use Session-based authentication for API routes.
-- ❌ Do not hardcode Role names in Controllers or Actions (use permissions instead).
-- ❌ Do not perform authorization checks inside Action classes.
-- ❌ Do not use manual `if ($user->hasRole(...))` checks if a permission check is more appropriate.
+- ❌ Do not hardcode Role names in Controllers (use permissions/gates).
+- ❌ Do not perform authorization checks inside Action classes; Actions receive authorized data.
+- ❌ Do not return generic `401` errors for unauthorized actions (use `403`).
