@@ -44,10 +44,4 @@ parameters:
 
     reportUnmatchedIgnoredErrors: true
 
-    ignoreErrors:
-        -
-            message: '#Return type \(array<string, mixed>\) of method Modules\\User\\Database\\Factories\\UserFactory::definition\(\) should be compatible with return type#'
-            path: modules/User/Database/Factories/UserFactory.php
-        -
-            message: '#Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::where\(\) expects#'
-            path: modules/User/Filters/UserFilter.php
+    ignoreErrors: []
