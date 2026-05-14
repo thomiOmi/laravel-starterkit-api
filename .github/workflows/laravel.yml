@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   laravel-tests:
 
@@ -18,7 +15,7 @@ jobs:
     - uses: shivammathur/setup-php@v2
       with:
         php-version: '8.4'
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
     - name: Install Dependencies
