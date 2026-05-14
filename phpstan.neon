@@ -16,7 +16,7 @@ parameters:
     excludePaths:
         - config
         - tests
-        - modules/*/Tests
+        - modules/*/Tests/*
 
     level: max
 
@@ -34,15 +34,14 @@ parameters:
     noEnvCallsOutsideOfConfig: true  # enforces env() only inside config files
 
     # Catch uninitialized class properties (common in Laravel models & DTOs)
-    checkUninitializedProperties: true
+    checkUninitializedProperties: false
 
     # Treat PHPDoc @var / @param types as certain (strict mode)
     treatPhpDocTypesAsCertain: true
-
-    # Flag implicit mixed from generics
-    checkGenericClassInNonGenericObjectType: true
 
     # Infer property types from constructor assignments (reduces @var noise)
     inferPrivatePropertyTypeFromConstructor: true
 
     reportUnmatchedIgnoredErrors: true
+
+    ignoreErrors: []

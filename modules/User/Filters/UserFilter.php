@@ -22,6 +22,7 @@ class UserFilter extends BaseFilter
     public function search(string $value): Builder
     {
         return $this->builder->where(function (Builder $query) use ($value) {
+            /** @var Builder<User> $query */
             $query->where('name', 'like', "%{$value}%")
                 ->orWhere('email', 'like', "%{$value}%");
         });
@@ -36,6 +37,7 @@ class UserFilter extends BaseFilter
     public function role(string $value): Builder
     {
         return $this->builder->whereHas('roles', function (Builder $query) use ($value) {
+            /** @var Builder<User> $query */
             $query->where('name', $value);
         });
     }
