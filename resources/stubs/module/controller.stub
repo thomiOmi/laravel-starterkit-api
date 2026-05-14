@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{name}}\Controllers\V1;
+
+use App\Http\Controllers\Controller;
+{{bulkImport}}
+use Dedoc\Scramble\Attributes\QueryParameter;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+{{repoImport}}
+{{filterImport}}
+{{dtoImport}}
+{{requestImport}}
+{{resourceImport}}
+{{actionImports}}
+
+/**
+ * @tags {{name}}
+ */
+class {{name}}Controller extends Controller
+{
+    /**
+     * Create a new controller instance.
+     */
+{{constructor}}
+
+    /**
+     * Display a paginated listing of the resource.
+     */
+    #[QueryParameter(name: 'page', type: 'integer', default: 1)]
+    #[QueryParameter(name: 'per_page', type: 'integer', default: 10)]
+    #[QueryParameter(name: 'search', type: 'string')]
+    #[QueryParameter(name: 'sort_by', type: 'string', default: 'created_at')]
+    #[QueryParameter(name: 'sort_direction', type: 'string', default: 'desc')]
+    public function index({{indexParamsStr}}): JsonResponse
+    {
+{{indexBody}}
+
+        return $this->paginateResponse($items, {{name}}Resource::class, '{{name}} retrieved successfully');
+    }
+
+{{storeMethod}}{{showMethod}}{{updateMethod}}{{destroyMethod}}{{bulkMethod}}
+}

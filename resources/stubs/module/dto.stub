@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{name}}\DTOs;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+readonly class {{name}}DTO
+{
+    /**
+     * Create a new DTO instance.
+     */
+    public function __construct(
+        public string $name
+    ) {}
+
+    /**
+     * Create a DTO from a request.
+     */
+    public static function fromRequest(FormRequest $request): self
+    {
+        /** @var array{name: string} $validated */
+        $validated = $request->validated();
+
+        return new self($validated['name']);
+    }
+
+    /**
+     * Convert DTO to array for model persistence.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+        ];
+    }
+}

@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{name}}\Models;
+
+use App\Traits\Models\HasDefaultBehavior;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\{{name}}\Database\Factories\{{name}}Factory;
+
+/**
+ * @property string $id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ */
+#[Fillable(['name'])]
+class {{name}} extends Model
+{
+    /** @use HasFactory<{{name}}Factory> */
+    use HasDefaultBehavior, HasFactory, SoftDeletes;
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): {{name}}Factory
+    {
+        return {{name}}Factory::new();
+    }
+}

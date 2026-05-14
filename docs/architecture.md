@@ -1,10 +1,10 @@
-# Arsitektur Proyek
+# Project Architecture
 
-Proyek ini menggunakan arsitektur modular yang dirancang untuk mendukung aplikasi web (SPA) dan aplikasi mobile.
+The project follows a modular architecture designed to support web applications (SPA) and mobile apps.
 
-## Aliran Data Request
+## Request Data Flow
 
-Berikut adalah diagram alir bagaimana sebuah request diproses di dalam sistem ini:
+The following diagram illustrates how a request is processed in the system:
 
 ```mermaid
 sequenceDiagram
@@ -13,7 +13,6 @@ sequenceDiagram
     participant Controller as Controller
     participant Action as Action
     participant Repo as Repository
-    participant Cache as Cache Layer
     participant DB as Database
 
     Client->>Middleware: Request with Bearer Token
@@ -21,28 +20,42 @@ sequenceDiagram
     Middleware->>Controller: Forward Request
     Controller->>Action: Execute Business Logic
     Action->>Repo: Data Access Request
-    Repo->>Cache: Check Cache
-    Cache-->>Repo: Hit / Miss
-    Note over Repo,DB: If Miss
     Repo->>DB: Query
     DB-->>Repo: Result
-    Repo->>Cache: Store Result
     Repo-->>Action: Model/Collection
     Action-->>Controller: Result Data
     Controller-->>Client: Standardized JSON Response
 ```
 
-## Komunikasi Antar Modul
+## Modular Structure
 
-Setiap modul bersifat mandiri (*self-contained*), namun dapat berinteraksi satu sama lain melalui:
-1. **Service Providers:** Untuk mendaftarkan fitur, migrasi, dan rute.
-2. **Common Models:** Modul seperti `User` sering dirujuk oleh modul lain.
-3. **Feature Flags:** Menggunakan Laravel Pennant untuk kontrol fitur yang dinamis antar user.
+Each module is self-contained and organized into specific layers.
 
-## Standar Kode
+### 1. Required Components
+These components are essential for a module to function:
+- **Models:** Eloquent model representing the database table.
+- **Controllers:** Entry point for HTTP requests.
+- **Providers:** Registers the module's services, migrations, and routes.
+- **Routes:** Defines the API endpoints (typically in `Routes/v1.php`).
 
-- **Strict Typing:** Semua file wajib menggunakan `declare(strict_types=1);`.
-- **Logic Placement:** Controller hanya bertugas menerima input dan mengembalikan respon. Logika bisnis wajib diletakkan di kelas **Action**.
-- **Data Access:** Semua interaksi database wajib melalui **Repository**.
-- **Caching Layer:** Repository menggunakan trait `HasCache` untuk menangani caching transparan dengan strategi rotasi versi.
-- **Background Jobs:** Proses yang memakan waktu lama (seperti pengiriman email) diproses secara asinkron menggunakan Laravel Queues.
+### 2. Optional Components (Recommended for Scalability)
+These components can be skipped for simple modules but are recommended for enterprise-level logic:
+- **Actions (Optional):** Encapsulates single business logic operations. Highly recommended to keep Controllers thin.
+- **Repositories (Optional):** Abstracts data access logic. Useful for reuse and easier testing.
+- **DTOs (Optional):** Ensures strict typing when passing data between Controller, Action, and Repository.
+- **Filters (Optional):** Standardizes search, sorting, and filtering logic via query parameters.
+- **Resources:** Standardizes the JSON output format.
+
+## Inter-Module Communication
+
+Modules should remain decoupled as much as possible:
+1. **Service Providers:** To register features, migrations, and routes.
+2. **Common Models:** Core modules like `User` are often referenced by others.
+3. **Feature Flags:** Uses Laravel Pennant for dynamic feature control.
+
+## Code Standards Summary
+
+- **Strict Typing:** All files must use `declare(strict_types=1);`.
+- **Logic Placement:** Controllers handle requests/responses; **Actions** handle business logic.
+- **Data Access:** Interactions with the database should go through **Repositories**.
+- **Background Jobs:** Long-running processes are handled asynchronously using Laravel Queues.

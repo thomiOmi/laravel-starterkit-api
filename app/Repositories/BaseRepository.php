@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Filters\BaseFilter;
-use App\Traits\Repositories\HasCache;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -18,8 +17,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
  */
 abstract class BaseRepository
 {
-    use HasCache;
-
     /**
      * The query builder instance.
      *
@@ -150,13 +147,8 @@ abstract class BaseRepository
      */
     public function findById(string|int $id, array $columns = ['*'], array|string $relations = []): Model
     {
-        $cacheKey = "find.{$id}.".md5(serialize($columns).serialize($relations));
-
         /** @var T */
-        return $this->cache($cacheKey, function () use ($id, $columns, $relations) {
-            /** @var T */
-            return $this->model->with($relations)->findOrFail($id, $columns);
-        });
+        return $this->model->with($relations)->findOrFail($id, $columns);
     }
 
     /**
@@ -170,7 +162,6 @@ abstract class BaseRepository
     {
         /** @var T $model */
         $model = $this->model->newQuery()->updateOrCreate($attributes, $values);
-        $this->clearCache();
 
         return $model;
     }
@@ -185,7 +176,6 @@ abstract class BaseRepository
     {
         /** @var T $model */
         $model = $this->model->newQuery()->create($details);
-        $this->clearCache();
 
         return $model;
     }
@@ -202,8 +192,6 @@ abstract class BaseRepository
         $record = $this->findById($id);
         $record->update($details);
 
-        $this->clearCache();
-
         /** @var T */
         return $record->refresh();
     }
@@ -216,7 +204,6 @@ abstract class BaseRepository
     public function delete(string|int $id): bool
     {
         $deleted = $this->findById($id)->delete();
-        $this->clearCache();
 
         return is_bool($deleted) ? $deleted : true;
     }
@@ -241,10 +228,6 @@ abstract class BaseRepository
             'forceDelete' => $this->callActionOnQuery($query, 'forceDelete'),
             default => 0,
         };
-
-        if (is_numeric($result) && $result > 0) {
-            $this->clearCache();
-        }
 
         return is_numeric($result) ? (int) $result : 0;
     }

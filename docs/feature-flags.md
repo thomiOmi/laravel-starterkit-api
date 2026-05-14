@@ -1,10 +1,10 @@
 # Feature Flags (Laravel Pennant)
 
-Proyek ini menggunakan **Laravel Pennant** untuk mengelola fitur secara dinamis. Ini memungkinkan Anda untuk mengaktifkan atau menonaktifkan fitur untuk pengguna tertentu tanpa mengubah kode.
+This project uses **Laravel Pennant** to manage features dynamically. This allows you to enable or disable features for specific users without changing the code.
 
-## 1. Mendefinisikan Fitur
+## 1. Defining Features
 
-Fitur didefinisikan di dalam `app/Providers/AppServiceProvider.php` (atau provider khusus jika fitur sudah banyak).
+Features are defined within `app/Providers/AppServiceProvider.php` (or a dedicated provider if there are many features).
 
 ```php
 use Laravel\Pennant\Feature;
@@ -18,23 +18,23 @@ public function boot(): void
 }
 ```
 
-## 2. Mengecek Fitur
+## 2. Checking Features
 
-### Di Controller atau Action
+### In Controller or Action
 ```php
 use Laravel\Pennant\Feature;
 
 if (Feature::active('new-dashboard')) {
-    // Tampilkan dashboard baru
+    // Show new dashboard
 }
 ```
 
-### Di Middleware (Opsional)
-Anda dapat membuat middleware khusus untuk membatasi akses rute berdasarkan fitur.
+### In Middleware (Optional)
+You can create a custom middleware to restrict route access based on features.
 
-## 3. Penyimpanan
-Secara default, status fitur disimpan di database menggunakan tabel `features`. Hal ini memungkinkan perubahan status fitur secara runtime tanpa deploy ulang.
+## 3. Storage
+By default, feature states are stored in the database using the `features` table. This allows runtime status changes without redeploying.
 
-## 4. Keuntungan Enterprise Ready
-- **Beta Testing:** Aktifkan fitur baru hanya untuk sekelompok kecil user.
-- **Gradual Rollout:** Luncurkan fitur secara bertahap.
+## 4. Enterprise Ready Benefits
+- **Beta Testing:** Enable new features only for a small group of users.
+- **Gradual Rollout:** Launch features progressively.

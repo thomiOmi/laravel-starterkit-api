@@ -1,32 +1,32 @@
 # Event-Driven Architecture & Background Processing
 
-Proyek ini menerapkan pola *Event-Driven* untuk memisahkan logika utama dengan proses sekunder, guna meningkatkan skalabilitas dan responsivitas API.
+This project implements an *Event-Driven* pattern to separate core logic from secondary processes, improving API scalability and responsiveness.
 
-## 1. Alur Registrasi User
+## 1. User Registration Flow
 
-Saat user mendaftar melalui `RegisterController`, proses tidak langsung mengirimkan email verifikasi. Sebagai gantinya, sistem memicu sebuah event.
+When a user registers via the `RegisterController`, the process does not immediately send a verification email. Instead, the system triggers an event.
 
-**Alur Kerja:**
-1. `RegisterUser` action membuat data user di database.
-2. Action memicu event `App\Events\UserRegistered`.
-3. Listener `Modules\Auth\Listeners\SendEmailVerificationNotification` menangkap event tersebut.
-4. Listener mengirimkan notifikasi `App\Notifications\VerifyEmail`.
+**Workflow:**
+1. `RegisterUser` action creates user data in the database.
+2. Action triggers the `App\Events\UserRegistered` event.
+3. `Modules\Auth\Listeners\SendEmailVerificationNotification` listener catches the event.
+4. Listener sends the `App\Notifications\VerifyEmail` notification.
 
 ## 2. Background Processing (Queues)
 
-Notifikasi `VerifyEmail` telah dikonfigurasi untuk mengimplementasikan interface `ShouldQueue`. Ini berarti proses pengiriman email akan dipindahkan ke antrean latar belakang (Background Queue) dan tidak akan membebani waktu respon request pendaftaran.
+The `VerifyEmail` notification is configured to implement the `ShouldQueue` interface. This means the email sending process is moved to a Background Queue and will not affect the registration request's response time.
 
-### Cara Kerja:
-- Saat notifikasi dikirim, Laravel akan memasukkannya ke dalam tabel `jobs` (atau driver queue lain yang dikonfigurasi).
-- Worker queue (`php artisan queue:work`) akan memproses antrean tersebut secara asinkron.
+### How it Works:
+- When a notification is sent, Laravel pushes it to the `jobs` table (or other configured queue driver).
+- The queue worker (`php artisan queue:work`) processes the queue asynchronously.
 
-## 3. Menambahkan Event Baru
+## 3. Adding New Events
 
-Untuk menambahkan pola serupa pada modul lain:
+To implement a similar pattern in other modules:
 
-1. Buat kelas Event di `app/Events`.
-2. Buat kelas Listener di folder `Listeners` modul terkait.
-3. Daftarkan pemetaan Event dan Listener di `app/Providers/EventServiceProvider` atau melalui `Event::listen()` di Service Provider modul.
+1. Create an Event class in `app/Events`.
+2. Create a Listener class in the related module's `Listeners` folder.
+3. Register the Event and Listener mapping in `app/Providers/EventServiceProvider` or via `Event::listen()` in the module's Service Provider.
 
-## 4. Keuntungan Skalabilitas
-Dengan pola ini, kita dapat dengan mudah menambahkan listener baru (misalnya mengirim data ke sistem CRM atau Analytics) tanpa mengubah kode utama pada proses registrasi user.
+## 4. Scalability Benefits
+With this pattern, we can easily add new listeners (e.g., sending data to a CRM or Analytics system) without modifying the core user registration code.

@@ -1,15 +1,15 @@
 # API Standards & Best Practices
 
-Project ini mengikuti standar ketat dalam pengembangan API untuk menjaga konsistensi dan skalabilitas.
+This project follows strict standards for API development to ensure consistency and scalability.
 
 ## 1. API Versioning
-Versioning dikelola melalui URL prefix:
+Versioning is managed through the URL prefix:
 - `/api/v1/`
 
-Route setiap modul dipisahkan berdasarkan versi dalam file `modules/{Module}/Routes/v1.php`. Hal ini memungkinkan Anda menjalankan beberapa versi API secara bersamaan tanpa konflik.
+Each module's routes are separated by version in the `modules/{Module}/Routes/v1.php` file. This allows running multiple API versions simultaneously without conflicts.
 
 ## 2. Standard JSON Response
-Semua respon API menggunakan trait `App\Traits\ApiResponser` untuk menjamin format yang seragam.
+All API responses use the `App\Traits\ApiResponser` trait to ensure a uniform format.
 
 ### Success Response (200/201):
 ```json
@@ -35,15 +35,25 @@ Semua respon API menggunakan trait `App\Traits\ApiResponser` untuk menjamin form
 ```
 
 ## 3. Global Error Handling
-Kesalahan umum ditangani secara otomatis di `bootstrap/app.php` untuk memastikan respon selalu dalam format JSON, termasuk:
-- **404 Not Found** (Route atau Model)
+Common errors are automatically handled in `bootstrap/app.php` to ensure responses are always in JSON format, including:
+- **404 Not Found** (Route or Model)
 - **401 Unauthenticated**
 - **403 Unauthorized**
 - **422 Validation Error**
 - **500 Internal Server Error**
 
 ## 4. Bulk Actions
-Sistem mendukung aksi massal (bulk) untuk efisiensi:
+The system supports bulk actions for efficiency:
 - Endpoint: `POST /api/v1/{resource}/bulk`
 - Action: `delete`, `update`, `restore`, `forceDelete`.
-- Logic: Diimplementasikan di layer Repository melalui method `bulk()`.
+- Logic: Implemented at the Repository layer via the `bulk()` method.
+
+## 5. Testing Modules
+You can run tests for a specific module using the following commands:
+```bash
+# Run tests for a specific module using Pest
+./vendor/bin/pest modules/User
+
+# Run tests using artisan filter
+php artisan test --filter Modules\\User
+```
