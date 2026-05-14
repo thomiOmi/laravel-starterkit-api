@@ -23,7 +23,7 @@ abstract class BaseFilter
      *
      * @var Builder<TModel>
      */
-    protected Builder $builder;
+    protected Builder $builder; // @phpstan-ignore property.uninitialized
 
     /**
      * Create a new QueryFilters instance.

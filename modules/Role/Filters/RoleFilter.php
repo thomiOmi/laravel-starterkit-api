@@ -21,6 +21,9 @@ class RoleFilter extends BaseFilter
      */
     public function search(string $value): Builder
     {
-        return $this->builder->where('name', 'like', "%{$value}%");
+        /** @var Builder<Role> $builder */
+        $builder = $this->builder;
+
+        return $builder->where('name', 'like', "%{$value}%");
     }
 }
