@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.3) (2026-05-14)
+
+### Chores
+
+- codebase cleanup and filtering standardization ([43ee99e](https://github.com/thomiOmi/laravel-starterkit-api/commit/43ee99e27e5fbbf4c86c81d639121f6ce2807152))
+- codebase cleanup and filtering standardization ([a3088c3](https://github.com/thomiOmi/laravel-starterkit-api/commit/a3088c339ff97d842f6fe8523e9efd6ca8ec154a))
 ## [0.2.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.2) (2026-05-13)
 
 ### Bug Fixes
