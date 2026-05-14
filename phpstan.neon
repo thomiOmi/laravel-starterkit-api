@@ -39,9 +39,6 @@ parameters:
     # Treat PHPDoc @var / @param types as certain (strict mode)
     treatPhpDocTypesAsCertain: true
 
-    # Flag implicit mixed from generics
-    checkGenericClassInNonGenericObjectType: true
-
     # Infer property types from constructor assignments (reduces @var noise)
     inferPrivatePropertyTypeFromConstructor: true
 
