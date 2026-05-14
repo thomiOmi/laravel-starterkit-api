@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.4) (2026-05-14)
+
+### Bug Fixes
+
+- Update release.yml ([24eb68d](https://github.com/thomiOmi/laravel-starterkit-api/commit/24eb68d09b3cbb83fbf97089ba51ede929fbfe3e))
 ## [0.2.3](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.3) (2026-05-14)
 
 ### Chores
