@@ -4,7 +4,6 @@ includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
 
 parameters:
-
     paths:
         - app
         - bootstrap/app.php
@@ -13,43 +12,37 @@ parameters:
         - public
         - routes
         - modules
-        - tests
 
-    # Level 9 is the highest level
+    excludePaths:
+        - config
+        - tests
+        - modules/*/Tests
+
     level: max
 
     tmpDir: storage/framework/cache/phpstan
+    parallel:
+        maximumNumberOfProcesses: 4
+        minimumNumberOfJobsPerProcess: 4
+        jobSize: 20
 
-    excludePaths:
-        - config/database.php
+    phpVersion: 80400
 
-    reportUnmatchedIgnoredErrors: false
+    checkModelProperties: true
+    checkOctaneCompatibility: false  # flip to true if using Octane
 
-    ignoreErrors:
-        -
-            message: '#Method Modules\\Role\\Controllers\\V1\\RoleController::index\(\) has parameter \$filter with generic class Modules\\Role\\Filters\\RoleFilter but does not specify its types: T#'
-        -
-            message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::#'
-        -
-            message: '#Access to an undefined property Pest\\PendingCalls\\TestCall::#'
-        -
-            message: '#Cannot call method .* on mixed.#'
-            path: tests/*
-        -
-            message: '#Cannot call method .* on mixed.#'
-            path: modules/*/Tests/*
-        -
-            message: '#Call to an undefined method Mockery\\ExpectationInterface\|Mockery\\HigherOrderMessage::andReturn\(\).#'
-        -
-            message: '#Call to method .* of internal class Pest\\Mixins\\Expectation.* from outside its root namespace Pest.#'
-        -
-            message: '#Call to method .* of internal class Pest\\Expectation from outside its root namespace Pest.#'
-        -
-            message: '#Cannot access property \$not on mixed.#'
-            path: tests/Feature/ArchitectureTest.php
-        -
-            message: '#Call to method in\(\) of internal class Pest\\PendingCalls\\UsesCall from outside its root namespace Pest.#'
-            path: tests/Pest.php
-        -
-            message: '#Parameter \#. .* of function .* expects string, bool\|string given.#'
-            path: config/*.php
+    noEnvCallsOutsideOfConfig: true  # enforces env() only inside config files
+
+    # Catch uninitialized class properties (common in Laravel models & DTOs)
+    checkUninitializedProperties: true
+
+    # Treat PHPDoc @var / @param types as certain (strict mode)
+    treatPhpDocTypesAsCertain: true
+
+    # Flag implicit mixed from generics
+    checkGenericClassInNonGenericObjectType: true
+
+    # Infer property types from constructor assignments (reduces @var noise)
+    inferPrivatePropertyTypeFromConstructor: true
+
+    reportUnmatchedIgnoredErrors: true
