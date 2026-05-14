@@ -5,56 +5,45 @@ We follow strict standards for API responses and error handling to ensure consis
 ## 1. Successful Responses
 
 - **Eloquent Resources**: Always use Laravel's JsonResources to transform data.
-- **Json Wrapping**: Use `JsonResource::withoutWrapping()` during development to ensure consistent structure.
 - **Success Helper**: Use the `successResponse` or `paginateResponse` helper from `ApiResponser` trait in Controllers.
-
-### Development Mode Setup (Reference)
-*Note: This is an instruction for environment setup, not code changes.*
-To disable wrapping in development, add this to `AppServiceProvider::boot()`:
-
-```php
-if (! app()->isProduction()) {
-    JsonResource::withoutWrapping();
-}
-```
 
 ## 2. Error Handling (RFC 9457)
 
 All error responses must follow the **Problem Details for HTTP APIs (RFC 9457)** standard.
 
-### Expected Error Shape:
-```json
+### ProblemResponse Class
+We use a dedicated `Responsable` class to ensure consistent error formatting:
+
+```php
+final readonly class ProblemResponse implements Responsable
 {
-    "type": "https://example.com/problems/validation-error",
-    "title": "Validation Error",
-    "status": 422,
-    "detail": "The given data was invalid.",
-    "errors": {
-        "email": ["The email has already been taken."]
+    public function __construct(
+        private string $type,
+        private string $title,
+        private int    $status,
+        private string $detail,
+        private array  $errors = [],
+    ) {}
+
+    public function toResponse($request): JsonResponse
+    {
+        return new JsonResponse(
+            data: array_filter([
+                'type'   => $this->type,
+                'title'  => $this->title,
+                'status' => $this->status,
+                'detail' => $this->detail,
+                'errors' => $this->errors ?: null,
+            ]),
+            status:  $this->status,
+            headers: ['Content-Type' => 'application/problem+json'],
+        );
     }
 }
 ```
 
-### Problem Types:
-- `validation-error` (422)
-- `unauthenticated` (401)
-- `forbidden` (403)
-- `not-found` (404)
-- `server-error` (500)
-
-## 3. Implementation Guidelines
-
-- **Force JSON**: Ensure the API always returns JSON, even for low-level errors, by using a `ForceJsonResponse` middleware (sets `Accept: application/json`).
-- **HTTP Constants**: Use `Symfony\Component\HttpFoundation\Response` constants for all status codes.
-
-### Example Controller Response:
-```php
-return $this->successResponse(
-    data: new UserResource($user),
-    message: 'User retrieved successfully',
-    status: Response::HTTP_OK
-);
-```
+## 3. HTTP Constants
+Always use `Symfony\Component\HttpFoundation\Response` constants for all status codes.
 
 ## 4. Anti-Patterns
 

@@ -17,14 +17,19 @@ We do not force a single identifier type. You may choose the most appropriate on
 
 ## 2. Model Strictness
 
-To prevent common bugs during development, we enable strict mode for models.
+To prevent common bugs during development, we enable strict mode for models. This must be configured to only be active in non-production environments.
+
+### Implementation Reference:
+In `AppServiceProvider::boot()`:
+
+```php
+Model::shouldBeStrict(! app()->isProduction());
+```
 
 ### Protections Enabled:
-1. **Prevent Lazy Loading**: Throws an exception if a relationship is accessed but not eager-loaded (prevents N+1).
-2. **Prevent Silently Discarding Attributes**: Throws if you try to fill a field that isn't in the `$fillable` (or equivalent) array.
-3. **Prevent Accessing Missing Attributes**: Throws if you try to read a field that wasn't selected in the query.
-
-*Note: These are enabled in `AppServiceProvider::boot()` for non-production environments.*
+1. **Prevents Lazy Loading**: Throws an exception if a relationship is accessed but not eager-loaded (prevents N+1).
+2. **Prevents Silently Discarding Attributes**: Throws if you try to fill a field that isn't in the `$fillable` (or equivalent) array.
+3. **Prevents Accessing Missing Attributes**: Throws if you try to read a field that wasn't selected in the query.
 
 ## 3. Mass Assignment
 
