@@ -27,6 +27,8 @@ parameters:
 
     ignoreErrors:
         -
+            message: '#Method Modules\\Role\\Controllers\\V1\\RoleController::index\(\) has parameter \$filter with generic class Modules\\Role\\Filters\\RoleFilter but does not specify its types: T#'
+        -
             message: '#Call to an undefined method Pest\\PendingCalls\\TestCall::#'
         -
             message: '#Access to an undefined property Pest\\PendingCalls\\TestCall::#'
