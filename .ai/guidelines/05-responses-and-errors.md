@@ -42,10 +42,35 @@ final readonly class ProblemResponse implements Responsable
 }
 ```
 
-## 3. HTTP Constants
+## 3. Exception Mapping
+
+The exception handler in `bootstrap/app.php` should render all exceptions as Problem Details:
+
+| Exception | Status | Problem Type Slug |
+|---|---|---|
+| `ValidationException` | `422` | `validation-error` |
+| `AuthenticationException` | `401` | `unauthenticated` |
+| `AuthorizationException` | `403` | `forbidden` |
+| `ModelNotFoundException` | `404` | `not-found` |
+| `Throwable` (Catch-all) | `500` | `server-error` |
+
+### Implementation Example:
+```php
+$exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
+    return new ProblemResponse(
+        type:   'https://example.com/problems/validation-error',
+        title:  'Validation Error',
+        status: Response::HTTP_UNPROCESSABLE_ENTITY,
+        detail: 'The given data was invalid.',
+        errors: $e->errors(),
+    );
+});
+```
+
+## 4. HTTP Constants
 Always use `Symfony\Component\HttpFoundation\Response` constants for all status codes.
 
-## 4. Anti-Patterns
+## 5. Anti-Patterns
 
 - ❌ Do not return raw Eloquent models or arrays.
 - ❌ Do not use bare integers like `404` or `500`.

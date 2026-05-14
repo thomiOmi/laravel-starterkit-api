@@ -8,10 +8,12 @@ Welcome to the AI coding standards for this project. These guidelines are design
 - [01-routing.md](01-routing.md): Modular routing, versioning, and throttling standards.
 - [02-controllers.md](02-controllers.md): Mandating Single-Action (Invokable) Controllers.
 - [04-logic-and-actions.md](04-logic-and-actions.md): Business logic standards using Actions and Eloquent.
+- [15-dependency-injection.md](15-dependency-injection.md): Constructor injection standards.
 
 ### 2. Data & Communication
 - [03-payloads.md](03-payloads.md): Data transfer standards using Payloads (renamed from DTOs).
 - [05-responses-and-errors.md](05-responses-and-errors.md): API success and RFC 9457 error standards.
+- [16-http-status-codes.md](16-http-status-codes.md): Standardization using Symfony Response constants.
 - [09-background-jobs.md](09-background-jobs.md): Non-blocking processing and queue standards.
 - [13-pagination.md](13-pagination.md): Simple pagination standards to avoid database overhead.
 
