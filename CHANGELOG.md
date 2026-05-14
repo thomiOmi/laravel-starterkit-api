@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.7](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.7) (2026-05-14)
+
+### Bug Fixes
+
+- address PHPStan Level 9 and Pint violations in User module ([e66fdc0](https://github.com/thomiOmi/laravel-starterkit-api/commit/e66fdc01404f52125501911fa3d0d1791416d172))
+- resolve CI failure by fixing PHPStan config, types, and architecture ([f303074](https://github.com/thomiOmi/laravel-starterkit-api/commit/f303074add82352756485d5ef84a18cbb67e37d0))
+- resolve CI failure by fixing PHPStan configuration and type errors ([4c17882](https://github.com/thomiOmi/laravel-starterkit-api/commit/4c17882704b30874f433a856dd746e6c933f69b7))
+- remove obsolete checkGenericClassInNonGenericObjectType from phpstan.neon ([f71626e](https://github.com/thomiOmi/laravel-starterkit-api/commit/f71626eb034362c55a0b2e8223f6abffaeb10cb4))
 ## [0.2.6](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.6) (2026-05-14)
 
 ### Bug Fixes
