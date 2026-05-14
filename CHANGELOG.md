@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.9](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.9) (2026-05-14)
+
+### Bug Fixes
+
+- resolve CI failure by addressing PHPStan Level 9 errors ([1839a74](https://github.com/thomiOmi/laravel-starterkit-api/commit/1839a742ad37b3fe24180038e406cca578ffb4b4))
 ## [0.2.8](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.8) (2026-05-14)
 
 ### Chores
