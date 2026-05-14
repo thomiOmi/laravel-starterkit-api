@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.5) (2026-05-14)
+
+### Bug Fixes
+
+- Update phpstan.neon ([80a3bf3](https://github.com/thomiOmi/laravel-starterkit-api/commit/80a3bf3aa3cec594713140321d409ae5445489e6))
 ## [0.2.4](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.2.4) (2026-05-14)
 
 ### Bug Fixes
