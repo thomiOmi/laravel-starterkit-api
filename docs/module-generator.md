@@ -1,34 +1,34 @@
 # Module Generator
 
-Proyek ini menyediakan command khusus untuk mempercepat pengembangan modul baru dengan struktur yang terstandarisasi.
+This project provides a custom command to accelerate the development of new modules with a standardized structure.
 
-## Penggunaan Dasar
+## Basic Usage
 
-Untuk membuat modul baru, jalankan:
+To create a new module, run:
 
 ```bash
 php artisan make:module {ModuleName}
 ```
 
-Command ini akan membuat struktur folder dan file boilerplate berikut di dalam `modules/{ModuleName}`:
-- **Actions:** Terpisah untuk Create, Update, dan Delete.
-- **Controllers/V1:** Menggunakan dependency injection untuk Action dan Repository.
-- **DTOs:** Untuk transfer data antar layer yang aman (Strict Typing).
-- **Repositories:** Berbasis Generics yang sudah terintegrasi dengan `HasCache`.
-- **Filters:** Untuk penanganan query string (search, sort, filter) yang terpusat.
-- **Tests/Feature:** Template pengetesan CRUD standar yang siap dijalankan.
-- **Database:** Migrations, Factories, dan Seeders.
+This command will create the following folder structure and boilerplate files inside `modules/{ModuleName}`:
+- **Actions:** Separate classes for Create, Update, and Delete logic.
+- **Controllers/V1:** Uses dependency injection for Actions and Repositories.
+- **DTOs:** For type-safe data transfer between layers.
+- **Repositories:** Based on Generics for standardized data access.
+- **Filters:** For centralized handling of query strings (search, sort, filter).
+- **Tests/Feature:** Standard CRUD test template ready to run.
+- **Database:** Migrations, Factories, and Seeders.
 
-## Mode Interaktif
+## Interactive Mode
 
-Secara default, generator berjalan dalam **mode interaktif**. Anda akan ditanya komponen apa saja yang ingin dibuat. Jika ingin menimpa modul yang sudah ada, gunakan opsi `--force`:
+By default, the generator runs in **interactive mode**. You will be asked which components you want to create. If you want to overwrite an existing module, use the `--force` option:
 
 ```bash
 php artisan make:module Product --force
 ```
 
-## Pendaftaran Modul Otomatis
+## Automatic Module Registration
 
-Modul yang baru dibuat akan secara otomatis terdeteksi jika `ModuleNameServiceProvider` sudah ada di folder `Providers`. Sistem akan secara otomatis memuat:
-1. **Migrations:** Melalui `$this->loadMigrationsFrom()` di Service Provider.
-2. **Routes:** Melalui `RouteServiceProvider` global yang mencari file `v1.php` di dalam folder `Routes` modul.
+Newly created modules are automatically detected if the `ModuleNameServiceProvider` exists in the `Providers` folder. The system will automatically load:
+1. **Migrations:** via `$this->loadMigrationsFrom()` in the Service Provider.
+2. **Routes:** via the global `RouteServiceProvider` which looks for `v1.php` files in the module's `Routes` folder.

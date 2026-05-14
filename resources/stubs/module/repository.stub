@@ -1,0 +1,43 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{name}}\Repositories;
+
+use App\Repositories\BaseRepository;
+use Modules\{{name}}\Models\{{name}};
+
+/**
+ * @template T of {{name}}
+ * @extends BaseRepository<T>
+ */
+class {{name}}Repository extends BaseRepository
+{
+    /**
+     * Create a new repository instance.
+     */
+    public function __construct({{name}} $model)
+    {
+        parent::__construct($model);
+    }
+
+    /**
+     * Get the columns that can be filtered.
+     *
+     * @return array<int, string>
+     */
+    protected function getFilterableColumns(): array
+    {
+        return ['name'];
+    }
+
+    /**
+     * Get the columns that can be sorted.
+     *
+     * @return array<int, string>
+     */
+    protected function getSortableColumns(): array
+    {
+        return ['name', 'created_at'];
+    }
+}

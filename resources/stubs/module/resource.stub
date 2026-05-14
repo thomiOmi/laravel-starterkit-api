@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{name}}\Resources;
+
+use App\Http\Resources\BaseResource;
+use Illuminate\Http\Request;
+
+/**
+ * @mixin \Modules\{{name}}\Models\{{name}}
+ */
+class {{name}}Resource extends BaseResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            /**
+             * @example "01hpv4n8f8xrd2m8q0e4x8j9v1"
+             */
+            'id' => $this->id,
+            'name' => $this->name,
+            'created_at' => $this->formatDate($this->created_at),
+            'updated_at' => $this->formatDate($this->updated_at),
+        ];
+    }
+}

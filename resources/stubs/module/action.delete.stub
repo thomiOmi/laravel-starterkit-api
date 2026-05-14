@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{name}}\Actions;
+
+use Modules\{{name}}\Repositories\{{name}}Repository;
+
+class Delete{{name}}Action
+{
+    public function __construct(protected {{name}}Repository $repository) {}
+
+    public function execute(string|int $id): void
+    {
+        $this->repository->delete($id);
+    }
+}

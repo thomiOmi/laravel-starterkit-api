@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{name}}\Actions;
+
+{{dtoImport}}
+use Modules\{{name}}\Models\{{name}};
+use Modules\{{name}}\Repositories\{{name}}Repository;
+
+class Update{{name}}Action
+{
+    public function __construct(protected {{name}}Repository $repository) {}
+
+    public function execute(string|int $id, {{name}}DTO $dto): {{name}}
+    {
+        return $this->repository->update($id, $dto->toArray());
+    }
+}
