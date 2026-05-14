@@ -34,7 +34,7 @@ parameters:
     noEnvCallsOutsideOfConfig: true  # enforces env() only inside config files
 
     # Catch uninitialized class properties (common in Laravel models & DTOs)
-    checkUninitializedProperties: false
+    checkUninitializedProperties: true
 
     # Treat PHPDoc @var / @param types as certain (strict mode)
     treatPhpDocTypesAsCertain: true
