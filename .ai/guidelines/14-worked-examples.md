@@ -39,9 +39,12 @@ declare(strict_types=1);
 
 namespace Modules\Post\Requests;
 
+use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Post\Payloads\StorePostPayload;
 
+#[BodyParameter(name: 'title', description: 'Post title', required: true, example: 'My New Post')]
+#[BodyParameter(name: 'content', description: 'Post body content', required: true, example: 'This is the body...')]
 final class StorePostRequest extends FormRequest
 {
     public function authorize(): bool
@@ -112,12 +115,18 @@ use Modules\Post\Requests\StorePostRequest;
 use Modules\Post\Resources\PostResource;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @tags Post
+ */
 final class StoreController extends Controller
 {
     public function __construct(
         private readonly StorePostAction $action,
     ) {}
 
+    /**
+     * Create a new post.
+     */
     public function __invoke(StorePostRequest $request): JsonResponse
     {
         $post = $this->action->execute(
@@ -135,69 +144,41 @@ final class StoreController extends Controller
 
 ---
 
-## 2. Deleting a Resource via Background Job
+## 2. Listing with Filters (Post)
 
-### Job (`modules/Post/Jobs/DeletePostJob.php`)
+### Filter (`modules/Post/Filters/PostFilter.php`)
 ```php
-<?php
+namespace Modules\Post\Filters;
 
-declare(strict_types=1);
+use App\Filters\BaseFilter;
 
-namespace Modules\Post\Jobs;
-
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\DatabaseManager;
-use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Modules\Post\Models\Post;
-
-final class DeletePostJob implements ShouldQueue
+/**
+ * @extends BaseFilter<\Modules\Post\Models\Post>
+ */
+final class PostFilter extends BaseFilter
 {
-    use Queueable;
-    use SerializesModels;
-
-    public function __construct(
-        private Post $post, // rehydrated via SerializesModels
-    ) {}
-
-    public function handle(DatabaseManager $database): void
+    public function search(string $value): void
     {
-        $database->transaction(
-            callback: fn (): bool => $this->post->delete(),
-        );
+        $this->builder->where('title', 'like', "%{$value}%");
     }
 }
 ```
 
-### Controller (`modules/Post/Controllers/V1/DestroyController.php`)
+### Controller (`modules/Post/Controllers/V1/IndexController.php`)
 ```php
-public function __invoke(Post $post): JsonResponse
+/**
+ * @tags Post
+ */
+final class IndexController extends Controller
 {
-    dispatch(new DeletePostJob($post));
+    #[QueryParameter(name: 'search', description: 'Search by title', type: 'string')]
+    public function __invoke(Request $request, PostFilter $filter): JsonResponse
+    {
+        $posts = Post::query()
+            ->applyFilter($filter)
+            ->simplePaginate($request->integer('per_page', 15));
 
-    return $this->successResponse(
-        data: null,
-        message: 'Post deletion accepted',
-        status: Response::HTTP_ACCEPTED,
-    );
-}
-```
-
----
-
-## 3. Synchronous Registration
-
-### Action (`Modules\Auth\Actions\RegisterAction.php`)
-```php
-public function execute(RegisterPayload $payload): array
-{
-    return $this->database->transaction(function () use ($payload): array {
-        /** @var User $user */
-        $user = User::query()->create($payload->toArray());
-
-        $token = $user->createToken('api-token')->plainTextToken;
-
-        return compact('user', 'token');
-    });
+        return $this->paginateResponse($posts, PostResource::class);
+    }
 }
 ```

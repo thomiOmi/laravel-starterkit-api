@@ -9,6 +9,7 @@ Welcome to the AI coding standards for this project. These guidelines are design
 - [02-controllers.md](02-controllers.md): Mandating Single-Action (Invokable) Controllers.
 - [04-logic-and-actions.md](04-logic-and-actions.md): Business logic standards using Actions and Eloquent.
 - [15-dependency-injection.md](15-dependency-injection.md): Constructor injection standards.
+- [21-modular-architecture.md](21-modular-architecture.md): Domain-driven modular directory structure.
 
 ### 2. Data & Communication
 - [03-payloads.md](03-payloads.md): Data transfer standards using Payloads (renamed from DTOs).
@@ -16,12 +17,14 @@ Welcome to the AI coding standards for this project. These guidelines are design
 - [16-http-status-codes.md](16-http-status-codes.md): Standardization using Symfony Response constants.
 - [09-background-jobs.md](09-background-jobs.md): Non-blocking processing and queue standards.
 - [13-pagination.md](13-pagination.md): Simple pagination standards to avoid database overhead.
+- [19-query-filtering.md](19-query-filtering.md): Standardized filtering and sorting using `BaseFilter`.
 
-### 3. Security, Middleware & Models
+### 3. Security, Middleware & Documentation
 - [06-auth-and-permissions.md](06-auth-and-permissions.md): Authentication (Sanctum) and RBAC (Spatie Permission) standards.
 - [07-model-standards.md](07-model-standards.md): Flexible identifiers and Eloquent strictness.
 - [12-middleware-and-cors.md](12-middleware-and-cors.md): Force JSON, Sunset middleware, and CORS configuration.
 - [18-rate-limiting.md](18-rate-limiting.md): Mandatory throttling for all API endpoints.
+- [20-api-documentation.md](20-api-documentation.md): Auto-generated documentation using Scramble attributes.
 
 ### 4. Development Standards, Examples & References
 - [08-code-quality.md](08-code-quality.md): PHP 8.4+ standards, strict typing, and class design.
