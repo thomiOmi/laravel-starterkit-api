@@ -9,13 +9,13 @@ Welcome to the AI coding standards for this project. These guidelines are design
 - [02-controllers.md](02-controllers.md): Mandating Single-Action (Invokable) Controllers.
 - [04-logic-and-actions.md](04-logic-and-actions.md): Business logic standards using Actions and Eloquent.
 - [15-dependency-injection.md](15-dependency-injection.md): Constructor injection standards.
-- [21-modular-architecture.md](21-modular-architecture.md): Domain-driven modular directory structure.
+- [21-modular-architecture.md](21-modular-architecture.md): Domain-driven modular directory structure (Single Source of Truth).
 
 ### 2. Data & Communication
 - [03-payloads.md](03-payloads.md): Data transfer standards using Payloads (renamed from DTOs).
 - [22-request-standards.md](22-request-standards.md): Validation and type-safe input retrieval best practices.
-- [23-response-standards.md](23-response-standards.md): Standardized JSON success and paginated response structures.
-- [05-responses-and-errors.md](05-responses-and-errors.md): RFC 9457 error standards and exception mapping.
+- [23-success-responses.md](23-success-responses.md): Standardized JSON success and paginated response structures.
+- [05-error-handling.md](05-error-handling.md): RFC 9457 error standards and exception mapping.
 - [16-http-status-codes.md](16-http-status-codes.md): Standardization using Symfony Response constants.
 - [09-background-jobs.md](09-background-jobs.md): Non-blocking processing and queue standards.
 - [13-pagination.md](13-pagination.md): Simple pagination standards to avoid database overhead.
@@ -24,7 +24,8 @@ Welcome to the AI coding standards for this project. These guidelines are design
 ### 3. Security, Middleware & Documentation
 - [06-auth-and-permissions.md](06-auth-and-permissions.md): Authentication (Sanctum) and RBAC (Spatie Permission) standards.
 - [07-model-standards.md](07-model-standards.md): Flexible identifiers and Eloquent strictness.
-- [12-middleware-and-cors.md](12-middleware-and-cors.md): Force JSON, Sunset middleware, and CORS configuration.
+- [12-middleware.md](12-middleware.md): Force JSON and Sunset (Deprecation) middleware.
+- [24-cors.md](24-cors.md): Cross-Origin Resource Sharing configuration.
 - [18-rate-limiting.md](18-rate-limiting.md): Mandatory throttling for all API endpoints.
 - [20-api-documentation.md](20-api-documentation.md): Auto-generated documentation using Scramble attributes.
 
