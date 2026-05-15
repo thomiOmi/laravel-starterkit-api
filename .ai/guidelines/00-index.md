@@ -13,7 +13,9 @@ Welcome to the AI coding standards for this project. These guidelines are design
 
 ### 2. Data & Communication
 - [03-payloads.md](03-payloads.md): Data transfer standards using Payloads (renamed from DTOs).
-- [05-responses-and-errors.md](05-responses-and-errors.md): API success and RFC 9457 error standards.
+- [22-request-standards.md](22-request-standards.md): Validation and type-safe input retrieval best practices.
+- [23-response-standards.md](23-response-standards.md): Standardized JSON success and paginated response structures.
+- [05-responses-and-errors.md](05-responses-and-errors.md): RFC 9457 error standards and exception mapping.
 - [16-http-status-codes.md](16-http-status-codes.md): Standardization using Symfony Response constants.
 - [09-background-jobs.md](09-background-jobs.md): Non-blocking processing and queue standards.
 - [13-pagination.md](13-pagination.md): Simple pagination standards to avoid database overhead.

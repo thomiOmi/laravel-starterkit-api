@@ -9,6 +9,7 @@ The following patterns are explicitly prohibited in this project. If you find yo
 | **Returning raw Models/Arrays** | Leaks database schema and lacks a transformation layer. | Always use **API Resources**. |
 | **Manual `app()` / `resolve()` calls** | Hides dependencies and makes unit testing difficult. | Use **Constructor Injection**. |
 | **`paginate()` on API endpoints** | Runs expensive `COUNT(*)` queries that impact performance. | Use **`simplePaginate()`**. |
+| **`DataTableDTO`** | Over-engineered and redundant when using filters. | Use **`BaseFilter`** and standard pagination helpers. |
 | **Unthrottled routes** | Exposes endpoints to brute force and resource abuse. | Always include **`throttle:api`**. |
 | **HTML error responses** | Breaks API clients that expect JSON structures. | Use **`ForceJsonResponse`** and RFC 9457 Problem Details. |
 | **Skipping `strict_types=1`** | Allows silent type coercion bugs. | Required on **every** file. |
