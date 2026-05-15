@@ -1,6 +1,6 @@
-# AI Guidelines Index
+# AI Guidelines Index (Skill References)
 
-Welcome to the AI coding standards for this project. These guidelines are designed to help AI agents generate code that adheres to our architectural principles.
+Welcome to the AI coding standards for this project. These references are part of the `api-skill` and help AI agents generate code that adheres to our architectural principles.
 
 ## 📋 Standards Table of Contents
 
@@ -9,7 +9,7 @@ Welcome to the AI coding standards for this project. These guidelines are design
 - [02-controllers.md](02-controllers.md): Mandating Single-Action (Invokable) Controllers.
 - [04-logic-and-actions.md](04-logic-and-actions.md): Business logic standards using Actions and Eloquent.
 - [15-dependency-injection.md](15-dependency-injection.md): Constructor injection standards.
-- [21-modular-architecture.md](21-modular-architecture.md): Domain-driven modular directory structure (Single Source of Truth).
+- [21-modular-architecture.md](21-modular-architecture.md): Domain-driven modular directory structure.
 
 ### 2. Data & Communication
 - [03-payloads.md](03-payloads.md): Data transfer standards using Payloads (renamed from DTOs).
@@ -39,10 +39,10 @@ Welcome to the AI coding standards for this project. These guidelines are design
 
 ---
 
-## 🚀 How to use these guidelines
+## 🚀 How to use these references
 
 If you are an AI agent:
-1. **Read these guidelines upfront** before suggesting or writing any code.
+1. **Read these files upfront** before suggesting or writing any code.
 2. **Follow the prescriptive rules** (e.g., use `final` classes, `__invoke` controllers, and `Payloads`).
 3. **Avoid the prohibited patterns** listed in the [Anti-Patterns](17-anti-patterns.md) section.
 4. **Prefer Actions over Repositories** for all business logic.
