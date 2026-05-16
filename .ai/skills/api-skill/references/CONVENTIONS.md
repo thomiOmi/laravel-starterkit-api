@@ -1,42 +1,47 @@
 # Conventions Reference
 
-This document covers folder structure, naming conventions, and complete worked examples for the API skill.
+This document provides detailed folder structures, naming conventions, and implementation examples to support the API Skill.
 
 ---
 
-## 1. Folder Structure
+## 1. Folder Structure (Detailed)
 
-This project follows a strict **Domain-Driven Modular Architecture**. All domain logic must reside within versioned modules.
+This project follows a strict **Domain-Driven Modular Architecture**.
 
 ```text
 modules/
   {Module}/
     Actions/            # Business logic classes
     Controllers/
-      V1/               # Versioned single-action controllers
+      V1/               # Single-action controllers (V1)
     Payloads/
-      V1/               # Versioned Data Transfer Objects
-    Models/             # Eloquent models
+      V1/               # Data Transfer Objects (V1)
+    Models/             # Eloquent models (Domain root)
     Requests/
-      V1/               # Versioned form requests
+      V1/               # Form requests (V1)
     Resources/          # Eloquent resources
     Routes/
-      v1.php            # Version-specific route definitions
-    Filters/            # Query filters (extending BaseFilter)
-    Database/           # Migrations, Factories, Seeders
+      v1.php            # Route definitions
+    Filters/            # Query filters (BaseFilter)
+    Policies/           # Laravel Policies
+    Jobs/               # Background jobs
+    Database/
+      Migrations/
+      Factories/
+      Seeders/
     Tests/
       Feature/
-        V1/             # Versioned feature tests
+        V1/             # Feature tests (V1)
 ```
 
 ---
 
-## 2. Naming Conventions
+## 2. Naming Conventions Table
 
 | Layer | Convention | Example |
 |---|---|---|
 | **Controller** | `V{Version}\{Action}Controller` | `V1\StoreController` |
-| **Action** | `{Action}{Resource}Action` | `StoreUserAction` |
+| **Action** | `{Action}{Resource}Action` | `StorePostAction` |
 | **Payload** | `V{Version}\{Action}{Resource}Payload` | `V1\StoreUserPayload` |
 | **Form Request** | `V{Version}\{Action}{Resource}Request` | `V1\StoreUserRequest` |
 | **API Resource** | `{Resource}Resource` | `UserResource` |
@@ -44,40 +49,10 @@ modules/
 | **Filter** | `{Resource}Filter` | `UserFilter` |
 | **Policy** | `{Resource}Policy` | `PostPolicy` |
 | **Route Name** | `{module_name}.{action}` | `users.store` |
-| **Test File** | `V{Version}\{Action}Test.php` | `V1\StoreTest.php` |
 
 ---
 
 ## 3. Implementation — Error Handling (RFC 9457)
-
-### ProblemResponse Class
-```php
-final readonly class ProblemResponse implements Responsable
-{
-    public function __construct(
-        private string $type,
-        private string $title,
-        private int    $status,
-        private string $detail,
-        private array  $errors = [],
-    ) {}
-
-    public function toResponse($request): JsonResponse
-    {
-        return new JsonResponse(
-            data: array_filter([
-                'type'   => $this->type,
-                'title'  => $this->title,
-                'status' => $this->status,
-                'detail' => $this->detail,
-                'errors' => $this->errors ?: null,
-            ]),
-            status:  $this->status,
-            headers: ['Content-Type' => 'application/problem+json'],
-        );
-    }
-}
-```
 
 ### Exception Handler (`bootstrap/app.php`)
 ```php
@@ -109,114 +84,145 @@ final readonly class ProblemResponse implements Responsable
             detail: 'You are not authorised to perform this action.',
         );
     });
-
-    $exceptions->render(function (ModelNotFoundException $e, Request $request): ProblemResponse {
-        return new ProblemResponse(
-            type:   'https://example.com/problems/not-found',
-            title:  'Not Found',
-            status: Response::HTTP_NOT_FOUND,
-            detail: 'The requested resource could not be found.',
-        );
-    });
-
-    $exceptions->render(function (\Throwable $e, Request $request): ProblemResponse {
-        return new ProblemResponse(
-            type:   'https://example.com/problems/server-error',
-            title:  'Server Error',
-            status: Response::HTTP_INTERNAL_SERVER_ERROR,
-            detail: 'An unexpected error occurred.',
-        );
-    });
 })
 ```
 
 ---
 
-## 4. Implementation — Custom Middleware
+## 4. Implementation — Success Responses (JSON Envelope)
 
-### ForceJsonResponse
-Sets `Accept: application/json` on all requests.
-```php
-public function handle(Request $request, Closure $next): Response
+### Standard Envelope Structure
+```json
 {
-    $request->headers->set('Accept', 'application/json');
-    return $next($request);
+    "success": true,
+    "message": "Operation successful",
+    "data": { ... }
 }
 ```
 
-### Sunset (RFC 8594)
-Attaches a `Sunset` header to deprecated routes.
+### Usage in Controller
 ```php
-public function handle(Request $request, Closure $next, string $date): Response
-{
-    $response = $next($request);
-    $response->headers->set(
-        'Sunset',
-        (new DateTimeImmutable($date))->format(DateTimeInterface::RFC7231),
-    );
-    return $response;
-}
+return $this->successResponse(
+    data: new UserResource($user),
+    message: 'User created successfully',
+    status: Response::HTTP_CREATED
+);
 ```
 
 ---
 
-## 5. Implementation — Authorization (Policies)
+## 5. Implementation — Background Jobs
 
-Perform instance-level checks in the Form Request's `authorize()` method.
-
-### The Policy (`modules/Post/Policies/PostPolicy.php`)
+### The Job (`modules/Post/Jobs/DeletePostJob.php`)
 ```php
-final class PostPolicy
+final class DeletePostJob implements ShouldQueue
 {
-    public function update(User $user, Post $post): bool
+    use Queueable;
+    use SerializesModels;
+
+    public function __construct(
+        private Post $post, // not readonly due to serialization
+    ) {}
+
+    public function handle(DatabaseManager $database): void
     {
-        return $user->id === $post->user_id;
+        $database->transaction(fn () => $this->post->delete());
     }
 }
 ```
 
-### The Form Request
+### The Controller
 ```php
-public function authorize(): bool
+public function __invoke(Post $post): JsonResponse
 {
-    return $this->user()->can('update', $this->route('post'));
+    dispatch(new DeletePostJob($post));
+
+    return $this->successResponse(
+        data: null,
+        message: 'Request accepted for processing',
+        status: Response::HTTP_ACCEPTED
+    );
 }
 ```
 
 ---
 
-## 6. Worked Example — Registration (Synchronous)
+## 6. Implementation — Testing (Pest PHP)
 
-Registration must be synchronous as the user needs a token immediately.
+### Outside-In Feature Test (`modules/User/Tests/Feature/V1/StoreTest.php`)
+```php
+uses(RefreshDatabase::class);
+
+it('can store a user', function (): void {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $this->actingAs($admin)
+        ->postJson('/api/v1/users', [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])
+        ->assertStatus(Response::HTTP_CREATED)
+        ->assertJsonPath('data.name', 'John Doe');
+});
+
+it('returns 422 if email is missing', function (): void {
+    $admin = User::factory()->create();
+
+    $this->actingAs($admin)
+        ->postJson('/api/v1/users', ['name' => 'John'])
+        ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+        ->assertJsonPath('title', 'Validation Error');
+});
+```
+
+---
+
+## 7. Implementation — Documentation (Scramble)
+
+### Controller Annotations
+```php
+/**
+ * @tags Post
+ */
+final class StoreController extends Controller
+{
+    #[BodyParameter(name: 'title', description: 'Post title', required: true)]
+    public function __invoke(StoreRequest $request): JsonResponse { ... }
+}
+```
+
+---
+
+## 8. AppServiceProvider Setup
 
 ```php
-// Action
-public function execute(V1\RegisterPayload $payload): array
+public function boot(): void
 {
-    return $this->database->transaction(function () use ($payload): array {
-        $user = User::query()->create($payload->toArray());
-        $token = $user->createToken(name: 'api')->plainTextToken;
+    Model::shouldBeStrict(! app()->isProduction());
 
-        return compact('user', 'token');
+    RateLimiter::for('api', function (Request $request): Limit {
+        return Limit::perMinute(60)->by(
+            key: $request->user()?->id ?: $request->ip(),
+        );
     });
 }
 ```
 
 ---
 
-## 7. Anti-Patterns Table
+## 9. Anti-Patterns Table
 
 | Anti-Pattern | Correct Approach |
 |---|---|
-| Auto-increment IDs on public resources | Flexible: Use UUID/ULID if enumeration is a risk. |
-| Business logic in Models or Controllers | Move to **Action Classes**. |
-| Resourceful or multi-method controllers | One **`final` invokable controller** per operation. |
-| Returning raw Models or Arrays | Always return an **API Resource**. |
-| `app()` or `resolve()` inside methods | **Constructor Injection** always. |
-| `DB::transaction()` Facade | Inject **`DatabaseManager`**. |
-| `paginate()` on list endpoints | **`simplePaginate()`** — no `COUNT(*)` overhead. |
+| Business logic in Models | Move to **Action Classes**. |
+| Resourceful controllers | One **`final` invokable controller** per operation. |
+| `app()` or `resolve()` | **Constructor Injection** always. |
+| `paginate()` | **`simplePaginate()`** — no `COUNT(*)` overhead. |
 | Unthrottled routes | Always include **`throttle:api`**. |
-| HTML error responses | **`ForceJsonResponse`** + RFC 9457 handler. |
-| Policy/Gate checks inside an Action | Authorize in **`FormRequest::authorize()`** only. |
-| `if/elseif` for selecting values | Use **`match`** expressions. |
-| Omit `declare(strict_types=1)` | First statement in **every** file. |
+| HTML error responses | **`ForceJsonResponse`** middleware. |
+| Policy checks in Action | Authorize in **`FormRequest::authorize()`** only. |
+| `if/elseif` for values | Use **`match`** expressions. |
+| `DataTableDTO` | Use **`BaseFilter`** + standard pagination. |
