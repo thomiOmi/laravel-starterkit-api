@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.0) (2026-05-16)
+
+### Features
+
+- refactor API responses to classes and sync AI Skill ([cd48cfd](https://github.com/thomiOmi/laravel-starterkit-api/commit/cd48cfdecb292606aee9e1295bd645d5bdc85026))
 ## [0.6.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.6.0) (2026-05-16)
 
 ### Features
