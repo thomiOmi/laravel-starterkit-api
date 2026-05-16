@@ -6,22 +6,33 @@ This document covers folder structure, naming conventions, and complete worked e
 
 ## Folder Structure
 
-This project follows a strict **Domain-Driven Modular Architecture**. All domain logic must reside within modules.
+This project follows a strict **Domain-Driven Modular Architecture**. All domain logic must reside within versioned modules.
 
 ```text
 modules/
   {Module}/
-    Actions/         # Business logic classes
-    Controllers/     # V1, V2 single-action controllers
-    Payloads/        # Data Transfer Objects
-    Models/          # Eloquent models
-    Requests/        # Form requests
-    Resources/       # Eloquent resources
-    Routes/          # v1.php, v2.php
-    Filters/         # Query filters (extending BaseFilter)
-    Database/        # Migrations, Factories, Seeders
-    Tests/           # Feature and unit tests
-    Providers/       # Module-specific service providers
+    Actions/            # Business logic classes (usually shared across versions)
+    Controllers/
+      V1/               # Versioned single-action controllers
+        IndexController.php
+        StoreController.php
+    Payloads/
+      V1/               # Versioned Data Transfer Objects
+        StorePayload.php
+    Models/             # Eloquent models (shared)
+    Requests/
+      V1/               # Versioned form requests
+        StoreRequest.php
+    Resources/          # Eloquent resources (can be versioned if needed)
+    Routes/
+      v1.php            # Version-specific route definitions
+    Filters/            # Query filters (extending BaseFilter)
+    Database/           # Migrations, Factories, Seeders
+    Tests/
+      Feature/
+        V1/             # Versioned feature tests
+          StoreTest.php
+    Providers/          # Module-specific service providers
 ```
 
 ---
@@ -30,29 +41,27 @@ modules/
 
 | Layer | Convention | Example |
 |---|---|---|
-| **Controller** | `{Action}Controller` | `StoreController`, `DestroyController` |
-| **Action** | `{Action}{Resource}Action` | `StoreUserAction`, `DeleteUserAction` |
-| **Payload** | `{Action}{Resource}Payload` | `StoreUserPayload`, `UpdateUserPayload` |
-| **Form Request** | `{Action}{Resource}Request` | `StoreUserRequest`, `UserRequest` |
-| **API Resource** | `{Resource}Resource` | `UserResource`, `PostResource` |
+| **Controller** | `V{Version}\{Action}Controller` | `V1\StoreController` |
+| **Action** | `{Action}{Resource}Action` | `StoreUserAction` |
+| **Payload** | `V{Version}\{Action}{Resource}Payload` | `V1\StoreUserPayload` |
+| **Form Request** | `V{Version}\{Action}{Resource}Request` | `V1\StoreUserRequest` |
+| **API Resource** | `{Resource}Resource` | `UserResource` |
 | **Job** | `{Action}{Resource}Job` | `DeletePostJob` |
-| **Filter** | `{Resource}Filter` | `UserFilter`, `PostFilter` |
-| **Route Name** | `{module_name}.{action}` | `users.store`, `users.index` |
-| **Test File** | `{Action}Test.php` | `StoreTest.php`, `IndexTest.php` |
-| **Database Table** | Snake case, plural | `users`, `posts`, `user_roles` |
-| **Model** | Pascal case, singular | `User`, `Post`, `UserRole` |
+| **Filter** | `{Resource}Filter` | `UserFilter` |
+| **Route Name** | `{module_name}.{action}` | `users.store` |
+| **Test File** | `V{Version}\{Action}Test.php` | `V1\StoreTest.php` |
 
 ---
 
 ## Complete Worked Example — Storing a Resource
 
-### Payload (`modules/Post/Payloads/StorePostPayload.php`)
+### Payload (`modules/Post/Payloads/V1/StorePostPayload.php`)
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Post\Payloads;
+namespace Modules\Post\Payloads\V1;
 
 final readonly class StorePostPayload
 {
@@ -73,20 +82,18 @@ final readonly class StorePostPayload
 }
 ```
 
-### Form Request (`modules/Post/Requests/StorePostRequest.php`)
+### Form Request (`modules/Post/Requests/V1/StorePostRequest.php`)
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Post\Requests;
+namespace Modules\Post\Requests\V1;
 
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Post\Payloads\StorePostPayload;
+use Modules\Post\Payloads\V1\StorePostPayload;
 
-#[BodyParameter(name: 'title', description: 'Post title', required: true, example: 'My New Post')]
-#[BodyParameter(name: 'content', description: 'Post body content', required: true, example: 'This is the body...')]
 final class StorePostRequest extends FormRequest
 {
     public function authorize(): bool
@@ -123,7 +130,7 @@ namespace Modules\Post\Actions;
 
 use Illuminate\Database\DatabaseManager;
 use Modules\Post\Models\Post;
-use Modules\Post\Payloads\StorePostPayload;
+use Modules\Post\Payloads\V1\StorePostPayload;
 
 final class StorePostAction
 {
@@ -137,6 +144,45 @@ final class StorePostAction
             callback: fn (): Post => Post::query()->create(
                 attributes: $payload->toArray(),
             ),
+        );
+    }
+}
+```
+
+### Controller (`modules/Post/Controllers/V1/StoreController.php`)
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Post\Controllers\V1;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Modules\Post\Actions\StorePostAction;
+use Modules\Post\Requests\V1\StorePostRequest;
+use Modules\Post\Resources\PostResource;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * @tags Post
+ */
+final class StoreController extends Controller
+{
+    public function __construct(
+        private readonly StorePostAction $action,
+    ) {}
+
+    public function __invoke(StorePostRequest $request): JsonResponse
+    {
+        $post = $this->action->execute(
+            payload: $request->payload(),
+        );
+
+        return $this->successResponse(
+            data: new PostResource($post),
+            message: 'Post created successfully',
+            status: Response::HTTP_CREATED,
         );
     }
 }
@@ -179,78 +225,6 @@ final class IndexController extends Controller
             ->simplePaginate($request->integer('per_page', 15));
 
         return $this->paginateResponse($posts, PostResource::class);
-    }
-}
-```
-
----
-
-## Complete Worked Example — Deleting via Background Job
-
-### Job (`modules/Post/Jobs/DeletePostJob.php`)
-```php
-final class DeletePostJob implements ShouldQueue
-{
-    use Queueable;
-    use SerializesModels;
-
-    public function __construct(
-        private Post $post, // not readonly
-    ) {}
-
-    public function handle(DatabaseManager $database): void
-    {
-        $database->transaction(fn () => $this->post->delete());
-    }
-}
-```
-
----
-
-## Complete Worked Example — Synchronous Registration
-
-### Action (`Modules\Auth\Actions\RegisterAction.php`)
-```php
-public function execute(RegisterPayload $payload): array
-{
-    return $this->database->transaction(function () use ($payload): array {
-        $user = User::query()->create($payload->toArray());
-        $token = $user->createToken('api-token')->plainTextToken;
-
-        return compact('user', 'token');
-    });
-}
-```
-
----
-
-## Implementation Details
-
-### ProblemResponse Class (RFC 9457)
-```php
-final readonly class ProblemResponse implements Responsable
-{
-    public function __construct(
-        private string $type,
-        private string $title,
-        private int    $status,
-        private string $detail,
-        private array  $errors = [],
-    ) {}
-
-    public function toResponse($request): JsonResponse
-    {
-        return new JsonResponse(
-            data: array_filter([
-                'type'   => $this->type,
-                'title'  => $this->title,
-                'status' => $this->status,
-                'detail' => $this->detail,
-                'errors' => $this->errors ?: null,
-            ]),
-            status:  $this->status,
-            headers: ['Content-Type' => 'application/problem+json'],
-        );
     }
 }
 ```

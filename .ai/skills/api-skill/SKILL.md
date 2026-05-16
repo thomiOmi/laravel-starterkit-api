@@ -1,6 +1,6 @@
 ---
 name: api-skill
-description: "Encodes enterprise-grade patterns for building REST APIs in Laravel 13+. Enforces Single-Action Controllers, Payloads, and RFC 9457 error handling."
+description: "Encodes enterprise-grade patterns for building REST APIs in Laravel 13+. Enforces Single-Action Controllers, Versioned Payloads, and RFC 9457 error handling."
 ---
 
 # API Skill for Laravel
@@ -16,47 +16,55 @@ This skill defines the exact patterns and rules for building scalable, reliable,
 - **Middleware Stack**: Every group must use: `force.json` (Accept header), `auth:sanctum` (if protected), and `throttle:api`.
 - **Sunset Header**: Use RFC 8594 `Sunset` header for deprecated routes.
 
-## 2. Single-Action Invokable Controllers
+## 2. Versioned Components
+
+To ensure smooth API evolution, the following components **must** be placed in versioned directories within their respective modules:
+- **Controllers**: `modules/{Module}/Controllers/V1/`
+- **Payloads**: `modules/{Module}/Payloads/V1/`
+- **Form Requests**: `modules/{Module}/Requests/V1/`
+- **Tests**: `modules/{Module}/Tests/Feature/V1/`
+
+## 3. Single-Action Invokable Controllers
 
 - **Final Only**: Every controller is a `final` single-action class.
 - **Invokable**: Use the `__invoke()` method. No resourceful or multi-method controllers.
 - **Constructor DI**: Always inject dependencies via the constructor. No `app()`, `resolve()`, or Facades inside methods.
 
-## 3. Form Requests & Payloads
+## 4. Form Requests & Payloads
 
 - **Payload Pattern**: Use **Payloads** (Typed PHP objects) instead of traditional DTOs.
-- **Validation**: Every state-mutating endpoint uses a Form Request.
-- **Payload Extraction**: Form Requests must expose a `payload()` method returning a typed Payload class.
+- **Validation**: Every state-mutating endpoint uses a versioned Form Request.
+- **Payload Extraction**: Form Requests must expose a `payload()` method returning a typed versioned Payload class.
 
-## 4. The Action Pattern
+## 5. The Action Pattern
 
 - **Logic Placement**: Business logic lives in **Action classes** under `modules/{Module}/Actions/`.
-- **One per Operation**: One action per database operation.
+- **One per Operation**: One action per database operation. Actions are generally shared across API versions unless breaking logic changes occur.
 - **Transactions**: Every action that writes to the database must be wrapped in a transaction using injected `DatabaseManager`.
 - **Eloquent Usage**: Call Eloquent models directly within Actions. Discourage unnecessary Repository layers.
 
-## 5. Success & Error Responses
+## 6. Success & Error Responses
 
 - **Success**: Use **Eloquent Resources** and the `ApiResponser` success helpers.
 - **Error Handling**: Follow **RFC 9457 Problem Details**. Use `ProblemResponse` to ensure consistent JSON formatting.
 - **Status Codes**: Always use Symfony `Response::HTTP_*` constants. Never bare integers.
 
-## 6. Security & Models
+## 7. Security & Models
 
 - **Authentication**: Stateless Laravel Sanctum tokens only.
 - **Authorization**: Use Spatie Laravel Permission (RBAC). Check permissions in Form Request `authorize()`.
 - **Flexible Identifiers**: Models can use Integer, UUID, or ULID primary keys.
 - **Strict Mode**: `Model::shouldBeStrict(!app()->isProduction())` enabled in development.
 
-## 7. Performance & Throttling
+## 8. Performance & Throttling
 
 - **Pagination**: Use `simplePaginate()` only. Never `paginate()` on API routes.
 - **Rate Limiting**: Every route group must have `throttle:api`. Define limiters in `AppServiceProvider`.
 - **Query Filtering**: Use the custom `BaseFilter` system for search/sort/filter.
 
-## 8. Code Quality & Testing
+## 9. Code Quality & Testing
 
-- **Pest PHP**: Use Pest for outside-in HTTP/Feature tests.
+- **Pest PHP**: Use Pest for outside-in HTTP/Feature tests, organized by version.
 - **Strict Typing**: Mandatory `declare(strict_types=1)` and full type coverage.
 - **Final Classes**: Use `final` by default for all infrastructure and logic classes.
 
