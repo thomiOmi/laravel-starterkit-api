@@ -1,84 +1,73 @@
 ---
 name: api-skill
-description: "Encodes enterprise-grade patterns for building REST APIs in Laravel 13+. Enforces Single-Action Controllers, Versioned Payloads, and RFC 9457 error handling."
+description: "Enterprise REST API standards for Laravel 13+. Enforces Single-Action Controllers, Payloads, RFC 9457 Errors, and Modular Domain Architecture."
 ---
 
 # API Skill for Laravel
 
-This skill defines the exact patterns and rules for building scalable, reliable, and modern REST APIs in Laravel. All guidance here is prescriptive. When in doubt, follow the rule.
+This skill defines the prescriptive patterns for building scalable and modern REST APIs. AI agents must follow these rules without deviation.
 
 ---
 
-## 1. Route Organisation & Versioning
+## 1. Modular Architecture & Routing
 
-- **Modular Structure**: Routes live under `modules/{Module}/Routes/v1.php`.
-- **Mandatory Versioning**: Always version endpoints from the beginning.
-- **Middleware Stack**: Every group must use: `force.json` (Accept header), `auth:sanctum` (if protected), and `throttle:api`.
-- **Sunset Header**: Use RFC 8594 `Sunset` header for deprecated routes.
+- **Domain-Driven**: All logic resides in `modules/{Module}/`.
+- **Versioned Routes**: Defined in `modules/{Module}/Routes/v1.php`.
+- **Standard Stack**: `force.json` -> `auth:sanctum` -> `throttle:api`.
+- **Sunset Header**: Required for deprecated endpoints (RFC 8594).
 
-## 2. Versioned Components
+## 2. Controllers & Dependency Injection
 
-To ensure smooth API evolution, the following components **must** be placed in versioned directories within their respective modules:
-- **Controllers**: `modules/{Module}/Controllers/V1/`
-- **Payloads**: `modules/{Module}/Payloads/V1/`
-- **Form Requests**: `modules/{Module}/Requests/V1/`
-- **Tests**: `modules/{Module}/Tests/Feature/V1/`
+- **Single-Action Only**: Every controller must be a `final` class with only the `__invoke()` method.
+- **Explicit DI**: Dependencies must be injected via the constructor. No `app()` or Facades in methods.
 
-## 3. Single-Action Invokable Controllers
+## 3. Form Requests & Payloads
 
-- **Final Only**: Every controller is a `final` single-action class.
-- **Invokable**: Use the `__invoke()` method. No resourceful or multi-method controllers.
-- **Constructor DI**: Always inject dependencies via the constructor. No `app()`, `resolve()`, or Facades inside methods.
+- **Payload Pattern**: Use **Payloads** (Typed immutable objects) for data transfer. No "DTO" suffix.
+- **Method**: Form Requests must implement a `payload()` method.
+- **Versioning**: Both Requests and Payloads must be in versioned directories (e.g., `V1/`).
 
-## 4. Form Requests & Payloads
+## 4. Business Logic (Actions)
 
-- **Payload Pattern**: Use **Payloads** (Typed PHP objects) instead of traditional DTOs.
-- **Validation**: Every state-mutating endpoint uses a versioned Form Request.
-- **Payload Extraction**: Form Requests must expose a `payload()` method returning a typed versioned Payload class.
+- **One per Operation**: Encapsulate logic in **Action classes**.
+- **Eloquent usage**: Call models directly within Actions. Discourage unnecessary Repositories.
+- **Transactions**: Mandatory for all database writes using injected `DatabaseManager`.
 
-## 5. The Action Pattern
+## 5. Standardized Responses
 
-- **Logic Placement**: Business logic lives in **Action classes** under `modules/{Module}/Actions/`.
-- **One per Operation**: One action per database operation. Actions are generally shared across API versions unless breaking logic changes occur.
-- **Transactions**: Every action that writes to the database must be wrapped in a transaction using injected `DatabaseManager`.
-- **Eloquent Usage**: Call Eloquent models directly within Actions. Discourage unnecessary Repository layers.
+- **Success**: Consistent JSON envelope via `ApiResponser` trait and **Eloquent Resources**.
+- **Error**: Strict **RFC 9457 Problem Details** for all exceptions.
+- **Status Codes**: Mandatory use of Symfony `Response::HTTP_*` constants.
 
-## 6. Success & Error Responses
+## 6. Models & Security
 
-- **Success**: Use **Eloquent Resources** and the `ApiResponser` success helpers.
-- **Error Handling**: Follow **RFC 9457 Problem Details**. Use `ProblemResponse` to ensure consistent JSON formatting.
-- **Status Codes**: Always use Symfony `Response::HTTP_*` constants. Never bare integers.
+- **Flexible IDs**: Supports Integer, UUID, or ULID primary keys.
+- **Strict Mode**: `Model::shouldBeStrict(!app()->isProduction())` required in development.
+- **RBAC**: Spatie Laravel Permission integrated with Laravel Policies.
 
-## 7. Security & Models
+## 7. Performance & Throttling
 
-- **Authentication**: Stateless Laravel Sanctum tokens only.
-- **Authorization**: Use Spatie Laravel Permission (RBAC). Check permissions in Form Request `authorize()`.
-- **Flexible Identifiers**: Models can use Integer, UUID, or ULID primary keys.
-- **Strict Mode**: `Model::shouldBeStrict(!app()->isProduction())` enabled in development.
+- **Lean Pagination**: Always use `simplePaginate()`. Never `paginate()`.
+- **Global Throttling**: Every group must have `throttle:api`.
+- **Filtering**: Use the internal `BaseFilter` system for search/sort/filter.
 
-## 8. Performance & Throttling
+## 8. Quality & Documentation
 
-- **Pagination**: Use `simplePaginate()` only. Never `paginate()` on API routes.
-- **Rate Limiting**: Every route group must have `throttle:api`. Define limiters in `AppServiceProvider`.
-- **Query Filtering**: Use the custom `BaseFilter` system for search/sort/filter.
-
-## 9. Code Quality & Testing
-
-- **Pest PHP**: Use Pest for outside-in HTTP/Feature tests, organized by version.
-- **Strict Typing**: Mandatory `declare(strict_types=1)` and full type coverage.
-- **Final Classes**: Use `final` by default for all infrastructure and logic classes.
+- **Test Driven**: Outside-in HTTP/Feature tests using **Pest PHP**.
+- **Strict Types**: Mandatory `declare(strict_types=1)` and full type coverage.
+- **Auto-Docs**: Comprehensive **Scramble** attributes for parameters and tags.
 
 ---
 
 ## Usage
 
-AI agents must read [references/CONVENTIONS.md](references/CONVENTIONS.md) for full folder structures, naming tables, and copy-pasteable worked examples.
+AI agents must consult [references/CONVENTIONS.md](references/CONVENTIONS.md) for detailed folder structures, naming tables, and implementation boilerplate.
 
-## Anti-Patterns
+## Prohibited Patterns (Anti-Patterns)
 
-- ❌ No Resourceful Controllers.
-- ❌ No `DTO` suffix (use Payload instead).
-- ❌ No logic in Models or Controllers.
+- ❌ No Resourceful Controllers or Logic in Models.
+- ❌ No `DTO` suffix (use **Payload**).
+- ❌ No `paginate()` (use `simplePaginate`).
 - ❌ No unthrottled routes or HTML error responses.
-- ❌ No Spatie Query Builder (use `BaseFilter`).
+- ❌ No authorization checks inside Actions (use Form Requests).
 - ❌ No manual dependency resolution inside methods.
