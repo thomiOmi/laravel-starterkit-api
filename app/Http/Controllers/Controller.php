@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Traits\ApiResponser;
+
 use Illuminate\Routing\Controller as BaseController;
 
 /**
@@ -12,5 +12,5 @@ use Illuminate\Routing\Controller as BaseController;
  */
 abstract class Controller extends BaseController
 {
-    use ApiResponser;
+
 }

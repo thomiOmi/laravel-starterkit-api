@@ -5,68 +5,29 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Controllers\Controller;
-use App\Traits\ApiResponser;
+use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\UpdatePasswordAction;
 use Modules\Auth\Actions\UpdateProfileAction;
+use Modules\Auth\Resources\UserResource;
 
 /**
- * @tags Authentication
+ * @tags Auth
  */
 class ProfileController extends Controller
 {
-    use ApiResponser;
-
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct(
-        protected UpdateProfileAction $updateProfileAction,
-        protected UpdatePasswordAction $updatePasswordAction
-    ) {}
-
-    /**
-     * Update user profile.
-     *
-     * @param  Request  $request  The current request.
-     * @return JsonResponse The JSON response containing user profile.
-     */
-    public function update(Request $request): JsonResponse
+    public function update(Request $request, UpdateProfileAction $action): JsonResponse
     {
-        $user = $request->user();
+        $user = $action->execute($request->user(), $request->all());
 
-        if (! $user) {
-            return $this->errorResponse('Unauthenticated', 401);
-        }
-
-        /** @var array<string, mixed> $input */
-        $input = $request->all();
-
-        $this->updateProfileAction->execute($user, $input);
-
-        return $this->successResponse(['user' => $user], __('auth.profile_updated'));
+        return new JsonDataResponse(data: ['user' => new UserResource($user)], message: __('auth.profile_updated'));
     }
 
-    /**
-     * Update user password.
-     *
-     * @param  Request  $request  The current request.
-     * @return JsonResponse The success response.
-     */
-    public function updatePassword(Request $request): JsonResponse
+    public function password(Request $request, UpdatePasswordAction $action): JsonResponse
     {
-        $user = $request->user();
+        $action->execute($request->user(), $request->all());
 
-        if (! $user) {
-            return $this->errorResponse('Unauthenticated', 401);
-        }
-
-        /** @var array<string, mixed> $input */
-        $input = $request->all();
-
-        $this->updatePasswordAction->execute($user, $input);
-
-        return $this->successResponse(null, __('auth.password_updated'));
+        return new JsonDataResponse(data: null, message: __('auth.password_updated'));
     }
 }

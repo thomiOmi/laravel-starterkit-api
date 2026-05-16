@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Controllers\Controller;
-use App\Traits\ApiResponser;
+use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetUserDevicesAction;
@@ -14,87 +14,46 @@ use Modules\Auth\Actions\LogoutDeviceAction;
 use Modules\Auth\Actions\LogoutOtherDevicesAction;
 use Modules\Auth\Resources\DeviceResource;
 use Modules\Auth\Resources\UserResource;
+use Modules\User\Models\User;
 
 /**
- * @tags Authentication
+ * @tags Auth
  */
 class AuthController extends Controller
 {
-    use ApiResponser;
-
-    /**
-     * Create a new AuthController instance.
-     */
-    public function __construct(
-        protected LogoutAction $logoutAction,
-        protected LogoutDeviceAction $logoutDeviceAction,
-        protected LogoutOtherDevicesAction $logoutOtherDevicesAction,
-        protected GetUserDevicesAction $getUserDevicesAction,
-    ) {}
-
-    /**
-     * Log the user out of the application.
-     *
-     * @param  Request  $request  The current request.
-     * @return JsonResponse The success response.
-     */
-    public function logout(Request $request): JsonResponse
+    public function logout(Request $request, LogoutAction $action): JsonResponse
     {
-        $this->logoutAction->execute($request);
+        $action->execute($request->user());
 
-        return $this->successResponse(null, __('auth.logout_success'));
+        return new JsonDataResponse(data: null, message: __('auth.logout_success'));
     }
 
-    /**
-     * Get the authenticated User.
-     *
-     * @param  Request  $request  The current request.
-     * @return JsonResponse The JSON response containing user profile.
-     */
-    public function me(Request $request): JsonResponse
+    public function user(Request $request): JsonResponse
     {
+        /** @var User $user */
         $user = $request->user();
 
-        return $this->successResponse(new UserResource($user));
+        return new JsonDataResponse(data: new UserResource($user));
     }
 
-    /**
-     * Get active devices/sessions.
-     *
-     * @param  Request  $request  The current request.
-     * @return JsonResponse The JSON response containing devices list.
-     */
-    public function devices(Request $request): JsonResponse
+    public function devices(Request $request, GetUserDevicesAction $action): JsonResponse
     {
-        $devices = $this->getUserDevicesAction->execute($request);
+        $devices = $action->execute($request->user());
 
-        return $this->successResponse(DeviceResource::collection($devices));
+        return new JsonDataResponse(data: DeviceResource::collection($devices));
     }
 
-    /**
-     * Logout from a specific device.
-     *
-     * @param  Request  $request  The current request.
-     * @param  string  $id  The device token ID.
-     * @return JsonResponse The success response.
-     */
-    public function logoutDevice(Request $request, string $id): JsonResponse
+    public function logoutDevice(Request $request, string $id, LogoutDeviceAction $action): JsonResponse
     {
-        $this->logoutDeviceAction->execute($request, $id);
+        $action->execute($request->user(), $id);
 
-        return $this->successResponse(null, __('auth.device_logout_success'));
+        return new JsonDataResponse(data: null, message: __('auth.device_logout_success'));
     }
 
-    /**
-     * Logout from all other devices.
-     *
-     * @param  Request  $request  The current request.
-     * @return JsonResponse The success response.
-     */
-    public function logoutOtherDevices(Request $request): JsonResponse
+    public function logoutOtherDevices(Request $request, LogoutOtherDevicesAction $action): JsonResponse
     {
-        $this->logoutOtherDevicesAction->execute($request);
+        $action->execute($request->user(), (string) $request->input('password'));
 
-        return $this->successResponse(null, __('auth.other_devices_logout_success'));
+        return new JsonDataResponse(data: null, message: __('auth.other_devices_logout_success'));
     }
 }
