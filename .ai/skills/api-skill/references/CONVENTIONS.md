@@ -1,47 +1,42 @@
 # Conventions Reference
 
-This document provides detailed folder structures, naming conventions, and implementation examples to support the API Skill.
+This document covers folder structure, naming conventions, and complete worked examples for the API skill.
 
 ---
 
-## 1. Folder Structure (Detailed)
+## 1. Folder Structure
 
-This project follows a strict **Domain-Driven Modular Architecture**.
+This project follows a strict **Domain-Driven Modular Architecture**. All domain logic must reside within versioned modules.
 
 ```text
 modules/
   {Module}/
     Actions/            # Business logic classes
     Controllers/
-      V1/               # Single-action controllers (V1)
+      V1/               # Versioned single-action controllers
     Payloads/
-      V1/               # Data Transfer Objects (V1)
-    Models/             # Eloquent models (Domain root)
+      V1/               # Versioned Data Transfer Objects
+    Models/             # Eloquent models
     Requests/
-      V1/               # Form requests (V1)
+      V1/               # Versioned form requests
     Resources/          # Eloquent resources
     Routes/
-      v1.php            # Route definitions
-    Filters/            # Query filters (BaseFilter)
-    Policies/           # Laravel Policies
-    Jobs/               # Background jobs
-    Database/
-      Migrations/
-      Factories/
-      Seeders/
+      v1.php            # Version-specific route definitions
+    Filters/            # Query filters (extending BaseFilter)
+    Database/           # Migrations, Factories, Seeders
     Tests/
       Feature/
-        V1/             # Feature tests (V1)
+        V1/             # Versioned feature tests
 ```
 
 ---
 
-## 2. Naming Conventions Table
+## 2. Naming Conventions
 
 | Layer | Convention | Example |
 |---|---|---|
 | **Controller** | `V{Version}\{Action}Controller` | `V1\StoreController` |
-| **Action** | `{Action}{Resource}Action` | `StorePostAction` |
+| **Action** | `{Action}{Resource}Action` | `StoreUserAction` |
 | **Payload** | `V{Version}\{Action}{Resource}Payload` | `V1\StoreUserPayload` |
 | **Form Request** | `V{Version}\{Action}{Resource}Request` | `V1\StoreUserRequest` |
 | **API Resource** | `{Resource}Resource` | `UserResource` |
@@ -49,39 +44,70 @@ modules/
 | **Filter** | `{Resource}Filter` | `UserFilter` |
 | **Policy** | `{Resource}Policy` | `PostPolicy` |
 | **Route Name** | `{module_name}.{action}` | `users.store` |
+| **Test File** | `V{Version}\{Action}Test.php` | `V1\StoreTest.php` |
 
 ---
 
 ## 3. Implementation — Error Handling (RFC 9457)
+
+### ProblemResponse Class
+```php
+final readonly class ProblemResponse implements Responsable
+{
+    public function __construct(
+        private string $type,
+        private string $title,
+        private int    $status,
+        private string $detail,
+        private array  $errors = [],
+    ) {}
+
+    public function toResponse($request): JsonResponse
+    {
+        return new JsonResponse(
+            data: array_filter([
+                'type'   => $this->type,
+                'title'  => $this->title,
+                'status' => $this->status,
+                'detail' => $this->detail,
+                'errors' => $this->errors ?: null,
+            ]),
+            status:  $this->status,
+            headers: ['Content-Type' => 'application/problem+json'],
+        );
+    }
+}
+```
 
 ### Exception Handler (`bootstrap/app.php`)
 ```php
 ->withExceptions(function (Exceptions $exceptions): void {
     $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
         return new ProblemResponse(
-            type:   'https://example.com/problems/validation-error',
-            title:  'Validation Error',
+            title: 'Validation Error',
             status: Response::HTTP_UNPROCESSABLE_ENTITY,
             detail: 'The given data was invalid.',
+            type: 'https://example.com/problems/validation-error',
             errors: $e->errors(),
+            instance: $request->path(),
         );
     });
 
     $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
         return new ProblemResponse(
-            type:   'https://example.com/problems/unauthenticated',
-            title:  'Unauthenticated',
+            title: 'Unauthenticated',
             status: Response::HTTP_UNAUTHORIZED,
-            detail: 'You are not authenticated.',
+            detail: 'You must be authenticated to access this resource.',
+            type: 'https://example.com/problems/unauthenticated',
         );
     });
 
     $exceptions->render(function (AuthorizationException $e, Request $request): ProblemResponse {
         return new ProblemResponse(
-            type:   'https://example.com/problems/forbidden',
-            title:  'Forbidden',
+            title: 'Forbidden',
             status: Response::HTTP_FORBIDDEN,
             detail: 'You are not authorised to perform this action.',
+            type: 'https://example.com/problems/forbidden',
         );
     });
 })
@@ -89,65 +115,128 @@ modules/
 
 ---
 
-## 4. Implementation — Success Responses (JSON Envelope)
+## 3b. Implementation — Domain Errors from Actions
 
-### Standard Envelope Structure
+When an Action needs to signal a business rule violation, throw a dedicated domain exception and handle it in `bootstrap/app.php`.
+
+### Step 1: Create the exception
+```php
+// modules/Payment/Exceptions/InsufficientBalanceException.php
+final class InsufficientBalanceException extends RuntimeException {}
+```
+
+### Step 2: Throw from Action
+```php
+final readonly class ProcessPaymentAction
+{
+    public function handle(ProcessPaymentPayload $payload): Payment
+    {
+        if ($payload->amount > $this->getBalance($payload->accountId)) {
+            throw new InsufficientBalanceException('Account balance is insufficient.');
+        }
+        // ...
+    }
+}
+```
+
+### Step 3: Handle in bootstrap/app.php
+```php
+$exceptions->render(function (InsufficientBalanceException $e, Request $request): ProblemResponse {
+    return new ProblemResponse(
+        title:  'Insufficient Balance',
+        status: Response::HTTP_UNPROCESSABLE_ENTITY,
+        detail: $e->getMessage(),
+        type:   'https://example.com/problems/insufficient-balance',
+    );
+});
+```
+
+---
+
+## 4. Implementation — Success Responses (`JsonDataResponse`)
+
+### Response Shape
 ```json
 {
-    "success": true,
-    "message": "Operation successful",
-    "data": { ... }
+    "data": { ... },
+    "message": "User created successfully"
 }
 ```
 
 ### Usage in Controller
 ```php
-return $this->successResponse(
-    data: new UserResource($user),
-    message: 'User created successfully',
-    status: Response::HTTP_CREATED
+use App\Http\Responses\JsonDataResponse;
+use Symfony\Component\HttpFoundation\Response;
+
+final readonly class StoreController
+{
+    public function __construct(
+        private StoreUserAction $storeUser,
+    ) {}
+
+    public function __invoke(StoreUserRequest $request): JsonDataResponse
+    {
+        $user = $this->storeUser->handle($request->payload());
+
+        return new JsonDataResponse(
+            data:    new UserResource($user),
+            status:  Response::HTTP_CREATED,
+            message: 'User created successfully',
+        );
+    }
+}
+```
+
+### For Accepted (Async) Responses
+```php
+return new JsonDataResponse(
+    data:    null,
+    status:  Response::HTTP_ACCEPTED,
+    message: 'Request accepted for processing',
+);
+```
+
+### For Empty Delete Responses
+```php
+return new JsonDataResponse(
+    data:    null,
+    status:  Response::HTTP_NO_CONTENT,
+    message: 'Resource deleted',
 );
 ```
 
 ---
 
-## 5. Implementation — Background Jobs
+## 5. Implementation — Authorization (Policies)
 
-### The Job (`modules/Post/Jobs/DeletePostJob.php`)
+Perform instance-level checks in the Form Request's `authorize()` method.
+
+### The Policy (`modules/Post/Policies/PostPolicy.php`)
 ```php
-final class DeletePostJob implements ShouldQueue
+final class PostPolicy
 {
-    use Queueable;
-    use SerializesModels;
-
-    public function __construct(
-        private Post $post, // not readonly due to serialization
-    ) {}
-
-    public function handle(DatabaseManager $database): void
+    public function update(User $user, Post $post): bool
     {
-        $database->transaction(fn () => $this->post->delete());
+        return $user->id === $post->user_id;
     }
 }
 ```
 
-### The Controller
+### The Form Request
 ```php
-public function __invoke(Post $post): JsonResponse
+public function authorize(): bool
 {
-    dispatch(new DeletePostJob($post));
-
-    return $this->successResponse(
-        data: null,
-        message: 'Request accepted for processing',
-        status: Response::HTTP_ACCEPTED
-    );
+    return $this->user()->can('update', $this->route('post'));
 }
 ```
 
 ---
 
 ## 6. Implementation — Testing (Pest PHP)
+
+> **Response shape reference**:
+> - Success responses: `{ "data": {...}, "message": "..." }`
+> - Problem responses: `{ "type": "...", "title": "...", "status": N, "detail": "...", "errors"?: {...} }`
 
 ### Outside-In Feature Test (`modules/User/Tests/Feature/V1/StoreTest.php`)
 ```php
@@ -167,62 +256,13 @@ it('can store a user', function (): void {
         ->assertStatus(Response::HTTP_CREATED)
         ->assertJsonPath('data.name', 'John Doe');
 });
-
-it('returns 422 if email is missing', function (): void {
-    $admin = User::factory()->create();
-
-    $this->actingAs($admin)
-        ->postJson('/api/v1/users', ['name' => 'John'])
-        ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
-        ->assertJsonPath('title', 'Validation Error');
-});
 ```
 
 ---
 
-## 7. Implementation — Documentation (Scramble)
+## External References
 
-### Controller Annotations
-```php
-/**
- * @tags Post
- */
-final class StoreController extends Controller
-{
-    #[BodyParameter(name: 'title', description: 'Post title', required: true)]
-    public function __invoke(StoreRequest $request): JsonResponse { ... }
-}
-```
-
----
-
-## 8. AppServiceProvider Setup
-
-```php
-public function boot(): void
-{
-    Model::shouldBeStrict(! app()->isProduction());
-
-    RateLimiter::for('api', function (Request $request): Limit {
-        return Limit::perMinute(60)->by(
-            key: $request->user()?->id ?: $request->ip(),
-        );
-    });
-}
-```
-
----
-
-## 9. Anti-Patterns Table
-
-| Anti-Pattern | Correct Approach |
-|---|---|
-| Business logic in Models | Move to **Action Classes**. |
-| Resourceful controllers | One **`final` invokable controller** per operation. |
-| `app()` or `resolve()` | **Constructor Injection** always. |
-| `paginate()` | **`simplePaginate()`** — no `COUNT(*)` overhead. |
-| Unthrottled routes | Always include **`throttle:api`**. |
-| HTML error responses | **`ForceJsonResponse`** middleware. |
-| Policy checks in Action | Authorize in **`FormRequest::authorize()`** only. |
-| `if/elseif` for values | Use **`match`** expressions. |
-| `DataTableDTO` | Use **`BaseFilter`** + standard pagination. |
+- **Laravel 13**: [https://laravel.com/docs/13.x](https://laravel.com/docs/13.x)
+- **RFC 9457 (Problem Details)**: [https://www.rfc-editor.org/rfc/rfc9457](https://www.rfc-editor.org/rfc/rfc9457)
+- **RFC 8594 (Sunset Header)**: [https://www.rfc-editor.org/rfc/rfc8594](https://www.rfc-editor.org/rfc/rfc8594)
+- **Spatie Permission**: [https://spatie.be/docs/laravel-permission](https://spatie.be/docs/laravel-permission)

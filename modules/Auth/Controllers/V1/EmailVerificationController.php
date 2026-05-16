@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Controllers\Controller;
-use App\Traits\ApiResponser;
+use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\ResendVerificationEmailAction;
@@ -13,52 +13,28 @@ use Modules\Auth\Actions\VerifyEmailAction;
 use Modules\Auth\DTOs\VerifyEmailDTO;
 
 /**
- * @tags Authentication
+ * @tags Auth
  */
 class EmailVerificationController extends Controller
 {
-    use ApiResponser;
-
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct(
-        protected VerifyEmailAction $verifyEmailAction,
-        protected ResendVerificationEmailAction $resendVerificationEmailAction
-    ) {}
-
-    /**
-     * Verify user email.
-     *
-     * @param  Request  $request  The current request.
-     * @param  string  $id  The user ID.
-     * @param  string  $hash  The verification hash.
-     * @return JsonResponse The success response.
-     */
-    public function verify(Request $request, string $id, string $hash): JsonResponse
+    public function verify(Request $request, VerifyEmailAction $action): JsonResponse
     {
-        $dto = new VerifyEmailDTO($id, $hash);
-        $this->verifyEmailAction->execute($dto);
+        $dto = new VerifyEmailDTO(
+            id: (string) $request->route('id'),
+            hash: (string) $request->route('hash'),
+            expires: (string) $request->query('expires'),
+            signature: (string) $request->query('signature')
+        );
 
-        return $this->successResponse(null, __('auth.verified'));
+        $action->execute($dto);
+
+        return new JsonDataResponse(data: null, message: __('auth.verified'));
     }
 
-    /**
-     * Resend verification email.
-     *
-     * @param  Request  $request  The current request.
-     * @return JsonResponse The success response.
-     */
-    public function resend(Request $request): JsonResponse
+    public function resend(Request $request, ResendVerificationEmailAction $action): JsonResponse
     {
-        $user = $request->user();
+        $action->execute($request->user());
 
-        if (! $user) {
-            return $this->errorResponse('Unauthenticated', 401);
-        }
-
-        $this->resendVerificationEmailAction->execute($user);
-
-        return $this->successResponse(null, __('auth.verification_link_sent'));
+        return new JsonDataResponse(data: null, message: __('auth.verification_link_sent'));
     }
 }

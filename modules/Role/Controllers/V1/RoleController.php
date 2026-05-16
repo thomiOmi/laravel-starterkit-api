@@ -6,7 +6,7 @@ namespace Modules\Role\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BulkActionRequest;
-use Dedoc\Scramble\Attributes\QueryParameter;
+use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\CreateRoleAction;
@@ -16,6 +16,7 @@ use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Repositories\RoleRepository;
 use Modules\Role\Requests\RoleRequest;
 use Modules\Role\Resources\RoleResource;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @tags Role
@@ -24,49 +25,42 @@ class RoleController extends Controller
 {
     /**
      * Create a new RoleController instance.
+     *
+     * @param  RoleRepository  $roleRepository  The role repository.
      */
-    public function __construct(protected RoleRepository $repository) {}
+    public function __construct(protected RoleRepository $roleRepository) {}
 
     /**
-     * List All Roles
+     * Display a paginated listing of the roles.
      *
-     * Retrieves a paginated list of all roles with filtering and sorting.
-     *
-     * @param  Request  $request  The request.
-     * @param  RoleFilter  $filter  The filter.
+     * @param  Request  $request  The incoming HTTP request.
+     * @param  RoleFilter  $filter  The role filters.
      */
-    #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
-    #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
-    #[QueryParameter(name: 'search', description: 'Search keyword to filter roles by name.', type: 'string', required: false, example: 'admin')]
-    #[QueryParameter(name: 'sort_by', description: 'Column name to sort by.', type: 'string', required: false, default: 'created_at', example: 'name')]
-    #[QueryParameter(name: 'sort_direction', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
     public function index(Request $request, RoleFilter $filter): JsonResponse
     {
-        $roles = $this->repository
+        $roles = $this->roleRepository
             ->applyFilter($filter)
-            ->paginate(
-                perPage: $request->integer('per_page', 10),
-                relations: ['permissions']
-            );
+            ->paginate(perPage: $request->integer('per_page', 10));
 
-        return $this->paginateResponse($roles, RoleResource::class, 'Roles retrieved successfully');
+        return new JsonDataResponse(data: RoleResource::collection($roles), message: 'Roles retrieved successfully');
     }
 
     /**
-     * Store a newly created role.
+     * Store a newly created role in storage.
      *
      * @param  RoleRequest  $request  The role request.
      * @param  CreateRoleAction  $action  The create role action.
+     * @return JsonResponse The JSON response containing the created role.
      */
     public function store(RoleRequest $request, CreateRoleAction $action): JsonResponse
     {
         $dto = RoleDTO::fromRequest($request);
         $role = $action->execute($dto);
 
-        return $this->successResponse(
-            new RoleResource($role->load('permissions')),
-            'Role created successfully',
-            201
+        return new JsonDataResponse(
+            data: new RoleResource($role),
+            status: Response::HTTP_CREATED,
+            message: 'Role created successfully'
         );
     }
 
@@ -74,67 +68,71 @@ class RoleController extends Controller
      * Display the specified role.
      *
      * @param  string|int  $id  The role ID.
+     * @return JsonResponse The JSON response containing the role.
      */
     public function show(string|int $id): JsonResponse
     {
-        $role = $this->repository->findById($id, relations: ['permissions']);
+        $role = $this->roleRepository->findById($id);
 
-        return $this->successResponse(
-            new RoleResource($role),
-            'Role retrieved successfully'
+        return new JsonDataResponse(
+            data: new RoleResource($role),
+            message: 'Role retrieved successfully'
         );
     }
 
     /**
-     * Update the specified role.
+     * Update the specified role in storage.
      *
      * @param  RoleRequest  $request  The role request.
      * @param  string|int  $id  The role ID.
      * @param  UpdateRoleAction  $action  The update role action.
+     * @return JsonResponse The JSON response containing the updated role.
      */
     public function update(RoleRequest $request, string|int $id, UpdateRoleAction $action): JsonResponse
     {
         $dto = RoleDTO::fromRequest($request);
         $role = $action->execute($id, $dto);
 
-        return $this->successResponse(
-            new RoleResource($role),
-            'Role updated successfully'
+        return new JsonDataResponse(
+            data: new RoleResource($role),
+            message: 'Role updated successfully'
         );
     }
 
     /**
-     * Remove the specified role.
+     * Remove the specified role from storage.
      *
      * @param  string|int  $id  The role ID.
+     * @return JsonResponse The JSON response indicating success.
      */
     public function destroy(string|int $id): JsonResponse
     {
-        $this->repository->delete($id);
+        $this->roleRepository->delete($id);
 
-        return $this->successResponse(null, 'Role deleted successfully');
+        return new JsonDataResponse(data: null, message: 'Role deleted successfully');
     }
 
     /**
      * Perform bulk action on roles.
      *
      * @param  BulkActionRequest  $request  The validated bulk action request.
+     * @return JsonResponse The JSON response containing the result of the bulk action.
      */
     public function bulkAction(BulkActionRequest $request): JsonResponse
     {
         /** @var array{ids: array<int, string|int>, action: string} $validated */
         $validated = $request->validated();
 
-        $count = $this->repository->bulk(
+        $count = $this->roleRepository->bulk(
             $validated['ids'],
             $validated['action'],
         );
 
         $action = $validated['action'];
 
-        return $this->successResponse(
-            ['count' => $count],
-            "Roles {$action} successfully"
+        return new JsonDataResponse(
+            data: ['count' => $count],
+            message: "Roles {$action} successfully"
         );
     }
 }

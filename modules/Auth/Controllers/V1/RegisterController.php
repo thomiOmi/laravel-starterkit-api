@@ -5,40 +5,29 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Controllers\Controller;
-use App\Traits\ApiResponser;
+use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Requests\RegisterRequest;
+use Modules\Auth\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @tags Authentication
+ * @tags Auth
  */
 class RegisterController extends Controller
 {
-    use ApiResponser;
-
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct(
-        protected RegisterAction $registerAction
-    ) {}
-
-    /**
-     * Handle registration request.
-     *
-     * @param  RegisterRequest  $request  The registration request.
-     * @return JsonResponse The JSON response containing created user.
-     */
-    public function register(RegisterRequest $request): JsonResponse
+    public function __invoke(RegisterRequest $request, RegisterAction $action): JsonResponse
     {
-        $user = $this->registerAction->execute($request->validated());
-        $user->sendEmailVerificationNotification();
+        $result = $action->execute($request->all());
 
-        return $this->successResponse(
-            ['user' => $user],
-            __('auth.registered'),
-            201
+        return new JsonDataResponse(
+            data: [
+                'user' => new UserResource($result['user']),
+                'token' => $result['token'],
+            ],
+            status: Response::HTTP_CREATED,
+            message: __('auth.registered')
         );
     }
 }

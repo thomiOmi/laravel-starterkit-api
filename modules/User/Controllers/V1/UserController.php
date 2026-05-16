@@ -6,6 +6,7 @@ namespace Modules\User\Controllers\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BulkActionRequest;
+use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ use Modules\User\Filters\UserFilter;
 use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\UserRequest;
 use Modules\User\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @tags User
@@ -26,15 +28,15 @@ class UserController extends Controller
     /**
      * Create a new UserController instance.
      *
-     * @param  UserRepository  $userRepository  The user repository.
+     * @param  UserRepository    The user repository.
      */
-    public function __construct(protected UserRepository $userRepository) {}
+    public function __construct(protected UserRepository ) {}
 
     /**
      * Display a paginated listing of the users.
      *
-     * @param  Request  $request  The incoming HTTP request.
-     * @param  UserFilter  $filter  The user filters.
+     * @param  Request    The incoming HTTP request.
+     * @param  UserFilter    The user filters.
      */
     #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
@@ -42,110 +44,113 @@ class UserController extends Controller
     #[QueryParameter(name: 'sort_by', description: 'Column name to sort by.', type: 'string', required: false, default: 'created_at', example: 'name')]
     #[QueryParameter(name: 'sort_direction', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
     #[QueryParameter(name: 'role', description: 'Filter by role name.', type: 'string', required: false, example: 'admin')]
-    public function index(Request $request, UserFilter $filter): JsonResponse
+    public function index(Request , UserFilter ): JsonResponse
     {
-        $users = $this->userRepository
-            ->applyFilter($filter)
+         = ->userRepository
+            ->applyFilter()
             ->paginate(
-                perPage: $request->integer('per_page', 10),
+                perPage: ->integer('per_page', 10),
                 relations: ['roles', 'permissions']
             );
 
-        return $this->paginateResponse($users, UserResource::class, 'Users retrieved successfully');
+        return new JsonDataResponse(
+            data: UserResource::collection(),
+            message: 'Users retrieved successfully'
+        );
     }
 
     /**
      * Store a newly created user in storage.
      *
-     * @param  UserRequest  $request  The user request.
-     * @param  CreateUserAction  $action  The create user action.
+     * @param  UserRequest    The user request.
+     * @param  CreateUserAction    The create user action.
      * @return JsonResponse The JSON response containing the created user.
      */
-    public function store(UserRequest $request, CreateUserAction $action): JsonResponse
+    public function store(UserRequest , CreateUserAction ): JsonResponse
     {
-        $dto = UserDTO::fromRequest($request);
-        $user = $action->execute($dto);
+         = UserDTO::fromRequest();
+         = ->execute();
 
-        return $this->successResponse(
-            new UserResource($user),
-            'User created successfully',
-            201
+        return new JsonDataResponse(
+            data: new UserResource(),
+            status: Response::HTTP_CREATED,
+            message: 'User created successfully'
         );
     }
 
     /**
      * Display the specified user.
      *
-     * @param  string|int  $id  The user ID.
+     * @param  string|int    The user ID.
      * @return JsonResponse The JSON response containing the user.
      */
-    public function show(string|int $id): JsonResponse
+    public function show(string|int ): JsonResponse
     {
-        $user = $this->userRepository->findById($id, relations: ['roles', 'permissions']);
+         = ->userRepository->findById(, relations: ['roles', 'permissions']);
 
-        return $this->successResponse(
-            new UserResource($user),
-            'User retrieved successfully'
+        return new JsonDataResponse(
+            data: new UserResource(),
+            message: 'User retrieved successfully'
         );
     }
 
     /**
      * Update the specified user in storage.
      *
-     * @param  UserRequest  $request  The user request.
-     * @param  string|int  $id  The user ID.
-     * @param  UpdateUserAction  $action  The update user action.
+     * @param  UserRequest    The user request.
+     * @param  string|int    The user ID.
+     * @param  UpdateUserAction    The update user action.
      * @return JsonResponse The JSON response containing the updated user.
      */
-    public function update(UserRequest $request, string|int $id, UpdateUserAction $action): JsonResponse
+    public function update(UserRequest , string|int , UpdateUserAction ): JsonResponse
     {
-        $dto = UserDTO::fromRequest($request);
-        $user = $action->execute($id, $dto);
+         = UserDTO::fromRequest();
+         = ->execute(, );
 
-        return $this->successResponse(
-            new UserResource($user),
-            'User updated successfully'
+        return new JsonDataResponse(
+            data: new UserResource(),
+            message: 'User updated successfully'
         );
     }
 
     /**
      * Remove the specified user from storage.
      *
-     * @param  string|int  $id  The user ID.
-     * @param  DeleteUserAction  $action  The delete user action.
+     * @param  string|int    The user ID.
+     * @param  DeleteUserAction    The delete user action.
      * @return JsonResponse The JSON response indicating success.
      */
-    public function destroy(string|int $id, DeleteUserAction $action): JsonResponse
+    public function destroy(string|int , DeleteUserAction ): JsonResponse
     {
-        $action->execute($id);
+        ->execute();
 
-        return $this->successResponse(
-            null,
-            'User deleted successfully'
+        return new JsonDataResponse(
+            data: null,
+            message: 'User deleted successfully'
         );
     }
 
     /**
      * Perform bulk action on users.
      *
-     * @param  BulkActionRequest  $request  The validated bulk action request.
+     * @param  BulkActionRequest    The validated bulk action request.
      * @return JsonResponse The JSON response containing the result of the bulk action.
      */
-    public function bulkAction(BulkActionRequest $request): JsonResponse
+    public function bulkAction(BulkActionRequest ): JsonResponse
     {
-        /** @var array{ids: array<int, string|int>, action: string} $validated */
-        $validated = $request->validated();
+        /** @var array{ids: array<int, string|int>, action: string}  */
+         = ->validated();
 
-        $count = $this->userRepository->bulk(
-            $validated['ids'],
-            $validated['action'],
+         = ->userRepository->bulk(
+            ['ids'],
+            ['action'],
         );
 
-        $action = $validated['action'];
+         = ['action'];
 
-        return $this->successResponse(
-            ['count' => $count],
-            "Users {$action} successfully"
+        return new JsonDataResponse(
+            data: ['count' => ],
+            message: "Users {$action} successfully"
         );
     }
 }

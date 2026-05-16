@@ -5,78 +5,44 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Controllers\Controller;
-use App\Traits\ApiResponser;
+use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
-use Laravel\Socialite\Contracts\User;
 use Laravel\Socialite\Facades\Socialite;
-use Laravel\Socialite\Two\AbstractProvider;
-use Modules\User\Repositories\UserRepository;
-use Throwable;
+use Modules\Auth\Actions\LoginAction;
+use Modules\Auth\DTOs\LoginDTO;
+use Modules\Auth\Resources\UserResource;
 
 /**
- * @tags Authentication
+ * @tags Auth
  */
 class SocialAuthController extends Controller
 {
-    use ApiResponser;
-
-    /**
-     * Create a new controller instance.
-     */
-    public function __construct(protected UserRepository $userRepository) {}
-
-    /**
-     * Redirect to social provider.
-     *
-     * @param  string  $provider  The social provider name (e.g. google, github).
-     * @return RedirectResponse The redirect response to provider.
-     */
-    public function redirect(string $provider): RedirectResponse
+    public function redirect(string $provider): JsonResponse
     {
-        /** @var AbstractProvider $driver */
-        $driver = Socialite::driver($provider);
-
-        return $driver->stateless()->redirect();
+        return new JsonDataResponse(data: [
+            'url' => Socialite::driver($provider)->stateless()->redirect()->getTargetUrl(),
+        ]);
     }
 
-    /**
-     * Handle social provider callback.
-     *
-     * @param  string  $provider  The social provider name.
-     * @return JsonResponse The JSON response with token.
-     */
-    public function callback(string $provider): JsonResponse
+    public function callback(string $provider, LoginAction $action): JsonResponse
     {
-        try {
-            /** @var AbstractProvider $driver */
-            $driver = Socialite::driver($provider);
-            /** @var User $socialUser */
-            $socialUser = $driver->stateless()->user();
-        } catch (Throwable $e) {
-            return $this->errorResponse('Social authentication failed. Please try again.', 422);
-        }
+        $socialUser = Socialite::driver($provider)->stateless()->user();
 
-        /** @var string $socialEmail */
-        $socialEmail = $socialUser->getEmail();
-
-        $user = $this->userRepository->updateOrCreate(
-            ['email' => $socialEmail],
-            [
-                'name' => $socialUser->getName() ?? $socialUser->getNickname(),
-                'provider' => $provider,
-                'provider_id' => $socialUser->getId(),
-                'email_verified_at' => now(),
-                'password' => null,
-            ]
+        $dto = new LoginDTO(
+            email: (string) $socialUser->getEmail(),
+            password: '',
+            provider: $provider,
+            provider_id: (string) $socialUser->getId()
         );
 
-        $token = $user->createToken($provider.'-login', ['*'])->plainTextToken;
+        $result = $action->execute($dto);
 
-        return $this->successResponse([
-            'user' => $user,
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ], __('auth.login_success'));
+        return new JsonDataResponse(
+            data: [
+                'user' => new UserResource($result['user']),
+                'token' => $result['token'],
+            ],
+            message: __('auth.login_success')
+        );
     }
 }
