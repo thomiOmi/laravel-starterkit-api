@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.5.0) (2026-05-16)
+
+### Features
+
+- final consolidated and versioned custom AI Skill ([2927d2e](https://github.com/thomiOmi/laravel-starterkit-api/commit/2927d2e93ec6b59ddd167e45311589cba3b1426b))
+- implement custom AI skill with consolidated conventions ([232e92c](https://github.com/thomiOmi/laravel-starterkit-api/commit/232e92ca5dba8afd36752f3f351a686ec479657c))
+- implement comprehensive custom AI Skill for modular API ([cab06a4](https://github.com/thomiOmi/laravel-starterkit-api/commit/cab06a48d0c57e69236b0169bfb36583eeee40a7))
 ## [0.4.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.4.0) (2026-05-15)
 
 ### Features
