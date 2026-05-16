@@ -1,16 +1,67 @@
-# Worked Examples
+# Conventions Reference
 
-This document provides complete, copy-pasteable examples for the core patterns used in this project.
+This document covers folder structure, naming conventions, and complete worked examples for the API skill.
 
-## 1. Storing a Resource (Post)
+---
 
-### Payload (`modules/Post/Payloads/StorePostPayload.php`)
+## Folder Structure
+
+This project follows a strict **Domain-Driven Modular Architecture**. All domain logic must reside within versioned modules.
+
+```text
+modules/
+  {Module}/
+    Actions/            # Business logic classes (usually shared across versions)
+    Controllers/
+      V1/               # Versioned single-action controllers
+        IndexController.php
+        StoreController.php
+    Payloads/
+      V1/               # Versioned Data Transfer Objects
+        StorePayload.php
+    Models/             # Eloquent models (shared)
+    Requests/
+      V1/               # Versioned form requests
+        StoreRequest.php
+    Resources/          # Eloquent resources (can be versioned if needed)
+    Routes/
+      v1.php            # Version-specific route definitions
+    Filters/            # Query filters (extending BaseFilter)
+    Database/           # Migrations, Factories, Seeders
+    Tests/
+      Feature/
+        V1/             # Versioned feature tests
+          StoreTest.php
+    Providers/          # Module-specific service providers
+```
+
+---
+
+## Naming Conventions
+
+| Layer | Convention | Example |
+|---|---|---|
+| **Controller** | `V{Version}\{Action}Controller` | `V1\StoreController` |
+| **Action** | `{Action}{Resource}Action` | `StoreUserAction` |
+| **Payload** | `V{Version}\{Action}{Resource}Payload` | `V1\StoreUserPayload` |
+| **Form Request** | `V{Version}\{Action}{Resource}Request` | `V1\StoreUserRequest` |
+| **API Resource** | `{Resource}Resource` | `UserResource` |
+| **Job** | `{Action}{Resource}Job` | `DeletePostJob` |
+| **Filter** | `{Resource}Filter` | `UserFilter` |
+| **Route Name** | `{module_name}.{action}` | `users.store` |
+| **Test File** | `V{Version}\{Action}Test.php` | `V1\StoreTest.php` |
+
+---
+
+## Complete Worked Example — Storing a Resource
+
+### Payload (`modules/Post/Payloads/V1/StorePostPayload.php`)
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Post\Payloads;
+namespace Modules\Post\Payloads\V1;
 
 final readonly class StorePostPayload
 {
@@ -31,20 +82,18 @@ final readonly class StorePostPayload
 }
 ```
 
-### Form Request (`modules/Post/Requests/StorePostRequest.php`)
+### Form Request (`modules/Post/Requests/V1/StorePostRequest.php`)
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Post\Requests;
+namespace Modules\Post\Requests\V1;
 
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Foundation\Http\FormRequest;
-use Modules\Post\Payloads\StorePostPayload;
+use Modules\Post\Payloads\V1\StorePostPayload;
 
-#[BodyParameter(name: 'title', description: 'Post title', required: true, example: 'My New Post')]
-#[BodyParameter(name: 'content', description: 'Post body content', required: true, example: 'This is the body...')]
 final class StorePostRequest extends FormRequest
 {
     public function authorize(): bool
@@ -81,7 +130,7 @@ namespace Modules\Post\Actions;
 
 use Illuminate\Database\DatabaseManager;
 use Modules\Post\Models\Post;
-use Modules\Post\Payloads\StorePostPayload;
+use Modules\Post\Payloads\V1\StorePostPayload;
 
 final class StorePostAction
 {
@@ -111,7 +160,7 @@ namespace Modules\Post\Controllers\V1;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Modules\Post\Actions\StorePostAction;
-use Modules\Post\Requests\StorePostRequest;
+use Modules\Post\Requests\V1\StorePostRequest;
 use Modules\Post\Resources\PostResource;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -124,9 +173,6 @@ final class StoreController extends Controller
         private readonly StorePostAction $action,
     ) {}
 
-    /**
-     * Create a new post.
-     */
     public function __invoke(StorePostRequest $request): JsonResponse
     {
         $post = $this->action->execute(
@@ -144,7 +190,7 @@ final class StoreController extends Controller
 
 ---
 
-## 2. Listing with Filters (Post)
+## Complete Worked Example — Listing with Filters
 
 ### Filter (`modules/Post/Filters/PostFilter.php`)
 ```php
@@ -182,3 +228,12 @@ final class IndexController extends Controller
     }
 }
 ```
+
+---
+
+## External References
+
+- **Laravel 13**: [https://laravel.com/docs/13.x](https://laravel.com/docs/13.x)
+- **RFC 9457 (Problem Details)**: [https://www.rfc-editor.org/rfc/rfc9457](https://www.rfc-editor.org/rfc/rfc9457)
+- **RFC 8594 (Sunset Header)**: [https://www.rfc-editor.org/rfc/rfc8594](https://www.rfc-editor.org/rfc/rfc8594)
+- **Spatie Permission**: [https://spatie.be/docs/laravel-permission](https://spatie.be/docs/laravel-permission)
