@@ -7,6 +7,7 @@ namespace Modules\Auth\Controllers\V1;
 use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\LogoutAction;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -20,7 +21,10 @@ final readonly class LogoutController
 
     public function __invoke(Request $request): JsonDataResponse
     {
-        $this->logoutAction->handle($request->user());
+        /** @var User $user */
+        $user = $request->user();
+
+        $this->logoutAction->handle($user);
 
         return new JsonDataResponse(
             data: null,

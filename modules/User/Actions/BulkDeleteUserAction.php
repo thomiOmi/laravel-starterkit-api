@@ -27,8 +27,9 @@ final readonly class BulkDeleteUserAction
      */
     public function handle(array $ids): int
     {
+        /** @var int */
         return $this->database->transaction(function () use ($ids) {
-            return User::whereIn('id', $ids)->delete();
+            return (int) User::whereIn('id', $ids)->delete();
         });
     }
 }
