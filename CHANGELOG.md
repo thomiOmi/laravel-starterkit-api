@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.2) (2026-05-17)
+
+### Bug Fixes
+
+- resolve all CI failures and align with existing test suite ([2e7d97a](https://github.com/thomiOmi/laravel-starterkit-api/commit/2e7d97af960c71dfcde2ee47e0f1e372ce02fb63))
+- align refactored components with existing test suite ([9f0ea57](https://github.com/thomiOmi/laravel-starterkit-api/commit/9f0ea5762937d1d6ccb30c43edadbf5dce443a16))
+- resolve PHPStan type casting issue in BulkDeleteUserAction ([04daeb3](https://github.com/thomiOmi/laravel-starterkit-api/commit/04daeb3da83f4e750d195dc41a4c981c2f7e6983))
+- address PHPStan and CI failures after refactor ([855ffa9](https://github.com/thomiOmi/laravel-starterkit-api/commit/855ffa916c04b7a17df77752e6e288491e3dfda8))
+
+### Code Refactoring
+
+- implement api-skill standards across User, Role, and Auth modules ([0c3c647](https://github.com/thomiOmi/laravel-starterkit-api/commit/0c3c64790130738b767ea728e54344f81aa97a3f))
 ## [0.7.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.1) (2026-05-17)
 ## [0.7.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.0) (2026-05-16)
 
