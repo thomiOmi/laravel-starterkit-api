@@ -3,7 +3,7 @@
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\PlanFeatureMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
-use App\Http\Middleware\SunsetMiddleware;
+use App\Http\Middleware\Sunset;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -37,7 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'plan.feature' => PlanFeatureMiddleware::class,
             'force.json' => ForceJsonResponse::class,
-            'sunset' => SunsetMiddleware::class,
+            'sunset' => Sunset::class,
         ]);
 
         $middleware->priority([

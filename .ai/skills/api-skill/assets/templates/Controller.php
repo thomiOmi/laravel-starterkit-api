@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{Module}\Controllers\V1;
+
+use App\Http\Responses\JsonDataResponse;
+use Modules\{Module}\Actions\{Action}{Resource}Action;
+use Modules\{Module}\Requests\V1\{Action}{Resource}Request;
+use Modules\{Module}\Resources\{Resource}Resource;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * Class {Action}Controller
+ *
+ * @package Modules\{Module}\Controllers\V1
+ */
+final readonly class {Action}Controller
+{
+    /**
+     * {Action}Controller constructor.
+     *
+     * @param {Action}{Resource}Action $action
+     */
+    public function __construct(
+        private {Action}{Resource}Action $action,
+    ) {}
+
+    /**
+     * Handle the incoming request.
+     *
+     * @param {Action}{Resource}Request $request
+     * @return JsonDataResponse
+     */
+    public function __invoke({Action}{Resource}Request $request): JsonDataResponse
+    {
+        $result = $this->action->handle($request->payload());
+
+        return new JsonDataResponse(
+            data: new {Resource}Resource($result),
+            status: Response::HTTP_OK,
+            message: '{Resource} processed successfully.',
+        );
+    }
+}

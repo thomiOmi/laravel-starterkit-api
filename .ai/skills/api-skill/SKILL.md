@@ -1,80 +1,81 @@
 ---
 name: api-skill
-description: "Encodes opinionated best practices for building REST APIs in Laravel 13+. Enforces Single-Action Controllers, Versioned Payloads, Actions, and RFC 9457 error handling."
+description: "Opinionated agent skill for building production-ready REST APIs in Laravel 13+."
 ---
 
 # API Skill for Laravel
 
-This skill defines the exact patterns and rules for building scalable, reliable, and modern REST APIs in Laravel. All guidance here is prescriptive. When in doubt, follow the rule.
+This skill defines the exact patterns and rules for building scalable, reliable, and modern REST APIs in Laravel 13+. All guidance here is prescriptive. When in doubt, follow the rule.
 
 ---
 
-## 1. Route Organisation & Versioning
+## 1. Architectural Foundations
 
-- **Standalone Modular Architecture**: Routes live under `modules/{Module}/Routes/v1.php`.
-- **Mandatory Versioning**: Always version endpoints from the beginning.
-- **Middleware Stack**: Every group must use: `force.json` (Required first), `auth:sanctum` (if protected), and `throttle:api` (Mandatory for all).
-- **Sunset Header**: Use RFC 8594 `Sunset` header for deprecated versions to signal removal dates.
+- **Domain-Driven Modular Architecture**: All logic resides in `modules/{Module}/`.
+- **Stateless by Design**: APIs must be stateless. No sessions, only Sanctum tokens.
+- **Strict Models**: `Model::shouldBeStrict(!app()->isProduction())` must be enabled in `AppServiceProvider`.
+- **Flexible Identifiers**: Support for Integer, UUID, or ULID. Be consistent within a module.
 
-## 2. Versioned Components
+## 2. Directory Structure (Uppercase V1)
 
-To ensure smooth API evolution, the following must be placed in versioned directories:
+Adhere to this structure for every module:
+- **Routes**: `modules/{Module}/Routes/V1.php`
 - **Controllers**: `modules/{Module}/Controllers/V1/`
 - **Payloads**: `modules/{Module}/Payloads/V1/` (Renamed from DTOs)
 - **Form Requests**: `modules/{Module}/Requests/V1/`
 - **Tests**: `modules/{Module}/Tests/Feature/V1/`
+- **Actions**: `modules/{Module}/Actions/`
+- **Models/Resources/Filters**: Standard modular subdirectories.
 
-## 3. Single-Action Invokable Controllers
+## 3. Request Lifecycle
 
-- **Final Class**: Every controller must be a `final` class.
-- **One Class, One Action**: Use only the `__invoke()` method. No resourceful or multi-method controllers.
-- **Constructor DI**: Inject all dependencies via the constructor. Never use `app()`, `resolve()`, or Facades inside methods.
+1.  **Route**: Versioned, throttled, and forced JSON.
+2.  **Form Request**: Handles validation and authorization (via Policies).
+3.  **Controller**: Single-action (`__invoke`), injects Action, returns `JsonDataResponse`.
+4.  **Payload**: Type-safe data object passed from Request to Action.
+5.  **Action**: Business logic orchestrator or atomic operation.
+6.  **Resource**: Shapes the JSON output.
 
-## 4. The Action Pattern
+## 4. Single-Action Controllers
 
-- **Logic Placement**: Business logic lives in **Action classes** under `modules/{Module}/Actions/`.
-- **Atomic Operations**: One action per database operation.
-- **Transactions**: Every action that writes to the database must be wrapped in a transaction using injected `DatabaseManager`.
-- **Eloquent Usage**: Call Eloquent models directly within Actions. Discourage unnecessary Repository layers for simple CRUD.
+- **Final & Readonly**: Every controller must be a `final readonly` class.
+- **Invokable Only**: Use only `__invoke()`. No multi-method controllers.
+- **Constructor Injection**: Inject all dependencies. Never use Facades or `app()` helpers.
 
-## 5. Standardized Responses
+## 5. The Action Pattern
 
-- **Success**: Use `new JsonDataResponse(data: $resource, status: $status)` directly in controllers. No trait or base controller required.
-- **Error**: Strict **RFC 9457 Problem Details** via `new ProblemResponse(...)` for all exceptions. Content-Type is automatically set to `application/problem+json`.
-- **Status Codes**: Mandatory use of Symfony `Response::HTTP_*` constants. Never bare integers.
+- **Atomic Actions**: One action per database write or specific business rule.
+- **Action Composition**: Use an orchestrator action to coordinate multiple atomic actions for complex flows.
+- **Transactions**: Mandatory use of `$database->transaction()` for all write operations.
+- **No Direct Eloquent in Controllers**: All DB writes must happen in Actions.
 
-## 6. Security & Models
+## 6. Authorization (Spatie Permission)
 
-- **Authentication**: Stateless Laravel Sanctum tokens only. No session-based auth.
-- **Authorization**: Use Laravel Policies. Checks belong in the Form Request `authorize()` method.
-- **Flexible Identifiers**: Models support Integer, UUID, or ULID primary keys.
-- **Strict Mode**: `Model::shouldBeStrict(!app()->isProduction())` enabled in development.
+- **Policies**: Every resource must have a Policy.
+- **Sanctum + Spatie**: Use `$user->can()` or `$user->hasPermissionTo()` within Policies.
+- **Gate Integration**: Ensure Super Admin bypass is handled via `Gate::before` in `AuthServiceProvider`.
+- **Form Request Auth**: Authorization checks belong in the `authorize()` method of Form Requests.
 
-## 7. Performance & Throttling
+## 7. Filtering & Sorting (BaseFilter)
 
-- **Pagination**: Use `simplePaginate()` only. Never `paginate()` on API routes.
-- **Rate Limiting**: Every route group must have `throttle:api`. Define limiters in `AppServiceProvider`.
-- **Query Filtering**: Use the custom `BaseFilter` system for search/sort/filter.
+- **No Spatie Query Builder**: Use the internal `BaseFilter` system.
+- **Implementation**: Extend `BaseFilter<Model>` and implement the `apply` logic for each filterable field.
 
-## 8. Code Quality & Testing
+## 8. Standardized Responses & Documentation
 
-- **Pest PHP**: Use Pest for outside-in HTTP/Feature tests, drive tests through the API layer.
-- **Strict Standards**: Mandatory `declare(strict_types=1)`, `final` classes, and full type coverage.
-- **Modern PHP**: Use `match` expressions over `if/elseif` and **Named Arguments** for readability.
+- **Success**: Use `new JsonDataResponse(data: $resource, status: $status, message: $msg)`.
+- **Error**: RFC 9457 Problem Details via `new ProblemResponse(...)`.
+- **PHPDoc**: Mandatory detailed PHPDoc on all classes and public methods for **Scribe** documentation generation.
+- **Status Codes**: Use Symfony `Response::HTTP_*` constants. No bare integers.
 
 ---
 
-## Usage
-
-AI agents must read [references/CONVENTIONS.md](references/CONVENTIONS.md) for full folder structures, naming tables, implementation details, and copy-pasteable examples.
-
 ## Anti-Patterns
 
-- ❌ No Resourceful Controllers or Logic in Models.
+- ❌ No Resourceful Controllers or logic in Models.
 - ❌ No `DTO` suffix (use **Payload** instead).
-- ❌ No `paginate()` or unthrottled routes.
-- ❌ No `ApiResponser` trait or `$this->successResponse()` (use `new JsonDataResponse()`).
-- ❌ No `response()->json()` calls for errors (use `new ProblemResponse()`).
-- ❌ No bare integer HTTP status codes (use `Response::HTTP_*` constants).
-- ❌ No authorization checks inside Actions (move to Form Requests).
-- ❌ No manual dependency resolution inside methods.
+- ❌ No logic in Controllers (move to Actions).
+- ❌ No manual `response()->json()` for standard responses.
+- ❌ No lowercase `v1` for versioned paths or namespaces.
+- ❌ No unthrottled or session-based API routes.
+- ❌ No direct permission checks in Controllers (use Policies).

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use Closure;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final class SunsetMiddleware
+final class Sunset
 {
     /**
      * Handle an incoming request.
@@ -19,7 +21,10 @@ final class SunsetMiddleware
     {
         $response = $next($request);
 
-        $response->headers->set('Sunset', $date);
+        $response->headers->set(
+            'Sunset',
+            (new DateTimeImmutable($date))->format(DateTimeInterface::RFC7231),
+        );
 
         return $response;
     }
