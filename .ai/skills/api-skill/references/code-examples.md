@@ -99,3 +99,56 @@ it('can fetch users list with filter', function (): void {
         ->assertJsonCount(5, 'data');
 });
 ```
+
+---
+
+## 4. Custom Middleware (API Foundation)
+
+These middlewares ensure consistent API behavior and deprecation signaling.
+
+### Force JSON Response
+Forces the `Accept: application/json` header on all incoming requests.
+
+```php
+declare(strict_types=1);
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class ForceJsonResponse
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        $request->headers->set('Accept', 'application/json');
+
+        return $next($request);
+    }
+}
+```
+
+### Sunset Middleware (RFC 8594)
+Used to signal the retirement date of a deprecated API version.
+
+```php
+declare(strict_types=1);
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+final class SunsetMiddleware
+{
+    public function handle(Request $request, Closure $next, string $date): Response
+    {
+        $response = $next($request);
+        $response->headers->set('Sunset', $date);
+
+        return $response;
+    }
+}
+```
