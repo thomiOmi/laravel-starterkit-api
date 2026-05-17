@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.9.1) (2026-05-17)
+
+### Code Refactoring
+
+- dead code cleanup and generator update ([fc204e3](https://github.com/thomiOmi/laravel-starterkit-api/commit/fc204e386ab0f8e67aafaa5a8ec87e1591552dc5))
 ## [0.9.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.9.0) (2026-05-17)
 
 ### Features
