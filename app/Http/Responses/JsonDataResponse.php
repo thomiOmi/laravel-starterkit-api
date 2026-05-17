@@ -14,11 +14,13 @@ final class JsonDataResponse extends JsonResponse
         int $status = Response::HTTP_OK,
         string $message = 'Success',
     ) {
+        $payload = [
+            'data' => $data,
+            'message' => $message,
+        ];
+
         parent::__construct(
-            data: [
-                'data'    => $data,
-                'message' => $message,
-            ],
+            data: $payload,
             status: $status,
         );
     }

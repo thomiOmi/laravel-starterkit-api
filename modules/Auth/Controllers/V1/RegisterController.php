@@ -4,30 +4,29 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
-use App\Http\Controllers\Controller;
 use App\Http\Responses\JsonDataResponse;
-use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\RegisterAction;
-use Modules\Auth\Requests\RegisterRequest;
+use Modules\Auth\Requests\V1\RegisterRequest;
 use Modules\Auth\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @tags Auth
  */
-class RegisterController extends Controller
+final readonly class RegisterController
 {
-    public function __invoke(RegisterRequest $request, RegisterAction $action): JsonResponse
+    public function __construct(
+        private RegisterAction $registerAction
+    ) {}
+
+    public function __invoke(RegisterRequest $request): JsonDataResponse
     {
-        $result = $action->execute($request->all());
+        $user = $this->registerAction->handle($request->payload());
 
         return new JsonDataResponse(
-            data: [
-                'user' => new UserResource($result['user']),
-                'token' => $result['token'],
-            ],
+            data: new UserResource($user),
             status: Response::HTTP_CREATED,
-            message: __('auth.registered')
+            message: 'Registration successful'
         );
     }
 }

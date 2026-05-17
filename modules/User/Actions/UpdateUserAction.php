@@ -4,43 +4,45 @@ declare(strict_types=1);
 
 namespace Modules\User\Actions;
 
-use Modules\User\DTOs\UserDTO;
+use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Facades\Hash;
 use Modules\User\Models\User;
-use Modules\User\Repositories\UserRepository;
+use Modules\User\Payloads\V1\UserPayload;
 
 /**
  * Action for updating an existing user.
  */
-class UpdateUserAction
+final readonly class UpdateUserAction
 {
     /**
      * Create a new UpdateUserAction instance.
-     *
-     * @param  UserRepository  $userRepository  The user repository instance.
      */
     public function __construct(
-        protected UserRepository $userRepository
+        private DatabaseManager $database
     ) {}
 
     /**
      * Execute the update user action.
      *
-     * @param  string|int  $id  The user ID.
-     * @param  UserDTO  $dto  The user data transfer object.
+     * @param  User  $user  The user model instance.
+     * @param  UserPayload  $payload  The user payload.
      * @return User The updated user instance.
      */
-    public function execute(string|int $id, UserDTO $dto): User
+    public function handle(User $user, UserPayload $payload): User
     {
-        $data = [
-            'name' => $dto->name,
-            'email' => $dto->email,
-        ];
+        return $this->database->transaction(function () use ($user, $payload) {
+            $data = [
+                'name' => $payload->name,
+                'email' => $payload->email,
+            ];
 
-        if ($dto->password) {
-            $data['password'] = $dto->password;
-        }
+            if ($payload->password) {
+                $data['password'] = Hash::make($payload->password);
+            }
 
-        /** @var User */
-        return $this->userRepository->update($id, $data);
+            $user->update($data);
+
+            return $user;
+        });
     }
 }

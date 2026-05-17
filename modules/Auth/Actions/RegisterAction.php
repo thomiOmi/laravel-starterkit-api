@@ -4,45 +4,25 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
-use Modules\Auth\Traits\PasswordValidationRules;
+use Modules\Auth\Payloads\V1\RegisterPayload;
 use Modules\User\Models\User;
 
-class RegisterAction
+final readonly class RegisterAction
 {
-    use PasswordValidationRules;
+    public function __construct(
+        private DatabaseManager $database
+    ) {}
 
-    /**
-     * Validate and create a newly registered user.
-     *
-     * @param  array<string, mixed>  $input
-     *
-     * @throws ValidationException
-     */
-    public function execute(array $input): User
+    public function handle(RegisterPayload $payload): User
     {
-        Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique(User::class),
-            ],
-            'password' => $this->passwordRules(),
-        ])->validate();
-
-        /** @var string $password */
-        $password = $input['password'];
-
-        return User::create([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'password' => Hash::make($password),
-        ]);
+        return $this->database->transaction(function () use ($payload) {
+            return User::create([
+                'name' => $payload->name,
+                'email' => $payload->email,
+                'password' => Hash::make($payload->password),
+            ]);
+        });
     }
 }

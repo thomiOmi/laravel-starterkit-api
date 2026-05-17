@@ -4,30 +4,29 @@ declare(strict_types=1);
 
 namespace Modules\User\Actions;
 
-use Modules\User\Repositories\UserRepository;
+use Illuminate\Database\DatabaseManager;
+use Modules\User\Models\User;
 
 /**
  * Action for deleting a user.
  */
-class DeleteUserAction
+final readonly class DeleteUserAction
 {
     /**
      * Create a new DeleteUserAction instance.
-     *
-     * @param  UserRepository  $userRepository  The user repository instance.
      */
     public function __construct(
-        protected UserRepository $userRepository
+        private DatabaseManager $database
     ) {}
 
     /**
      * Execute the delete user action.
      *
-     * @param  string|int  $id  The user ID.
+     * @param  User  $user  The user model instance.
      * @return bool True if the user was deleted successfully, false otherwise.
      */
-    public function execute(string|int $id): bool
+    public function handle(User $user): bool
     {
-        return $this->userRepository->delete($id);
+        return $this->database->transaction(fn () => (bool) $user->delete());
     }
 }
