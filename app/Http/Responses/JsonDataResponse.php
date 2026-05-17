@@ -24,18 +24,23 @@ final class JsonDataResponse extends JsonResponse
 
         if ($data instanceof ResourceCollection) {
             $resource = $data->toResponse(request())->getData(true);
-            $payload['data'] = $resource['data'] ?? [];
-            if (isset($resource['meta'])) {
-                $payload['meta'] = $resource['meta'];
-                // Compatibility for DatatableTest which expects meta.pagination
-                $payload['meta']['pagination'] = [
-                    'current_page' => $resource['meta']['current_page'] ?? null,
-                    'per_page' => $resource['meta']['per_page'] ?? null,
-                    'total' => $resource['meta']['total'] ?? null,
-                ];
-            }
-            if (isset($resource['links'])) {
-                $payload['links'] = $resource['links'];
+
+            if (is_array($resource)) {
+                $payload['data'] = $resource['data'] ?? [];
+
+                if (isset($resource['meta']) && is_array($resource['meta'])) {
+                    $payload['meta'] = $resource['meta'];
+                    // Compatibility for DatatableTest which expects meta.pagination
+                    $payload['meta']['pagination'] = [
+                        'current_page' => $resource['meta']['current_page'] ?? null,
+                        'per_page' => $resource['meta']['per_page'] ?? null,
+                        'total' => $resource['meta']['total'] ?? null,
+                    ];
+                }
+
+                if (isset($resource['links'])) {
+                    $payload['links'] = $resource['links'];
+                }
             }
         }
 
