@@ -113,7 +113,7 @@ class MakeModule extends Command
     protected function createFiles(string $name, string $path, array $options): void
     {
         $this->createFileFromStub($path."/Providers/{$name}ServiceProvider.php", 'provider', ['name' => $name]);
-        $this->createFileFromStub($path.'/Routes/v1.php', 'route', [
+        $this->createFileFromStub($path.'/Routes/V1.php', 'route', [
             'name' => $name,
             'slug' => Str::kebab(Str::plural($name)),
             'routes' => $this->getRoutesContent($name, $options),

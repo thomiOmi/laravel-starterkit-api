@@ -23,7 +23,7 @@ test('role has description field', function () {
     ];
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles', $payload);
+        ->postJson('/api/V1/roles', $payload);
 
     $response->assertStatus(201)
         ->assertJsonPath('data.description', 'Manager of the system');

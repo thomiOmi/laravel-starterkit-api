@@ -11,7 +11,9 @@ use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @tags User
+ * @group User Management
+ *
+ * @authenticated
  */
 final readonly class StoreController
 {
@@ -21,6 +23,9 @@ final readonly class StoreController
 
     /**
      * Store a newly created user in storage.
+     *
+     * @param  UserRequest  $request  The validated user creation request.
+     * @return JsonDataResponse The API response containing the new user.
      */
     public function __invoke(UserRequest $request): JsonDataResponse
     {

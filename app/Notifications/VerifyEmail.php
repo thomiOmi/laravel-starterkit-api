@@ -30,7 +30,7 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
         $expire = config('auth.verification.expire', 60);
 
         return URL::temporarySignedRoute(
-            'api.v1.auth.verification.verify',
+            'api.V1.auth.verification.verify',
             now()->addMinutes($expire),
             [
                 'id' => $notifiable->getKey(),
