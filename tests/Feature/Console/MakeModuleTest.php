@@ -35,7 +35,7 @@ it('can create a new module interactively', function () {
     $modulePath = base_path('modules/TestModule');
     expect(File::exists($modulePath))->toBeTrue()
         ->and(File::exists($modulePath.'/Models/TestModule.php'))->toBeTrue()
-        ->and(File::exists($modulePath.'/Repositories/TestModuleRepository.php'))->toBeTrue()
+        ->and(File::exists($modulePath.'/Controllers/V1/IndexController.php'))->toBeTrue()
         ->and(File::exists($modulePath.'/Routes/V1.php'))->toBeTrue();
 });
 
@@ -53,8 +53,8 @@ it('can skip optional components', function () {
         ->assertExitCode(0);
 
     $modulePath = base_path('modules/TestModule');
-    expect(File::exists($modulePath.'/Repositories/TestModuleRepository.php'))->toBeFalse()
-        ->and(File::exists($modulePath.'/DTOs/TestModuleDTO.php'))->toBeFalse();
+    expect(File::exists($modulePath.'/Actions/StoreTestModuleAction.php'))->toBeFalse()
+        ->and(File::exists($modulePath.'/Payloads/V1/StoreTestModulePayload.php'))->toBeFalse();
 });
 
 it('asks for overwrite if module exists', function () {

@@ -76,17 +76,10 @@ class MakeModule extends Command
             'Tests/Feature',
         ];
 
-        if ($options['repository']) {
-            $directories[] = 'Repositories';
-        }
         if ($options['action']) {
             $directories[] = 'Actions';
-        }
-        if ($options['dto']) {
-            $directories[] = 'DTOs';
-        }
-        if ($options['request']) {
-            $directories[] = 'Requests';
+            $directories[] = 'Payloads/V1';
+            $directories[] = 'Requests/V1';
         }
         if ($options['filter']) {
             $directories[] = 'Filters';
@@ -119,22 +112,40 @@ class MakeModule extends Command
             'routes' => $this->getRoutesContent($name, $options),
         ]);
         $this->createFileFromStub($path."/Models/{$name}.php", 'model', ['name' => $name]);
-        $this->createFileFromStub($path."/Controllers/V1/{$name}Controller.php", 'controller', $this->getControllerData($name, $options));
+
+        // Single Action Controllers (V1)
+        $this->createFileFromStub($path."/Controllers/V1/IndexController.php", 'controller.v1', [
+            'Module' => $name,
+            'Resource' => $name,
+            'Action' => 'Index',
+        ]);
+
         $this->createFileFromStub($path."/Resources/{$name}Resource.php", 'resource', ['name' => $name]);
 
-        if ($options['repository']) {
-            $this->createFileFromStub($path."/Repositories/{$name}Repository.php", 'repository', ['name' => $name]);
-        }
-
         if ($options['action']) {
-            $dtoImport = $options['dto'] ? "use Modules\\{$name}\\DTOs\\{$name}DTO;" : '';
-            $this->createFileFromStub($path."/Actions/Create{$name}Action.php", 'action.create', ['name' => $name, 'dtoImport' => $dtoImport]);
-            $this->createFileFromStub($path."/Actions/Update{$name}Action.php", 'action.update', ['name' => $name, 'dtoImport' => $dtoImport]);
-            $this->createFileFromStub($path."/Actions/Delete{$name}Action.php", 'action.delete', ['name' => $name]);
-        }
+            $this->createFileFromStub($path."/Actions/Store{$name}Action.php", 'action', [
+                'Module' => $name,
+                'Resource' => $name,
+                'Action' => 'Store',
+            ]);
 
-        if ($options['dto']) {
-            $this->createFileFromStub($path."/DTOs/{$name}DTO.php", 'dto', ['name' => $name]);
+            $this->createFileFromStub($path."/Payloads/V1/Store{$name}Payload.php", 'payload', [
+                'Module' => $name,
+                'Resource' => $name,
+                'Action' => 'Store',
+            ]);
+
+            $this->createFileFromStub($path."/Requests/V1/Store{$name}Request.php", 'request.v1', [
+                'Module' => $name,
+                'Resource' => $name,
+                'Action' => 'Store',
+            ]);
+
+            $this->createFileFromStub($path."/Controllers/V1/StoreController.php", 'controller.v1', [
+                'Module' => $name,
+                'Resource' => $name,
+                'Action' => 'Store',
+            ]);
         }
 
         if ($options['request']) {
