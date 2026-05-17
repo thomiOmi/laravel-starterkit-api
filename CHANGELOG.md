@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.3](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.3) (2026-05-17)
+
+### Bug Fixes
+
+- resolve PHPStan 'offsetAccess.nonOffsetAccessible' errors in JsonDataResponse ([b148ae7](https://github.com/thomiOmi/laravel-starterkit-api/commit/b148ae715aec63fad2de214513eabe617e062320))
 ## [0.7.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.2) (2026-05-17)
 
 ### Bug Fixes
