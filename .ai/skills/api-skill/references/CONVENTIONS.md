@@ -6,7 +6,7 @@ This document covers folder structure, naming conventions, and complete worked e
 
 ## 1. Folder Structure
 
-This project follows a strict **Domain-Driven Modular Architecture**. All domain logic must reside within versioned modules.
+This project follows a strict **Domain-Driven Modular Architecture**. All domain logic must reside within versioned modules. Note: Always use uppercase `V1`.
 
 ```text
 modules/
@@ -21,8 +21,10 @@ modules/
       V1/               # Versioned form requests
     Resources/          # Eloquent resources
     Routes/
-      v1.php            # Version-specific route definitions
+      V1.php            # Version-specific route definitions (Uppercase)
     Filters/            # Query filters (extending BaseFilter)
+    Events/             # Domain events for cross-module communication
+    Listeners/          # Event listeners
     Database/           # Migrations, Factories, Seeders
     Tests/
       Feature/
@@ -48,221 +50,212 @@ modules/
 
 ---
 
-## 3. Implementation — Error Handling (RFC 9457)
+## 3. Implementation — Action Composition (Orchestrator)
 
-### ProblemResponse Class
+For complex operations, use an orchestrator action that calls multiple atomic actions.
+
 ```php
-final readonly class ProblemResponse implements Responsable
+declare(strict_types=1);
+
+namespace Modules\Order\Actions;
+
+use Illuminate\Database\DatabaseManager;
+use Modules\Order\Models\Order;
+use Modules\Order\Payloads\V1\CheckoutPayload;
+use Modules\Order\Events\OrderCreated;
+
+/**
+ * Class CheckoutAction
+ *
+ * Orchestrates the checkout process by coordinating multiple actions.
+ *
+ * @package Modules\Order\Actions
+ */
+final readonly class CheckoutAction
 {
+    /**
+     * CheckoutAction constructor.
+     *
+     * @param DatabaseManager $database
+     * @param CreateOrderAction $createOrder
+     * @param ProcessPaymentAction $processPayment
+     * @param UpdateInventoryAction $updateInventory
+     */
     public function __construct(
-        private string $type,
-        private string $title,
-        private int    $status,
-        private string $detail,
-        private array  $errors = [],
+        private DatabaseManager $database,
+        private CreateOrderAction $createOrder,
+        private ProcessPaymentAction $processPayment,
+        private UpdateInventoryAction $updateInventory,
     ) {}
 
-    public function toResponse($request): JsonResponse
+    /**
+     * Handle the checkout process.
+     *
+     * @param CheckoutPayload $payload
+     * @return Order
+     * @throws \Throwable
+     */
+    public function handle(CheckoutPayload $payload): Order
     {
-        return new JsonResponse(
-            data: array_filter([
-                'type'   => $this->type,
-                'title'  => $this->title,
-                'status' => $this->status,
-                'detail' => $this->detail,
-                'errors' => $this->errors ?: null,
-            ]),
-            status:  $this->status,
-            headers: ['Content-Type' => 'application/problem+json'],
-        );
+        return $this->database->transaction(function () use ($payload): Order {
+            // 1. Create the order (Atomic Action)
+            $order = $this->createOrder->handle($payload);
+
+            // 2. Process payment (Atomic Action)
+            $this->processPayment->handle($order, $payload->paymentDetails);
+
+            // 3. Update inventory (Atomic Action)
+            $this->updateInventory->handle($order);
+
+            // 4. Dispatch event for other modules (e.g., Notification)
+            event(new OrderCreated($order));
+
+            return $order;
+        });
     }
 }
 ```
 
-### Exception Handler (`bootstrap/app.php`)
-```php
-->withExceptions(function (Exceptions $exceptions): void {
-    $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
-        return new ProblemResponse(
-            title: 'Validation Error',
-            status: Response::HTTP_UNPROCESSABLE_ENTITY,
-            detail: 'The given data was invalid.',
-            type: 'https://example.com/problems/validation-error',
-            errors: $e->errors(),
-            instance: $request->path(),
-        );
-    });
-
-    $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
-        return new ProblemResponse(
-            title: 'Unauthenticated',
-            status: Response::HTTP_UNAUTHORIZED,
-            detail: 'You must be authenticated to access this resource.',
-            type: 'https://example.com/problems/unauthenticated',
-        );
-    });
-
-    $exceptions->render(function (AuthorizationException $e, Request $request): ProblemResponse {
-        return new ProblemResponse(
-            title: 'Forbidden',
-            status: Response::HTTP_FORBIDDEN,
-            detail: 'You are not authorised to perform this action.',
-            type: 'https://example.com/problems/forbidden',
-        );
-    });
-})
-```
-
 ---
 
-## 3b. Implementation — Domain Errors from Actions
+## 4. Implementation — Cross-Module Communication
 
-When an Action needs to signal a business rule violation, throw a dedicated domain exception and handle it in `bootstrap/app.php`.
+### Side-Effects (Events)
+Use events to notify other modules of changes.
 
-### Step 1: Create the exception
 ```php
-// modules/Payment/Exceptions/InsufficientBalanceException.php
-final class InsufficientBalanceException extends RuntimeException {}
+// modules/Order/Events/OrderCreated.php
+final class OrderCreated
+{
+    public function __construct(public Order $order) {}
+}
+
+// modules/Notification/Listeners/SendOrderConfirmation.php
+final readonly class SendOrderConfirmation
+{
+    public function handle(OrderCreated $event): void
+    {
+        // Notification logic here
+    }
+}
 ```
 
-### Step 2: Throw from Action
+### Data Retrieval (Direct Read)
+One module can read another's model to avoid boilerplate.
+
 ```php
-final readonly class ProcessPaymentAction
+// modules/Invoice/Actions/GenerateInvoiceAction.php
+use Modules\Order\Models\Order; // Direct read from Order module
+
+final readonly class GenerateInvoiceAction
 {
-    public function handle(ProcessPaymentPayload $payload): Payment
+    public function handle(int $orderId): void
     {
-        if ($payload->amount > $this->getBalance($payload->accountId)) {
-            throw new InsufficientBalanceException('Account balance is insufficient.');
-        }
+        $order = Order::findOrFail($orderId);
         // ...
     }
 }
 ```
 
-### Step 3: Handle in bootstrap/app.php
+---
+
+## 5. Implementation — Documentation (PHPDoc & Scribe)
+
+Use detailed PHPDocs for automatic documentation generation via Scribe.
+
 ```php
-$exceptions->render(function (InsufficientBalanceException $e, Request $request): ProblemResponse {
-    return new ProblemResponse(
-        title:  'Insufficient Balance',
-        status: Response::HTTP_UNPROCESSABLE_ENTITY,
-        detail: $e->getMessage(),
-        type:   'https://example.com/problems/insufficient-balance',
-    );
-});
+/**
+ * Store a newly created resource in storage.
+ *
+ * @group User Management
+ * @authenticated
+ * @header X-Custom-Header Custom header description.
+ *
+ * @param V1\StoreUserRequest $request The validated request.
+ * @return JsonDataResponse The API response containing the created user.
+ *
+ * @responseField data.id integer The ID of the user.
+ * @responseField data.name string The name of the user.
+ */
+public function __invoke(StoreUserRequest $request): JsonDataResponse
+{
+    // ...
+}
 ```
 
 ---
 
-## 4. Implementation — Success Responses (`JsonDataResponse`)
+## 6. Implementation — Testing (Pest + Factory)
 
-### Response Shape
-```json
-{
-    "data": { ... },
-    "message": "User created successfully"
-}
-```
+Always use Factories for testing. Ensure high coverage of both success and failure cases.
 
-### Usage in Controller
 ```php
-use App\Http\Responses\JsonDataResponse;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-final readonly class StoreController
-{
-    public function __construct(
-        private StoreUserAction $storeUser,
-    ) {}
-
-    public function __invoke(StoreUserRequest $request): JsonDataResponse
-    {
-        $user = $this->storeUser->handle($request->payload());
-
-        return new JsonDataResponse(
-            data:    new UserResource($user),
-            status:  Response::HTTP_CREATED,
-            message: 'User created successfully',
-        );
-    }
-}
-```
-
-### For Accepted (Async) Responses
-```php
-return new JsonDataResponse(
-    data:    null,
-    status:  Response::HTTP_ACCEPTED,
-    message: 'Request accepted for processing',
-);
-```
-
-### For Empty Delete Responses
-```php
-return new JsonDataResponse(
-    data:    null,
-    status:  Response::HTTP_NO_CONTENT,
-    message: 'Resource deleted',
-);
-```
-
----
-
-## 5. Implementation — Authorization (Policies)
-
-Perform instance-level checks in the Form Request's `authorize()` method.
-
-### The Policy (`modules/Post/Policies/PostPolicy.php`)
-```php
-final class PostPolicy
-{
-    public function update(User $user, Post $post): bool
-    {
-        return $user->id === $post->user_id;
-    }
-}
-```
-
-### The Form Request
-```php
-public function authorize(): bool
-{
-    return $this->user()->can('update', $this->route('post'));
-}
-```
-
----
-
-## 6. Implementation — Testing (Pest PHP)
-
-> **Response shape reference**:
-> - Success responses: `{ "data": {...}, "message": "..." }`
-> - Problem responses: `{ "type": "...", "title": "...", "status": N, "detail": "...", "errors"?: {...} }`
-
-### Outside-In Feature Test (`modules/User/Tests/Feature/V1/StoreTest.php`)
-```php
 uses(RefreshDatabase::class);
 
-it('can store a user', function (): void {
+it('can store a user with valid data', function (): void {
+    // Setup using Factory
     $admin = User::factory()->create();
     $admin->assignRole('admin');
 
-    $this->actingAs($admin)
-        ->postJson('/api/v1/users', [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+    // Action
+    $response = $this->actingAs($admin)
+        ->postJson('/api/V1/users', [
+            'name' => 'Jane Doe',
+            'email' => 'jane@example.com',
+            'password' => 'SecurePass123!',
+            'password_confirmation' => 'SecurePass123!',
+        ]);
+
+    // Assertions
+    $response->assertStatus(Response::HTTP_CREATED)
+        ->assertJsonStructure([
+            'success',
+            'data' => ['id', 'name', 'email'],
+            'message'
         ])
-        ->assertStatus(Response::HTTP_CREATED)
-        ->assertJsonPath('data.name', 'John Doe');
+        ->assertJsonPath('data.name', 'Jane Doe');
+
+    $this->assertDatabaseHas('users', ['email' => 'jane@example.com']);
+});
+
+it('fails to store a user with duplicate email', function (): void {
+    $existingUser = User::factory()->create(['email' => 'duplicate@example.com']);
+    $admin = User::factory()->create();
+
+    $response = $this->actingAs($admin)
+        ->postJson('/api/V1/users', [
+            'name' => 'New User',
+            'email' => 'duplicate@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+    $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+        ->assertJsonPath('title', 'Validation Error');
 });
 ```
 
 ---
 
-## External References
+## 7. Implementation — Route Definitions (V1.php)
 
-- **Laravel 13**: [https://laravel.com/docs/13.x](https://laravel.com/docs/13.x)
-- **RFC 9457 (Problem Details)**: [https://www.rfc-editor.org/rfc/rfc9457](https://www.rfc-editor.org/rfc/rfc9457)
-- **RFC 8594 (Sunset Header)**: [https://www.rfc-editor.org/rfc/rfc8594](https://www.rfc-editor.org/rfc/rfc8594)
-- **Spatie Permission**: [https://spatie.be/docs/laravel-permission](https://spatie.be/docs/laravel-permission)
+Note the uppercase `V1` and mandatory middleware.
+
+```php
+// modules/User/Routes/V1.php
+use Illuminate\Support\Facades\Route;
+use Modules\User\Controllers\V1\StoreController;
+use Modules\User\Controllers\V1\IndexController;
+
+Route::prefix('V1/users')
+    ->middleware(['force.json', 'throttle:api', 'auth:sanctum'])
+    ->name('users.')
+    ->group(function (): void {
+        Route::get('/', IndexController::class)->name('index');
+        Route::post('/', StoreController::class)->name('store');
+    });
+```
