@@ -56,7 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Validation Error',
+                title: 'Validation Failed',
                 status: Response::HTTP_UNPROCESSABLE_ENTITY,
                 detail: 'The given data was invalid.',
                 type: 'https://example.com/problems/validation-error',
