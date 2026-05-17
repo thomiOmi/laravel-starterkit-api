@@ -146,7 +146,12 @@ final class SunsetMiddleware
     public function handle(Request $request, Closure $next, string $date): Response
     {
         $response = $next($request);
+
         $response->headers->set('Sunset', $date);
+        $response->headers->set(
+            'Deprecation',
+            'This API version is deprecated and will be removed on ' . $date
+        );
 
         return $response;
     }
