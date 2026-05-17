@@ -25,7 +25,7 @@ class BaseResource extends JsonResource
         return [
             'status' => 'success',
             'meta' => [
-                'api_version' => config('apiroute.default_version', 'v1'),
+                'api_version' => config('apiroute.default_version', 'V1'),
             ],
         ];
     }

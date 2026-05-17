@@ -37,8 +37,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->defineFeatures();
 
-        Model::preventLazyLoading(! app()->isProduction());
-        Model::preventSilentlyDiscardingAttributes(! app()->isProduction());
+        Model::shouldBeStrict(! app()->isProduction());
 
         $this->configureRateLimiting();
 

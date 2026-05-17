@@ -36,7 +36,7 @@ it('can create a new module interactively', function () {
     expect(File::exists($modulePath))->toBeTrue()
         ->and(File::exists($modulePath.'/Models/TestModule.php'))->toBeTrue()
         ->and(File::exists($modulePath.'/Repositories/TestModuleRepository.php'))->toBeTrue()
-        ->and(File::exists($modulePath.'/Routes/v1.php'))->toBeTrue();
+        ->and(File::exists($modulePath.'/Routes/V1.php'))->toBeTrue();
 });
 
 it('can skip optional components', function () {
