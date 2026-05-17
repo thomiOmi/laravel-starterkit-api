@@ -21,6 +21,7 @@ final class {Action}{Resource}Request extends FormRequest
      */
     public function authorize(): bool
     {
+        // Example with Policy: return $this->user()->can('create', Resource::class);
         return true;
     }
 

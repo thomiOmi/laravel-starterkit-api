@@ -1,49 +1,71 @@
-# Modular Architecture Standard
+# Architecture Reference
 
-This project follows a strict **Domain-Driven Modular Architecture**. Modules are self-contained units of business logic.
+This project follows a **Domain-Driven Modular Architecture**. It separates the application into self-contained modules, each representing a specific domain.
 
 ---
 
-## 1. Module Structure
+## 1. Module Layout
 
-Every module must adhere to this exact structure:
+Every module in `modules/` must follow this blueprint:
 
 ```text
 modules/
   {Module}/
-    Actions/            # Final readonly classes with a single handle() method.
+    Actions/            # Atomic or Orchestrator actions (Business Logic)
     Controllers/
-      V1/               # Final single-action controllers (__invoke).
+      V1/               # Single-action controllers
     Payloads/
-      V1/               # Final readonly classes for data transfer.
-    Models/             # Eloquent models (minimal logic).
+      V1/               # Type-safe data objects
     Requests/
-      V1/               # Validation and Authorization logic.
-    Resources/          # Eloquent resources for JSON shaping.
+      V1/               # Validation and Authorization (Policies)
+    Resources/          # Eloquent Resources
+    Models/             # Eloquent Models
+    Filters/            # BaseFilter implementations
     Routes/
-      V1.php            # Route definitions for the specific version.
-    Filters/            # BaseFilter implementations for searching.
-    Events/             # Domain events (Side-effects).
-    Listeners/          # Event listeners.
-    Exceptions/         # Module-specific domain exceptions.
+      V1.php            # Route definitions (Uppercase V1)
     Database/
       Migrations/
-      Factories/
+      Factories/        # Mandatory for testing
       Seeders/
+    Events/             # Cross-module communication (Side-effects)
+    Listeners/
     Tests/
       Feature/
-        V1.php          # V1 specific feature tests.
+        V1/             # Feature tests for version 1
 ```
 
-## 2. Dependency Rules
+## 2. Communication Rules
 
-1.  **Strict Boundaries**: Modules should communicate primarily via **Events**.
-2.  **Model Sharing**: Reading models from other modules is permitted for retrieval only.
-3.  **No Direct Action Calls**: Avoid calling Action B from Module B directly inside Action A from Module A. Use events or an Orchestrator if they are in the same module.
-4.  **No Circular Dependencies**: Module A cannot depend on Module B if Module B already depends on Module A.
+### Asynchronous / Side-Effects
+Use **Events** and **Listeners** for cross-module side effects. For example, when an `Order` is created in the `Order` module, a listener in the `Inventory` module should decrement stock.
 
-## 3. Versioning Strategy
+### Synchronous / Data Retrieval
+Modules are permitted to read **Models** from other modules directly for data retrieval. This avoids over-engineering with complex service layers or internal repositories.
 
-- Versioning is strictly enforced at the directory level (`V1/`, `V2/`).
-- Routes are version-prefixed (`/api/V1/resource`).
-- When a breaking change occurs, a new version folder must be created. Do not overwrite existing versioned logic.
+## 3. The Orchestrator Pattern
+
+For complex operations (e.g., Checkout), create a main Action that coordinates multiple atomic actions within its module or triggers events for other modules.
+
+```php
+// Orchestrator Action example
+final readonly class CheckoutAction
+{
+    public function __construct(
+        private CreateOrderAction $createOrder,
+        private ProcessPaymentAction $processPayment,
+        private DatabaseManager $database,
+    ) {}
+
+    public function handle(CheckoutPayload $payload): Order
+    {
+        return $this->database->transaction(function() use ($payload) {
+            $order = $this->createOrder->handle($payload->toOrderPayload());
+            $this->processPayment->handle($order, $payload->toPaymentPayload());
+
+            event(new OrderPlaced($order));
+
+            return $order;
+        });
+    }
+}
+```

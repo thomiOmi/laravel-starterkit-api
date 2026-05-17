@@ -1,39 +1,62 @@
-# Code Quality Standards
+# Code Quality Reference
 
-This document defines the technical standards for writing PHP code in this project.
+This document defines the quality standards for writing clean, maintainable, and type-safe code.
 
 ---
 
-## 1. Type Safety & Strictness
+## 1. Strict Typing & PHP Standards
 
 - **Declare Strict Types**: Every file must start with `declare(strict_types=1);`.
-- **Property Promotion**: Use constructor property promotion whenever possible.
-- **Type Hinting**: All properties, parameters, and return values must be strictly typed.
-- **Readonly Classes**: All Actions, Payloads, and Controllers must be `final readonly`.
+- **Final Readonly Classes**: Actions, Payloads, and Controllers must be `final readonly`.
+- **Named Arguments**: Use named arguments for better readability when methods have multiple parameters.
+- **Constructor Property Promotion**: Always use property promotion to reduce boilerplate.
 
-## 2. Naming & Documentation
+## 2. Documentation for Scribe
 
-- **Expressive Naming**: Class names must follow the `{Action}{Resource}{Type}` pattern.
-- **PHPDoc Requirements**:
-    - Every public method must have a PHPDoc block.
-    - Document `@param`, `@return`, and `@throws`.
-    - Use `@group` and `@authenticated` for Scribe documentation.
-- **Symfony Constants**: Always use `Symfony\Component\HttpFoundation\Response` constants for HTTP status codes.
+All public classes and methods must be documented using PHPDoc to enable automatic API documentation generation.
 
-## 3. Business Logic (Actions)
+```php
+/**
+ * @group User Management
+ * @authenticated
+ *
+ * @param V1\UpdateUserRequest $request The validated update request.
+ * @param User $user The user model being updated.
+ * @return JsonDataResponse The updated user resource.
+ */
+public function __invoke(UpdateUserRequest $request, User $user): JsonDataResponse
+{
+    // ...
+}
+```
 
-- **One Responsibility**: An action performs exactly one task.
-- **Composition over Bloat**: If an action is too large, break it into smaller sub-actions and use an orchestrator.
-- **No Side Effects in Actions**: Use Events to trigger emails, notifications, or external API calls.
-- **Transactions**: Use `$database->transaction()` for all write operations.
+## 3. Authorization (Policies & Spatie)
 
-## 4. Modern PHP Features
+- **Policy First**: All authorization logic must reside in **Policies**.
+- **Spatie Integration**: Use `$user->hasPermissionTo('permission-name')` or `$user->can('ability', $model)` within policies.
+- **Super Admin**: Super Admin bypass should be handled centrally via `Gate::before` in `AuthServiceProvider`.
+- **Form Request**: Use `$this->user()->can('update', $this->route('model'))` inside the `authorize()` method.
 
-- **Match Expressions**: Use `match` instead of complex `switch` or `if/else`.
-- **Null-safe Operator**: Use `$object?->property`.
-- **Named Arguments**: Use named arguments for clarity when calling methods with multiple parameters.
+## 4. Database Operations
 
-## 5. Tooling
+- **DatabaseManager**: Inject `Illuminate\Database\DatabaseManager` into actions to handle transactions.
+- **Atomic Actions**: Actions should perform one main database operation.
+- **Soft Deletes**: Use the `SoftDeletes` trait in models where data recovery is required.
 
-- **Pint**: Run `./vendor/bin/pint --format agent` to fix styling.
-- **PHPStan**: All code must pass PHPStan analysis at the configured level.
+## 5. Filtering Standard (BaseFilter)
+
+Do not use external query builder packages. Use the project's `BaseFilter` system.
+
+```php
+final class UserFilter extends BaseFilter
+{
+    protected function apply(Builder $builder, string $key, mixed $value): void
+    {
+        match ($key) {
+            'search' => $builder->where('name', 'like', "%{$value}%"),
+            'role'   => $builder->whereHas('roles', fn($q) => $q->where('name', $value)),
+            default  => null,
+        };
+    }
+}
+```

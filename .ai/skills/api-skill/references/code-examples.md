@@ -1,102 +1,101 @@
-# Comprehensive Code Examples
+# Code Examples
 
-This document provides full implementations of common patterns.
+This document provides complete, copy-pasteable examples of the modular API pattern.
 
 ---
 
-## 1. Complete CRUD Example (Store Operation)
+## 1. Single Action Controller with Filter
 
-### Route (`modules/Blog/Routes/V1.php`)
 ```php
-Route::prefix('V1/posts')->middleware(['force.json', 'throttle:api', 'auth:sanctum'])->group(function() {
-    Route::post('/', \Modules\Blog\Controllers\V1\StoreController::class)->name('blog.posts.store');
-});
-```
+declare(strict_types=1);
 
-### Form Request (`modules/Blog/Requests/V1/StorePostRequest.php`)
-```php
-final class StorePostRequest extends FormRequest
+namespace Modules\User\Controllers\V1;
+
+use App\Http\Responses\JsonDataResponse;
+use Modules\User\Models\User;
+use Modules\User\Resources\UserResource;
+use Modules\User\Filters\UserFilter;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * @group User Management
+ */
+final readonly class IndexController
 {
-    public function authorize(): bool { return true; }
-
-    public function rules(): array
+    public function __invoke(UserRequest $request, UserFilter $filter): JsonDataResponse
     {
-        return [
-            'title' => ['required', 'string', 'max:255'],
-            'content' => ['required', 'string'],
-        ];
-    }
+        $users = User::query()
+            ->filter($filter)
+            ->simplePaginate($request->integer('per_page', 15));
 
-    public function payload(): StorePostPayload
-    {
-        return StorePostPayload::from($this->validated());
+        return new JsonDataResponse(
+            data: UserResource::collection($users),
+            status: Response::HTTP_OK
+        );
     }
 }
 ```
 
-### Action (`modules/Blog/Actions/StorePostAction.php`)
+---
+
+## 2. Action with Spatie Permission Check
+
 ```php
-final readonly class StorePostAction
+declare(strict_types=1);
+
+namespace Modules\Blog\Actions;
+
+use Illuminate\Database\DatabaseManager;
+use Modules\Blog\Models\Post;
+use Modules\Blog\Payloads\V1\UpdatePostPayload;
+
+final readonly class UpdatePostAction
 {
     public function __construct(private DatabaseManager $database) {}
 
-    public function handle(StorePostPayload $payload): Post
+    public function handle(Post $post, UpdatePostPayload $payload): Post
     {
-        return $this->database->transaction(fn() => Post::create($payload->toArray()));
-    }
-}
-```
-
----
-
-## 2. The Orchestrator Pattern (Complex Logic)
-
-Used when one process involves multiple domains.
-
-```php
-final readonly class CheckoutAction
-{
-    public function __construct(
-        private DatabaseManager $database,
-        private CreateOrderAction $createOrder,
-        private ProcessPaymentAction $processPayment,
-        private UpdateStockAction $updateStock
-    ) {}
-
-    public function handle(CheckoutPayload $payload): Order
-    {
-        return $this->database->transaction(function() use ($payload) {
-            $order = $this->createOrder->handle($payload->orderData);
-            $this->processPayment->handle($order, $payload->paymentData);
-            $this->updateStock->handle($order->items);
-
-            event(new OrderProcessed($order));
-
-            return $order;
+        return $this->database->transaction(function () use ($post, $payload) {
+            $post->update($payload->toArray());
+            return $post;
         });
     }
 }
 ```
 
+### Corresponding Policy
+```php
+final class PostPolicy
+{
+    public function update(User $user, Post $post): bool
+    {
+        // Spatie Permission check
+        return $user->hasPermissionTo('posts.update') && $user->id === $post->user_id;
+    }
+}
+```
+
 ---
 
-## 3. Testing with Pest and Factories
+## 3. Pest Feature Test with Factory
 
 ```php
+use Modules\User\Models\User;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
 uses(RefreshDatabase::class);
 
-it('can create a blog post', function () {
-    $user = User::factory()->create();
+it('can fetch users list with filter', function (): void {
+    User::factory()->count(5)->create(['name' => 'Active User']);
+    User::factory()->count(2)->create(['name' => 'Inactive User']);
 
-    $response = $this->actingAs($user)
-        ->postJson('/api/V1/posts', [
-            'title' => 'My New Post',
-            'content' => 'Lorum Ipsum...',
-        ]);
+    $admin = User::factory()->create();
+    $admin->assignRole('admin'); // Spatie helper
 
-    $response->assertStatus(Response::HTTP_CREATED)
-        ->assertJsonPath('data.title', 'My New Post');
-
-    $this->assertDatabaseHas('posts', ['title' => 'My New Post']);
+    $this->actingAs($admin)
+        ->getJson('/api/V1/users?search=Active')
+        ->assertStatus(Response::HTTP_OK)
+        ->assertJsonCount(5, 'data');
 });
 ```
