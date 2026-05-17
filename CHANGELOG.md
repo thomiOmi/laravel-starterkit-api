@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.8.0) (2026-05-17)
+
+### Features
+
+- **ai-skill:** final overhaul of api-skill and synchronization of Sunset middleware ([a7eeb9f](https://github.com/thomiOmi/laravel-starterkit-api/commit/a7eeb9fa1baedbf035f63d477dc65eb04b442637))
+- **ai-skill:** finalize api-skill overhaul with JSK standards and project adaptations ([f7b9dae](https://github.com/thomiOmi/laravel-starterkit-api/commit/f7b9daee358691b9c4cfd1acd820ec42c10fa13f))
+- **ai-skill:** comprehensive overhaul of api-skill with project-specific standards ([bf5c871](https://github.com/thomiOmi/laravel-starterkit-api/commit/bf5c87199c841994779af2ff4854640fb14957aa))
+- **ai-skill:** total overhaul of api-skill based on high-standards ([cfc21c8](https://github.com/thomiOmi/laravel-starterkit-api/commit/cfc21c8d3fcdbb9c3c184aecea08aeb382398775))
+- **ai-skill:** overhaul api-skill with comprehensive modular standards ([f3e5304](https://github.com/thomiOmi/laravel-starterkit-api/commit/f3e5304c1222acc307ed949780a9610fa827ae2f))
 ## [0.7.3](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.3) (2026-05-17)
 
 ### Bug Fixes
