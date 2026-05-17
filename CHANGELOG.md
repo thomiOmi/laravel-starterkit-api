@@ -2,6 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.1) (2026-05-17)
 ## [0.7.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.7.0) (2026-05-16)
 
 ### Features
