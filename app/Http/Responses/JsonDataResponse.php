@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Pagination\AbstractPaginator;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Symfony\Component\HttpFoundation\Response;
 
 final class JsonDataResponse extends JsonResponse
 {
-    /**
-     * @param  mixed  $data
-     * @param  int  $status
-     * @param  string  $message
-     */
     public function __construct(
         mixed $data = null,
         int $status = Response::HTTP_OK,
@@ -23,12 +17,12 @@ final class JsonDataResponse extends JsonResponse
     ) {
         $payload = [
             'success' => $status >= 200 && $status < 300,
-            'status'  => $status >= 400 ? 'error' : 'success', // For backward compatibility with some tests
+            'status' => $status >= 400 ? 'error' : 'success', // For backward compatibility with some tests
             'message' => $message,
-            'data'    => $data,
+            'data' => $data,
         ];
 
-        if ($data instanceof \Illuminate\Http\Resources\Json\ResourceCollection) {
+        if ($data instanceof ResourceCollection) {
             $resource = $data->toResponse(request())->getData(true);
             $payload['data'] = $resource['data'] ?? [];
             if (isset($resource['meta'])) {

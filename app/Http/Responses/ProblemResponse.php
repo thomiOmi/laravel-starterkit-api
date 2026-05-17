@@ -17,11 +17,11 @@ final class ProblemResponse extends JsonResponse
         string $instance = '',
     ) {
         $payload = [
-            'type'    => $type,
-            'title'   => $title,
-            'status'  => $status >= 400 ? 'error' : $status, // Compatibility with GlobalErrorHandlingTest
+            'type' => $type,
+            'title' => $title,
+            'status' => $status >= 400 ? 'error' : $status, // Compatibility with GlobalErrorHandlingTest
             'message' => $title, // Compatibility with I18nTest
-            'detail'  => $detail,
+            'detail' => $detail,
         ];
 
         if ($instance !== '') {
