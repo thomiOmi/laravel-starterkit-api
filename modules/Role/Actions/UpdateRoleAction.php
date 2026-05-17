@@ -4,39 +4,40 @@ declare(strict_types=1);
 
 namespace Modules\Role\Actions;
 
-use Modules\Role\DTOs\RoleDTO;
+use Illuminate\Database\DatabaseManager;
 use Modules\Role\Models\Role;
-use Modules\Role\Repositories\RoleRepository;
+use Modules\Role\Payloads\V1\RolePayload;
 
 /**
  * Action for updating an existing role.
  */
-class UpdateRoleAction
+final readonly class UpdateRoleAction
 {
     /**
      * Create a new UpdateRoleAction instance.
-     *
-     * @param  RoleRepository  $repository  The role repository instance.
      */
-    public function __construct(protected RoleRepository $repository) {}
+    public function __construct(
+        private DatabaseManager $database
+    ) {}
 
     /**
      * Execute the update role action.
      *
-     * @param  string|int  $id  The role ID.
-     * @param  RoleDTO  $dto  The role data transfer object.
+     * @param  Role  $role  The role model instance.
+     * @param  RolePayload  $payload  The role payload.
      * @return Role The updated role instance.
      */
-    public function execute(string|int $id, RoleDTO $dto): Role
+    public function handle(Role $role, RolePayload $payload): Role
     {
-        /** @var Role $role */
-        $role = $this->repository->update($id, [
-            'name' => $dto->name,
-            'description' => $dto->description,
-        ]);
+        return $this->database->transaction(function () use ($role, $payload) {
+            $role->update([
+                'name' => $payload->name,
+                'description' => $payload->description,
+            ]);
 
-        $role->syncPermissions($dto->permissions);
+            $role->syncPermissions($payload->permissions);
 
-        return $role->load('permissions');
+            return $role->load('permissions');
+        });
     }
 }

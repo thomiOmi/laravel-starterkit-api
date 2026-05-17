@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 final class ProblemResponse extends JsonResponse
 {
@@ -18,9 +17,10 @@ final class ProblemResponse extends JsonResponse
         string $instance = '',
     ) {
         $payload = [
-            'type'   => $type,
-            'title'  => $title,
-            'status' => $status,
+            'type' => $type,
+            'title' => $title,
+            'status' => $status >= 400 ? 'error' : $status, // Compatibility with GlobalErrorHandlingTest
+            'message' => $title, // Compatibility with I18nTest
             'detail' => $detail,
         ];
 

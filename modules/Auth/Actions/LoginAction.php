@@ -5,27 +5,26 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Modules\Auth\DTOs\LoginDTO;
+use Modules\Auth\Payloads\V1\LoginPayload;
 use Modules\User\Models\User;
 
 /**
  * Action for handling user login.
  */
-class LoginAction
+final readonly class LoginAction
 {
     /**
      * Execute login action.
      *
-     * @return array<string, mixed>
+     * @return array{user: User, access_token: string, token_type: string}
      *
      * @throws ValidationException
      */
-    public function execute(LoginDTO $dto, Request $request): array
+    public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
-        if (! Auth::attempt(['email' => $dto->email, 'password' => $dto->password])) {
+        if (! Auth::attempt(['email' => $payload->email, 'password' => $payload->password])) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
             ]);
@@ -35,7 +34,7 @@ class LoginAction
         $user = Auth::user();
 
         $token = $user->createToken(
-            $dto->device_name ?? $request->userAgent() ?? 'auth_token',
+            $payload->deviceName ?? $userAgent ?? 'auth_token',
             ['*'],
         );
 
@@ -43,8 +42,8 @@ class LoginAction
         $accessToken = $token->accessToken;
 
         $accessToken->forceFill([
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
+            'ip_address' => $ip,
+            'user_agent' => $userAgent,
         ])->save();
 
         return [

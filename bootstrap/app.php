@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\PlanFeatureMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
+use App\Http\Middleware\SunsetMiddleware;
+use App\Http\Responses\ProblemResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -10,7 +13,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Responses\ProblemResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
@@ -34,6 +36,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'plan.feature' => PlanFeatureMiddleware::class,
+            'force.json' => ForceJsonResponse::class,
+            'sunset' => SunsetMiddleware::class,
         ]);
 
         $middleware->priority([
@@ -52,7 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Validation Error',
+                title: 'Validation Failed',
                 status: Response::HTTP_UNPROCESSABLE_ENTITY,
                 detail: 'The given data was invalid.',
                 type: 'https://example.com/problems/validation-error',
@@ -63,7 +67,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Unauthenticated',
+                title: __('Unauthenticated'),
                 status: Response::HTTP_UNAUTHORIZED,
                 detail: 'You must be authenticated to access this resource.',
                 type: 'https://example.com/problems/unauthenticated',

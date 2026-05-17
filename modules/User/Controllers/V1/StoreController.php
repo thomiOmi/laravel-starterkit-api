@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\User\Controllers\V1;
+
+use App\Http\Responses\JsonDataResponse;
+use Modules\User\Actions\StoreUserAction;
+use Modules\User\Requests\V1\UserRequest;
+use Modules\User\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * @tags User
+ */
+final readonly class StoreController
+{
+    public function __construct(
+        private StoreUserAction $storeUser,
+    ) {}
+
+    /**
+     * Store a newly created user in storage.
+     */
+    public function __invoke(UserRequest $request): JsonDataResponse
+    {
+        $user = $this->storeUser->handle($request->payload());
+
+        return new JsonDataResponse(
+            data: new UserResource($user),
+            status: Response::HTTP_CREATED,
+            message: 'User created successfully'
+        );
+    }
+}
