@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.10.0) (2026-05-18)
+
+### Features
+
+- improve make:module with api versioning and single-action controllers ([9549813](https://github.com/thomiOmi/laravel-starterkit-api/commit/9549813035ecfad44a560e65c3b0b65798e3d4ae))
 ## [0.9.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.9.1) (2026-05-17)
 
 ### Code Refactoring
