@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Actions;
+namespace Modules\{{Module}}\Actions;
 
 use Illuminate\Database\DatabaseManager;
-use Modules\{Module}\Models\{Resource};
-use Modules\{Module}\Payloads\V1\{Action}{Resource}Payload;
+use Modules\{{Module}}\Models\{{Resource}};
+use Modules\{{Module}}\Payloads\{{Version}}\{{Action}}{{Resource}}Payload;
 
 /**
- * Class {Action}{Resource}Action
+ * Class {{Action}}{{Resource}}Action
  *
- * @package Modules\{Module}\Actions
+ * @package Modules\{{Module}}\Actions
  */
-final readonly class {Action}{Resource}Action
+final readonly class {{Action}}{{Resource}}Action
 {
     /**
-     * {Action}{Resource}Action constructor.
+     * {{Action}}{{Resource}}Action constructor.
      *
      * @param DatabaseManager $database
      */
@@ -27,14 +27,14 @@ final readonly class {Action}{Resource}Action
     /**
      * Handle the action.
      *
-     * @param {Action}{Resource}Payload $payload
-     * @return {Resource}
+     * @param {{Action}}{{Resource}}Payload $payload
+     * @return {{Resource}}
      */
-    public function handle({Action}{Resource}Payload $payload): {Resource}
+    public function handle({{Action}}{{Resource}}Payload $payload): {{Resource}}
     {
-        return $this->database->transaction(function () use ($payload): {Resource} {
+        return $this->database->transaction(function () use ($payload): {{Resource}} {
             // Logic here
-            return {Resource}::create($payload->toArray());
+            return {{Resource}}::create($payload->toArray());
         });
     }
 }
