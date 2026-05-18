@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Modules\{{name}}\Controllers\V1\{{name}}Controller;
 
 Route::prefix('{{slug}}')->name('{{slug}}.')->group(function () {
 {{routes}}});

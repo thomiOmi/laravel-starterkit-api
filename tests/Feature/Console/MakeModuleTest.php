@@ -21,10 +21,7 @@ afterEach(function () {
 
 it('can create a new module interactively', function () {
     $this->artisan('make:module TestModule')
-        ->expectsConfirmation('Create Repository?', 'yes')
-        ->expectsConfirmation('Create CRUD Actions?', 'yes')
-        ->expectsConfirmation('Create DTO?', 'yes')
-        ->expectsConfirmation('Create Form Request?', 'yes')
+        ->expectsConfirmation('Create CRUD Actions & Payloads?', 'yes')
         ->expectsConfirmation('Create Query Filter?', 'yes')
         ->expectsConfirmation('Create Migration?', 'yes')
         ->expectsConfirmation('Create Factory?', 'yes')
@@ -39,12 +36,26 @@ it('can create a new module interactively', function () {
         ->and(File::exists($modulePath.'/Routes/V1.php'))->toBeTrue();
 });
 
+it('can create a new module with custom api version', function () {
+    $this->artisan('make:module TestModule --api-version=V2')
+        ->expectsConfirmation('Create CRUD Actions & Payloads?', 'yes')
+        ->expectsConfirmation('Create Query Filter?', 'yes')
+        ->expectsConfirmation('Create Migration?', 'yes')
+        ->expectsConfirmation('Create Factory?', 'yes')
+        ->expectsConfirmation('Create Seeder?', 'yes')
+        ->expectsConfirmation('Create Resource?', 'yes')
+        ->assertExitCode(0);
+
+    $modulePath = base_path('modules/TestModule');
+    expect(File::exists($modulePath))->toBeTrue()
+        ->and(File::exists($modulePath.'/Controllers/V2/IndexController.php'))->toBeTrue()
+        ->and(File::exists($modulePath.'/Routes/V2.php'))->toBeTrue()
+        ->and(File::exists($modulePath.'/Payloads/V2/StoreTestModulePayload.php'))->toBeTrue();
+});
+
 it('can skip optional components', function () {
     $this->artisan('make:module TestModule')
-        ->expectsConfirmation('Create Repository?', 'no')
-        ->expectsConfirmation('Create CRUD Actions?', 'no')
-        ->expectsConfirmation('Create DTO?', 'no')
-        ->expectsConfirmation('Create Form Request?', 'no')
+        ->expectsConfirmation('Create CRUD Actions & Payloads?', 'no')
         ->expectsConfirmation('Create Query Filter?', 'no')
         ->expectsConfirmation('Create Migration?', 'no')
         ->expectsConfirmation('Create Factory?', 'no')

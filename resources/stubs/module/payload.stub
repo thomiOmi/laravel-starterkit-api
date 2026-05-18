@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Payloads\V1;
+namespace Modules\{{Module}}\Payloads\{{Version}};
 
 /**
- * Class {Action}{Resource}Payload
+ * Class {{Action}}{{Resource}}Payload
  *
- * @package Modules\{Module}\Payloads\V1
+ * @package Modules\{{Module}}\Payloads\{{Version}}
  */
-final readonly class {Action}{Resource}Payload
+final readonly class {{Action}}{{Resource}}Payload
 {
     /**
-     * {Action}{Resource}Payload constructor.
+     * {{Action}}{{Resource}}Payload constructor.
      *
      * @param array $data
      */

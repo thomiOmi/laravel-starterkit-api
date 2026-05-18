@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Modules\{{name}}\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class {{name}}ServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * Register services.
      */
     public function register(): void
     {
@@ -17,10 +18,22 @@ class {{name}}ServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
+     * Bootstrap services.
      */
     public function boot(): void
     {
-        //
+        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
+
+        $this->registerRoutes();
+    }
+
+    /**
+     * Register routes.
+     */
+    protected function registerRoutes(): void
+    {
+        Route::prefix('api/{{Version}}')
+            ->middleware(['api', 'force.json', 'sunset', 'throttle:api'])
+            ->group(__DIR__ . '/../Routes/{{Version}}.php');
     }
 }
