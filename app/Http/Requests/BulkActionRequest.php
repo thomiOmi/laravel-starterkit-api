@@ -34,7 +34,7 @@ class BulkActionRequest extends FormRequest
         return [
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['required', 'string'],
-            'action' => ['required', 'string', 'in:delete'],
+            'action' => ['required', 'string', 'in:delete,restore'],
         ];
     }
 }

@@ -114,7 +114,7 @@ class MakeModule extends Command
         $this->createFileFromStub($path."/Models/{$name}.php", 'model', ['name' => $name]);
 
         // Single Action Controllers (V1)
-        $this->createFileFromStub($path."/Controllers/V1/IndexController.php", 'controller.v1', [
+        $this->createFileFromStub($path.'/Controllers/V1/IndexController.php', 'controller.v1', [
             'Module' => $name,
             'Resource' => $name,
             'Action' => 'Index',
@@ -141,7 +141,7 @@ class MakeModule extends Command
                 'Action' => 'Store',
             ]);
 
-            $this->createFileFromStub($path."/Controllers/V1/StoreController.php", 'controller.v1', [
+            $this->createFileFromStub($path.'/Controllers/V1/StoreController.php', 'controller.v1', [
                 'Module' => $name,
                 'Resource' => $name,
                 'Action' => 'Store',
