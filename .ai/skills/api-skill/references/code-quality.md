@@ -1,62 +1,46 @@
-# Code Quality Reference
+# Code Quality & Standards (2026)
 
-This document defines the quality standards for writing clean, maintainable, and type-safe code.
+Setiap file PHP dalam proyek harus memenuhi standar ini tanpa pengecualian.
 
 ---
 
-## 1. Strict Typing & PHP Standards
+## 1. PHP 8.4 Standards
 
-- **Declare Strict Types**: Every file must start with `declare(strict_types=1);`.
-- **Final Readonly Classes**: Actions, Payloads, and Controllers must be `final readonly`.
-- **Named Arguments**: Use named arguments for better readability when methods have multiple parameters.
-- **Constructor Property Promotion**: Always use property promotion to reduce boilerplate.
+- **declare(strict_types=1)**: Wajib di setiap file sebagai pernyataan pertama.
+- **Final Classes**: Gunakan `final` pada semua class kecuali jika didesain untuk inheritance.
+- **Readonly Classes**: Gunakan `readonly` pada class yang bersifat immutable (Controller, Action, Payload).
+- **Property Hooks**: Gunakan untuk transformasi data sederhana di level properti.
+- **Constructor Property Promotion**: Gunakan jika memungkinkan untuk kebersihan kode.
 
-## 2. Documentation for Scribe
+## 2. Laravel 13 Features
 
-All public classes and methods must be documented using PHPDoc to enable automatic API documentation generation.
+- **defer()**: Gunakan untuk mengeksekusi kode setelah respons dikirim ke user (Side effects non-kritis).
+- **Context**: Gunakan `Illuminate\Support\Facades\Context` untuk menyimpan state global per request (misal: `trace_id`).
+- **Concurrency**: Gunakan `Concurrency::run()` untuk paralelisme tugas I/O bound.
 
-```php
-/**
- * @group User Management
- * @authenticated
- *
- * @param V1\UpdateUserRequest $request The validated update request.
- * @param User $user The user model being updated.
- * @return JsonDataResponse The updated user resource.
- */
-public function __invoke(UpdateUserRequest $request, User $user): JsonDataResponse
-{
-    // ...
-}
-```
+## 3. Documentation (PHP Attributes)
 
-## 3. Authorization (Policies & Spatie)
+Kami meninggalkan DocBlocks untuk metadata dan beralih ke **PHP Attributes**.
 
-- **Policy First**: All authorization logic must reside in **Policies**.
-- **Spatie Integration**: Use `$user->hasPermissionTo('permission-name')` or `$user->can('ability', $model)` within policies.
-- **Super Admin**: Super Admin bypass should be handled centrally via `Gate::before` in `AuthServiceProvider`.
-- **Form Request**: Use `$this->user()->can('update', $this->route('model'))` inside the `authorize()` method.
+- **Scribe**: Gunakan attribute dari `Knuckles\Scribe\Attributes\*`.
+- **Validation**: Gunakan Form Request `rules()` method, namun pertimbangkan Attributes jika di masa depan didukung secara native.
 
-## 4. Database Operations
+## 4. Observability (Trace ID)
 
-- **DatabaseManager**: Inject `Illuminate\Database\DatabaseManager` into actions to handle transactions.
-- **Atomic Actions**: Actions should perform one main database operation.
-- **Soft Deletes**: Use the `SoftDeletes` trait in models where data recovery is required.
+Standardisasi pelacakan request:
+1.  **Header**: Respons API harus menyertakan `X-Trace-ID`.
+2.  **Context**: Simpan `trace_id` di Laravel Context saat awal request (Middleware).
+3.  **Logs**: Pastikan setiap log menyertakan `trace_id` dari Context.
 
-## 5. Filtering Standard (BaseFilter)
+## 5. Naming Conventions
 
-Do not use external query builder packages. Use the project's `BaseFilter` system.
+- **Payloads**: Gunakan akhiran `Payload` (bukan `DTO`).
+- **Actions**: Gunakan akhiran `Action` (misal: `StoreUserAction`).
+- **Controllers**: Gunakan akhiran `Controller` dan gunakan Single Action (`__invoke`).
+- **Versions**: Folder versi wajib huruf besar (V1, V2).
 
-```php
-final class UserFilter extends BaseFilter
-{
-    protected function apply(Builder $builder, string $key, mixed $value): void
-    {
-        match ($key) {
-            'search' => $builder->where('name', 'like', "%{$value}%"),
-            'role'   => $builder->whereHas('roles', fn($q) => $q->where('name', $value)),
-            default  => null,
-        };
-    }
-}
-```
+## 6. Testing Strategy
+
+- **Pest**: Framework pengujian default.
+- **Arch Testing**: Wajib untuk menjaga integritas arsitektur.
+- **Factories**: Wajib digunakan untuk semua state data dalam pengujian.

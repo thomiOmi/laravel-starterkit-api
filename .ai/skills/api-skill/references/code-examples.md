@@ -1,10 +1,10 @@
-# Code Examples
+# Code Examples (2026 Edition)
 
-This document provides complete, copy-pasteable examples of the modular API pattern.
+Dokumen ini menyediakan contoh kode standar terbaru untuk arsitektur modular API.
 
 ---
 
-## 1. Single Action Controller with Filter
+## 1. Single Action Controller (PHP 8.4 & Attributes)
 
 ```php
 declare(strict_types=1);
@@ -12,21 +12,22 @@ declare(strict_types=1);
 namespace Modules\User\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
-use Modules\User\Models\User;
+use Modules\User\Actions\IndexUserAction;
+use Modules\User\Requests\V1\IndexRequest;
 use Modules\User\Resources\UserResource;
-use Modules\User\Filters\UserFilter;
+use Knuckles\Scribe\Attributes\Group;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @group User Management
- */
+#[Group("User Management")]
 final readonly class IndexController
 {
-    public function __invoke(UserRequest $request, UserFilter $filter): JsonDataResponse
+    public function __construct(
+        private IndexUserAction $action
+    ) {}
+
+    public function __invoke(IndexRequest $request): JsonDataResponse
     {
-        $users = User::query()
-            ->filter($filter)
-            ->simplePaginate($request->integer('per_page', 15));
+        $users = $this->action->handle($request->payload());
 
         return new JsonDataResponse(
             data: UserResource::collection($users),
@@ -38,123 +39,127 @@ final readonly class IndexController
 
 ---
 
-## 2. Action with Spatie Permission Check
+## 2. Payload with Property Hooks (PHP 8.4)
 
 ```php
 declare(strict_types=1);
 
-namespace Modules\Blog\Actions;
+namespace Modules\User\Payloads\V1;
+
+final readonly class StoreUserPayload
+{
+    public string $email {
+        set => strtolower(trim($value));
+    }
+
+    public string $name {
+        set => ucwords(trim($value));
+    }
+
+    public function __construct(
+        string $email,
+        string $name,
+        public string $password,
+    ) {
+        $this->email = $email;
+        $this->name = $name;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'email' => $this->email,
+            'name' => $this->name,
+            'password' => $this->password,
+        ];
+    }
+}
+```
+
+---
+
+## 3. Action with Defer & Context (Laravel 13)
+
+```php
+declare(strict_types=1);
+
+namespace Modules\User\Actions;
 
 use Illuminate\Database\DatabaseManager;
-use Modules\Blog\Models\Post;
-use Modules\Blog\Payloads\V1\UpdatePostPayload;
+use Illuminate\Support\Facades\Context;
+use Modules\User\Models\User;
+use Modules\User\Payloads\V1\StoreUserPayload;
+use function Illuminate\Support\defer;
 
-final readonly class UpdatePostAction
+final readonly class StoreUserAction
 {
-    public function __construct(private DatabaseManager $database) {}
+    public function __construct(
+        private DatabaseManager $database
+    ) {}
 
-    public function handle(Post $post, UpdatePostPayload $payload): Post
+    public function handle(StoreUserPayload $payload): User
     {
-        return $this->database->transaction(function () use ($post, $payload) {
-            $post->update($payload->toArray());
-            return $post;
+        return $this->database->transaction(function () use ($payload) {
+            $user = User::query()->create($payload->toArray());
+
+            // Menggunakan Context untuk logging yang ter-trace
+            \Log::info("User created", ['user_id' => $user->id, 'trace_id' => Context::get('trace_id')]);
+
+            // Menggunakan defer() untuk tugas pasca-respons (Laravel 13)
+            defer(fn () => $user->sendWelcomeNotification());
+
+            return $user;
         });
     }
 }
 ```
 
-### Corresponding Policy
-```php
-final class PostPolicy
-{
-    public function update(User $user, Post $post): bool
-    {
-        // Spatie Permission check
-        return $user->hasPermissionTo('posts.update') && $user->id === $post->user_id;
-    }
-}
-```
-
 ---
 
-## 3. Pest Feature Test with Factory
+## 4. Modern BaseFilter Implementation
 
 ```php
+declare(strict_types=1);
+
+namespace Modules\User\Filters;
+
+use App\Filters\BaseFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Modules\User\Models\User;
-use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
-
-it('can fetch users list with filter', function (): void {
-    User::factory()->count(5)->create(['name' => 'Active User']);
-    User::factory()->count(2)->create(['name' => 'Inactive User']);
-
-    $admin = User::factory()->create();
-    $admin->assignRole('admin'); // Spatie helper
-
-    $this->actingAs($admin)
-        ->getJson('/api/V1/users?search=Active')
-        ->assertStatus(Response::HTTP_OK)
-        ->assertJsonCount(5, 'data');
-});
+/**
+ * @extends BaseFilter<User>
+ */
+final class UserFilter extends BaseFilter
+{
+    public function apply(Builder $query): Builder
+    {
+        return $query
+            ->when($this->request->string('search'), function (Builder $query, $search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->when($this->request->string('status'), fn (Builder $q, $s) => $q->where('status', $s));
+    }
+}
 ```
 
 ---
 
-## 4. Custom Middleware (API Foundation)
-
-These middlewares ensure consistent API behavior and deprecation signaling.
-
-### Force JSON Response
-Forces the `Accept: application/json` header on all incoming requests.
+## 5. Pest Architecture Test
 
 ```php
 declare(strict_types=1);
 
-namespace App\Http\Middleware;
+test('controllers and actions must be final')
+    ->expect(['Modules', 'App\Http\Controllers'])
+    ->toBeFinal();
 
-use Closure;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+test('controllers must not access models directly')
+    ->expect('Modules\*\Controllers')
+    ->not->toUse('Modules\*\Models');
 
-final class ForceJsonResponse
-{
-    public function handle(Request $request, Closure $next): Response
-    {
-        $request->headers->set('Accept', 'application/json');
-
-        return $next($request);
-    }
-}
-```
-
-### Sunset Middleware (RFC 8594)
-Used to signal the retirement date of a deprecated API version.
-
-```php
-declare(strict_types=1);
-
-namespace App\Http\Middleware;
-
-use Closure;
-use DateTimeImmutable;
-use DateTimeInterface;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
-
-final class Sunset
-{
-    public function handle(Request $request, Closure $next, string $date): Response
-    {
-        $response = $next($request);
-
-        $response->headers->set(
-            'Sunset',
-            (new DateTimeImmutable($date))->format(DateTimeInterface::RFC7231),
-        );
-
-        return $response;
-    }
-}
+test('actions must be readonly')
+    ->expect('Modules\*\Actions')
+    ->toBeReadonly();
 ```
