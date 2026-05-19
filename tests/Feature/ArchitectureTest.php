@@ -8,6 +8,16 @@ arch('strict types are used')
     ->and('Modules\\')
     ->toUseStrictTypes();
 
+arch('controllers should be final and readonly')
+    ->expect('Modules\**\Controllers')
+    ->toBeFinal()
+    ->toBeReadonly();
+
+arch('actions should be final and readonly')
+    ->expect('Modules\**\Actions')
+    ->toBeFinal()
+    ->toBeReadonly();
+
 arch('controllers should not use models directly')
     ->expect('Modules\**\Controllers')
     ->not->toUse('Illuminate\Database\Eloquent\Model')
@@ -27,12 +37,9 @@ arch('controllers should not use models directly')
         'Modules\Auth\Controllers\V1\LogoutController',
     ]);
 
-arch('dtos should be readonly')
-    ->expect('App\DTOs')
-    ->toBeReadonly();
-
-arch('payloads should be readonly')
+arch('payloads should be final and readonly')
     ->expect('Modules\*\Payloads')
+    ->toBeFinal()
     ->toBeReadonly();
 
 arch('avoid debugging functions')
