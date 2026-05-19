@@ -30,10 +30,7 @@ final readonly class UpdateRoleAction
     public function handle(Role $role, RolePayload $payload): Role
     {
         return $this->database->transaction(function () use ($role, $payload) {
-            $role->update([
-                'name' => $payload->name,
-                'description' => $payload->description,
-            ]);
+            $role->update($payload->toArray());
 
             $role->syncPermissions($payload->permissions);
 
