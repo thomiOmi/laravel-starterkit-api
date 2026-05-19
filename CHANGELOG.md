@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.13.1) (2026-05-19)
+
+### Code Refactoring
+
+- move bulk action logic to dedicated classes and cleanup service providers ([473f84c](https://github.com/thomiOmi/laravel-starterkit-api/commit/473f84cf0dd5b8d82d257c65031cfb3e3fced2aa))
 ## [0.13.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.13.0) (2026-05-19)
 
 ### Features
