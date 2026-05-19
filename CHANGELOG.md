@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.13.0) (2026-05-19)
+
+### Features
+
+- implement multi-language API responses ([3ef4df8](https://github.com/thomiOmi/laravel-starterkit-api/commit/3ef4df8f0cc8644502a5eadcc59d089fc0f049a8))
 ## [0.12.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.12.1) (2026-05-19)
 
 ### Code Refactoring
