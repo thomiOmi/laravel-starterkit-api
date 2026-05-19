@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.12.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.12.0) (2026-05-19)
+
+### Features
+
+- implement Laravel 2026 technical foundations ([67dbfc0](https://github.com/thomiOmi/laravel-starterkit-api/commit/67dbfc04cdafb7b23379162d0696ce5c8020d588))
 ## [0.11.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.11.0) (2026-05-19)
 
 ### Features
