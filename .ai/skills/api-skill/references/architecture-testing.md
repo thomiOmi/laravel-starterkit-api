@@ -1,12 +1,12 @@
 # Architecture Testing (Pest Arch)
 
-Architecture Testing wajib digunakan untuk menjaga integritas standar 2026 secara otomatis.
+Architecture Testing is mandatory to automatically maintain 2026 standards.
 
 ---
 
 ## 1. Global Rules
 
-Setiap pengembang wajib memastikan aturan ini lewat di `tests/Feature/ArchitectureTest.php`.
+Every developer must ensure these rules pass in `tests/Feature/ArchitectureTest.php`.
 
 ```php
 arch('strict types must be used')
@@ -21,9 +21,9 @@ arch('avoid debugging functions')
 ## 2. Structural Rules
 
 ### Controllers
-- Harus `final` dan `readonly`.
-- Dilarang mengakses Model atau DB secara langsung (wajib lewat Action).
-- Gunakan PHP Attributes untuk dokumentasi.
+- Must be `final` and `readonly`.
+- Prohibited from accessing Models or the DB directly (must go through an Action).
+- Use PHP Attributes for documentation.
 
 ```php
 arch('controllers must be final and readonly')
@@ -37,8 +37,8 @@ arch('controllers must not access models directly')
 ```
 
 ### Actions
-- Harus `final` dan `readonly`.
-- Menjadi satu-satunya tempat untuk logika bisnis dan transaksi DB.
+- Must be `final` and `readonly`.
+- The sole location for business logic and DB transactions.
 
 ```php
 arch('actions must be final and readonly')
@@ -48,8 +48,8 @@ arch('actions must be final and readonly')
 ```
 
 ### Payloads
-- Harus `final` dan `readonly`.
-- Tempat utama penggunaan PHP 8.4 Property Hooks.
+- Must be `final` and `readonly`.
+- Primary location for PHP 8.4 Property Hooks usage.
 
 ```php
 arch('payloads must be final and readonly')
@@ -60,7 +60,7 @@ arch('payloads must be final and readonly')
 
 ## 3. Modular Boundaries
 
-Modul harus bersifat mandiri untuk operasi perubahan state.
+Modules must be independent for state-changing operations.
 
 ```php
 arch('modules must not use actions from other modules')
@@ -68,4 +68,4 @@ arch('modules must not use actions from other modules')
     ->not->toUse('Modules\ModuleB\Actions');
 ```
 
-*Catatan: Akses Model antar modul diperbolehkan hanya untuk pembacaan data (Read-only).*
+*Note: Cross-module Model access is permitted only for read-only data retrieval.*

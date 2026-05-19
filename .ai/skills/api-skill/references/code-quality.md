@@ -1,46 +1,46 @@
 # Code Quality & Standards (2026)
 
-Setiap file PHP dalam proyek harus memenuhi standar ini tanpa pengecualian.
+Every PHP file in the project must meet these standards without exception.
 
 ---
 
 ## 1. PHP 8.4 Standards
 
-- **declare(strict_types=1)**: Wajib di setiap file sebagai pernyataan pertama.
-- **Final Classes**: Gunakan `final` pada semua class kecuali jika didesain untuk inheritance.
-- **Readonly Classes**: Gunakan `readonly` pada class yang bersifat immutable (Controller, Action, Payload).
-- **Property Hooks**: Gunakan untuk transformasi data sederhana di level properti.
-- **Constructor Property Promotion**: Gunakan jika memungkinkan untuk kebersihan kode.
+- **declare(strict_types=1)**: Mandatory in every file as the first statement.
+- **Final Classes**: Use `final` on all classes unless explicitly designed for inheritance.
+- **Readonly Classes**: Use `readonly` on immutable classes (Controllers, Actions, Payloads).
+- **Property Hooks**: Use for simple data transformations at the property level.
+- **Constructor Property Promotion**: Use whenever possible for cleaner code.
 
 ## 2. Laravel 13 Features
 
-- **defer()**: Gunakan untuk mengeksekusi kode setelah respons dikirim ke user (Side effects non-kritis).
-- **Context**: Gunakan `Illuminate\Support\Facades\Context` untuk menyimpan state global per request (misal: `trace_id`).
-- **Concurrency**: Gunakan `Concurrency::run()` untuk paralelisme tugas I/O bound.
+- **defer()**: Use to execute code after the response is sent to the user (non-critical side effects).
+- **Context**: Use `Illuminate\Support\Facades\Context` to store global state per request (e.g., `trace_id`).
+- **Concurrency**: Use `Concurrency::run()` for parallelizing I/O bound tasks.
 
 ## 3. Documentation (PHP Attributes)
 
-Kami meninggalkan DocBlocks untuk metadata dan beralih ke **PHP Attributes**.
+We have moved away from DocBlocks for metadata and transitioned to **PHP Attributes**.
 
-- **Scribe**: Gunakan attribute dari `Knuckles\Scribe\Attributes\*`.
-- **Validation**: Gunakan Form Request `rules()` method, namun pertimbangkan Attributes jika di masa depan didukung secara native.
+- **Scribe**: Use attributes from `Knuckles\Scribe\Attributes\*`.
+- **Validation**: Use Form Request `rules()` method, but consider Attributes if native support is added in the future.
 
 ## 4. Observability (Trace ID)
 
-Standardisasi pelacakan request:
-1.  **Header**: Respons API harus menyertakan `X-Trace-ID`.
-2.  **Context**: Simpan `trace_id` di Laravel Context saat awal request (Middleware).
-3.  **Logs**: Pastikan setiap log menyertakan `trace_id` dari Context.
+Standardized request tracking:
+1.  **Header**: API responses must include `X-Trace-ID`.
+2.  **Context**: Store `trace_id` in Laravel Context at the beginning of the request (Middleware).
+3.  **Logs**: Ensure every log entry includes the `trace_id` from Context.
 
 ## 5. Naming Conventions
 
-- **Payloads**: Gunakan akhiran `Payload` (bukan `DTO`).
-- **Actions**: Gunakan akhiran `Action` (misal: `StoreUserAction`).
-- **Controllers**: Gunakan akhiran `Controller` dan gunakan Single Action (`__invoke`).
-- **Versions**: Folder versi wajib huruf besar (V1, V2).
+- **Payloads**: Use the `Payload` suffix (not `DTO`).
+- **Actions**: Use the `Action` suffix (e.g., `StoreUserAction`).
+- **Controllers**: Use the `Controller` suffix and implement Single Action (`__invoke`).
+- **Versions**: Version directories must be uppercase (V1, V2).
 
 ## 6. Testing Strategy
 
-- **Pest**: Framework pengujian default.
-- **Arch Testing**: Wajib untuk menjaga integritas arsitektur.
-- **Factories**: Wajib digunakan untuk semua state data dalam pengujian.
+- **Pest**: The default testing framework.
+- **Arch Testing**: Mandatory to maintain architectural integrity.
+- **Factories**: Mandatory for all data states in testing.

@@ -1,17 +1,17 @@
 # Architecture Reference (2026)
 
-Proyek ini menggunakan **Domain-Driven Modular Architecture** dengan pengawasan otomatis melalui Architecture Testing.
+This project utilizes a **Domain-Driven Modular Architecture** with automated oversight via Architecture Testing.
 
 ---
 
 ## 1. Module Layout
 
-Setiap modul di `modules/` harus mengikuti struktur ini:
+Every module in `modules/` must follow this structure:
 
 ```text
 modules/
   {Module}/
-    Actions/            # Logika Bisnis (Atomic/Orchestrator) - Final Readonly
+    Actions/            # Business Logic (Atomic/Orchestrator) - Final Readonly
     Controllers/
       V1/               # Single-action controllers - Final Readonly
     Payloads/
@@ -28,23 +28,23 @@ modules/
       Factories/
     Tests/
       Feature/
-      Architecture/     # Pest Arch rules spesifik modul
+      Architecture/     # Module-specific Pest Arch rules
 ```
 
 ## 2. Communication Rules (The Rules of 2026)
 
 ### Synchronous (Read-only)
-Modul diperbolehkan mengakses **Model** dari modul lain untuk keperluan baca (data retrieval).
+Modules are permitted to access **Models** from other modules for data retrieval purposes.
 
 ### Asynchronous (State-change)
-Modul **DILARANG** memanggil Action dari modul lain secara langsung. Gunakan **Events** dan **Listeners** untuk efek samping antar modul.
+Modules are **PROHIBITED** from calling Actions from other modules directly. Use **Events** and **Listeners** for cross-module side effects.
 
 ### Observability
-Semua interaksi antar modul harus tetap membawa `trace_id` yang tersimpan di Laravel **Context**.
+All interactions between modules must carry the `trace_id` stored in Laravel **Context**.
 
 ## 3. The Orchestrator Pattern
 
-Untuk operasi kompleks, gunakan satu Action utama (Orchestrator) yang memanggil beberapa Action atomik di dalam modul yang sama.
+For complex operations, use a primary Action (Orchestrator) that calls multiple atomic Actions within the same module.
 
 ```php
 final readonly class CheckoutAction
@@ -68,4 +68,4 @@ final readonly class CheckoutAction
 
 ## 4. Architecture Verification (Automated)
 
-Integritas struktur modular ini wajib diverifikasi oleh **Pest Arch**. Jika pengembang melanggar batasan (misal: Controller akses Model), pengujian akan gagal secara otomatis.
+The integrity of this modular structure must be verified by **Pest Arch**. If a developer violates boundaries (e.g., a Controller accessing a Model directly), the test will fail automatically.

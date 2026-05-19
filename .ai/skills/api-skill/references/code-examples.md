@@ -1,6 +1,6 @@
 # Code Examples (2026 Edition)
 
-Dokumen ini menyediakan contoh kode standar terbaru untuk arsitektur modular API.
+This document provides updated standard code examples for the modular API architecture.
 
 ---
 
@@ -102,10 +102,10 @@ final readonly class StoreUserAction
         return $this->database->transaction(function () use ($payload) {
             $user = User::query()->create($payload->toArray());
 
-            // Menggunakan Context untuk logging yang ter-trace
+            // Using Context for traceable logging
             \Log::info("User created", ['user_id' => $user->id, 'trace_id' => Context::get('trace_id')]);
 
-            // Menggunakan defer() untuk tugas pasca-respons (Laravel 13)
+            // Using defer() for post-response tasks (Laravel 13)
             defer(fn () => $user->sendWelcomeNotification());
 
             return $user;
