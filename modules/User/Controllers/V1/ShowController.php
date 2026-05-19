@@ -22,7 +22,7 @@ final readonly class ShowController
 
         return new JsonDataResponse(
             data: new UserResource($user),
-            message: 'User retrieved successfully'
+            message: __('messages.retrieved', ['resource' => 'User'])
         );
     }
 }

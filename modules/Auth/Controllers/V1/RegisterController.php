@@ -26,7 +26,7 @@ final readonly class RegisterController
         return new JsonDataResponse(
             data: new UserResource($user),
             status: Response::HTTP_CREATED,
-            message: 'Registration successful'
+            message: __('auth.registered')
         );
     }
 }

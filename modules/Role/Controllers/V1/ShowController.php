@@ -22,7 +22,7 @@ final readonly class ShowController
 
         return new JsonDataResponse(
             data: new RoleResource($role),
-            message: 'Role retrieved successfully'
+            message: __('messages.retrieved', ['resource' => 'Role'])
         );
     }
 }

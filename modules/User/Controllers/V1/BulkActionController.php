@@ -40,7 +40,10 @@ final readonly class BulkActionController
 
         return new JsonDataResponse(
             data: ['count' => $count],
-            message: "Users {$action} successfully"
+            message: __('messages.bulk_action', [
+                'resource' => 'Users',
+                'action' => $action,
+            ])
         );
     }
 }
