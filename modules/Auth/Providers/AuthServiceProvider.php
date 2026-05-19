@@ -12,9 +12,4 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
     }
-
-    public function register(): void
-    {
-        //
-    }
 }

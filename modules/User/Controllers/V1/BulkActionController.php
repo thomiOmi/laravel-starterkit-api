@@ -6,8 +6,8 @@ namespace Modules\User\Controllers\V1;
 
 use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\JsonDataResponse;
-use Illuminate\Database\DatabaseManager;
-use Modules\User\Models\User;
+use Modules\User\Actions\BulkDeleteUsersAction;
+use Modules\User\Actions\BulkRestoreUsersAction;
 
 /**
  * @tags User
@@ -15,7 +15,8 @@ use Modules\User\Models\User;
 final readonly class BulkActionController
 {
     public function __construct(
-        private DatabaseManager $database
+        private BulkDeleteUsersAction $bulkDeleteUsers,
+        private BulkRestoreUsersAction $bulkRestoreUsers,
     ) {}
 
     /**
@@ -26,15 +27,11 @@ final readonly class BulkActionController
         /** @var array{ids: array<int, string|int>, action: string} $validated */
         $validated = $request->validated();
 
-        $count = $this->database->transaction(function () use ($validated) {
-            $query = User::whereIn('id', $validated['ids']);
-
-            return match ($validated['action']) {
-                'delete' => $query->delete(),
-                'restore' => $query->restore(),
-                default => 0,
-            };
-        });
+        $count = match ($validated['action']) {
+            'delete' => $this->bulkDeleteUsers->handle($validated['ids']),
+            'restore' => $this->bulkRestoreUsers->handle($validated['ids']),
+            default => 0,
+        };
 
         $action = $validated['action'];
 
