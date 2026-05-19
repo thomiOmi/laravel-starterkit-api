@@ -32,7 +32,7 @@ final readonly class LoginController
                 'access_token' => $result['access_token'],
                 'token_type' => $result['token_type'],
             ],
-            message: 'Login successful'
+            message: __('auth.login_success')
         );
     }
 }

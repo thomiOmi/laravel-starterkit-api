@@ -29,7 +29,7 @@ final readonly class StoreController
         return new JsonDataResponse(
             data: new RoleResource($role),
             status: Response::HTTP_CREATED,
-            message: 'Role created successfully'
+            message: __('messages.created', ['resource' => 'Role'])
         );
     }
 }

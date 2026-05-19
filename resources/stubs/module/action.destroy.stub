@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Actions;
+
+use Illuminate\Database\DatabaseManager;
+use Modules\{{Module}}\Models\{{Resource}};
+
+/**
+ * Class Destroy{{Resource}}Action
+ *
+ * @package Modules\{{Module}}\Actions
+ */
+final readonly class Destroy{{Resource}}Action
+{
+    /**
+     * Destroy{{Resource}}Action constructor.
+     *
+     * @param DatabaseManager $database
+     */
+    public function __construct(
+        private DatabaseManager $database,
+    ) {}
+
+    /**
+     * Handle the action.
+     *
+     * @param {{Resource}} ${{lowerResource}}
+     * @return bool
+     */
+    public function handle({{Resource}} ${{lowerResource}}): bool
+    {
+        return $this->database->transaction(fn () => (bool) ${{lowerResource}}->delete());
+    }
+}

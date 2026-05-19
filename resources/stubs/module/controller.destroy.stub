@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Controllers\{{Version}};
+
+use App\Http\Responses\JsonDataResponse;
+use Modules\{{Module}}\Actions\Destroy{{Resource}}Action;
+use Modules\{{Module}}\Models\{{Resource}};
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * Class DestroyController
+ *
+ * @package Modules\{{Module}}\Controllers\{{Version}}
+ */
+final readonly class DestroyController
+{
+    /**
+     * DestroyController constructor.
+     *
+     * @param Destroy{{Resource}}Action $action
+     */
+    public function __construct(
+        private Destroy{{Resource}}Action $action,
+    ) {}
+
+    /**
+     * Handle the incoming request.
+     *
+     * @param {{Resource}} ${{lowerResource}}
+     * @return JsonDataResponse
+     */
+    public function __invoke({{Resource}} ${{lowerResource}}): JsonDataResponse
+    {
+        $this->action->handle(${{lowerResource}});
+
+        return new JsonDataResponse(
+            data: null,
+            status: Response::HTTP_NO_CONTENT,
+            message: '{{Resource}} deleted successfully.',
+        );
+    }
+}

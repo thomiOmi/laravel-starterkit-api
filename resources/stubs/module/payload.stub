@@ -2,19 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Payloads\V1;
+namespace Modules\{{Module}}\Payloads\{{Version}};
 
 /**
- * Class {Action}{Resource}Payload
- *
- * @package Modules\{Module}\Payloads\V1
+ * Class {{Action}}{{Resource}}Payload
  */
-final readonly class {Action}{Resource}Payload
+final readonly class {{Action}}{{Resource}}Payload
 {
     /**
-     * {Action}{Resource}Payload constructor.
-     *
-     * @param array $data
+     * {{Action}}{{Resource}}Payload constructor.
+     * Use PHP 8.4 Property Hooks for simple transformations if needed.
      */
     public function __construct(
         public array $data,
@@ -22,9 +19,6 @@ final readonly class {Action}{Resource}Payload
 
     /**
      * Create a new payload from an array.
-     *
-     * @param array $data
-     * @return self
      */
     public static function from(array $data): self
     {
@@ -32,9 +26,7 @@ final readonly class {Action}{Resource}Payload
     }
 
     /**
-     * Convert the payload to an array.
-     *
-     * @return array
+     * Convert the payload to an array for Eloquent.
      */
     public function toArray(): array
     {

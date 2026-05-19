@@ -28,7 +28,7 @@ final readonly class DestroyController
         return new JsonDataResponse(
             data: null,
             status: Response::HTTP_NO_CONTENT,
-            message: 'User deleted successfully'
+            message: __('messages.deleted', ['resource' => 'User'])
         );
     }
 }

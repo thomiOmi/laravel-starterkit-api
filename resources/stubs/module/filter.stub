@@ -2,23 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Modules\{{name}}\Filters;
+namespace Modules\{{Module}}\Filters;
 
 use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\{{name}}\Models\{{name}};
+use Modules\{{Module}}\Models\{{Resource}};
 
 /**
- * @template T of {{name}}
- * @extends BaseFilter<T>
+ * @extends BaseFilter<{{Resource}}>
  */
-class {{name}}Filter extends BaseFilter
+final class {{Resource}}Filter extends BaseFilter
 {
-    /**
-     * Filter by search term.
-     */
-    public function search(string $value): Builder
+    public function apply(Builder $query): Builder
     {
-        return $this->builder->where('name', 'like', "%$value%");
+        return $query;
     }
 }

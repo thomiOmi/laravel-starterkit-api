@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Payloads\V1;
 
+use Illuminate\Support\Facades\Hash;
 use Modules\User\Requests\V1\UserRequest;
 
 /**
@@ -33,9 +34,28 @@ final readonly class UserPayload
     public static function fromRequest(UserRequest $request): self
     {
         return new self(
-            name: $request->string('name')->toString(),
-            email: $request->string('email')->toString(),
+            name: trim($request->string('name')->toString()),
+            email: strtolower(trim($request->string('email')->toString())),
             password: $request->filled('password') ? $request->string('password')->toString() : null,
         );
+    }
+
+    /**
+     * Convert the payload to an array for Eloquent.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        $data = [
+            'name' => $this->name,
+            'email' => $this->email,
+        ];
+
+        if ($this->password) {
+            $data['password'] = Hash::make($this->password);
+        }
+
+        return $data;
     }
 }

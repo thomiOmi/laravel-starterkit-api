@@ -30,7 +30,7 @@ final readonly class IndexController
 
         return new JsonDataResponse(
             data: RoleResource::collection($roles),
-            message: 'Roles retrieved successfully'
+            message: __('messages.retrieved', ['resource' => 'Roles'])
         );
     }
 }

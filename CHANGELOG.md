@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.13.0) (2026-05-19)
+
+### Features
+
+- implement multi-language API responses ([3ef4df8](https://github.com/thomiOmi/laravel-starterkit-api/commit/3ef4df8f0cc8644502a5eadcc59d089fc0f049a8))
+## [0.12.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.12.1) (2026-05-19)
+
+### Code Refactoring
+
+- audit and align code with 2026 standards ([8cb6187](https://github.com/thomiOmi/laravel-starterkit-api/commit/8cb6187380e4776fb2d40fd09d10226487695c41))
+
+### Chores
+
+- cleanup dead lang files and switch to scoped keys ([f2d96f9](https://github.com/thomiOmi/laravel-starterkit-api/commit/f2d96f98f49a005ec19195b9126c0573e761c1bb))
+- remove unused language files ([3c3df29](https://github.com/thomiOmi/laravel-starterkit-api/commit/3c3df29d8f8330232fd34c79667d5f37e89436f5))
+## [0.12.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.12.0) (2026-05-19)
+
+### Features
+
+- implement Laravel 2026 technical foundations ([67dbfc0](https://github.com/thomiOmi/laravel-starterkit-api/commit/67dbfc04cdafb7b23379162d0696ce5c8020d588))
+## [0.11.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.11.0) (2026-05-19)
+
+### Features
+
+- upgrade api-skill to Laravel 2026 standards (English) ([c2e4012](https://github.com/thomiOmi/laravel-starterkit-api/commit/c2e4012eceea79850536675bd90537fe2f59718c))
+- upgrade api-skill to Laravel 2026 standards ([69c1ff4](https://github.com/thomiOmi/laravel-starterkit-api/commit/69c1ff446304b2615e961e7bf6c6a811ffad31d2))
+## [0.10.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.10.0) (2026-05-18)
+
+### Features
+
+- improve make:module with api versioning and single-action controllers ([9549813](https://github.com/thomiOmi/laravel-starterkit-api/commit/9549813035ecfad44a560e65c3b0b65798e3d4ae))
 ## [0.9.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.9.1) (2026-05-17)
 
 ### Code Refactoring

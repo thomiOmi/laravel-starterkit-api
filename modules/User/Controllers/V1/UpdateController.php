@@ -28,7 +28,7 @@ final readonly class UpdateController
 
         return new JsonDataResponse(
             data: new UserResource($updatedUser),
-            message: 'User updated successfully'
+            message: __('messages.updated', ['resource' => 'User'])
         );
     }
 }

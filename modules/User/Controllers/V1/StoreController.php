@@ -34,7 +34,7 @@ final readonly class StoreController
         return new JsonDataResponse(
             data: new UserResource($user),
             status: Response::HTTP_CREATED,
-            message: 'User created successfully'
+            message: __('messages.created', ['resource' => 'User'])
         );
     }
 }

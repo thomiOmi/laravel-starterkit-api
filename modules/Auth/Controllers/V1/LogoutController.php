@@ -29,7 +29,7 @@ final readonly class LogoutController
         return new JsonDataResponse(
             data: null,
             status: Response::HTTP_NO_CONTENT,
-            message: 'Logout successful'
+            message: __('auth.logout_success')
         );
     }
 }

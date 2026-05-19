@@ -28,7 +28,7 @@ final readonly class UpdateController
 
         return new JsonDataResponse(
             data: new RoleResource($updatedRole),
-            message: 'Role updated successfully'
+            message: __('messages.updated', ['resource' => 'Role'])
         );
     }
 }

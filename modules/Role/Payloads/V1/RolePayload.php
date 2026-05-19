@@ -41,4 +41,17 @@ final readonly class RolePayload
             description: $request->string('description')->toString() ?: null,
         );
     }
+
+    /**
+     * Convert the payload to an array for Eloquent.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+        ];
+    }
 }

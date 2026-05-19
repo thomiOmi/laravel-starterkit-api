@@ -4,6 +4,7 @@ use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\PlanFeatureMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
+use App\Http\Middleware\TraceIdMiddleware;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -38,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'plan.feature' => PlanFeatureMiddleware::class,
             'force.json' => ForceJsonResponse::class,
             'sunset' => Sunset::class,
+            'trace.id' => TraceIdMiddleware::class,
         ]);
 
         $middleware->priority([
@@ -47,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->append(SetLocaleMiddleware::class);
+        $middleware->prependToGroup('api', TraceIdMiddleware::class);
 
         $middleware->statefulApi();
         // $middleware->throttleApi(); // We will define custom throttle in routes
@@ -56,7 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Validation Failed',
+                title: __('auth.validation_failed'),
                 status: Response::HTTP_UNPROCESSABLE_ENTITY,
                 detail: 'The given data was invalid.',
                 type: 'https://example.com/problems/validation-error',
@@ -67,7 +70,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: __('Unauthenticated'),
+                title: __('auth.unauthenticated'),
                 status: Response::HTTP_UNAUTHORIZED,
                 detail: 'You must be authenticated to access this resource.',
                 type: 'https://example.com/problems/unauthenticated',
@@ -76,7 +79,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (AuthorizationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Forbidden',
+                title: __('auth.forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'You are not authorised to perform this action.',
                 type: 'https://example.com/problems/forbidden',
@@ -85,7 +88,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ModelNotFoundException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Resource Not Found',
+                title: __('auth.not_found'),
                 status: Response::HTTP_NOT_FOUND,
                 detail: 'The requested resource does not exist.',
                 type: 'https://example.com/problems/not-found',
@@ -95,7 +98,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (NotFoundHttpException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Not Found',
+                title: __('auth.not_found'),
                 status: Response::HTTP_NOT_FOUND,
                 detail: $e->getMessage() ?: 'The requested URL does not exist.',
                 type: 'https://example.com/problems/not-found',
@@ -105,7 +108,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (TooManyRequestsHttpException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Too Many Requests',
+                title: __('auth.too_many_requests'),
                 status: Response::HTTP_TOO_MANY_REQUESTS,
                 detail: 'You have exceeded the request rate limit. Please try again later.',
                 type: 'https://example.com/problems/rate-limited',
