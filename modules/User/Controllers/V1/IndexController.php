@@ -33,7 +33,7 @@ final readonly class IndexController
 
         return new JsonDataResponse(
             data: UserResource::collection($users),
-            message: 'Users retrieved successfully'
+            message: __('messages.retrieved', ['resource' => 'Users'])
         );
     }
 }
