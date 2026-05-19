@@ -4,6 +4,7 @@ use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\PlanFeatureMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
+use App\Http\Middleware\TraceIdMiddleware;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -38,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'plan.feature' => PlanFeatureMiddleware::class,
             'force.json' => ForceJsonResponse::class,
             'sunset' => Sunset::class,
+            'trace.id' => TraceIdMiddleware::class,
         ]);
 
         $middleware->priority([
@@ -47,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->append(SetLocaleMiddleware::class);
+        $middleware->prependToGroup('api', TraceIdMiddleware::class);
 
         $middleware->statefulApi();
         // $middleware->throttleApi(); // We will define custom throttle in routes
