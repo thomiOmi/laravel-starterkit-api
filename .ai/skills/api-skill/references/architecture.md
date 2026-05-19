@@ -1,71 +1,71 @@
-# Architecture Reference
+# Architecture Reference (2026)
 
-This project follows a **Domain-Driven Modular Architecture**. It separates the application into self-contained modules, each representing a specific domain.
+This project utilizes a **Domain-Driven Modular Architecture** with automated oversight via Architecture Testing.
 
 ---
 
 ## 1. Module Layout
 
-Every module in `modules/` must follow this blueprint:
+Every module in `modules/` must follow this structure:
 
 ```text
 modules/
   {Module}/
-    Actions/            # Atomic or Orchestrator actions (Business Logic)
+    Actions/            # Business Logic (Atomic/Orchestrator) - Final Readonly
     Controllers/
-      V1/               # Single-action controllers
+      V1/               # Single-action controllers - Final Readonly
     Payloads/
-      V1/               # Type-safe data objects
+      V1/               # Data Objects - Final Readonly with Property Hooks
     Requests/
-      V1/               # Validation and Authorization (Policies)
-    Resources/          # Eloquent Resources
+      V1/               # Validation & Authorization - Final
+    Resources/          # Eloquent Resources - Final
     Models/             # Eloquent Models
-    Filters/            # BaseFilter implementations
+    Filters/            # BaseFilter implementations - Final
     Routes/
-      V1.php            # Route definitions (Uppercase V1)
+      V1.php            # Route definitions
     Database/
       Migrations/
-      Factories/        # Mandatory for testing
-      Seeders/
-    Events/             # Cross-module communication (Side-effects)
-    Listeners/
+      Factories/
     Tests/
       Feature/
-        V1/             # Feature tests for version 1
+      Architecture/     # Module-specific Pest Arch rules
 ```
 
-## 2. Communication Rules
+## 2. Communication Rules (The Rules of 2026)
 
-### Asynchronous / Side-Effects
-Use **Events** and **Listeners** for cross-module side effects. For example, when an `Order` is created in the `Order` module, a listener in the `Inventory` module should decrement stock.
+### Synchronous (Read-only)
+Modules are permitted to access **Models** from other modules for data retrieval purposes.
 
-### Synchronous / Data Retrieval
-Modules are permitted to read **Models** from other modules directly for data retrieval. This avoids over-engineering with complex service layers or internal repositories.
+### Asynchronous (State-change)
+Modules are **PROHIBITED** from calling Actions from other modules directly. Use **Events** and **Listeners** for cross-module side effects.
+
+### Observability
+All interactions between modules must carry the `trace_id` stored in Laravel **Context**.
 
 ## 3. The Orchestrator Pattern
 
-For complex operations (e.g., Checkout), create a main Action that coordinates multiple atomic actions within its module or triggers events for other modules.
+For complex operations, use a primary Action (Orchestrator) that calls multiple atomic Actions within the same module.
 
 ```php
-// Orchestrator Action example
 final readonly class CheckoutAction
 {
-    public function __construct(
-        private CreateOrderAction $createOrder,
-        private ProcessPaymentAction $processPayment,
-        private DatabaseManager $database,
-    ) {}
-
     public function handle(CheckoutPayload $payload): Order
     {
         return $this->database->transaction(function() use ($payload) {
             $order = $this->createOrder->handle($payload->toOrderPayload());
-            $this->processPayment->handle($order, $payload->toPaymentPayload());
 
+            // Side effect via Event
             event(new OrderPlaced($order));
+
+            // Background task via defer
+            defer(fn() => $this->notifyAdmin($order));
 
             return $order;
         });
     }
 }
 ```
+
+## 4. Architecture Verification (Automated)
+
+The integrity of this modular structure must be verified by **Pest Arch**. If a developer violates boundaries (e.g., a Controller accessing a Model directly), the test will fail automatically.

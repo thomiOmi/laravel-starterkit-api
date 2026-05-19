@@ -1,62 +1,46 @@
-# Code Quality Reference
+# Code Quality & Standards (2026)
 
-This document defines the quality standards for writing clean, maintainable, and type-safe code.
+Every PHP file in the project must meet these standards without exception.
 
 ---
 
-## 1. Strict Typing & PHP Standards
+## 1. PHP 8.4 Standards
 
-- **Declare Strict Types**: Every file must start with `declare(strict_types=1);`.
-- **Final Readonly Classes**: Actions, Payloads, and Controllers must be `final readonly`.
-- **Named Arguments**: Use named arguments for better readability when methods have multiple parameters.
-- **Constructor Property Promotion**: Always use property promotion to reduce boilerplate.
+- **declare(strict_types=1)**: Mandatory in every file as the first statement.
+- **Final Classes**: Use `final` on all classes unless explicitly designed for inheritance.
+- **Readonly Classes**: Use `readonly` on immutable classes (Controllers, Actions, Payloads).
+- **Property Hooks**: Use for simple data transformations at the property level.
+- **Constructor Property Promotion**: Use whenever possible for cleaner code.
 
-## 2. Documentation for Scribe
+## 2. Laravel 13 Features
 
-All public classes and methods must be documented using PHPDoc to enable automatic API documentation generation.
+- **defer()**: Use to execute code after the response is sent to the user (non-critical side effects).
+- **Context**: Use `Illuminate\Support\Facades\Context` to store global state per request (e.g., `trace_id`).
+- **Concurrency**: Use `Concurrency::run()` for parallelizing I/O bound tasks.
 
-```php
-/**
- * @group User Management
- * @authenticated
- *
- * @param V1\UpdateUserRequest $request The validated update request.
- * @param User $user The user model being updated.
- * @return JsonDataResponse The updated user resource.
- */
-public function __invoke(UpdateUserRequest $request, User $user): JsonDataResponse
-{
-    // ...
-}
-```
+## 3. Documentation (PHP Attributes)
 
-## 3. Authorization (Policies & Spatie)
+We have moved away from DocBlocks for metadata and transitioned to **PHP Attributes**.
 
-- **Policy First**: All authorization logic must reside in **Policies**.
-- **Spatie Integration**: Use `$user->hasPermissionTo('permission-name')` or `$user->can('ability', $model)` within policies.
-- **Super Admin**: Super Admin bypass should be handled centrally via `Gate::before` in `AuthServiceProvider`.
-- **Form Request**: Use `$this->user()->can('update', $this->route('model'))` inside the `authorize()` method.
+- **Scribe**: Use attributes from `Knuckles\Scribe\Attributes\*`.
+- **Validation**: Use Form Request `rules()` method, but consider Attributes if native support is added in the future.
 
-## 4. Database Operations
+## 4. Observability (Trace ID)
 
-- **DatabaseManager**: Inject `Illuminate\Database\DatabaseManager` into actions to handle transactions.
-- **Atomic Actions**: Actions should perform one main database operation.
-- **Soft Deletes**: Use the `SoftDeletes` trait in models where data recovery is required.
+Standardized request tracking:
+1.  **Header**: API responses must include `X-Trace-ID`.
+2.  **Context**: Store `trace_id` in Laravel Context at the beginning of the request (Middleware).
+3.  **Logs**: Ensure every log entry includes the `trace_id` from Context.
 
-## 5. Filtering Standard (BaseFilter)
+## 5. Naming Conventions
 
-Do not use external query builder packages. Use the project's `BaseFilter` system.
+- **Payloads**: Use the `Payload` suffix (not `DTO`).
+- **Actions**: Use the `Action` suffix (e.g., `StoreUserAction`).
+- **Controllers**: Use the `Controller` suffix and implement Single Action (`__invoke`).
+- **Versions**: Version directories must be uppercase (V1, V2).
 
-```php
-final class UserFilter extends BaseFilter
-{
-    protected function apply(Builder $builder, string $key, mixed $value): void
-    {
-        match ($key) {
-            'search' => $builder->where('name', 'like', "%{$value}%"),
-            'role'   => $builder->whereHas('roles', fn($q) => $q->where('name', $value)),
-            default  => null,
-        };
-    }
-}
-```
+## 6. Testing Strategy
+
+- **Pest**: The default testing framework.
+- **Arch Testing**: Mandatory to maintain architectural integrity.
+- **Factories**: Mandatory for all data states in testing.

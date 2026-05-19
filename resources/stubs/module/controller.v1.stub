@@ -9,29 +9,15 @@ use Modules\{{Module}}\Actions\{{Action}}{{Resource}}Action;
 use Modules\{{Module}}\Requests\{{Version}}\{{Action}}{{Resource}}Request;
 use Modules\{{Module}}\Resources\{{Resource}}Resource;
 use Symfony\Component\HttpFoundation\Response;
+use Knuckles\Scribe\Attributes\Group;
 
-/**
- * Class {{Action}}Controller
- *
- * @package Modules\{{Module}}\Controllers\{{Version}}
- */
+#[Group("{{Module}} Management")]
 final readonly class {{Action}}Controller
 {
-    /**
-     * {{Action}}Controller constructor.
-     *
-     * @param {{Action}}{{Resource}}Action $action
-     */
     public function __construct(
         private {{Action}}{{Resource}}Action $action,
     ) {}
 
-    /**
-     * Handle the incoming request.
-     *
-     * @param {{Action}}{{Resource}}Request $request
-     * @return JsonDataResponse
-     */
     public function __invoke({{Action}}{{Resource}}Request $request): JsonDataResponse
     {
         $result = $this->action->handle($request->payload());
