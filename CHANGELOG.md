@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.11.0) (2026-05-19)
+
+### Features
+
+- upgrade api-skill to Laravel 2026 standards (English) ([c2e4012](https://github.com/thomiOmi/laravel-starterkit-api/commit/c2e4012eceea79850536675bd90537fe2f59718c))
+- upgrade api-skill to Laravel 2026 standards ([69c1ff4](https://github.com/thomiOmi/laravel-starterkit-api/commit/69c1ff446304b2615e961e7bf6c6a811ffad31d2))
 ## [0.10.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.10.0) (2026-05-18)
 
 ### Features
