@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.12.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.12.1) (2026-05-19)
+
+### Code Refactoring
+
+- audit and align code with 2026 standards ([8cb6187](https://github.com/thomiOmi/laravel-starterkit-api/commit/8cb6187380e4776fb2d40fd09d10226487695c41))
+
+### Chores
+
+- cleanup dead lang files and switch to scoped keys ([f2d96f9](https://github.com/thomiOmi/laravel-starterkit-api/commit/f2d96f98f49a005ec19195b9126c0573e761c1bb))
+- remove unused language files ([3c3df29](https://github.com/thomiOmi/laravel-starterkit-api/commit/3c3df29d8f8330232fd34c79667d5f37e89436f5))
 ## [0.12.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.12.0) (2026-05-19)
 
 ### Features
