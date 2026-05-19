@@ -18,4 +18,9 @@ return [
     'password_expired' => 'Kata sandi Anda telah kedaluwarsa. Silakan perbarui kata sandi Anda.',
     'verified' => 'Email berhasil diverifikasi.',
     'verification_link_sent' => 'Tautan verifikasi baru telah dikirim ke alamat email Anda.',
+    'unauthenticated' => 'Tidak terautentikasi',
+    'forbidden' => 'Terlarang',
+    'not_found' => 'Tidak Ditemukan',
+    'validation_failed' => 'Validasi Gagal',
+    'too_many_requests' => 'Terlalu Banyak Permintaan',
 ];
