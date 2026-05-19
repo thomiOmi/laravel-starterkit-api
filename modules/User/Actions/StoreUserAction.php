@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Modules\User\Actions;
 
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Log;
 use Modules\User\Events\UserCreated;
 use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
@@ -31,10 +32,11 @@ final readonly class StoreUserAction
     public function handle(UserPayload $payload): User
     {
         return $this->database->transaction(function () use ($payload) {
-            $user = User::create([
-                'name' => $payload->name,
-                'email' => $payload->email,
-                'password' => $payload->password ? Hash::make($payload->password) : null,
+            $user = User::create($payload->toArray());
+
+            Log::info('User created', [
+                'user_id' => $user->id,
+                'trace_id' => Context::get('trace_id'),
             ]);
 
             UserCreated::dispatch($user);

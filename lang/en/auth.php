@@ -30,4 +30,9 @@ return [
     'password_expired' => 'Your password has expired. Please update your password.',
     'verified' => 'Email verified successfully.',
     'verification_link_sent' => 'A new verification link has been sent to your email address.',
+    'unauthenticated' => 'Unauthenticated',
+    'forbidden' => 'Forbidden',
+    'not_found' => 'Not Found',
+    'validation_failed' => 'Validation Failed',
+    'too_many_requests' => 'Too Many Requests',
 ];
