@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.14.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.14.0) (2026-05-25)
+
+### Features
+
+- add support for auto-update composer packages via GitHub Dependabot ([eefa05c](https://github.com/thomiOmi/laravel-starterkit-api/commit/eefa05cca3c95e2815dc7864878796a49ef52607))
 ## [0.13.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.13.2) (2026-05-25)
 
 ### Chores
