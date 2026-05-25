@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.13.2) (2026-05-25)
+
+### Chores
+
+- codebase maintenance and refactoring ([c47e8f9](https://github.com/thomiOmi/laravel-starterkit-api/commit/c47e8f9bd2209394ba31a4f7f242fd8a3e8c9cfc))
 ## [0.13.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.13.1) (2026-05-19)
 
 ### Code Refactoring
