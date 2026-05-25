@@ -6,12 +6,17 @@ on:
     - cron: '0 2 * * 1'
   workflow_dispatch: # Allow manual triggers
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-    
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Invoke Jules for Cleanup
         uses: google-labs-code/jules-action@v1
