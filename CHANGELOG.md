@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.16.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.16.0) (2026-05-25)
+
+### Features
+
+- **ci:** improve github workflows and fix release error ([f7acec0](https://github.com/thomiOmi/laravel-starterkit-api/commit/f7acec06b97854ca8495a24548a229bcaae754d5))
+- **ci:** improve github workflows with best practices ([1e22459](https://github.com/thomiOmi/laravel-starterkit-api/commit/1e2245961be52f3d912280ed56954213f68c926d))
 ## [0.15.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.15.0) (2026-05-25)
 
 ### Features
