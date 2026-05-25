@@ -5,7 +5,7 @@
     "cloud": false,
     "guidelines": true,
     "mcp": true,
-    "nightwatch_mcp": false,
+    "nightwatch": false,
     "packages": [
         "spatie/laravel-permission"
     ],
@@ -15,6 +15,7 @@
         "pennant-development",
         "socialite-development",
         "pest-testing",
-        "laravel-permission-development"
+        "laravel-permission-development",
+        "api-skill"
     ]
 }
