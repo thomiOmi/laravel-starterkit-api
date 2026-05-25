@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.18.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.18.0) (2026-05-25)
+
+### Features
+
+- consolidate architecture tests and enhance project standards ([9a6ad4e](https://github.com/thomiOmi/laravel-starterkit-api/commit/9a6ad4e1fcc87f571b87ed31af300056590574eb))
+- enhance scalability, code quality, and developer experience ([6d9b322](https://github.com/thomiOmi/laravel-starterkit-api/commit/6d9b32220fc8d19eb9fbe99201f3b9d6d0baf4c2))
 ## [0.17.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.17.0) (2026-05-25)
 
 ### Features
