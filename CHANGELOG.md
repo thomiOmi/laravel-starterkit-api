@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.15.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.15.0) (2026-05-25)
+
+### Features
+
+- added github workflows for bug fixer. permonance checker, security checker ([6cb3bc2](https://github.com/thomiOmi/laravel-starterkit-api/commit/6cb3bc2c0229f0e83527b1b4f7bdccc7f7b40f26))
 ## [0.14.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.14.2) (2026-05-25)
 
 ### Chores
