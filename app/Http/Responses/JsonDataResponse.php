@@ -17,7 +17,6 @@ final class JsonDataResponse extends JsonResponse
     ) {
         $payload = [
             'success' => $status >= 200 && $status < 300,
-            'status' => $status >= 400 ? 'error' : 'success', // For backward compatibility with some tests
             'message' => $message,
             'data' => $data,
         ];
@@ -30,12 +29,6 @@ final class JsonDataResponse extends JsonResponse
 
                 if (isset($resource['meta']) && is_array($resource['meta'])) {
                     $payload['meta'] = $resource['meta'];
-                    // Compatibility for DatatableTest which expects meta.pagination
-                    $payload['meta']['pagination'] = [
-                        'current_page' => $resource['meta']['current_page'] ?? null,
-                        'per_page' => $resource['meta']['per_page'] ?? null,
-                        'total' => $resource['meta']['total'] ?? null,
-                    ];
                 }
 
                 if (isset($resource['links'])) {

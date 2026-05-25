@@ -20,34 +20,8 @@ class RoleSeeder extends Seeder
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create permissions for User module
-        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'user.create', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'web']);
-
-        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
-        Permission::firstOrCreate(['name' => 'user.create', 'guard_name' => 'sanctum']);
-        Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
-        Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
-
-        // Create permissions for Role module
-        Permission::firstOrCreate(['name' => 'role.view', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'role.create', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'role.edit', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'role.delete', 'guard_name' => 'web']);
-
-        Permission::firstOrCreate(['name' => 'role.view', 'guard_name' => 'sanctum']);
-        Permission::firstOrCreate(['name' => 'role.create', 'guard_name' => 'sanctum']);
-        Permission::firstOrCreate(['name' => 'role.edit', 'guard_name' => 'sanctum']);
-        Permission::firstOrCreate(['name' => 'role.delete', 'guard_name' => 'sanctum']);
-
-        // Create roles and assign permissions
-        $superAdmin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'sanctum']);
-
-        $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        $admin->givePermissionTo([
+        $guards = ['web', 'sanctum'];
+        $permissions = [
             'user.view',
             'user.create',
             'user.edit',
@@ -56,29 +30,21 @@ class RoleSeeder extends Seeder
             'role.create',
             'role.edit',
             'role.delete',
-        ]);
+        ];
 
-        $adminSanctum = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'sanctum']);
-        $adminSanctum->givePermissionTo([
-            'user.view',
-            'user.create',
-            'user.edit',
-            'user.delete',
-            'role.view',
-            'role.create',
-            'role.edit',
-            'role.delete',
-        ]);
+        foreach ($guards as $guard) {
+            foreach ($permissions as $permission) {
+                Permission::firstOrCreate(['name' => $permission, 'guard_name' => $guard]);
+            }
 
-        $user = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
-        $user->givePermissionTo([
-            'user.view',
-        ]);
+            Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => $guard]);
 
-        $userSanctum = Role::firstOrCreate(['name' => 'user', 'guard_name' => 'sanctum']);
-        $userSanctum->givePermissionTo([
-            'user.view',
-        ]);
+            $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => $guard]);
+            $admin->givePermissionTo($permissions);
+
+            $user = Role::firstOrCreate(['name' => 'user', 'guard_name' => $guard]);
+            $user->givePermissionTo(['user.view']);
+        }
 
         // Assign roles to users if they exist
         $this->assignRolesToExistingUsers();
