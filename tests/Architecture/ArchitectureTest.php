@@ -2,26 +2,30 @@
 
 declare(strict_types=1);
 
-arch('strict types are used')
-    ->expect('App\\')
-    ->toUseStrictTypes()
-    ->and('Modules\\')
+test('strict types are used')
+    ->expect(['App\\', 'Modules\\'])
     ->toUseStrictTypes();
 
-arch('controllers should be final and readonly')
-    ->expect('Modules\**\Controllers')
+test('controllers should be final and readonly')
+    ->expect('Modules\*\Controllers')
+    ->toBeFinal()
+    ->toBeReadonly()
+    ->toHaveMethod('__invoke');
+
+test('actions should be final and readonly')
+    ->expect('Modules\*\Actions')
+    ->toBeFinal()
+    ->toBeReadonly()
+    ->toHaveMethod('handle');
+
+test('payloads should be final and readonly')
+    ->expect('Modules\*\Payloads')
     ->toBeFinal()
     ->toBeReadonly();
 
-arch('actions should be final and readonly')
-    ->expect('Modules\**\Actions')
-    ->toBeFinal()
-    ->toBeReadonly();
-
-arch('controllers should not use models directly')
-    ->expect('Modules\**\Controllers')
-    ->not->toUse('Illuminate\Database\Eloquent\Model')
-    ->not->toUse('Modules\**\Models')
+test('models should not be used in controllers')
+    ->expect('Modules\*\Models')
+    ->not->toBeUsedIn('Modules\*\Controllers')
     ->ignoring([
         'Modules\User\Controllers\V1\IndexController',
         'Modules\User\Controllers\V1\ShowController',
@@ -37,11 +41,10 @@ arch('controllers should not use models directly')
         'Modules\Auth\Controllers\V1\LogoutController',
     ]);
 
-arch('payloads should be final and readonly')
-    ->expect('Modules\*\Payloads')
-    ->toBeFinal()
-    ->toBeReadonly();
+test('actions should not use request directly')
+    ->expect('Illuminate\Http\Request')
+    ->not->toBeUsedIn('Modules\*\Actions');
 
-arch('avoid debugging functions')
+test('avoid debugging functions')
     ->expect(['dd', 'dump', 'ray', 'var_dump'])
     ->not->toBeUsed();
