@@ -4,6 +4,10 @@ on:
   issues:
     types: [labeled]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
 jobs:
   fix-bug:
     # Only run when the 'bug' label is added
@@ -14,9 +18,10 @@ jobs:
     if: github.event.label.name == 'bug'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      issues: read
-    
+      contents: write
+      issues: write
+      pull-requests: write
+
     steps:
       - name: Invoke Jules
         # SECURITY: Only allow trusted users to trigger Jules
