@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.17.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.17.0) (2026-05-25)
+
+### Features
+
+- add custom guidelines and skills ([db1aa2b](https://github.com/thomiOmi/laravel-starterkit-api/commit/db1aa2bfdad0a18608c39a195f06945d0ff42705))
 ## [0.16.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.16.0) (2026-05-25)
 
 ### Features
