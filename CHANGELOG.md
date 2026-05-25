@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.14.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.14.1) (2026-05-25)
+
+### Chores
+
+- **deps:** Bump the php-dependencies group with 3 updates ([6bd8470](https://github.com/thomiOmi/laravel-starterkit-api/commit/6bd84705f225838847fe4be26e769cbc14078103))
 ## [0.14.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.14.0) (2026-05-25)
 
 ### Features
