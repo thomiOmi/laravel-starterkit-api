@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Modules\{{name}}\Database\Seeders;
+namespace Modules\{{Module}}\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\{{name}}\Models\{{name}};
+use Modules\{{Module}}\Models\{{Resource}};
 
-class {{name}}Seeder extends Seeder
+class {{Resource}}Seeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        {{name}}::factory()->count(10)->create();
+        {{Resource}}::factory()->count(10)->create();
     }
 }

@@ -14,6 +14,15 @@ use Modules\Role\Models\Role;
 class RoleFilter extends BaseFilter
 {
     /**
+     * The list of allowed filters.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedFilters = [
+        'search',
+    ];
+
+    /**
      * Filter by search term.
      *
      * @param  string  $value  The search term.

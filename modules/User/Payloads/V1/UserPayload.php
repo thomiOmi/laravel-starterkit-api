@@ -36,7 +36,7 @@ final readonly class UserPayload
         return new self(
             name: trim($request->string('name')->toString()),
             email: strtolower(trim($request->string('email')->toString())),
-            password: $request->filled('password') ? $request->string('password')->toString() : null,
+            password: $request->filled('password') ? Hash::make($request->string('password')->toString()) : null,
         );
     }
 
@@ -47,15 +47,10 @@ final readonly class UserPayload
      */
     public function toArray(): array
     {
-        $data = [
+        return array_filter([
             'name' => $this->name,
             'email' => $this->email,
-        ];
-
-        if ($this->password) {
-            $data['password'] = Hash::make($this->password);
-        }
-
-        return $data;
+            'password' => $this->password,
+        ], fn ($value) => $value !== null);
     }
 }

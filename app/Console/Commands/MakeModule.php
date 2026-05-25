@@ -103,116 +103,54 @@ class MakeModule extends Command
      */
     protected function createFiles(string $name, string $path, string $version, array $options): void
     {
-        $this->createFileFromStub($path."/Providers/{$name}ServiceProvider.php", 'provider', [
-            'name' => $name,
-            'Version' => $version,
-        ]);
-
-        $this->createFileFromStub($path."/Routes/{$version}.php", 'route', [
-            'name' => $name,
-            'slug' => Str::kebab(Str::plural($name)),
-            'routes' => $this->getRoutesContent($name, $version, $options),
-            'Version' => $version,
-        ]);
-
-        $this->createFileFromStub($path."/Models/{$name}.php", 'model', [
-            'name' => $name,
-        ]);
-
-        // Index Controller
-        $this->createFileFromStub($path."/Controllers/{$version}/IndexController.php", 'controller.index', [
+        $replacements = [
             'Module' => $name,
             'Resource' => $name,
             'Version' => $version,
-        ]);
+            'lowerResource' => Str::camel($name),
+            'slug' => Str::kebab(Str::plural($name)),
+            'tableName' => Str::snake(Str::plural($name)),
+        ];
+
+        $this->createFileFromStub($path."/Providers/{$name}ServiceProvider.php", 'provider', $replacements);
+
+        $this->createFileFromStub($path."/Routes/{$version}.php", 'route', array_merge($replacements, [
+            'routes' => $this->getRoutesContent($name, $version, $options),
+        ]));
+
+        $this->createFileFromStub($path."/Models/{$name}.php", 'model', $replacements);
+
+        // Index Controller
+        $this->createFileFromStub($path."/Controllers/{$version}/IndexController.php", 'controller.index', $replacements);
 
         if ($options['resource']) {
-            $this->createFileFromStub($path."/Resources/{$name}Resource.php", 'resource', [
-                'name' => $name,
-            ]);
+            $this->createFileFromStub($path."/Resources/{$name}Resource.php", 'resource', $replacements);
         }
 
         if ($options['action']) {
-            // Store
-            $this->createFileFromStub($path."/Controllers/{$version}/StoreController.php", 'controller.v1', [
-                'Module' => $name,
-                'Resource' => $name,
-                'Action' => 'Store',
-                'Version' => $version,
-            ]);
-            $this->createFileFromStub($path."/Actions/Store{$name}Action.php", 'action', [
-                'Module' => $name,
-                'Resource' => $name,
-                'Action' => 'Store',
-                'Version' => $version,
-            ]);
-            $this->createFileFromStub($path."/Payloads/{$version}/Store{$name}Payload.php", 'payload', [
-                'Module' => $name,
-                'Resource' => $name,
-                'Action' => 'Store',
-                'Version' => $version,
-            ]);
-            $this->createFileFromStub($path."/Requests/{$version}/Store{$name}Request.php", 'request.v1', [
-                'Module' => $name,
-                'Resource' => $name,
-                'Action' => 'Store',
-                'Version' => $version,
-            ]);
+            foreach (['Store', 'Update'] as $action) {
+                $actionReplacements = array_merge($replacements, ['Action' => $action]);
 
-            // Update
-            $this->createFileFromStub($path."/Controllers/{$version}/UpdateController.php", 'controller.v1', [
-                'Module' => $name,
-                'Resource' => $name,
-                'Action' => 'Update',
-                'Version' => $version,
-            ]);
-            $this->createFileFromStub($path."/Actions/Update{$name}Action.php", 'action', [
-                'Module' => $name,
-                'Resource' => $name,
-                'Action' => 'Update',
-                'Version' => $version,
-            ]);
-            $this->createFileFromStub($path."/Payloads/{$version}/Update{$name}Payload.php", 'payload', [
-                'Module' => $name,
-                'Resource' => $name,
-                'Action' => 'Update',
-                'Version' => $version,
-            ]);
-            $this->createFileFromStub($path."/Requests/{$version}/Update{$name}Request.php", 'request.v1', [
-                'Module' => $name,
-                'Resource' => $name,
-                'Action' => 'Update',
-                'Version' => $version,
-            ]);
+                $this->createFileFromStub($path."/Controllers/{$version}/{$action}Controller.php", 'controller.v1', $actionReplacements);
+                $this->createFileFromStub($path."/Actions/{$action}{$name}Action.php", 'action', $actionReplacements);
+                $this->createFileFromStub($path."/Payloads/{$version}/{$action}{$name}Payload.php", 'payload', $actionReplacements);
+                $this->createFileFromStub($path."/Requests/{$version}/{$action}{$name}Request.php", 'request.v1', $actionReplacements);
+            }
 
             // Show
-            $this->createFileFromStub($path."/Controllers/{$version}/ShowController.php", 'controller.show', [
-                'Module' => $name,
-                'Resource' => $name,
-                'lowerResource' => Str::camel($name),
-                'Version' => $version,
-            ]);
+            $this->createFileFromStub($path."/Controllers/{$version}/ShowController.php", 'controller.show', $replacements);
 
             // Destroy
-            $this->createFileFromStub($path."/Controllers/{$version}/DestroyController.php", 'controller.destroy', [
-                'Module' => $name,
-                'Resource' => $name,
-                'lowerResource' => Str::camel($name),
-                'Version' => $version,
-            ]);
-            $this->createFileFromStub($path."/Actions/Destroy{$name}Action.php", 'action.destroy', [
-                'Module' => $name,
-                'Resource' => $name,
-                'lowerResource' => Str::camel($name),
-            ]);
+            $this->createFileFromStub($path."/Controllers/{$version}/DestroyController.php", 'controller.destroy', $replacements);
+            $this->createFileFromStub($path."/Actions/Destroy{$name}Action.php", 'action.destroy', $replacements);
         }
 
         if ($options['filter']) {
-            $this->createFileFromStub($path."/Filters/{$name}Filter.php", 'filter', ['name' => $name]);
+            $this->createFileFromStub($path."/Filters/{$name}Filter.php", 'filter', $replacements);
         }
 
         if ($options['migration']) {
-            $tableName = Str::snake(Str::plural($name));
+            $tableName = $replacements['tableName'];
             $migrationPath = $path.'/Database/Migrations';
 
             if ($this->option('force')) {
@@ -225,15 +163,15 @@ class MakeModule extends Command
             }
 
             $fileName = date('Y_m_d_His')."_create_{$tableName}_table.php";
-            $this->createFileFromStub("{$migrationPath}/{$fileName}", 'migration', ['tableName' => $tableName]);
+            $this->createFileFromStub("{$migrationPath}/{$fileName}", 'migration', $replacements);
         }
 
         if ($options['factory']) {
-            $this->createFileFromStub($path."/Database/Factories/{$name}Factory.php", 'factory', ['name' => $name]);
+            $this->createFileFromStub($path."/Database/Factories/{$name}Factory.php", 'factory', $replacements);
         }
 
         if ($options['seeder']) {
-            $this->createFileFromStub($path."/Database/Seeders/{$name}Seeder.php", 'seeder', ['name' => $name]);
+            $this->createFileFromStub($path."/Database/Seeders/{$name}Seeder.php", 'seeder', $replacements);
         }
     }
 

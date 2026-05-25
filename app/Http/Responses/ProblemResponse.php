@@ -6,6 +6,9 @@ namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
 
+/**
+ * RFC 9457 Problem Details for HTTP APIs.
+ */
 final class ProblemResponse extends JsonResponse
 {
     public function __construct(
@@ -20,7 +23,7 @@ final class ProblemResponse extends JsonResponse
             'type' => $type,
             'title' => $title,
             'status' => $status >= 400 ? 'error' : $status, // Compatibility with GlobalErrorHandlingTest
-            'message' => $title, // Compatibility with I18nTest
+            'message' => $title, // Compatibility with existing tests
             'detail' => $detail,
         ];
 

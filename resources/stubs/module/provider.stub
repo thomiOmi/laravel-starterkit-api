@@ -2,38 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Modules\{{name}}\Providers;
+namespace Modules\{{Module}}\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Route;
 
-class {{name}}ServiceProvider extends ServiceProvider
+class {{Module}}ServiceProvider extends ServiceProvider
 {
     /**
-     * Register services.
-     */
-    public function register(): void
-    {
-        //
-    }
-
-    /**
-     * Bootstrap services.
+     * Bootstrap any application services.
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__ . '/../Database/Migrations');
-
-        $this->registerRoutes();
-    }
-
-    /**
-     * Register routes.
-     */
-    protected function registerRoutes(): void
-    {
-        Route::prefix('api/{{Version}}')
-            ->middleware(['api', 'force.json', 'sunset', 'throttle:api'])
-            ->group(__DIR__ . '/../Routes/{{Version}}.php');
+        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
     }
 }

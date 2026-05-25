@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Modules\{{name}}\Resources;
+namespace Modules\{{Module}}\Resources;
 
-use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\{{Module}}\Models\{{Resource}};
 
 /**
- * @mixin \Modules\{{name}}\Models\{{name}}
+ * @mixin {{Resource}}
  */
-class {{name}}Resource extends BaseResource
+class {{Resource}}Resource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -20,13 +21,9 @@ class {{name}}Resource extends BaseResource
     public function toArray(Request $request): array
     {
         return [
-            /**
-             * @example "01hpv4n8f8xrd2m8q0e4x8j9v1"
-             */
             'id' => $this->id,
-            'name' => $this->name,
-            'created_at' => $this->formatDate($this->created_at),
-            'updated_at' => $this->formatDate($this->updated_at),
+            'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
 }
