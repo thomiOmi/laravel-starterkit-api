@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.14.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.14.2) (2026-05-25)
+
+### Chores
+
+- **deps:** Bump actions/github-script from 7 to 9 ([23b20ac](https://github.com/thomiOmi/laravel-starterkit-api/commit/23b20ac3f674e70118af3ca0871dade5ec46fcdb))
 ## [0.14.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.14.1) (2026-05-25)
 
 ### Chores
