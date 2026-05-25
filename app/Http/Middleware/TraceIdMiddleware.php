@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -23,6 +24,11 @@ final readonly class TraceIdMiddleware
 
         // Store in Laravel Context for logging and tracing
         Context::add('trace_id', $traceId);
+
+        // Share with Monolog for every log line
+        Log::withContext([
+            'trace_id' => $traceId,
+        ]);
 
         $response = $next($request);
 

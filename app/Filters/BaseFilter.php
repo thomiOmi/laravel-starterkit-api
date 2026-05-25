@@ -14,11 +14,6 @@ use Illuminate\Support\Str;
 abstract class BaseFilter
 {
     /**
-     * The request instance.
-     */
-    protected Request $request;
-
-    /**
      * The builder instance.
      *
      * @var Builder<TModel>
@@ -26,12 +21,16 @@ abstract class BaseFilter
     protected Builder $builder; // @phpstan-ignore property.uninitialized
 
     /**
+     * The list of allowed filters.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedFilters = [];
+
+    /**
      * Create a new QueryFilters instance.
      */
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-    }
+    public function __construct(protected Request $request) {}
 
     /**
      * Apply the filters to the builder.
@@ -44,6 +43,10 @@ abstract class BaseFilter
         $this->builder = $builder;
 
         foreach ($this->getFilters() as $name => $value) {
+            if (! $this->isFilterAllowed($name)) {
+                continue;
+            }
+
             $method = Str::camel((string) $name);
 
             if ($value !== null && $value !== '' && method_exists($this, $method)) {
@@ -54,6 +57,14 @@ abstract class BaseFilter
         $this->applySorting();
 
         return $this->builder;
+    }
+
+    /**
+     * Determine if a filter is allowed.
+     */
+    protected function isFilterAllowed(string $name): bool
+    {
+        return empty($this->allowedFilters) || in_array($name, $this->allowedFilters, true);
     }
 
     /**

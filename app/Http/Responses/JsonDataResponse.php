@@ -16,7 +16,7 @@ final class JsonDataResponse extends JsonResponse
         string $message = 'Success',
     ) {
         $payload = [
-            'success' => $status >= 200 && $status < 300,
+            'status' => $status,
             'message' => $message,
             'data' => $data,
         ];

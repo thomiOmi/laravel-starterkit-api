@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Payloads\{{Version}};
 
 /**
- * Class {{Action}}{{Resource}}Payload
+ * Payload for {{Action}} {{Resource}} data.
+ * Use PHP 8.4 Property Hooks for simple transformations if your environment supports it.
  */
 final readonly class {{Action}}{{Resource}}Payload
 {
     /**
      * {{Action}}{{Resource}}Payload constructor.
-     * Use PHP 8.4 Property Hooks for simple transformations if needed.
      */
     public function __construct(
         public array $data,
@@ -27,6 +27,8 @@ final readonly class {{Action}}{{Resource}}Payload
 
     /**
      * Convert the payload to an array for Eloquent.
+     *
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

@@ -14,6 +14,17 @@ use Modules\User\Models\User;
 class UserFilter extends BaseFilter
 {
     /**
+     * The list of allowed filters.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedFilters = [
+        'search',
+        'role',
+        'created_at',
+    ];
+
+    /**
      * Filter by search term (name or email).
      *
      * @param  string  $value  The search term.

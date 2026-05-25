@@ -11,10 +11,28 @@ use Modules\{{Module}}\Models\{{Resource}};
 /**
  * @extends BaseFilter<{{Resource}}>
  */
-final class {{Resource}}Filter extends BaseFilter
+class {{Resource}}Filter extends BaseFilter
 {
-    public function apply(Builder $query): Builder
+    /**
+     * The list of allowed filters.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedFilters = [
+        'search',
+    ];
+
+    /**
+     * Filter by search term.
+     *
+     * @param  string  $value  The search term.
+     * @return Builder<{{Resource}}>
+     */
+    public function search(string $value): Builder
     {
-        return $query;
+        /** @var Builder<{{Resource}}> $builder */
+        $builder = $this->builder;
+
+        return $builder->where('name', 'like', "%{$value}%");
     }
 }
