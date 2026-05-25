@@ -28,7 +28,10 @@ final readonly class BulkRestoreRolesAction
     public function handle(array $ids): int
     {
         return $this->database->transaction(function () use ($ids) {
-            return Role::onlyTrashed()->whereIn('id', $ids)->restore();
+            /** @var int $restoredCount */
+            $restoredCount = Role::onlyTrashed()->whereIn('id', $ids)->restore();
+
+            return $restoredCount;
         });
     }
 }
