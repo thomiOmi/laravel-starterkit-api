@@ -1,19 +1,23 @@
 ---
 name: laravel-security
-description: "Security and API response standards."
+description: "Expert security best practices, authorization standards, and RFC-compliant API communication."
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
+  triggers: "Security, Sanctum, Policy, Role, Permission, JsonDataResponse, ProblemResponse, Trace ID"
 ---
 
-# Laravel Security
+# Laravel Security & API
 
-Security first approach with standardized responses.
+Enforces a secure-by-default environment with standardized responses.
 
-## Key Rules
-- Authorize EVERY write operation via Policy.
-- Use `JsonDataResponse` for all success responses.
-- See `references/api-standards.md` for JSON structures.
+## Instructions
+- Use `auth:sanctum` for all protected routes.
+- Implement mandatory Policy checks for all database operations.
+- Use `JsonDataResponse` for successes and `ProblemResponse` for errors.
+- Ensure `trace_id` is propagated through logs and headers.
+- Refer to `references/security-api.md` for full technical details.
 
-## Traceability
-- Managed via Laravel Context.
-- Reflected in `X-Trace-ID` header.
+## Middleware
+- `force.json`: Always required.
+- `sunset`: Use for deprecations.
+- `throttle:api`: Mandatory rate limiting.

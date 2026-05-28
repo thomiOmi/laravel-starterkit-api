@@ -1,19 +1,24 @@
 ---
 name: laravel-patterns
-description: "Domain-Driven Modular Architecture for Laravel 13+."
+description: "Expert guidance for Modular DDD, Single-Action Controllers, and the Action pattern in Laravel 13+."
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
+  triggers: "DDD, modules, Single-Action Controller, Action, Orchestrator, Database Transaction"
 ---
 
 # Laravel Patterns
 
-Modular DDD and Action-based architecture.
+Implements a robust Modular architecture for Laravel 13+.
 
 ## Instructions
-- Follow the modular structure defined in `references/architecture.md`.
-- Controllers MUST be single-action (invokable).
-- Business logic MUST reside in Actions.
+- Organize all code into `modules/`.
+- Use Single-Action Controllers (`final readonly`).
+- Isolate business logic into atomic Actions.
+- Wrap all writes in database transactions.
+- Refer to `references/modular-architecture.md` for the full structural guide.
 
-## Guidelines
-- Use `DatabaseManager::transaction()` for writes.
-- Inject dependencies via constructor.
+## Anti-Patterns
+- No Repositories.
+- No Multi-action controllers.
+- No direct Model access in Controllers.
+- No logic in Models (except scopes).
