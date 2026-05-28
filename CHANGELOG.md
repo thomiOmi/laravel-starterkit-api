@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.18.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.18.1) (2026-05-28)
+
+### Code Refactoring
+
+- align agent skills with agentskills.io folder structure ([10fb9cf](https://github.com/thomiOmi/laravel-starterkit-api/commit/10fb9cf6b7d5a9314f7ba85e314594bdd9188e01))
+- rename and detail agent skills to Standard 2026 ([25b6847](https://github.com/thomiOmi/laravel-starterkit-api/commit/25b68475d2c399a3bfcc11192ad5858eda6bde27))
+- replace api-skill with modular laravel-boost skills ([6f486d9](https://github.com/thomiOmi/laravel-starterkit-api/commit/6f486d9f93d3ecd24a8d0fd0be4758b9de3fa1f3))
 ## [0.18.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.18.0) (2026-05-25)
 
 ### Features
