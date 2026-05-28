@@ -1,18 +1,23 @@
 ---
 name: php-pro
-description: "Expert PHP 8.4+ development with strict typing, modern patterns, and Property Hooks."
+description: "Expert PHP 8.4+ development focusing on strict typing, immutability, and Property Hooks."
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
+  triggers: "PHP, Property Hooks, strict_types, final readonly, DTO, Payload"
 ---
 
 # PHP Pro
 
-High-standard PHP development focusing on PHP 8.4 features.
+Ensures every PHP file adheres to the Standard 2026 guidelines.
 
-## Core Rules
-- **Strict Types**: Always `declare(strict_types=1);`.
-- **Property Hooks**: Use for all Payloads. See `references/property-hooks.md`.
-- **Classes**: All classes MUST be `final`.
+## Instructions
+- ALWAYS include `declare(strict_types=1);`.
+- Use `final` and `readonly` by default.
+- Use **Property Hooks** for all Payloads to sanitize data.
+- Follow the detailed standards in `references/php-standards.md`.
 
 ## Assets
-- Use `assets/payload.stub` for new data objects.
+- Use `assets/payload.stub` for creating new Payloads.
+
+## Verification
+- Run `./vendor/bin/phpstan analyse` to verify type safety.

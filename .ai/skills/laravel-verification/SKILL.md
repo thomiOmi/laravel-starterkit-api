@@ -1,20 +1,23 @@
 ---
 name: laravel-verification
-description: "Verification loop for code quality."
+description: "Rigorous verification loop ensuring code formatting, static analysis, and architectural integrity."
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
+  triggers: "Verification, Pint, PHPStan, Pest, Architecture Test, CI/CD"
 ---
 
 # Laravel Verification
 
-Mandatory quality checks.
+Guarantees the quality and consistency of the codebase.
 
-## Sequence
-1. `./vendor/bin/pint --format agent`
-2. `./vendor/bin/phpstan analyse`
-3. `php artisan test`
+## Instructions
+- Run Pint with `--format agent`.
+- Maintain PHPStan Level 9 compatibility without ignores.
+- Write Pest tests for every change.
+- Enforce architecture rules via Pest Arch.
+- Follow the sequence in `references/quality-assurance.md`.
 
-## Rules
-- No static analysis ignores.
-- Architecture tests (Pest Arch) MUST pass.
-- See `references/static-analysis.md` for common PHPStan fixes.
+## Quality Gates
+- No `env()` in code.
+- No direct Model access in Controllers.
+- All classes marked `final`.
