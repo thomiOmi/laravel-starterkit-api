@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.18.2](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.18.2) (2026-05-28)
+
+### Code Refactoring
+
+- expand and detail agent skills with technical references ([9673490](https://github.com/thomiOmi/laravel-starterkit-api/commit/967349044a04b25ffe5fc1a1b76594676e205458))
 ## [0.18.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.18.1) (2026-05-28)
 
 ### Code Refactoring
