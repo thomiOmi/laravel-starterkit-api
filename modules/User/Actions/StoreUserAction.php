@@ -39,7 +39,7 @@ final readonly class StoreUserAction
                 'trace_id' => Context::get('trace_id'),
             ]);
 
-            UserCreated::dispatch($user);
+            defer(fn () => UserCreated::dispatch($user));
 
             return $user;
         });
