@@ -17,8 +17,8 @@ final readonly class RegisterPayload
     public static function fromRequest(RegisterRequest $request): self
     {
         return new self(
-            name: $request->string('name')->toString(),
-            email: $request->string('email')->toString(),
+            name: trim($request->string('name')->toString()),
+            email: strtolower(trim($request->string('email')->toString())),
             password: $request->string('password')->toString(),
         );
     }

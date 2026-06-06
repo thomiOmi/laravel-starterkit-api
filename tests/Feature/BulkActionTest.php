@@ -72,6 +72,5 @@ test('bulk update action is rejected for security', function () {
             'data' => ['description' => 'Bulk updated description'],
         ]);
 
-    $response->assertStatus(422)
-        ->assertJsonValidationErrors(['action']);
+    $response->assertStatus(403);
 });
