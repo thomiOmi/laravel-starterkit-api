@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Facades\Hash;
 use Modules\Auth\Payloads\V1\RegisterPayload;
 use Modules\User\Models\User;
 
@@ -21,7 +20,7 @@ final readonly class RegisterAction
             return User::create([
                 'name' => $payload->name,
                 'email' => $payload->email,
-                'password' => Hash::make($payload->password),
+                'password' => $payload->password,
             ]);
         });
     }
