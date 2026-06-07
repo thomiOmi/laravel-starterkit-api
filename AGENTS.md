@@ -11,7 +11,6 @@
 | Database | MySQL |
 | Package manager | Composer 2.9+ |
 | Auth | Laravel Sanctum (token-based) |
-| Tenancy | `stancl/tenancy` v3 (single-database mode) |
 | Role/Permission | Spatie `laravel-permission` |
 | Social Auth | Laravel Socialite |
 | Feature Flags | Laravel Pennant |
