@@ -36,7 +36,7 @@ final readonly class RolePayload
         $permissions = (array) $request->input('permissions', []);
 
         return new self(
-            name: trim($request->string('name')->toString()),
+            name: $request->string('name')->toString(),
             permissions: $permissions,
             description: $request->string('description')->toString() ?: null,
         );
