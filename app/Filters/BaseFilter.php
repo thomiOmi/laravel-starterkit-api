@@ -79,7 +79,7 @@ abstract class BaseFilter
      */
     protected function applySorting(): void
     {
-        $sortBy = $this->request->string('sort_by')->trim();
+        $sortBy = $this->request->string('sort_by')->trim()->toString();
         $sortDirection = $this->request->string('sort_direction', 'desc')->lower()->toString();
 
         /** @var 'asc'|'desc' $direction */
@@ -90,6 +90,14 @@ abstract class BaseFilter
         } else {
             $this->builder->latest();
         }
+    }
+
+    /**
+     * Determine if a sort is allowed.
+     */
+    protected function isSortAllowed(string $name): bool
+    {
+        return in_array($name, $this->allowedSorts, true);
     }
 
     /**
