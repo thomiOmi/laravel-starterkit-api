@@ -79,25 +79,17 @@ abstract class BaseFilter
      */
     protected function applySorting(): void
     {
-        $sortBy = $this->request->string('sort_by')->trim()->toString();
-        $sortDirection = $this->request->string('sort_direction', 'desc')->lower()->toString();
+        $sortBy = trim((string) $this->request->query('sort_by', ''));
+        $sortDirection = strtolower((string) $this->request->query('sort_direction', 'desc'));
 
         /** @var 'asc'|'desc' $direction */
         $direction = in_array($sortDirection, ['asc', 'desc'], true) ? $sortDirection : 'desc';
 
-        if ($sortBy !== '' && $this->isSortAllowed($sortBy)) {
+        if ($sortBy !== '' && in_array($sortBy, $this->allowedSorts, true)) {
             $this->builder->orderBy($sortBy, $direction);
         } else {
             $this->builder->latest();
         }
-    }
-
-    /**
-     * Determine if a sort is allowed.
-     */
-    protected function isSortAllowed(string $name): bool
-    {
-        return in_array($name, $this->allowedSorts, true);
     }
 
     /**

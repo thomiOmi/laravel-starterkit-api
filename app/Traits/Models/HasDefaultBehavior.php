@@ -15,19 +15,13 @@ trait HasDefaultBehavior
     use HasUlids, SoftDeletes;
 
     /**
-     * Get the value indicating whether the IDs are incrementing.
+     * Initialize the trait.
+     * Sets default properties for models using ULIDs.
      */
-    public function getIncrementing(): bool
+    public function initializeHasDefaultBehavior(): void
     {
-        return false;
-    }
-
-    /**
-     * Get the auto-incrementing key type.
-     */
-    public function getKeyType(): string
-    {
-        return 'string';
+        $this->keyType = 'string';
+        $this->incrementing = false;
     }
 
     /**
