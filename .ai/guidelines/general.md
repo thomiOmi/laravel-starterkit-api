@@ -3,7 +3,7 @@
 ## Tech Stack
 
 | Layer | Tech |
-|---|---|
+| --- | --- |
 | Framework | Laravel 13 + PHP 8.4 |
 | Database | MySQL |
 | Package manager | Composer 2.9+ |
@@ -16,7 +16,7 @@
 ## API Convention
 
 | Aspek | Detail |
-|---|---|
+| --- | --- |
 | Base URL | `/api/v1/...` (lowercase) |
 | Auth | `Authorization: Bearer {token}` (Sanctum) |
 | Response | `JsonDataResponse` — `{status, message, data}` (NO `success` boolean) |
