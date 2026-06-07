@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Symfony\Component\HttpFoundation\Response;
 
 final class JsonDataResponse extends JsonResponse
@@ -21,18 +21,19 @@ final class JsonDataResponse extends JsonResponse
             'data' => $data,
         ];
 
-        if ($data instanceof ResourceCollection) {
-            $resource = $data->toResponse(request())->getData(true);
+        if ($data instanceof JsonResource) {
+            // Let the resource handle its own response formatting including wrapping
+            $resourceData = $data->toResponse(request())->getData(true);
 
-            if (is_array($resource)) {
-                $payload['data'] = $resource['data'] ?? [];
+            if (is_array($resourceData)) {
+                $payload['data'] = $resourceData['data'] ?? $resourceData;
 
-                if (isset($resource['meta']) && is_array($resource['meta'])) {
-                    $payload['meta'] = $resource['meta'];
+                if (isset($resourceData['meta']) && is_array($resourceData['meta'])) {
+                    $payload['meta'] = $resourceData['meta'];
                 }
 
-                if (isset($resource['links'])) {
-                    $payload['links'] = $resource['links'];
+                if (isset($resourceData['links'])) {
+                    $payload['links'] = $resourceData['links'];
                 }
             }
         }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\User\Payloads\V1;
 
-use Illuminate\Support\Facades\Hash;
 use Modules\User\Requests\V1\UserRequest;
 
 /**
@@ -14,10 +13,6 @@ final readonly class UserPayload
 {
     /**
      * Create a new UserPayload instance.
-     *
-     * @param  string  $name  The user's name.
-     * @param  string  $email  The user's email address.
-     * @param  string|null  $password  The user's password (optional for updates).
      */
     public function __construct(
         public string $name,
@@ -36,7 +31,7 @@ final readonly class UserPayload
         return new self(
             name: trim($request->string('name')->toString()),
             email: strtolower(trim($request->string('email')->toString())),
-            password: $request->filled('password') ? Hash::make($request->string('password')->toString()) : null,
+            password: $request->filled('password') ? $request->string('password')->toString() : null,
         );
     }
 
