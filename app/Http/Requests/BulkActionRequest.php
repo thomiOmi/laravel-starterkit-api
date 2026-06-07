@@ -21,7 +21,24 @@ class BulkActionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $user = $this->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        $resource = $this->getResourceName();
+        $action = $this->string('action')->toString();
+
+        // Map 'restore' to 'edit' or 'delete' based on policy names if needed,
+        // but here we use the requested action directly or mapped to permission.
+        $permissionAction = match ($action) {
+            'restore' => 'edit',
+            'delete' => 'delete',
+            default => $action,
+        };
+
+        return $user->can($resource.'.'.$permissionAction);
     }
 
     /**
@@ -36,5 +53,22 @@ class BulkActionRequest extends FormRequest
             'ids.*' => ['required', 'string'],
             'action' => ['required', 'string', 'in:delete,restore'],
         ];
+    }
+
+    /**
+     * Infer resource name from route or request.
+     */
+    protected function getResourceName(): string
+    {
+        // Try to get from route name e.g. api.v1.users.bulk -> user
+        $routeName = $this->route()?->getName() ?? '';
+        if (str_contains($routeName, 'users')) {
+            return 'user';
+        }
+        if (str_contains($routeName, 'roles')) {
+            return 'role';
+        }
+
+        return 'resource';
     }
 }
