@@ -23,22 +23,36 @@ class BulkActionRequest extends FormRequest
     {
         $user = $this->user();
 
-        if ($user === null) {
+        if (! $user) {
             return false;
         }
 
-        $resource = $this->getResourceName();
         $action = $this->string('action')->toString();
+        $resource = $this->getResourceType();
 
-        // Map 'restore' to 'edit' or 'delete' based on policy names if needed,
-        // but here we use the requested action directly or mapped to permission.
-        $permissionAction = match ($action) {
-            'restore' => 'edit',
-            'delete' => 'delete',
-            default => $action,
+        return match ($action) {
+            'delete' => $user->can($resource.'.delete'),
+            'restore' => $user->can($resource.'.edit'),
+            default => false,
         };
+    }
 
-        return $user->can($resource.'.'.$permissionAction);
+    /**
+     * Get the resource type from the route.
+     */
+    protected function getResourceType(): string
+    {
+        $path = $this->path();
+
+        if (str_contains($path, 'users')) {
+            return 'user';
+        }
+
+        if (str_contains($path, 'roles')) {
+            return 'role';
+        }
+
+        return 'unknown';
     }
 
     /**
