@@ -13,10 +13,6 @@ final readonly class UserPayload
 {
     /**
      * Create a new UserPayload instance.
-     *
-     * @param  string  $name  The user's name.
-     * @param  string  $email  The user's email address.
-     * @param  string|null  $password  The user's password (optional for updates).
      */
     public function __construct(
         public string $name,

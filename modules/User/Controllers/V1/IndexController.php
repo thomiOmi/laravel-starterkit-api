@@ -28,7 +28,7 @@ final readonly class IndexController
     public function __invoke(Request $request, UserFilter $filter): JsonDataResponse
     {
         $users = $filter->apply(User::query())
-            ->with(['roles', 'permissions'])
+            ->with(['roles.permissions', 'permissions'])
             ->simplePaginate($request->integer('per_page', 10));
 
         return new JsonDataResponse(

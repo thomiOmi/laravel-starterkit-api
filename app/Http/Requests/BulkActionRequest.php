@@ -68,4 +68,21 @@ class BulkActionRequest extends FormRequest
             'action' => ['required', 'string', 'in:delete,restore'],
         ];
     }
+
+    /**
+     * Infer resource name from route or request.
+     */
+    protected function getResourceName(): string
+    {
+        // Try to get from route name e.g. api.v1.users.bulk -> user
+        $routeName = $this->route()?->getName() ?? '';
+        if (str_contains($routeName, 'users')) {
+            return 'user';
+        }
+        if (str_contains($routeName, 'roles')) {
+            return 'role';
+        }
+
+        return 'resource';
+    }
 }
