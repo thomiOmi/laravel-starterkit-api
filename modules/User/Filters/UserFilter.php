@@ -25,6 +25,17 @@ class UserFilter extends BaseFilter
     ];
 
     /**
+     * The list of allowed sorts.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedSorts = [
+        'name',
+        'email',
+        'created_at',
+    ];
+
+    /**
      * Filter by search term (name or email).
      *
      * @param  string  $value  The search term.
@@ -47,10 +58,7 @@ class UserFilter extends BaseFilter
      */
     public function role(string $value): Builder
     {
-        return $this->builder->whereHas('roles', function (Builder $query) use ($value) {
-            /** @var Builder<User> $query */
-            $query->where('name', $value);
-        });
+        return $this->builder->whereRelation('roles', 'name', $value);
     }
 
     /**
@@ -63,11 +71,11 @@ class UserFilter extends BaseFilter
     public function createdAt(array $value): Builder
     {
         if (isset($value['from'])) {
-            $this->builder->whereDate('created_at', '>=', $value['from']);
+            $this->builder->where('created_at', '>=', $value['from']);
         }
 
         if (isset($value['to'])) {
-            $this->builder->whereDate('created_at', '<=', $value['to']);
+            $this->builder->where('created_at', '<=', $value['to']);
         }
 
         return $this->builder;
