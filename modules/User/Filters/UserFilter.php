@@ -25,7 +25,7 @@ class UserFilter extends BaseFilter
     ];
 
     /**
-     * The list of allowed sortable columns.
+     * The list of allowed sorts.
      *
      * @var array<int, string>
      */
@@ -75,7 +75,7 @@ class UserFilter extends BaseFilter
         }
 
         if (isset($value['to'])) {
-            $this->builder->where('created_at', '<=', $value['to'].' 23:59:59');
+            $this->builder->where('created_at', '<=', $value['to']);
         }
 
         return $this->builder;

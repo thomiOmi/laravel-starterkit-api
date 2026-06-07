@@ -23,7 +23,7 @@ class RoleFilter extends BaseFilter
     ];
 
     /**
-     * The list of allowed sortable columns.
+     * The list of allowed sorts.
      *
      * @var array<int, string>
      */
