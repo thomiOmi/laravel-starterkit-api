@@ -28,6 +28,13 @@ abstract class BaseFilter
     protected array $allowedFilters = [];
 
     /**
+     * The list of allowed sorts.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedSorts = [];
+
+    /**
      * Create a new QueryFilters instance.
      */
     public function __construct(protected Request $request) {}
@@ -74,10 +81,11 @@ abstract class BaseFilter
     {
         $sortBy = $this->request->string('sort_by')->trim();
         $sortDirection = $this->request->string('sort_direction', 'desc')->lower()->toString();
+
         /** @var 'asc'|'desc' $direction */
         $direction = in_array($sortDirection, ['asc', 'desc'], true) ? $sortDirection : 'desc';
 
-        if ($sortBy->isNotEmpty()) {
+        if ($sortBy->isNotEmpty() && in_array($sortBy->toString(), $this->allowedSorts, true)) {
             $this->builder->orderBy($sortBy->toString(), $direction);
         } else {
             $this->builder->latest();

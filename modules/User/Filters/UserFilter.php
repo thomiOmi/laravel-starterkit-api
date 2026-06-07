@@ -25,6 +25,17 @@ class UserFilter extends BaseFilter
     ];
 
     /**
+     * The list of allowed sorts.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedSorts = [
+        'name',
+        'email',
+        'created_at',
+    ];
+
+    /**
      * Filter by search term (name or email).
      *
      * @param  string  $value  The search term.

@@ -23,6 +23,16 @@ class RoleFilter extends BaseFilter
     ];
 
     /**
+     * The list of allowed sorts.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedSorts = [
+        'name',
+        'created_at',
+    ];
+
+    /**
      * Filter by search term.
      *
      * @param  string  $value  The search term.
