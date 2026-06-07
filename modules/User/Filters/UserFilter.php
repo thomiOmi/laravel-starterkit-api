@@ -60,11 +60,11 @@ class UserFilter extends BaseFilter
     public function createdAt(array $value): Builder
     {
         if (isset($value['from'])) {
-            $this->builder->whereDate('created_at', '>=', $value['from']);
+            $this->builder->where('created_at', '>=', $value['from']);
         }
 
         if (isset($value['to'])) {
-            $this->builder->whereDate('created_at', '<=', $value['to']);
+            $this->builder->where('created_at', '<=', $value['to'].' 23:59:59');
         }
 
         return $this->builder;
