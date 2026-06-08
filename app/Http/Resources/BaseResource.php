@@ -23,9 +23,8 @@ class BaseResource extends JsonResource
     public function with(Request $request): array
     {
         return [
-            'status' => 'success',
             'meta' => [
-                'api_version' => config('apiroute.default_version', 'V1'),
+                'api_version' => config('apiroute.default_version', 'v1'),
             ],
         ];
     }

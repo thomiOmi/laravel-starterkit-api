@@ -7,11 +7,11 @@ return [
      * Supported API versions.
      */
     'supported_versions' => [
-        'V1',
+        'v1',
     ],
 
     /**
      * Default API version.
      */
-    'default_version' => 'V1',
+    'default_version' => 'v1',
 ];

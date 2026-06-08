@@ -11,9 +11,7 @@ use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @group User Management
- *
- * @authenticated
+ * @tags User
  */
 final readonly class StoreController
 {

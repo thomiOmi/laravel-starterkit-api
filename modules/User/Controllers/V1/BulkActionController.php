@@ -8,6 +8,7 @@ use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\JsonDataResponse;
 use Modules\User\Actions\BulkDeleteUsersAction;
 use Modules\User\Actions\BulkRestoreUsersAction;
+use Modules\User\Models\User;
 
 /**
  * @tags User
@@ -27,9 +28,12 @@ final readonly class BulkActionController
         /** @var array{ids: array<int, string|int>, action: string} $validated */
         $validated = $request->validated();
 
+        /** @var User $user */
+        $user = $request->user();
+
         $count = match ($validated['action']) {
-            'delete' => $this->bulkDeleteUsers->handle($validated['ids']),
-            'restore' => $this->bulkRestoreUsers->handle($validated['ids']),
+            'delete' => $user->can('user.delete') ? $this->bulkDeleteUsers->handle($validated['ids']) : 0,
+            'restore' => $user->can('user.restore') ? $this->bulkRestoreUsers->handle($validated['ids']) : 0,
             default => 0,
         };
 

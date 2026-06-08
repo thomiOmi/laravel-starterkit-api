@@ -31,8 +31,9 @@ Boolean `success` is prohibited. Use integer `status` and standardized envelopes
 
 ```json
 {
+    "type": "about:blank",
+    "title": "Validation Failed",
     "status": 422,
-    "message": "Validation Failed",
     "detail": "The email field is already taken.",
     "errors": {
         "email": ["The email field is already taken."]

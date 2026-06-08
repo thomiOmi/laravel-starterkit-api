@@ -27,7 +27,7 @@ final readonly class DestroyController
 
         return new JsonDataResponse(
             data: null,
-            status: Response::HTTP_NO_CONTENT,
+            status: Response::HTTP_OK,
             message: __('messages.deleted', ['resource' => 'Role'])
         );
     }

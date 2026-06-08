@@ -8,6 +8,7 @@ use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\JsonDataResponse;
 use Modules\Role\Actions\BulkDeleteRolesAction;
 use Modules\Role\Actions\BulkRestoreRolesAction;
+use Modules\User\Models\User;
 
 /**
  * @tags Role
@@ -27,9 +28,12 @@ final readonly class BulkActionController
         /** @var array{ids: array<int, string|int>, action: string} $validated */
         $validated = $request->validated();
 
+        /** @var User $user */
+        $user = $request->user();
+
         $count = match ($validated['action']) {
-            'delete' => $this->bulkDeleteRoles->handle($validated['ids']),
-            'restore' => $this->bulkRestoreRoles->handle($validated['ids']),
+            'delete' => $user->can('role.delete') ? $this->bulkDeleteRoles->handle($validated['ids']) : 0,
+            'restore' => $user->can('role.restore') ? $this->bulkRestoreRoles->handle($validated['ids']) : 0,
             default => 0,
         };
 

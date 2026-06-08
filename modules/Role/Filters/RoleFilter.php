@@ -43,6 +43,10 @@ class RoleFilter extends BaseFilter
         /** @var Builder<Role> $builder */
         $builder = $this->builder;
 
-        return $builder->where('name', 'like', "%{$value}%");
+        return $builder->where(function (Builder $query) use ($value) {
+            /** @var Builder<Role> $query */
+            $query->where('name', 'like', "%{$value}%")
+                ->orWhere('description', 'like', "%{$value}%");
+        });
     }
 }

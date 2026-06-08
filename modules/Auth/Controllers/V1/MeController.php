@@ -23,7 +23,7 @@ final readonly class MeController
 
         return new JsonDataResponse(
             data: new UserResource($user),
-            message: __('messages.retrieved', ['resource' => 'User profile'])
+            message: __('auth.profile_retrieved')
         );
     }
 }
