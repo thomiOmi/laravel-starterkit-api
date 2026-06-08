@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\User\Controllers\V1;
 
 use App\Http\Requests\BulkActionRequest;
-use App\Http\Responses\JsonDataResponse;
+use App\Http\Responses\DataResponse;
 use Modules\User\Actions\BulkDeleteUsersAction;
 use Modules\User\Actions\BulkRestoreUsersAction;
 use Modules\User\Models\User;
@@ -23,7 +23,7 @@ final readonly class BulkActionController
     /**
      * Perform bulk action on users.
      */
-    public function __invoke(BulkActionRequest $request): JsonDataResponse
+    public function __invoke(BulkActionRequest $request): DataResponse
     {
         /** @var array{ids: array<int, string|int>, action: string} $validated */
         $validated = $request->validated();
@@ -39,7 +39,7 @@ final readonly class BulkActionController
 
         $action = $validated['action'];
 
-        return new JsonDataResponse(
+        return new DataResponse(
             data: ['count' => $count],
             message: __('messages.bulk_action', [
                 'resource' => 'Users',

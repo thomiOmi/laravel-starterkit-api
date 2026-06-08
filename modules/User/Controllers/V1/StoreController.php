@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
+use App\Http\Responses\DataResponse;
 use Modules\User\Actions\StoreUserAction;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
@@ -23,13 +23,13 @@ final readonly class StoreController
      * Store a newly created user in storage.
      *
      * @param  UserRequest  $request  The validated user creation request.
-     * @return JsonDataResponse The API response containing the new user.
+     * @return DataResponse The API response containing the new user.
      */
-    public function __invoke(UserRequest $request): JsonDataResponse
+    public function __invoke(UserRequest $request): DataResponse
     {
         $user = $this->storeUser->handle($request->payload());
 
-        return new JsonDataResponse(
+        return new DataResponse(
             data: new UserResource($user),
             status: Response::HTTP_CREATED,
             message: __('messages.created', ['resource' => 'User'])

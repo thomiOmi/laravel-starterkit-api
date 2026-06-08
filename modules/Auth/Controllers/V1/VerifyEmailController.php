@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
+use App\Http\Responses\DataResponse;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 use Modules\User\Models\User;
@@ -17,7 +17,7 @@ final readonly class VerifyEmailController
     /**
      * Verify the user's email address using a signed URL.
      */
-    public function __invoke(Request $request): JsonDataResponse
+    public function __invoke(Request $request): DataResponse
     {
         /** @var User $user */
         $user = User::findOrFail($request->route('id'));
@@ -27,7 +27,7 @@ final readonly class VerifyEmailController
         }
 
         if ($user->hasVerifiedEmail()) {
-            return new JsonDataResponse(
+            return new DataResponse(
                 message: __('auth.verified')
             );
         }
@@ -36,7 +36,7 @@ final readonly class VerifyEmailController
             event(new Verified($user));
         }
 
-        return new JsonDataResponse(
+        return new DataResponse(
             message: __('auth.verified')
         );
     }
