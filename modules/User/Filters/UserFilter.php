@@ -58,10 +58,7 @@ class UserFilter extends BaseFilter
      */
     public function role(string $value): Builder
     {
-        return $this->builder->whereHas('roles', function (Builder $query) use ($value) {
-            /** @var Builder<User> $query */
-            $query->where('name', $value);
-        });
+        return $this->builder->whereRelation('roles', 'name', $value);
     }
 
     /**

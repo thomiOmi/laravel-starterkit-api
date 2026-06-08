@@ -21,28 +21,20 @@ class ModuleServiceProvider extends ServiceProvider
     }
 
     /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        //
-    }
-
-    /**
      * Register modules and their providers.
      */
     protected function registerModules(): void
     {
-        $modulePath = base_path('modules');
+        $modulesRootPath = base_path('modules');
 
-        if (! File::exists($modulePath)) {
+        if (! File::exists($modulesRootPath)) {
             return;
         }
 
-        $modules = File::directories($modulePath);
+        $modules = File::directories($modulesRootPath);
 
-        foreach ($modules as $module) {
-            $modulePath = is_string($module) ? $module : '';
+        foreach ($modules as $moduleDirectory) {
+            $modulePath = is_string($moduleDirectory) ? $moduleDirectory : '';
             if ($modulePath === '') {
                 continue;
             }

@@ -21,7 +21,32 @@ class BulkActionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $user = $this->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        $routeName = (string) ($this->route()?->getName() ?? '');
+        $action = $this->string('action')->toString();
+
+        if (str_contains($routeName, 'users')) {
+            return match ($action) {
+                'delete' => $user->can('user.delete'),
+                'restore' => $user->can('user.edit'),
+                default => true, // Allow validation to handle invalid actions (e.g. 'update')
+            };
+        }
+
+        if (str_contains($routeName, 'roles')) {
+            return match ($action) {
+                'delete' => $user->can('role.delete'),
+                'restore' => $user->can('role.edit'),
+                default => true, // Allow validation to handle invalid actions (e.g. 'update')
+            };
+        }
+
+        return false;
     }
 
     /**
