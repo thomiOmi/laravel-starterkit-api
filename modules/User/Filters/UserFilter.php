@@ -84,7 +84,7 @@ class UserFilter extends BaseFilter
         }
 
         if (isset($value['to'])) {
-            $builder->where('created_at', '<=', $value['to'].' 23:59:59');
+            $builder->where('created_at', '<=', (string) now()->parse($value['to'])->endOfDay());
         }
 
         return $builder;

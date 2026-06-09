@@ -129,4 +129,15 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Default User Password
+    |--------------------------------------------------------------------------
+    |
+    | This is the default password used by factories and seeders.
+    |
+    */
+
+    'default_password' => env('DEFAULT_USER_PASSWORD', 'password'),
+
 ];
