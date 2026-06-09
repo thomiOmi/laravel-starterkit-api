@@ -18,18 +18,20 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         // Reset cached roles and permissions
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $guards = ['web', 'sanctum'];
+        $guards = ['web'];
         $permissions = [
             'user.view',
             'user.create',
             'user.edit',
             'user.delete',
+            'user.restore',
             'role.view',
             'role.create',
             'role.edit',
             'role.delete',
+            'role.restore',
         ];
 
         foreach ($guards as $guard) {

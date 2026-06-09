@@ -22,8 +22,7 @@ final class ProblemResponse extends JsonResponse
         $payload = [
             'type' => $type,
             'title' => $title,
-            'status' => $status >= 400 ? 'error' : $status, // Compatibility with GlobalErrorHandlingTest
-            'message' => $title, // Compatibility with existing tests
+            'status' => $status,
             'detail' => $detail,
         ];
 

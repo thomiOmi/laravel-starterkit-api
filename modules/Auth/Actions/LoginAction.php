@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Payloads\V1\LoginPayload;
 use Modules\User\Models\User;
@@ -24,18 +24,17 @@ final readonly class LoginAction
      */
     public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
-        if (! Auth::attempt(['email' => $payload->email, 'password' => $payload->password])) {
+        $user = User::where('email', $payload->email)->first();
+
+        if (! $user || $user->password === null || ! Hash::check($payload->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
             ]);
         }
 
-        /** @var User $user */
-        $user = Auth::user();
-
         $token = $user->createToken(
             $payload->deviceName ?? $userAgent ?? 'auth_token',
-            ['*'],
+            ['full-access'],
         );
 
         /** @var PersonalAccessToken $accessToken */

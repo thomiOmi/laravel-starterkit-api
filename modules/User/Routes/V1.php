@@ -10,7 +10,7 @@ use Modules\User\Controllers\V1\ShowController;
 use Modules\User\Controllers\V1\StoreController;
 use Modules\User\Controllers\V1\UpdateController;
 
-Route::prefix('users')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->name('users.')->group(function () {
+Route::prefix('users')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/', IndexController::class)->middleware('can:user.view')->name('index');
     Route::post('/', StoreController::class)->middleware('can:user.create')->name('store');
     Route::post('/bulk', BulkActionController::class)->middleware('can:user.delete')->name('bulk');

@@ -14,13 +14,6 @@ use Illuminate\Support\Str;
 abstract class BaseFilter
 {
     /**
-     * The builder instance.
-     *
-     * @var Builder<TModel>
-     */
-    protected Builder $builder; // @phpstan-ignore property.uninitialized
-
-    /**
      * The list of allowed filters.
      *
      * @var array<int, string>
@@ -47,8 +40,6 @@ abstract class BaseFilter
      */
     public function apply(Builder $builder): Builder
     {
-        $this->builder = $builder;
-
         foreach ($this->getFilters() as $name => $value) {
             if (! $this->isFilterAllowed($name)) {
                 continue;
@@ -57,13 +48,13 @@ abstract class BaseFilter
             $method = Str::camel((string) $name);
 
             if ($value !== null && $value !== '' && method_exists($this, $method)) {
-                $this->{$method}($value);
+                $this->{$method}($value, $builder);
             }
         }
 
-        $this->applySorting();
+        $this->applySorting($builder);
 
-        return $this->builder;
+        return $builder;
     }
 
     /**
@@ -76,8 +67,10 @@ abstract class BaseFilter
 
     /**
      * Apply sorting to the query.
+     *
+     * @param  Builder<TModel>  $builder
      */
-    protected function applySorting(): void
+    protected function applySorting(Builder $builder): void
     {
         $sortBy = trim((string) $this->request->query('sort_by', ''));
         $sortDirection = strtolower((string) $this->request->query('sort_direction', 'desc'));
@@ -86,9 +79,9 @@ abstract class BaseFilter
         $direction = in_array($sortDirection, ['asc', 'desc'], true) ? $sortDirection : 'desc';
 
         if ($sortBy !== '' && in_array($sortBy, $this->allowedSorts, true)) {
-            $this->builder->orderBy($sortBy, $direction);
+            $builder->orderBy($sortBy, $direction);
         } else {
-            $this->builder->latest();
+            $builder->latest();
         }
     }
 

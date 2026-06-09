@@ -14,7 +14,7 @@ This document defines the security protocols and API communication standards for
 
 Boolean `success` is prohibited. Use integer `status` and standardized envelopes.
 
-### Success: `JsonDataResponse`
+### Success: `DataResponse`
 
 ```json
 {
@@ -31,8 +31,9 @@ Boolean `success` is prohibited. Use integer `status` and standardized envelopes
 
 ```json
 {
+    "type": "about:blank",
+    "title": "Validation Failed",
     "status": 422,
-    "message": "Validation Failed",
     "detail": "The email field is already taken.",
     "errors": {
         "email": ["The email field is already taken."]

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
+use App\Http\Responses\DataResponse;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
 use Modules\User\Filters\UserFilter;
@@ -25,13 +25,13 @@ final readonly class IndexController
     #[QueryParameter(name: 'sort_by', description: 'Column name to sort by.', type: 'string', required: false, default: 'created_at', example: 'name')]
     #[QueryParameter(name: 'sort_direction', description: 'Sort direction.', type: 'string', required: false, default: 'desc', example: 'asc')]
     #[QueryParameter(name: 'role', description: 'Filter by role name.', type: 'string', required: false, example: 'admin')]
-    public function __invoke(Request $request, UserFilter $filter): JsonDataResponse
+    public function __invoke(Request $request, UserFilter $filter): DataResponse
     {
         $users = $filter->apply(User::query())
             ->with(['roles.permissions', 'permissions'])
             ->simplePaginate($request->integer('per_page', 10));
 
-        return new JsonDataResponse(
+        return new DataResponse(
             data: UserResource::collection($users),
             message: __('messages.retrieved', ['resource' => 'Users'])
         );

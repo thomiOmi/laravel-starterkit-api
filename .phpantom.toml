@@ -1,0 +1,11 @@
+# $schema: https://github.com/AJenbo/phpantom_lsp/raw/main/config-schema.json
+
+[php]
+version = "8.4"
+
+[diagnostics]
+unresolved-member-access = true
+report-magic-properties = true
+
+[indexing]
+strategy = "composer"

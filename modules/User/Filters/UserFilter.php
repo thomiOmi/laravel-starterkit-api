@@ -39,11 +39,12 @@ class UserFilter extends BaseFilter
      * Filter by search term (name or email).
      *
      * @param  string  $value  The search term.
+     * @param  Builder<User>  $builder
      * @return Builder<User> The updated query builder instance.
      */
-    public function search(string $value): Builder
+    public function search(string $value, Builder $builder): Builder
     {
-        return $this->builder->where(function (Builder $query) use ($value) {
+        return $builder->where(function (Builder $query) use ($value) {
             /** @var Builder<User> $query */
             $query->where('name', 'like', "%{$value}%")
                 ->orWhere('email', 'like', "%{$value}%");
@@ -54,9 +55,10 @@ class UserFilter extends BaseFilter
      * Filter by role name.
      *
      * @param  string  $value  The role name.
+     * @param  Builder<User>  $builder
      * @return Builder<User> The updated query builder instance.
      */
-    public function role(string $value): Builder
+    public function role(string $value, Builder $builder): Builder
     {
         return $this->builder->whereRelation('roles', 'name', $value);
     }
@@ -66,9 +68,10 @@ class UserFilter extends BaseFilter
      * Expects: ?created_at[from]=2023-01-01&created_at[to]=2023-12-31
      *
      * @param  array<string, string>  $value  The date range values.
+     * @param  Builder<User>  $builder
      * @return Builder<User> The updated query builder instance.
      */
-    public function createdAt(array $value): Builder
+    public function createdAt(array $value, Builder $builder): Builder
     {
         if (isset($value['from'])) {
             $this->builder->where('created_at', '>=', $value['from']);
@@ -78,6 +81,6 @@ class UserFilter extends BaseFilter
             $this->builder->where('created_at', '<=', $value['to'].' 23:59:59');
         }
 
-        return $this->builder;
+        return $builder;
     }
 }

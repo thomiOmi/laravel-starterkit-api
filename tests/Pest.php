@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Pest\Expectation;
 use Tests\TestCase;
 
 /*
@@ -29,6 +30,7 @@ uses(TestCase::class, RefreshDatabase::class)
 */
 
 expect()->extend('toBeOne', function () {
+    /** @var Expectation $this */
     return $this->toBe(1);
 });
 
