@@ -32,9 +32,7 @@ final readonly class UpdateRoleAction
         return $this->database->transaction(function () use ($role, $payload) {
             $role->update($payload->toArray());
 
-            if (! empty($payload->permissions)) {
-                $role->syncPermissions($payload->permissions);
-            }
+            $role->syncPermissions($payload->permissions);
 
             return $role->load('permissions');
         });

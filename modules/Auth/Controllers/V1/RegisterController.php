@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
-use App\Http\Responses\DataResponse;
+use App\Http\Responses\JsonDataResponse;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Requests\V1\RegisterRequest;
 use Modules\Auth\Resources\UserResource;
@@ -19,11 +19,11 @@ final readonly class RegisterController
         private RegisterAction $registerAction
     ) {}
 
-    public function __invoke(RegisterRequest $request): DataResponse
+    public function __invoke(RegisterRequest $request): JsonDataResponse
     {
         $user = $this->registerAction->handle($request->payload());
 
-        return new DataResponse(
+        return new JsonDataResponse(
             data: new UserResource($user),
             status: Response::HTTP_CREATED,
             message: __('auth.registered')

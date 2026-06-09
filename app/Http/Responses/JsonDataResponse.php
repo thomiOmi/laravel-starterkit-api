@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Symfony\Component\HttpFoundation\Response;
 
-final class DataResponse extends JsonResponse
+final class JsonDataResponse extends JsonResponse
 {
     public function __construct(
         mixed $data = null,

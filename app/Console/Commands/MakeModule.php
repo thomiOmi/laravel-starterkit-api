@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
-#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version}')]
-#[Description('Create a new module following the API Skill standards')]
 class MakeModule extends Command
 {
+    protected $signature = 'make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version}';
+
+    protected $description = 'Create a new module following the API Skill standards';
+
     public function handle(): void
     {
         $nameArgument = $this->argument('name');

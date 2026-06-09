@@ -18,14 +18,6 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     use Queueable;
 
     /**
-     * Ensure notification is only dispatched after the database transaction commits.
-     */
-    public function __construct()
-    {
-        $this->afterCommit();
-    }
-
-    /**
      * Get the verification URL for the given notifiable.
      *
      * @param  mixed  $notifiable  The notifiable model.
@@ -34,11 +26,11 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     protected function verificationUrl($notifiable): string
     {
         /** @var User $notifiable */
-        $expireValue = config('auth.verification.expire', 60);
-        $expire = is_numeric($expireValue) ? (int) $expireValue : 60;
+        /** @var int $expire */
+        $expire = config('auth.verification.expire', 60);
 
         return URL::temporarySignedRoute(
-            'api.v1.auth.verification.verify',
+            'api.V1.auth.verification.verify',
             now()->addMinutes($expire),
             [
                 'id' => $notifiable->getKey(),

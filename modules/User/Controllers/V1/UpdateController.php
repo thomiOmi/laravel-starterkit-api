@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
-use App\Http\Responses\DataResponse;
+use App\Http\Responses\JsonDataResponse;
 use Modules\User\Actions\UpdateUserAction;
 use Modules\User\Models\User;
 use Modules\User\Requests\V1\UserRequest;
@@ -22,11 +22,11 @@ final readonly class UpdateController
     /**
      * Update the specified user in storage.
      */
-    public function __invoke(UserRequest $request, User $user): DataResponse
+    public function __invoke(UserRequest $request, User $user): JsonDataResponse
     {
         $updatedUser = $this->updateUser->handle($user, $request->payload());
 
-        return new DataResponse(
+        return new JsonDataResponse(
             data: new UserResource($updatedUser),
             message: __('messages.updated', ['resource' => 'User'])
         );

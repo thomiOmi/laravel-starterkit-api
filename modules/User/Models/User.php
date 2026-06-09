@@ -21,8 +21,6 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
- * @method static \Illuminate\Database\Eloquent\Builder<static> onlyTrashed()
- *
  * @property string $id The unique identifier for the user.
  * @property string $name The name of the user.
  * @property string $email The email address of the user.

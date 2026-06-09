@@ -18,20 +18,18 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         // Reset cached roles and permissions
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        $guards = ['web'];
+        $guards = ['web', 'sanctum'];
         $permissions = [
             'user.view',
             'user.create',
             'user.edit',
             'user.delete',
-            'user.restore',
             'role.view',
             'role.create',
             'role.edit',
             'role.delete',
-            'role.restore',
         ];
 
         foreach ($guards as $guard) {
@@ -73,9 +71,9 @@ class RoleSeeder extends Seeder
         }
 
         // Assign 'user' role to all other users that don't have a role
-        User::whereDoesntHave('roles')->chunkById(100, function ($users) {
-            foreach ($users as $user) {
-                $user->assignRole('user');
+        User::with('roles')->get()->each(function ($u) {
+            if ($u->roles->count() === 0) {
+                $u->assignRole('user');
             }
         });
     }

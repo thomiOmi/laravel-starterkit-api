@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
-use App\Http\Responses\DataResponse;
+use App\Http\Responses\JsonDataResponse;
 use Modules\User\Actions\DeleteUserAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,13 +21,13 @@ final readonly class DestroyController
     /**
      * Remove the specified user from storage.
      */
-    public function __invoke(User $user): DataResponse
+    public function __invoke(User $user): JsonDataResponse
     {
         $this->deleteUser->handle($user);
 
-        return new DataResponse(
+        return new JsonDataResponse(
             data: null,
-            status: Response::HTTP_OK,
+            status: Response::HTTP_NO_CONTENT,
             message: __('messages.deleted', ['resource' => 'User'])
         );
     }

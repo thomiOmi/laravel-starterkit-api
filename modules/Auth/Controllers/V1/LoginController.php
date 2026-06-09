@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
-use App\Http\Responses\DataResponse;
+use App\Http\Responses\JsonDataResponse;
 use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\Requests\V1\LoginRequest;
 use Modules\Auth\Resources\UserResource;
@@ -18,7 +18,7 @@ final readonly class LoginController
         private LoginAction $loginAction
     ) {}
 
-    public function __invoke(LoginRequest $request): DataResponse
+    public function __invoke(LoginRequest $request): JsonDataResponse
     {
         $result = $this->loginAction->handle(
             payload: $request->payload(),
@@ -26,7 +26,7 @@ final readonly class LoginController
             userAgent: $request->userAgent()
         );
 
-        return new DataResponse(
+        return new JsonDataResponse(
             data: [
                 'user' => new UserResource($result['user']),
                 'access_token' => $result['access_token'],

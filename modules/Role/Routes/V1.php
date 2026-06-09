@@ -10,7 +10,7 @@ use Modules\Role\Controllers\V1\ShowController;
 use Modules\Role\Controllers\V1\StoreController;
 use Modules\Role\Controllers\V1\UpdateController;
 
-Route::prefix('roles')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->group(function () {
+Route::prefix('roles')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->name('roles.')->group(function () {
     Route::get('/', IndexController::class)->middleware('can:role.view')->name('index');
     Route::post('/', StoreController::class)->middleware('can:role.create')->name('store');
     Route::post('/bulk', BulkActionController::class)->middleware('can:role.edit')->name('bulk');

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
-use App\Http\Responses\DataResponse;
+use App\Http\Responses\JsonDataResponse;
 use Modules\Role\Models\Role;
 use Modules\Role\Resources\RoleResource;
 
@@ -16,11 +16,11 @@ final readonly class ShowController
     /**
      * Display the specified role.
      */
-    public function __invoke(Role $role): DataResponse
+    public function __invoke(Role $role): JsonDataResponse
     {
         $role->load(['permissions']);
 
-        return new DataResponse(
+        return new JsonDataResponse(
             data: new RoleResource($role),
             message: __('messages.retrieved', ['resource' => 'Role'])
         );

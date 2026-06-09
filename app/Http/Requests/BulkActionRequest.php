@@ -21,7 +21,32 @@ class BulkActionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $user = $this->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        $routeName = (string) $this->route()?->getName();
+        $action = $this->string('action')->toString();
+
+        if (str_contains($routeName, 'users')) {
+            return match ($action) {
+                'delete' => $user->can('user.delete'),
+                'restore' => $user->can('user.edit'),
+                default => false,
+            };
+        }
+
+        if (str_contains($routeName, 'roles')) {
+            return match ($action) {
+                'delete' => $user->can('role.delete'),
+                'restore' => $user->can('role.edit'),
+                default => false,
+            };
+        }
+
+        return false;
     }
 
     /**
@@ -33,7 +58,7 @@ class BulkActionRequest extends FormRequest
     {
         return [
             'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['required', 'ulid'],
+            'ids.*' => ['required', 'string'],
             'action' => ['required', 'string', 'in:delete,restore'],
         ];
     }

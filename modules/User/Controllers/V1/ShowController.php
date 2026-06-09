@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
-use App\Http\Responses\DataResponse;
+use App\Http\Responses\JsonDataResponse;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
@@ -16,11 +16,11 @@ final readonly class ShowController
     /**
      * Display the specified user.
      */
-    public function __invoke(User $user): DataResponse
+    public function __invoke(User $user): JsonDataResponse
     {
-        $user->load(['roles.permissions', 'permissions']);
+        $user->load(['roles', 'permissions']);
 
-        return new DataResponse(
+        return new JsonDataResponse(
             data: new UserResource($user),
             message: __('messages.retrieved', ['resource' => 'User'])
         );

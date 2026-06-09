@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
-use App\Http\Responses\DataResponse;
+use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\Request;
 use Modules\{{Module}}\Models\{{Resource}};
 use Modules\{{Module}}\Resources\{{Resource}}Resource;
@@ -20,13 +20,13 @@ final readonly class IndexController
      * Handle the incoming request.
      *
      * @param Request $request
-     * @return DataResponse
+     * @return JsonDataResponse
      */
-    public function __invoke(Request $request): DataResponse
+    public function __invoke(Request $request): JsonDataResponse
     {
         $items = {{Resource}}::simplePaginate($request->integer('per_page', 10));
 
-        return new DataResponse(
+        return new JsonDataResponse(
             data: {{Resource}}Resource::collection($items),
             message: '{{Resource}} list retrieved successfully.',
         );
