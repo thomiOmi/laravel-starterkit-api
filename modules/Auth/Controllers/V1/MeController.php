@@ -19,8 +19,6 @@ final readonly class MeController
         /** @var User $user */
         $user = $request->user();
 
-        $user->load(['roles', 'permissions']);
-
         return new JsonDataResponse(
             data: new UserResource($user),
             message: __('messages.retrieved', ['resource' => 'User profile'])

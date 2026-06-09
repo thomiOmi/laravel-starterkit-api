@@ -18,7 +18,7 @@ beforeEach(function () {
 describe('User CRUD Operations V1', function () {
     it('allows admin to list users', function () {
         $this->actingAs($this->admin)
-            ->getJson('/api/V1/users')
+            ->getJson('/api/v1/users')
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',
@@ -35,7 +35,7 @@ describe('User CRUD Operations V1', function () {
         ];
 
         $this->actingAs($this->admin)
-            ->postJson('/api/V1/users', $payload)
+            ->postJson('/api/v1/users', $payload)
             ->assertStatus(Response::HTTP_CREATED)
             ->assertJsonPath('data.email', 'newuser@example.com');
 
@@ -50,7 +50,7 @@ describe('User CRUD Operations V1', function () {
         ];
 
         $this->actingAs($this->admin)
-            ->putJson("/api/V1/users/{$user->id}", $payload)
+            ->putJson("/api/v1/users/{$user->id}", $payload)
             ->assertSuccessful();
 
         $this->assertDatabaseHas('users', ['id' => $user->id, 'name' => 'Updated Name']);
@@ -60,7 +60,7 @@ describe('User CRUD Operations V1', function () {
         $user = User::factory()->create();
 
         $this->actingAs($this->admin)
-            ->deleteJson("/api/V1/users/{$user->id}")
+            ->deleteJson("/api/v1/users/{$user->id}")
             ->assertStatus(Response::HTTP_NO_CONTENT);
 
         $this->assertSoftDeleted('users', ['id' => $user->id]);
@@ -70,7 +70,7 @@ describe('User CRUD Operations V1', function () {
         $user = User::factory()->create();
 
         $this->actingAs($user)
-            ->getJson('/api/V1/users')
+            ->getJson('/api/v1/users')
             ->assertStatus(Response::HTTP_FORBIDDEN);
     });
 });
