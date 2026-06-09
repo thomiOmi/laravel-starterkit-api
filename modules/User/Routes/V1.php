@@ -13,7 +13,7 @@ use Modules\User\Controllers\V1\UpdateController;
 Route::prefix('users')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->name('users.')->group(function () {
     Route::get('/', IndexController::class)->middleware('can:user.view')->name('index');
     Route::post('/', StoreController::class)->middleware('can:user.create')->name('store');
-    Route::post('/bulk', BulkActionController::class)->middleware('can:user.delete')->name('bulk');
+    Route::post('/bulk', BulkActionController::class)->name('bulk');
     Route::get('/{user}', ShowController::class)->middleware('can:user.view')->name('show');
     Route::put('/{user}', UpdateController::class)->middleware('can:user.edit')->name('update');
     Route::delete('/{user}', DestroyController::class)->middleware('can:user.delete')->name('destroy');

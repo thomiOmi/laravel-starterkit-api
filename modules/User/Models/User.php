@@ -35,7 +35,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Role> $roles The roles assigned to the user.
  * @property-read Collection<int, Permission> $permissions The permissions assigned to the user.
  */
-#[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'email_verified_at'])]
+#[Fillable(['name', 'email', 'password', 'provider', 'provider_id'])]
 #[Hidden(['password', 'remember_token'])]
 /**
  * @implements MustVerifyEmail
