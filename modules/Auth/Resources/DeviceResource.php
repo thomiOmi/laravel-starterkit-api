@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\Auth\Resources;
 
 use App\Http\Resources\BaseResource;
-use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use Modules\User\Models\User;
 
 /**

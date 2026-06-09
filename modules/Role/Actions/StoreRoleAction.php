@@ -30,10 +30,7 @@ final readonly class StoreRoleAction
     {
         return $this->database->transaction(function () use ($payload) {
             /** @var Role $role */
-            $role = Role::create([
-                ...$payload->toArray(),
-                'guard_name' => 'web',
-            ]);
+            $role = Role::create($payload->toArray());
 
             if (! empty($payload->permissions)) {
                 $role->syncPermissions($payload->permissions);

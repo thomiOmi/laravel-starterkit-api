@@ -34,7 +34,6 @@ Detailed guides for using and extending the starter kit:
 
 -   **Backend**: PHP 8.4, Laravel 13, Sanctum, Spatie Permission, Laravel Pennant.
 -   **Testing**: Pest PHP.
--   **Static Analysis**: Larastan (PHPStan Level 9).
 -   **Documentation**: Scramble (OpenAPI/Swagger).
 -   **Standards**: Modular Architecture, DTOs, Repository Pattern.
 
@@ -67,11 +66,6 @@ php artisan test
 
 # Run tests for a specific module
 ./vendor/bin/pest modules/User
-
-# Code quality
-./vendor/bin/pint --format agent         # Format code (PSR-12/Laravel)
-./vendor/bin/phpstan analyse             # Static analysis (Level 9)
-
 ```
 
 ---

@@ -18,7 +18,7 @@
 | --- | --- |
 | Base URL | `/api/v1/...` (lowercase) |
 | Auth | `Authorization: Bearer {token}` (Sanctum) |
-| Response | `DataResponse` — `{status, message, data}` (NO `success` boolean) |
+| Response | `JsonDataResponse` — `{status, message, data}` (NO `success` boolean) |
 | Error | `ProblemResponse` — RFC 7807 |
 | Date format | `Y-m-d H:i:s` |
 | Route names | `api.v1.{module}.{name}` |

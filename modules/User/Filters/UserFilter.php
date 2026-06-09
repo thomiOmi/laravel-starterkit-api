@@ -39,11 +39,13 @@ class UserFilter extends BaseFilter
      * Filter by search term (name or email).
      *
      * @param  string  $value  The search term.
-     * @param  Builder<User>  $builder
      * @return Builder<User> The updated query builder instance.
      */
-    public function search(string $value, Builder $builder): Builder
+    public function search(string $value): Builder
     {
+        /** @var Builder<User> $builder */
+        $builder = $this->builder;
+
         return $builder->where(function (Builder $query) use ($value) {
             /** @var Builder<User> $query */
             $query->where('name', 'like', "%{$value}%")
@@ -55,12 +57,14 @@ class UserFilter extends BaseFilter
      * Filter by role name.
      *
      * @param  string  $value  The role name.
-     * @param  Builder<User>  $builder
      * @return Builder<User> The updated query builder instance.
      */
-    public function role(string $value, Builder $builder): Builder
+    public function role(string $value): Builder
     {
-        return $this->builder->whereRelation('roles', 'name', $value);
+        /** @var Builder<User> $builder */
+        $builder = $this->builder;
+
+        return $builder->whereRelation('roles', 'name', $value);
     }
 
     /**
@@ -68,17 +72,19 @@ class UserFilter extends BaseFilter
      * Expects: ?created_at[from]=2023-01-01&created_at[to]=2023-12-31
      *
      * @param  array<string, string>  $value  The date range values.
-     * @param  Builder<User>  $builder
      * @return Builder<User> The updated query builder instance.
      */
-    public function createdAt(array $value, Builder $builder): Builder
+    public function createdAt(array $value): Builder
     {
+        /** @var Builder<User> $builder */
+        $builder = $this->builder;
+
         if (isset($value['from'])) {
-            $this->builder->where('created_at', '>=', $value['from']);
+            $builder->where('created_at', '>=', $value['from']);
         }
 
         if (isset($value['to'])) {
-            $this->builder->where('created_at', '<=', $value['to']);
+            $builder->where('created_at', '<=', $value['to']);
         }
 
         return $builder;
