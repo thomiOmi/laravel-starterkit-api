@@ -34,8 +34,8 @@ class VerifyEmail extends BaseVerifyEmail implements ShouldQueue
     protected function verificationUrl($notifiable): string
     {
         /** @var User $notifiable */
-        /** @var int $expire */
-        $expire = config('auth.verification.expire', 60);
+        $expireValue = config('auth.verification.expire', 60);
+        $expire = is_numeric($expireValue) ? (int) $expireValue : 60;
 
         return URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
