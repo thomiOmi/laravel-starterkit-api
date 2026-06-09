@@ -15,7 +15,7 @@ beforeEach(function () {
 
 describe('Auth Core Features V1', function () {
     it('can register a new user', function () {
-        $response = $this->postJson('/api/V1/auth/register', [
+        $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'password' => 'password123',
@@ -34,7 +34,7 @@ describe('Auth Core Features V1', function () {
             'password' => 'password123',
         ]);
 
-        $response = $this->postJson('/api/V1/auth/login', [
+        $response = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
             'password' => 'password123',
         ]);
@@ -55,7 +55,7 @@ describe('Auth Core Features V1', function () {
         $token = $user->createToken('test')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-            ->postJson('/api/V1/auth/logout');
+            ->postJson('/api/v1/auth/logout');
 
         $response->assertStatus(Response::HTTP_NO_CONTENT);
     });
@@ -65,7 +65,7 @@ describe('Auth Core Features V1', function () {
         $token = $user->createToken('test')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
-            ->getJson('/api/V1/auth/me');
+            ->getJson('/api/v1/auth/me');
 
         $response->assertSuccessful()
             ->assertJsonPath('data.email', $user->email);
