@@ -19,7 +19,7 @@ beforeEach(function () {
 describe('Role CRUD Operations V1', function () {
     it('allows admin to list roles', function () {
         $this->actingAs($this->admin)
-            ->getJson('/api/V1/roles')
+            ->getJson('/api/v1/roles')
             ->assertSuccessful()
             ->assertJsonStructure(['data', 'message']);
     });
@@ -31,7 +31,7 @@ describe('Role CRUD Operations V1', function () {
         ];
 
         $this->actingAs($this->admin)
-            ->postJson('/api/V1/roles', $payload)
+            ->postJson('/api/v1/roles', $payload)
             ->assertStatus(Response::HTTP_CREATED);
 
         $this->assertDatabaseHas('roles', ['name' => 'manager']);
@@ -45,7 +45,7 @@ describe('Role CRUD Operations V1', function () {
         ];
 
         $this->actingAs($this->admin)
-            ->putJson("/api/V1/roles/{$role->id}", $payload)
+            ->putJson("/api/v1/roles/{$role->id}", $payload)
             ->assertSuccessful();
 
         $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => 'new-role-name']);
@@ -55,7 +55,7 @@ describe('Role CRUD Operations V1', function () {
         $role = Role::create(['name' => 'to-delete', 'guard_name' => 'web']);
 
         $this->actingAs($this->admin)
-            ->deleteJson("/api/V1/roles/{$role->id}")
+            ->deleteJson("/api/v1/roles/{$role->id}")
             ->assertStatus(Response::HTTP_NO_CONTENT);
 
         $this->assertSoftDeleted('roles', ['id' => $role->id]);
