@@ -18,7 +18,7 @@ final readonly class ShowController
      */
     public function __invoke(User $user): JsonDataResponse
     {
-        $user->load(['roles', 'permissions']);
+        $user->load(['roles.permissions', 'permissions']);
 
         return new JsonDataResponse(
             data: new UserResource($user),
