@@ -27,11 +27,13 @@ final readonly class BulkRestoreUsersAction
      */
     public function handle(array $ids): int
     {
-        return $this->database->transaction(function () use ($ids) {
-            /** @var int $restoredCount */
-            $restoredCount = User::onlyTrashed()->whereIn('id', $ids)->restore();
-
-            return $restoredCount;
+        return $this->database->transaction(function () use ($ids): int {
+            return User::onlyTrashed()
+                ->whereIn('id', $ids)
+                ->toBase()
+                ->update([
+                    (new User)->getDeletedAtColumn() => null,
+                ]);
         });
     }
 }

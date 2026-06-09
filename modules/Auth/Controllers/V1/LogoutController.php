@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
+use App\Http\Responses\DataResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\LogoutAction;
 use Modules\User\Models\User;
@@ -19,16 +19,16 @@ final readonly class LogoutController
         private LogoutAction $logoutAction
     ) {}
 
-    public function __invoke(Request $request): JsonDataResponse
+    public function __invoke(Request $request): DataResponse
     {
         /** @var User $user */
         $user = $request->user();
 
         $this->logoutAction->handle($user);
 
-        return new JsonDataResponse(
+        return new DataResponse(
             data: null,
-            status: Response::HTTP_NO_CONTENT,
+            status: Response::HTTP_OK,
             message: __('auth.logout_success')
         );
     }
