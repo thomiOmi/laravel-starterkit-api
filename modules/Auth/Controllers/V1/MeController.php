@@ -18,7 +18,6 @@ final readonly class MeController
     {
         /** @var User $user */
         $user = $request->user();
-
         $user->load(['roles', 'permissions']);
 
         return new DataResponse(
