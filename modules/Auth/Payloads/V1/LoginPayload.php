@@ -19,7 +19,7 @@ final readonly class LoginPayload
         return new self(
             email: strtolower(trim($request->string('email')->toString())),
             password: $request->string('password')->toString(),
-            deviceName: $request->string('device_name')->toString() ?: null,
+            deviceName: trim($request->string('device_name')->toString()) ?: null,
         );
     }
 }

@@ -30,7 +30,7 @@ class BulkActionRequest extends FormRequest
         $routeName = (string) $this->route()?->getName();
         $action = $this->string('action')->toString();
 
-        if (str_contains($routeName, 'users')) {
+        if (str_contains($routeName, '.users.')) {
             return match ($action) {
                 'delete' => $user->can('user.delete'),
                 'restore' => $user->can('user.edit'),
@@ -38,7 +38,7 @@ class BulkActionRequest extends FormRequest
             };
         }
 
-        if (str_contains($routeName, 'roles')) {
+        if (str_contains($routeName, '.roles.')) {
             return match ($action) {
                 'delete' => $user->can('role.delete'),
                 'restore' => $user->can('role.edit'),
@@ -57,7 +57,7 @@ class BulkActionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ids' => ['required', 'array', 'min:1'],
+            'ids' => ['required', 'array', 'min:1', 'max:50'],
             'ids.*' => ['required', 'string'],
             'action' => ['required', 'string', 'in:delete,restore'],
         ];
