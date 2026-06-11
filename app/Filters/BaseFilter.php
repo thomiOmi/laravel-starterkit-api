@@ -49,11 +49,11 @@ abstract class BaseFilter
     {
         $this->builder = $builder;
 
-        foreach ($this->getFilters() as $name => $value) {
-            if (! $this->isFilterAllowed($name)) {
-                continue;
-            }
+        $filters = ! empty($this->allowedFilters)
+            ? $this->request->only($this->allowedFilters)
+            : $this->getFilters();
 
+        foreach ($filters as $name => $value) {
             $method = Str::camel((string) $name);
 
             if ($value !== null && $value !== '' && method_exists($this, $method)) {

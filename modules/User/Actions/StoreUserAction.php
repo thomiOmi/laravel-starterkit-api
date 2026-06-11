@@ -31,17 +31,19 @@ final readonly class StoreUserAction
      */
     public function handle(UserPayload $payload): User
     {
-        return $this->database->transaction(function () use ($payload) {
-            $user = User::create($payload->toArray());
+        $user = $this->database->transaction(function () use ($payload) {
+            return User::create($payload->toArray());
+        });
 
+        defer(function () use ($user) {
             Log::info('User created', [
                 'user_id' => $user->id,
                 'trace_id' => Context::get('trace_id'),
             ]);
 
             UserCreated::dispatch($user);
-
-            return $user;
         });
+
+        return $user;
     }
 }
