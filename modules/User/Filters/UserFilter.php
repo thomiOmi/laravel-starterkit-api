@@ -71,19 +71,23 @@ class UserFilter extends BaseFilter
      * Filter by created date range.
      * Expects: ?created_at[from]=2023-01-01&created_at[to]=2023-12-31
      *
-     * @param  array<string, string>  $value  The date range values.
+     * @param  mixed  $value  The date range values.
      * @return Builder<User> The updated query builder instance.
      */
-    public function createdAt(array $value): Builder
+    public function createdAt(mixed $value): Builder
     {
         /** @var Builder<User> $builder */
         $builder = $this->builder;
 
-        if (isset($value['from'])) {
+        if (! is_array($value)) {
+            return $builder;
+        }
+
+        if (isset($value['from']) && is_string($value['from']) && strtotime($value['from']) !== false) {
             $builder->where('created_at', '>=', $value['from']);
         }
 
-        if (isset($value['to'])) {
+        if (isset($value['to']) && is_string($value['to']) && strtotime($value['to']) !== false) {
             $builder->where('created_at', '<=', (string) now()->parse($value['to'])->endOfDay());
         }
 
