@@ -22,9 +22,8 @@ test('admin can bulk delete users', function () {
     $ids = $users->pluck('id')->map(fn (mixed $id) => is_scalar($id) ? (string) $id : '')->toArray();
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/users/bulk', [
+        ->postJson('/api/v1/users/bulk/delete', [
             'ids' => $ids,
-            'action' => 'delete',
         ]);
 
     $response->assertStatus(200)
@@ -46,16 +45,15 @@ test('admin can bulk delete roles', function () {
     $ids = collect($roles)->pluck('id')->map(fn (mixed $id) => is_scalar($id) ? (string) $id : '')->toArray();
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles/bulk', [
+        ->postJson('/api/v1/roles/bulk/delete', [
             'ids' => $ids,
-            'action' => 'delete',
         ]);
 
     $response->assertStatus(200)
         ->assertJsonPath('data.count', 2);
 });
 
-test('bulk update action is rejected for security', function () {
+test('bulk update action is rejected as route does not exist', function () {
     $admin = User::factory()->create();
     $admin->assignRole('super-admin');
 
@@ -66,11 +64,10 @@ test('bulk update action is rejected for security', function () {
     $ids = collect($roles)->pluck('id')->map(fn (mixed $id) => is_scalar($id) ? (string) $id : '')->toArray();
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles/bulk', [
+        ->postJson('/api/v1/roles/bulk/update', [
             'ids' => $ids,
-            'action' => 'update',
             'data' => ['description' => 'Bulk updated description'],
         ]);
 
-    $response->assertStatus(403);
+    $response->assertStatus(404);
 });
