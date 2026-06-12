@@ -27,6 +27,12 @@ final readonly class BulkDeleteUsersAction
      */
     public function handle(array $ids): int
     {
+        $ids = array_filter($ids, fn ($id) => $id !== auth()->id());
+
+        if (empty($ids)) {
+            return 0;
+        }
+
         return $this->database->transaction(function () use ($ids) {
             /** @var int $deletedCount */
             $deletedCount = User::whereIn('id', $ids)->delete();

@@ -27,6 +27,10 @@ final readonly class DeleteUserAction
      */
     public function handle(User $user): bool
     {
+        if ($user->id === auth()->id()) {
+            return false;
+        }
+
         return $this->database->transaction(fn () => (bool) $user->delete());
     }
 }
