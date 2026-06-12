@@ -49,9 +49,9 @@ abstract class BaseFilter
     {
         $this->builder = $builder;
 
-        $filters = ! empty($this->allowedFilters)
-            ? $this->request->only($this->allowedFilters)
-            : $this->getFilters();
+        $filters = empty($this->allowedFilters)
+            ? $this->getFilters()
+            : $this->request->only($this->allowedFilters);
 
         foreach ($filters as $name => $value) {
             $method = Str::camel((string) $name);
@@ -64,14 +64,6 @@ abstract class BaseFilter
         $this->applySorting();
 
         return $this->builder;
-    }
-
-    /**
-     * Determine if a filter is allowed.
-     */
-    protected function isFilterAllowed(string $name): bool
-    {
-        return empty($this->allowedFilters) || in_array($name, $this->allowedFilters, true);
     }
 
     /**
@@ -88,7 +80,7 @@ abstract class BaseFilter
         if ($sortBy !== '' && in_array($sortBy, $this->allowedSorts, true)) {
             $this->builder->orderBy($sortBy, $direction);
         } else {
-            $this->builder->latest();
+            $this->builder->orderBy($this->builder->getModel()->getQualifiedKeyName(), 'desc');
         }
     }
 

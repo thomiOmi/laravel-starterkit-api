@@ -55,20 +55,18 @@ class RoleSeeder extends Seeder
      */
     private function assignRolesToExistingUsers(): void
     {
-        $superAdmin = User::with('roles')->where('email', 'superadmin@example.com')->first();
-        if ($superAdmin) {
-            $superAdmin->assignRole('super-admin');
-        }
+        $roleMap = [
+            'superadmin@example.com' => 'super-admin',
+            'admin@example.com' => 'admin',
+            'user@example.com' => 'user',
+        ];
 
-        $admin = User::with('roles')->where('email', 'admin@example.com')->first();
-        if ($admin) {
-            $admin->assignRole('admin');
-        }
-
-        $user = User::with('roles')->where('email', 'user@example.com')->first();
-        if ($user) {
-            $user->assignRole('user');
-        }
+        User::with('roles')
+            ->whereIn('email', array_keys($roleMap))
+            ->get()
+            ->each(function (User $user) use ($roleMap) {
+                $user->assignRole($roleMap[$user->email]);
+            });
 
         // Assign 'user' role to all other users that don't have a role
         User::whereDoesntHave('roles')

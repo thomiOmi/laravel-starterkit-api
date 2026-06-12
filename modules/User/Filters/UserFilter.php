@@ -6,6 +6,7 @@ namespace Modules\User\Filters;
 
 use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Modules\User\Models\User;
 
 /**
@@ -96,7 +97,7 @@ class UserFilter extends BaseFilter
         }
 
         if (isset($value['to']) && is_string($value['to']) && strtotime($value['to']) !== false) {
-            $builder->where('created_at', '<=', (string) now()->parse($value['to'])->endOfDay());
+            $builder->where('created_at', '<=', (string) Carbon::parse($value['to'])->endOfDay());
         }
 
         return $builder;
