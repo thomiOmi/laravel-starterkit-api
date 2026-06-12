@@ -5,20 +5,36 @@ declare(strict_types=1);
 namespace Modules\User\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
+use Modules\User\Actions\ShowUserAction;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @tags User
+ * @group User Management
+ *
+ * @authenticated
  */
 final readonly class ShowController
 {
+    public function __construct(
+        private ShowUserAction $showUser
+    ) {}
+
     /**
      * Display the specified user.
      */
     public function __invoke(User $user): JsonDataResponse
     {
-        $user->load(['roles.permissions:id,name', 'permissions:id,name']);
+        $user = $this->showUser->handle($user->id);
+
+        if (! $user) {
+            return new JsonDataResponse(
+                data: null,
+                status: Response::HTTP_NOT_FOUND,
+                message: __('messages.not_found', ['resource' => 'User'])
+            );
+        }
 
         return new JsonDataResponse(
             data: new UserResource($user),

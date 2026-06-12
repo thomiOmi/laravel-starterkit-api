@@ -7,6 +7,7 @@ namespace Modules\User\Actions;
 use Illuminate\Database\DatabaseManager;
 use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
+use Modules\User\Repositories\UserRepository;
 
 /**
  * Action for updating an existing user.
@@ -17,7 +18,8 @@ final readonly class UpdateUserAction
      * Create a new UpdateUserAction instance.
      */
     public function __construct(
-        private DatabaseManager $database
+        private DatabaseManager $database,
+        private UserRepository $repository
     ) {}
 
     /**
@@ -30,9 +32,7 @@ final readonly class UpdateUserAction
     public function handle(User $user, UserPayload $payload): User
     {
         return $this->database->transaction(function () use ($user, $payload) {
-            $user->update($payload->toArray());
-
-            return $user;
+            return $this->repository->update($user, $payload->toArray());
         });
     }
 }

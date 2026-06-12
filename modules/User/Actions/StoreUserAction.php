@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Modules\User\Events\UserCreated;
 use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
+use Modules\User\Repositories\UserRepository;
 
 /**
  * Action for creating a new user.
@@ -20,7 +21,8 @@ final readonly class StoreUserAction
      * Create a new StoreUserAction instance.
      */
     public function __construct(
-        private DatabaseManager $database
+        private DatabaseManager $database,
+        private UserRepository $repository
     ) {}
 
     /**
@@ -32,7 +34,7 @@ final readonly class StoreUserAction
     public function handle(UserPayload $payload): User
     {
         $user = $this->database->transaction(function () use ($payload) {
-            return User::create($payload->toArray());
+            return $this->repository->create($payload->toArray());
         });
 
         defer(function () use ($user) {

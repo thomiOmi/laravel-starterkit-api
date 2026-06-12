@@ -7,15 +7,21 @@ namespace Modules\User\Controllers\V1;
 use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
+use Modules\User\Actions\ListUsersAction;
 use Modules\User\Filters\UserFilter;
-use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
 /**
- * @tags User
+ * @group User Management
+ *
+ * @authenticated
  */
 final readonly class IndexController
 {
+    public function __construct(
+        private ListUsersAction $listUsers
+    ) {}
+
     /**
      * Display a paginated listing of the users.
      */
@@ -27,9 +33,7 @@ final readonly class IndexController
     #[QueryParameter(name: 'role', description: 'Filter by role name.', type: 'string', required: false, example: 'admin')]
     public function __invoke(Request $request, UserFilter $filter): JsonDataResponse
     {
-        $users = $filter->apply(User::query())
-            ->with(['roles.permissions:id,name', 'permissions:id,name'])
-            ->simplePaginate($request->integer('per_page', 10));
+        $users = $this->listUsers->handle($filter, $request->integer('per_page', 10));
 
         return new JsonDataResponse(
             data: UserResource::collection($users),
