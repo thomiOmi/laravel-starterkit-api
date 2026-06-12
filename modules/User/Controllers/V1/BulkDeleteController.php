@@ -7,39 +7,33 @@ namespace Modules\User\Controllers\V1;
 use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\JsonDataResponse;
 use Modules\User\Actions\BulkDeleteUsersAction;
-use Modules\User\Actions\BulkRestoreUsersAction;
 
 /**
- * @tags User
+ * @group User Management
+ *
+ * @authenticated
  */
-final readonly class BulkActionController
+final readonly class BulkDeleteController
 {
     public function __construct(
         private BulkDeleteUsersAction $bulkDeleteUsers,
-        private BulkRestoreUsersAction $bulkRestoreUsers,
     ) {}
 
     /**
-     * Perform bulk action on users.
+     * Perform bulk delete on users.
      */
     public function __invoke(BulkActionRequest $request): JsonDataResponse
     {
-        /** @var array{ids: array<int, string|int>, action: string} $validated */
+        /** @var array{ids: array<int, string|int>} $validated */
         $validated = $request->validated();
 
-        $count = match ($validated['action']) {
-            'delete' => $this->bulkDeleteUsers->handle($validated['ids']),
-            'restore' => $this->bulkRestoreUsers->handle($validated['ids']),
-            default => 0,
-        };
-
-        $action = $validated['action'];
+        $count = $this->bulkDeleteUsers->handle($validated['ids']);
 
         return new JsonDataResponse(
             data: ['count' => $count],
             message: __('messages.bulk_action', [
                 'resource' => 'Users',
-                'action' => $action,
+                'action' => 'delete',
             ])
         );
     }

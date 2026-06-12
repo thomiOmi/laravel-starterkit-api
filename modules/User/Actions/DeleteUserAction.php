@@ -6,6 +6,7 @@ namespace Modules\User\Actions;
 
 use Illuminate\Database\DatabaseManager;
 use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 
 /**
  * Action for deleting a user.
@@ -16,7 +17,8 @@ final readonly class DeleteUserAction
      * Create a new DeleteUserAction instance.
      */
     public function __construct(
-        private DatabaseManager $database
+        private DatabaseManager $database,
+        private UserRepository $repository
     ) {}
 
     /**
@@ -31,6 +33,6 @@ final readonly class DeleteUserAction
             return false;
         }
 
-        return $this->database->transaction(fn () => (bool) $user->delete());
+        return $this->database->transaction(fn () => $this->repository->delete($user));
     }
 }

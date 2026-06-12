@@ -51,10 +51,13 @@ class UserFilter extends BaseFilter
             return $builder;
         }
 
-        return $builder->where(function (Builder $query) use ($value) {
+        $value = trim($value);
+        $escapedValue = addcslashes($value, '%_');
+
+        return $builder->where(function (Builder $query) use ($escapedValue) {
             /** @var Builder<User> $query */
-            $query->where('name', 'like', "%{$value}%")
-                ->orWhere('email', 'like', "%{$value}%");
+            $query->where('name', 'like', "%{$escapedValue}%")
+                ->orWhere('email', 'like', "%{$escapedValue}%");
         });
     }
 

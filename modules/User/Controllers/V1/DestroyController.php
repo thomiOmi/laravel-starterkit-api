@@ -10,7 +10,9 @@ use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @tags User
+ * @group User Management
+ *
+ * @authenticated
  */
 final readonly class DestroyController
 {
@@ -20,15 +22,19 @@ final readonly class DestroyController
 
     /**
      * Remove the specified user from storage.
+     *
+     * @param  User  $user  The user model instance.
      */
-    public function __invoke(User $user): JsonDataResponse
+    public function __invoke(User $user): JsonDataResponse|Response
     {
-        $this->deleteUser->handle($user);
+        if ($this->deleteUser->handle($user)) {
+            return response()->noContent();
+        }
 
         return new JsonDataResponse(
             data: null,
-            status: Response::HTTP_NO_CONTENT,
-            message: __('messages.deleted', ['resource' => 'User'])
+            status: Response::HTTP_FORBIDDEN,
+            message: __('messages.delete_error', ['resource' => 'User'])
         );
     }
 }

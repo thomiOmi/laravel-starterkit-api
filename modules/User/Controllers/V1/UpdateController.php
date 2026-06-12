@@ -11,7 +11,9 @@ use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
 
 /**
- * @tags User
+ * @group User Management
+ *
+ * @authenticated
  */
 final readonly class UpdateController
 {
@@ -21,13 +23,17 @@ final readonly class UpdateController
 
     /**
      * Update the specified user in storage.
+     *
+     * @param  UserRequest  $request  The validated user update request.
+     * @param  User  $user  The user model instance.
+     * @return JsonDataResponse The API response containing the updated user.
      */
     public function __invoke(UserRequest $request, User $user): JsonDataResponse
     {
-        $updatedUser = $this->updateUser->handle($user, $request->payload());
+        $user = $this->updateUser->handle($user, $request->payload());
 
         return new JsonDataResponse(
-            data: new UserResource($updatedUser),
+            data: new UserResource($user),
             message: __('messages.updated', ['resource' => 'User'])
         );
     }
