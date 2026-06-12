@@ -27,6 +27,10 @@ final readonly class DeleteRoleAction
      */
     public function handle(Role $role): bool
     {
+        if ($role->name === 'super-admin') {
+            return false;
+        }
+
         return $this->database->transaction(fn () => (bool) $role->delete());
     }
 }

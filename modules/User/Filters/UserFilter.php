@@ -38,13 +38,17 @@ class UserFilter extends BaseFilter
     /**
      * Filter by search term (name or email).
      *
-     * @param  string  $value  The search term.
+     * @param  mixed  $value  The search term.
      * @return Builder<User> The updated query builder instance.
      */
-    public function search(string $value): Builder
+    public function search(mixed $value): Builder
     {
         /** @var Builder<User> $builder */
         $builder = $this->builder;
+
+        if (! is_string($value)) {
+            return $builder;
+        }
 
         return $builder->where(function (Builder $query) use ($value) {
             /** @var Builder<User> $query */
@@ -56,13 +60,17 @@ class UserFilter extends BaseFilter
     /**
      * Filter by role name.
      *
-     * @param  string  $value  The role name.
+     * @param  mixed  $value  The role name.
      * @return Builder<User> The updated query builder instance.
      */
-    public function role(string $value): Builder
+    public function role(mixed $value): Builder
     {
         /** @var Builder<User> $builder */
         $builder = $this->builder;
+
+        if (! is_string($value)) {
+            return $builder;
+        }
 
         return $builder->whereRelation('roles', 'name', $value);
     }

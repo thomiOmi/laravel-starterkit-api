@@ -35,13 +35,17 @@ class RoleFilter extends BaseFilter
     /**
      * Filter by search term.
      *
-     * @param  string  $value  The search term.
+     * @param  mixed  $value  The search term.
      * @return Builder<Role>
      */
-    public function search(string $value): Builder
+    public function search(mixed $value): Builder
     {
         /** @var Builder<Role> $builder */
         $builder = $this->builder;
+
+        if (! is_string($value)) {
+            return $builder;
+        }
 
         return $builder->where('name', 'like', "%{$value}%");
     }
