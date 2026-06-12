@@ -43,6 +43,8 @@ class RoleFilter extends BaseFilter
         /** @var Builder<Role> $builder */
         $builder = $this->builder;
 
+        $value = addcslashes(trim($value), '%_');
+
         return $builder->where('name', 'like', "%{$value}%");
     }
 }

@@ -9,8 +9,8 @@ use Modules\Auth\Controllers\V1\MeController;
 use Modules\Auth\Controllers\V1\RegisterController;
 
 Route::prefix('auth')->middleware(['force.json', 'throttle:api'])->group(function () {
-    Route::post('register', RegisterController::class)->name('register');
-    Route::post('login', LoginController::class)->name('login');
+    Route::post('register', RegisterController::class)->middleware('throttle:auth')->name('register');
+    Route::post('login', LoginController::class)->middleware('throttle:auth')->name('login');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', LogoutController::class)->name('logout');

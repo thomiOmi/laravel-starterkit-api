@@ -46,6 +46,8 @@ class UserFilter extends BaseFilter
         /** @var Builder<User> $builder */
         $builder = $this->builder;
 
+        $value = addcslashes(trim($value), '%_');
+
         return $builder->where(function (Builder $query) use ($value) {
             /** @var Builder<User> $query */
             $query->where('name', 'like', "%{$value}%")
