@@ -43,6 +43,7 @@ class MakeModule extends Command
         }
 
         $options = [
+            'repository' => (bool) $this->confirm('Create Concrete Repository?', true),
             'action' => (bool) $this->confirm('Create CRUD Actions & Payloads?', true),
             'filter' => (bool) $this->confirm('Create Query Filter?', true),
             'migration' => (bool) $this->confirm('Create Migration?', true),
@@ -73,6 +74,10 @@ class MakeModule extends Command
             'Routes',
             "Tests/Feature/{$version}",
         ];
+
+        if ($options['repository']) {
+            $directories[] = 'Repositories';
+        }
 
         if ($options['action']) {
             $directories[] = 'Actions';
@@ -120,7 +125,12 @@ class MakeModule extends Command
 
         $this->createFileFromStub($path."/Models/{$name}.php", 'model', $replacements);
 
-        // Index Controller
+        // Repository
+        if ($options['repository']) {
+            $this->createFileFromStub($path."/Repositories/{$name}Repository.php", 'repository', $replacements);
+        }
+
+        // Controllers
         $this->createFileFromStub($path."/Controllers/{$version}/IndexController.php", 'controller.index', $replacements);
 
         if ($options['resource']) {
@@ -128,6 +138,9 @@ class MakeModule extends Command
         }
 
         if ($options['action']) {
+            // List Action
+            $this->createFileFromStub($path."/Actions/List{$name}Action.php", 'action.index', $replacements);
+
             foreach (['Store', 'Update'] as $action) {
                 $actionReplacements = array_merge($replacements, ['Action' => $action]);
 
@@ -139,6 +152,7 @@ class MakeModule extends Command
 
             // Show
             $this->createFileFromStub($path."/Controllers/{$version}/ShowController.php", 'controller.show', $replacements);
+            $this->createFileFromStub($path."/Actions/Show{$name}Action.php", 'action.show', $replacements);
 
             // Destroy
             $this->createFileFromStub($path."/Controllers/{$version}/DestroyController.php", 'controller.destroy', $replacements);
@@ -203,13 +217,13 @@ class MakeModule extends Command
     {
         $namespace = "Modules\\{$name}\\Controllers\\{$version}";
 
-        $routes = "    Route::get('/', {$namespace}\IndexController::class)->name('index');\n";
+        $routes = "    Route::get('/', {$namespace}\\IndexController::class)->name('index');\n";
 
         if ($options['action']) {
-            $routes .= "    Route::post('/', {$namespace}\StoreController::class)->name('store');\n";
-            $routes .= "    Route::get('/{{$name}}', {$namespace}\ShowController::class)->name('show');\n";
-            $routes .= "    Route::put('/{{$name}}', {$namespace}\UpdateController::class)->name('update');\n";
-            $routes .= "    Route::delete('/{{$name}}', {$namespace}\DestroyController::class)->name('destroy');\n";
+            $routes .= "    Route::post('/', {$namespace}\\StoreController::class)->name('store');\n";
+            $routes .= "    Route::get('/{{$name}}', {$namespace}\\ShowController::class)->name('show');\n";
+            $routes .= "    Route::put('/{{$name}}', {$namespace}\\UpdateController::class)->name('update');\n";
+            $routes .= "    Route::delete('/{{$name}}', {$namespace}\\DestroyController::class)->name('destroy');\n";
         }
 
         return $routes;
@@ -227,6 +241,7 @@ class MakeModule extends Command
                 ['API Version', $version],
                 ['Controllers', 'Created'],
                 ['Model', 'Created'],
+                ['Repository', $options['repository'] ? 'Created' : 'Skipped'],
                 ['Actions', $options['action'] ? 'Created' : 'Skipped'],
                 ['Payloads', $options['action'] ? 'Created' : 'Skipped'],
                 ['Filter', $options['filter'] ? 'Created' : 'Skipped'],

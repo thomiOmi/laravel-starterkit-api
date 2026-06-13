@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Repositories;
+
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
+use Modules\{{Module}}\Filters\{{Module}}Filter;
+use Modules\{{Module}}\Models\{{Module}};
+
+final readonly class {{Module}}Repository
+{
+    /**
+     * Get paginated {{lowerResource}}s with filters.
+     *
+     * @param  {{Module}}Filter  $filter
+     * @param  int  $perPage
+     * @return Paginator<int, {{Module}}>
+     */
+    public function paginate({{Module}}Filter $filter, int $perPage = 10): Paginator
+    {
+        return $filter->apply({{Module}}::query())
+            ->simplePaginate($perPage);
+    }
+
+    /**
+     * Find a {{lowerResource}} by ID with caching and Laravel 13 Cache::touch().
+     *
+     * @param  string  $id
+     * @return {{Module}}|null
+     */
+    public function findById(string $id): ?{{Module}}
+    {
+        $cacheKey = "{{slug}}:profile:{$id}";
+
+        /** @var {{Module}}|null ${{lowerResource}} */
+        ${{lowerResource}} = Cache::remember($cacheKey, now()->addHour(), function () use ($id) {
+            return {{Module}}::find($id);
+        });
+
+        if (${{lowerResource}}) {
+            Cache::touch($cacheKey, now()->addHour());
+        }
+
+        return ${{lowerResource}};
+    }
+
+    /**
+     * Create a new {{lowerResource}}.
+     *
+     * @param  array<string, mixed>  $data
+     * @return {{Module}}
+     */
+    public function create(array $data): {{Module}}
+    {
+        return {{Module}}::create($data);
+    }
+
+    /**
+     * Update an existing {{lowerResource}} and invalidate cache.
+     *
+     * @param  {{Module}}  ${{lowerResource}}
+     * @param  array<string, mixed>  $data
+     * @return {{Module}}
+     */
+    public function update({{Module}} ${{lowerResource}}, array $data): {{Module}}
+    {
+        ${{lowerResource}}->update($data);
+
+        Cache::forget("{{slug}}:profile:{${{lowerResource}}->id}");
+
+        return ${{lowerResource}};
+    }
+
+    /**
+     * Delete a {{lowerResource}} and invalidate cache.
+     *
+     * @param  {{Module}}  ${{lowerResource}}
+     * @return bool
+     */
+    public function delete({{Module}} ${{lowerResource}}): bool
+    {
+        Cache::forget("{{slug}}:profile:{${{lowerResource}}->id}");
+
+        return (bool) ${{lowerResource}}->delete();
+    }
+}

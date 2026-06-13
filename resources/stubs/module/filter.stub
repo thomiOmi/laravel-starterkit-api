@@ -6,12 +6,12 @@ namespace Modules\{{Module}}\Filters;
 
 use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\{{Module}}\Models\{{Resource}};
+use Modules\{{Module}}\Models\{{Module}};
 
 /**
- * @extends BaseFilter<{{Resource}}>
+ * @extends BaseFilter<{{Module}}>
  */
-class {{Resource}}Filter extends BaseFilter
+class {{Module}}Filter extends BaseFilter
 {
     /**
      * The list of allowed filters.
@@ -23,16 +23,32 @@ class {{Resource}}Filter extends BaseFilter
     ];
 
     /**
+     * The list of allowed sorts.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedSorts = [
+        'created_at',
+    ];
+
+    /**
      * Filter by search term.
      *
-     * @param  string  $value  The search term.
-     * @return Builder<{{Resource}}>
+     * @param  mixed  $value  The search term.
+     * @return Builder<{{Module}}>
      */
-    public function search(string $value): Builder
+    public function search(mixed $value): Builder
     {
-        /** @var Builder<{{Resource}}> $builder */
+        /** @var Builder<{{Module}}> $builder */
         $builder = $this->builder;
 
-        return $builder->where('name', 'like', "%{$value}%");
+        if (! is_string($value)) {
+            return $builder;
+        }
+
+        $value = trim($value);
+        $escapedValue = addcslashes($value, '%_');
+
+        return $builder->where('name', 'like', "%{$escapedValue}%");
     }
 }

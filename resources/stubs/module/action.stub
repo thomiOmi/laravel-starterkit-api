@@ -5,21 +5,47 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Actions;
 
 use Illuminate\Database\DatabaseManager;
-use Modules\{{Module}}\Models\{{Resource}};
-use Modules\{{Module}}\Payloads\{{Version}}\{{Action}}{{Resource}}Payload;
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Payloads\{{Version}}\{{Action}}{{Module}}Payload;
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
 
-final readonly class {{Action}}{{Resource}}Action
+/**
+ * Action for {{Action}}ing a {{lowerResource}}.
+ */
+final readonly class {{Action}}{{Module}}Action
 {
+    /**
+     * Create a new {{Action}}{{Module}}Action instance.
+     */
     public function __construct(
         private DatabaseManager $database,
+        private {{Module}}Repository $repository
     ) {}
 
-    public function handle({{Action}}{{Resource}}Payload $payload): {{Resource}}
+    /**
+     * Execute the {{Action}} {{lowerResource}} action.
+     *
+     * @param  {{Module}}  ${{lowerResource}}  The {{lowerResource}} model instance.
+     * @param  {{Action}}{{Module}}Payload  $payload  The {{lowerResource}} payload.
+     * @return {{Module}} The updated {{lowerResource}} instance.
+     */
+    public function handle({{Module}} ${{lowerResource}}, {{Action}}{{Module}}Payload $payload): {{Module}}
     {
-        return $this->database->transaction(
-            callback: fn (): {{Resource}} => {{Resource}}::query()->create(
-                attributes: $payload->toArray(),
-            ),
-        );
+        return $this->database->transaction(function () use (${{lowerResource}}, $payload) {
+            return $this->repository->update(${{lowerResource}}, $payload->toArray());
+        });
+    }
+
+    /**
+     * Create a new {{lowerResource}}.
+     *
+     * @param  {{Action}}{{Module}}Payload  $payload  The {{lowerResource}} payload.
+     * @return {{Module}}
+     */
+    public function store({{Action}}{{Module}}Payload $payload): {{Module}}
+    {
+        return $this->database->transaction(function () use ($payload) {
+            return $this->repository->create($payload->toArray());
+        });
     }
 }

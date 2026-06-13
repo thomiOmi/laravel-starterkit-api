@@ -5,32 +5,30 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Actions;
 
 use Illuminate\Database\DatabaseManager;
-use Modules\{{Module}}\Models\{{Resource}};
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
 
 /**
- * Class Destroy{{Resource}}Action
- *
- * @package Modules\{{Module}}\Actions
+ * Action for deleting a {{lowerResource}}.
  */
-final readonly class Destroy{{Resource}}Action
+final readonly class Destroy{{Module}}Action
 {
     /**
-     * Destroy{{Resource}}Action constructor.
-     *
-     * @param DatabaseManager $database
+     * Create a new Destroy{{Module}}Action instance.
      */
     public function __construct(
         private DatabaseManager $database,
+        private {{Module}}Repository $repository
     ) {}
 
     /**
-     * Handle the action.
+     * Execute the delete {{lowerResource}} action.
      *
-     * @param {{Resource}} ${{lowerResource}}
-     * @return bool
+     * @param  {{Module}}  ${{lowerResource}}  The {{lowerResource}} model instance.
+     * @return bool True if the {{lowerResource}} was deleted successfully, false otherwise.
      */
-    public function handle({{Resource}} ${{lowerResource}}): bool
+    public function handle({{Module}} ${{lowerResource}}): bool
     {
-        return $this->database->transaction(fn () => (bool) ${{lowerResource}}->delete());
+        return $this->database->transaction(fn () => $this->repository->delete(${{lowerResource}}));
     }
 }
