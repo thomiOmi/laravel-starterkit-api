@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Role\Actions;
 
 use Illuminate\Database\DatabaseManager;
-use Modules\Role\Models\Role;
+use Modules\Role\Repositories\RoleRepository;
 
 /**
  * Action for bulk deleting roles.
@@ -16,7 +16,8 @@ final readonly class BulkDeleteRolesAction
      * Create a new BulkDeleteRolesAction instance.
      */
     public function __construct(
-        private DatabaseManager $database
+        private DatabaseManager $database,
+        private RoleRepository $repository
     ) {}
 
     /**
@@ -28,12 +29,7 @@ final readonly class BulkDeleteRolesAction
     public function handle(array $ids): int
     {
         return $this->database->transaction(function () use ($ids) {
-            /** @var int $deletedCount */
-            $deletedCount = Role::whereIn('id', $ids)
-                ->where('name', '!=', 'super-admin')
-                ->delete();
-
-            return $deletedCount;
+            return $this->repository->bulkDelete($ids);
         });
     }
 }

@@ -7,15 +7,21 @@ namespace Modules\Role\Controllers\V1;
 use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
+use Modules\Role\Actions\ListRolesAction;
 use Modules\Role\Filters\RoleFilter;
-use Modules\Role\Models\Role;
 use Modules\Role\Resources\RoleResource;
 
 /**
- * @tags Role
+ * @group Role Management
+ *
+ * @authenticated
  */
 final readonly class IndexController
 {
+    public function __construct(
+        private ListRolesAction $listRoles
+    ) {}
+
     /**
      * Display a paginated listing of the roles.
      */
@@ -24,9 +30,7 @@ final readonly class IndexController
     #[QueryParameter(name: 'search', description: 'Search keyword to filter roles by name or description.', type: 'string', required: false, example: 'admin')]
     public function __invoke(Request $request, RoleFilter $filter): JsonDataResponse
     {
-        $roles = $filter->apply(Role::query())
-            ->with(['permissions:id,name'])
-            ->simplePaginate($request->integer('per_page', 10));
+        $roles = $this->listRoles->handle($filter, $request->integer('per_page', 10));
 
         return new JsonDataResponse(
             data: RoleResource::collection($roles),
