@@ -27,13 +27,9 @@ test('models should not be used in controllers')
     ->expect('Modules\*\Models')
     ->not->toBeUsedIn('Modules\*\Controllers')
     ->ignoring([
-        'Modules\User\Controllers\V1\IndexController',
-        'Modules\User\Controllers\V1\ShowController',
         'Modules\User\Controllers\V1\UpdateController',
         'Modules\User\Controllers\V1\DestroyController',
         'Modules\User\Controllers\V1\BulkActionController',
-        'Modules\Role\Controllers\V1\IndexController',
-        'Modules\Role\Controllers\V1\ShowController',
         'Modules\Role\Controllers\V1\UpdateController',
         'Modules\Role\Controllers\V1\DestroyController',
         'Modules\Role\Controllers\V1\BulkActionController',

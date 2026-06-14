@@ -6,7 +6,6 @@ namespace Modules\User\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
 use Modules\User\Actions\ShowUserAction;
-use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,18 +16,23 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class ShowController
 {
+    /**
+     * Create a new ShowController instance.
+     */
     public function __construct(
         private ShowUserAction $showUser
     ) {}
 
     /**
      * Display the specified user.
+     *
+     * @param  string  $user  The user ID.
      */
-    public function __invoke(User $user): JsonDataResponse
+    public function __invoke(string $user): JsonDataResponse
     {
-        $user = $this->showUser->handle($user->id);
+        $userInstance = $this->showUser->handle($user);
 
-        if (! $user) {
+        if (! $userInstance) {
             return new JsonDataResponse(
                 data: null,
                 status: Response::HTTP_NOT_FOUND,
@@ -37,7 +41,7 @@ final readonly class ShowController
         }
 
         return new JsonDataResponse(
-            data: new UserResource($user),
+            data: new UserResource($userInstance),
             message: __('messages.retrieved', ['resource' => 'User'])
         );
     }
