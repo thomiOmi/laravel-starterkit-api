@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Modules\Auth\Controllers\V1\DeleteDeviceController;
+use Modules\Auth\Controllers\V1\ForgotPasswordController;
 use Modules\Auth\Controllers\V1\ListDevicesController;
 use Modules\Auth\Controllers\V1\LoginController;
 use Modules\Auth\Controllers\V1\LogoutController;
 use Modules\Auth\Controllers\V1\LogoutOtherDevicesController;
 use Modules\Auth\Controllers\V1\MeController;
 use Modules\Auth\Controllers\V1\RegisterController;
+use Modules\Auth\Controllers\V1\ResendVerificationController;
+use Modules\Auth\Controllers\V1\ResetPasswordController;
 use Modules\Auth\Controllers\V1\SocialCallbackController;
 use Modules\Auth\Controllers\V1\SocialRedirectController;
-use Modules\User\Controllers\Auth\ForgotPasswordController;
-use Modules\User\Controllers\Auth\ResendVerificationController;
-use Modules\User\Controllers\Auth\ResetPasswordController;
-use Modules\User\Controllers\Auth\VerifyEmailController;
+use Modules\Auth\Controllers\V1\VerifyEmailController;
 
 Route::prefix('auth')->middleware(['force.json', 'throttle:api'])->group(function () {
     // Public routes
