@@ -7,7 +7,7 @@ namespace Modules\Auth\Controllers\V1;
 use App\Http\Responses\JsonDataResponse;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Requests\V1\RegisterRequest;
-use Modules\Auth\Resources\UserResource;
+use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

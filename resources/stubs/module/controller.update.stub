@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Controllers\{{Version}};
+
+use App\Http\Responses\JsonDataResponse;
+use Modules\{{Module}}\Actions\Update{{Module}}Action;
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Requests\{{Version}}\Update{{Module}}Request;
+use Modules\{{Module}}\Resources\{{Module}}Resource;
+
+/**
+ * @group {{Module}} Management
+ *
+ * @authenticated
+ */
+final readonly class UpdateController
+{
+    public function __construct(
+        private Update{{Module}}Action $action,
+    ) {}
+
+    /**
+     * Update the specified {{lowerResource}} in storage.
+     */
+    public function __invoke(Update{{Module}}Request $request, {{Module}} ${{lowerResource}}): JsonDataResponse
+    {
+        ${{lowerResource}} = $this->action->handle(${{lowerResource}}, $request->payload());
+
+        return new JsonDataResponse(
+            data: new {{Module}}Resource(${{lowerResource}}),
+            message: __('messages.updated', ['resource' => '{{Module}}'])
+        );
+    }
+}

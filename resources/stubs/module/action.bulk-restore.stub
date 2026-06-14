@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Actions;
+
+use Illuminate\Database\DatabaseManager;
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
+
+/**
+ * Action for bulk restoring {{lowerResource}}s.
+ */
+final readonly class BulkRestore{{Module}}Action
+{
+    /**
+     * Create a new BulkRestore{{Module}}Action instance.
+     */
+    public function __construct(
+        private DatabaseManager $database,
+        private {{Module}}Repository $repository
+    ) {}
+
+    /**
+     * Execute the bulk restore {{lowerResource}}s action.
+     *
+     * @param  array<int, string|int>  $ids  The {{lowerResource}} IDs to restore.
+     * @return int The number of {{lowerResource}}s restored.
+     */
+    public function handle(array $ids): int
+    {
+        return $this->database->transaction(function () use ($ids) {
+            return $this->repository->bulkRestore($ids);
+        });
+    }
+}

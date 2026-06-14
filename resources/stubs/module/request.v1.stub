@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Requests\{{Version}};
 
+use Dedoc\Scramble\Attributes\BodyParameter;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\{{Module}}\Payloads\{{Version}}\{{Action}}{{Resource}}Payload;
 
 /**
- * Class {{Action}}{{Resource}}Request
- *
- * @package Modules\{{Module}}\Requests\{{Version}}
+ * {{Action}} {{Resource}} Request
  */
+#[BodyParameter(name: 'name', description: 'The name of the {{lowerResource}}.', required: true, example: 'Example Name')]
 final class {{Action}}{{Resource}}Request extends FormRequest
 {
     /**
@@ -21,19 +22,20 @@ final class {{Action}}{{Resource}}Request extends FormRequest
      */
     public function authorize(): bool
     {
-        // Example with Policy: return $this->user()->can('create', Resource::class);
         return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, mixed>
+     * @return array<string, array<int, string|ValidationRule>>
      */
     public function rules(): array
     {
+        $id = $this->route('{{lowerResource}}');
+
         return [
-            // Rules here
+            'name' => ['required', 'string', 'max:255'],
         ];
     }
 
@@ -44,6 +46,6 @@ final class {{Action}}{{Resource}}Request extends FormRequest
      */
     public function payload(): {{Action}}{{Resource}}Payload
     {
-        return {{Action}}{{Resource}}Payload::from($this->validated());
+        return {{Action}}{{Resource}}Payload::fromRequest($this);
     }
 }

@@ -7,12 +7,24 @@ namespace Modules\{{Module}}\Models;
 use App\Traits\Models\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Modules\{{Module}}\Database\Factories\{{Resource}}Factory;
 
+/**
+ * @property string $id The unique identifier (ULID).
+ * @property Carbon|null $created_at The timestamp when created.
+ * @property Carbon|null $updated_at The timestamp when updated.
+ * @property Carbon|null $deleted_at The timestamp when soft deleted.
+ */
 class {{Resource}} extends Model
 {
     /** @use HasFactory<{{Resource}}Factory> */
     use HasDefaultBehavior, HasFactory;
+
+    /** @var list<string> */
+    protected $fillable = [
+        // Fillable attributes here
+    ];
 
     /**
      * Create a new factory instance for the model.

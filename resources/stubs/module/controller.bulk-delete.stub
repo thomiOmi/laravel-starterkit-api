@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Controllers\{{Version}};
+
+use App\Http\Requests\BulkActionRequest;
+use App\Http\Responses\JsonDataResponse;
+use Modules\{{Module}}\Actions\BulkDelete{{Module}}Action;
+
+/**
+ * @group {{Module}} Management
+ *
+ * @authenticated
+ */
+final readonly class BulkDeleteController
+{
+    public function __construct(
+        private BulkDelete{{Module}}Action $action,
+    ) {}
+
+    /**
+     * Perform bulk delete on {{lowerResource}}s.
+     */
+    public function __invoke(BulkActionRequest $request): JsonDataResponse
+    {
+        /** @var array{ids: array<int, string|int>} $validated */
+        $validated = $request->validated();
+
+        $count = $this->action->handle($validated['ids']);
+
+        return new JsonDataResponse(
+            data: ['count' => $count],
+            message: __('messages.bulk_action', [
+                'resource' => '{{Module}}s',
+                'action' => 'delete',
+            ])
+        );
+    }
+}

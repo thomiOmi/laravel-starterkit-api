@@ -23,10 +23,13 @@ final readonly class DestroyController
     /**
      * Remove the specified {{lowerResource}} from storage.
      */
-    public function __invoke({{Module}} ${{lowerResource}}): JsonDataResponse|Response
+    public function __invoke({{Module}} ${{lowerResource}}): JsonDataResponse
     {
         if ($this->delete{{Module}}->handle(${{lowerResource}})) {
-            return response()->noContent();
+            return new JsonDataResponse(
+                data: null,
+                status: Response::HTTP_NO_CONTENT,
+            );
         }
 
         return new JsonDataResponse(

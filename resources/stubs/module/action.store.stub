@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Actions;
+
+use Illuminate\Database\DatabaseManager;
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Payloads\{{Version}}\Store{{Module}}Payload;
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
+
+/**
+ * Action for creating a new {{lowerResource}}.
+ */
+final readonly class Store{{Module}}Action
+{
+    /**
+     * Create a new Store{{Module}}Action instance.
+     */
+    public function __construct(
+        private DatabaseManager $database,
+        private {{Module}}Repository $repository
+    ) {}
+
+    /**
+     * Execute the create {{lowerResource}} action.
+     *
+     * @param  Store{{Module}}Payload  $payload  The payload.
+     * @return {{Module}} The newly created {{lowerResource}} instance.
+     */
+    public function handle(Store{{Module}}Payload $payload): {{Module}}
+    {
+        return $this->database->transaction(function () use ($payload) {
+            return $this->repository->create($payload->toArray());
+        });
+    }
+}

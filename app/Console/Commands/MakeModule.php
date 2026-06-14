@@ -120,7 +120,7 @@ class MakeModule extends Command
         $this->createFileFromStub($path."/Providers/{$name}ServiceProvider.php", 'provider', $replacements);
 
         $this->createFileFromStub($path."/Routes/{$version}.php", 'route', array_merge($replacements, [
-            'routes' => $this->getRoutesContent($name, $version, $options),
+            'routesContent' => $this->getRoutesContent($name, $version, $options),
         ]));
 
         $this->createFileFromStub($path."/Models/{$name}.php", 'model', $replacements);
@@ -142,10 +142,11 @@ class MakeModule extends Command
             $this->createFileFromStub($path."/Actions/List{$name}Action.php", 'action.index', $replacements);
 
             foreach (['Store', 'Update'] as $action) {
+                $actionLower = strtolower($action);
                 $actionReplacements = array_merge($replacements, ['Action' => $action]);
 
-                $this->createFileFromStub($path."/Controllers/{$version}/{$action}Controller.php", 'controller.v1', $actionReplacements);
-                $this->createFileFromStub($path."/Actions/{$action}{$name}Action.php", 'action', $actionReplacements);
+                $this->createFileFromStub($path."/Controllers/{$version}/{$action}Controller.php", "controller.{$actionLower}", $actionReplacements);
+                $this->createFileFromStub($path."/Actions/{$action}{$name}Action.php", "action.{$actionLower}", $actionReplacements);
                 $this->createFileFromStub($path."/Payloads/{$version}/{$action}{$name}Payload.php", 'payload', $actionReplacements);
                 $this->createFileFromStub($path."/Requests/{$version}/{$action}{$name}Request.php", 'request.v1', $actionReplacements);
             }
@@ -157,6 +158,12 @@ class MakeModule extends Command
             // Destroy
             $this->createFileFromStub($path."/Controllers/{$version}/DestroyController.php", 'controller.destroy', $replacements);
             $this->createFileFromStub($path."/Actions/Destroy{$name}Action.php", 'action.destroy', $replacements);
+
+            // Bulk Delete & Restore
+            $this->createFileFromStub($path."/Controllers/{$version}/BulkDeleteController.php", 'controller.bulk-delete', $replacements);
+            $this->createFileFromStub($path."/Actions/BulkDelete{$name}Action.php", 'action.bulk-delete', $replacements);
+            $this->createFileFromStub($path."/Controllers/{$version}/BulkRestoreController.php", 'controller.bulk-restore', $replacements);
+            $this->createFileFromStub($path."/Actions/BulkRestore{$name}Action.php", 'action.bulk-restore', $replacements);
         }
 
         if ($options['filter']) {
@@ -216,17 +223,44 @@ class MakeModule extends Command
     protected function getRoutesContent(string $name, string $version, array $options): string
     {
         $namespace = "Modules\\{$name}\\Controllers\\{$version}";
+        $param = lcfirst($name);
+        $slug = Str::kebab(Str::plural($name));
 
-        $routes = "    Route::get('/', {$namespace}\\IndexController::class)->name('index');\n";
+        $uses = [];
+        $routeDefs = [];
+
+        $uses[] = "use {$namespace}\\IndexController;";
+        $routeDefs[] = "    Route::get('/', IndexController::class)->name('index');";
 
         if ($options['action']) {
-            $routes .= "    Route::post('/', {$namespace}\\StoreController::class)->name('store');\n";
-            $routes .= "    Route::get('/{{$name}}', {$namespace}\\ShowController::class)->name('show');\n";
-            $routes .= "    Route::put('/{{$name}}', {$namespace}\\UpdateController::class)->name('update');\n";
-            $routes .= "    Route::delete('/{{$name}}', {$namespace}\\DestroyController::class)->name('destroy');\n";
+            $uses[] = "use {$namespace}\\StoreController;";
+            $uses[] = "use {$namespace}\\ShowController;";
+            $uses[] = "use {$namespace}\\UpdateController;";
+            $uses[] = "use {$namespace}\\DestroyController;";
+            $uses[] = "use {$namespace}\\BulkDeleteController;";
+            $uses[] = "use {$namespace}\\BulkRestoreController;";
+
+            $routeDefs[] = "    Route::post('/', StoreController::class)->name('store');";
+            $routeDefs[] = "    Route::get('/{{$param}}', ShowController::class)->name('show');";
+            $routeDefs[] = "    Route::put('/{{$param}}', UpdateController::class)->name('update');";
+            $routeDefs[] = "    Route::delete('/{{$param}}', DestroyController::class)->name('destroy');";
+            $routeDefs[] = "    Route::post('/bulk/delete', BulkDeleteController::class)->name('bulk.delete');";
+            $routeDefs[] = "    Route::post('/bulk/restore', BulkRestoreController::class)->name('bulk.restore');";
         }
 
-        return $routes;
+        $uses = array_unique($uses);
+        sort($uses);
+        $useBlock = implode("\n", $uses);
+        $routeBlock = implode("\n", $routeDefs);
+
+        return <<<PHP
+use Illuminate\Support\Facades\Route;
+{$useBlock}
+
+Route::prefix('{$slug}')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->name('{$slug}.')->group(function () {
+{$routeBlock}
+});
+PHP;
     }
 
     /**

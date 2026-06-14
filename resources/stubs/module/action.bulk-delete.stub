@@ -1,0 +1,39 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Actions;
+
+use Illuminate\Database\DatabaseManager;
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
+
+/**
+ * Action for bulk deleting {{lowerResource}}s.
+ */
+final readonly class BulkDelete{{Module}}Action
+{
+    /**
+     * Create a new BulkDelete{{Module}}Action instance.
+     */
+    public function __construct(
+        private DatabaseManager $database,
+        private {{Module}}Repository $repository
+    ) {}
+
+    /**
+     * Execute the bulk delete {{lowerResource}}s action.
+     *
+     * @param  array<int, string|int>  $ids  The {{lowerResource}} IDs to delete.
+     * @return int The number of {{lowerResource}}s deleted.
+     */
+    public function handle(array $ids): int
+    {
+        if (empty($ids)) {
+            return 0;
+        }
+
+        return $this->database->transaction(function () use ($ids) {
+            return $this->repository->bulkDelete($ids);
+        });
+    }
+}

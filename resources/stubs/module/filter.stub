@@ -34,21 +34,24 @@ class {{Module}}Filter extends BaseFilter
     /**
      * Filter by search term.
      *
-     * @param  mixed  $value  The search term.
+     * @param  Builder<{{Module}}>  $builder
+     * @param  string  $value  The search term.
      * @return Builder<{{Module}}>
      */
-    public function search(mixed $value): Builder
+    public function search(Builder $builder, string $value): Builder
     {
-        /** @var Builder<{{Module}}> $builder */
-        $builder = $this->builder;
+        $tokens = $this->tokenizeSearch($value);
 
-        if (! is_string($value)) {
+        if ($tokens === []) {
             return $builder;
         }
 
-        $value = trim($value);
-        $escapedValue = addcslashes($value, '%_');
-
-        return $builder->where('name', 'like', "%{$escapedValue}%");
+        return $builder->where(function (Builder $query) use ($tokens): void {
+            foreach ($tokens as $token) {
+                $query->where(function (Builder $q) use ($token): void {
+                    $q->where('name', 'like', "%{$token}%");
+                });
+            }
+        });
     }
 }

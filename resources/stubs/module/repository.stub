@@ -85,4 +85,36 @@ final readonly class {{Module}}Repository
 
         return (bool) ${{lowerResource}}->delete();
     }
+
+    /**
+     * Bulk delete {{lowerResource}}s and invalidate their caches.
+     *
+     * @param  array<int, string|int>  $ids
+     * @return int
+     */
+    public function bulkDelete(array $ids): int
+    {
+        foreach ($ids as $id) {
+            Cache::forget("{{slug}}:profile:{$id}");
+        }
+
+        /** @var int $count */
+        $count = {{Module}}::whereIn('id', $ids)->delete();
+
+        return $count;
+    }
+
+    /**
+     * Bulk restore {{lowerResource}}s.
+     *
+     * @param  array<int, string|int>  $ids
+     * @return int
+     */
+    public function bulkRestore(array $ids): int
+    {
+        /** @var int $count */
+        $count = {{Module}}::onlyTrashed()->whereIn('id', $ids)->restore();
+
+        return $count;
+    }
 }

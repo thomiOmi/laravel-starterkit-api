@@ -7,8 +7,8 @@ namespace Modules\Auth\Controllers\V1;
 use App\Http\Responses\JsonDataResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetAuthenticatedUserAction;
-use Modules\Auth\Resources\UserResource;
 use Modules\User\Models\User;
+use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

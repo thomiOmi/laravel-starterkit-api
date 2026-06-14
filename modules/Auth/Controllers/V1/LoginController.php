@@ -7,7 +7,7 @@ namespace Modules\Auth\Controllers\V1;
 use App\Http\Responses\JsonDataResponse;
 use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\Requests\V1\LoginRequest;
-use Modules\Auth\Resources\UserResource;
+use Modules\User\Resources\UserResource;
 
 /**
  * @tags Auth

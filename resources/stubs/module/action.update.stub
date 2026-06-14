@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Actions;
+
+use Illuminate\Database\DatabaseManager;
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Payloads\{{Version}}\Update{{Module}}Payload;
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
+
+/**
+ * Action for updating an existing {{lowerResource}}.
+ */
+final readonly class Update{{Module}}Action
+{
+    /**
+     * Create a new Update{{Module}}Action instance.
+     */
+    public function __construct(
+        private DatabaseManager $database,
+        private {{Module}}Repository $repository
+    ) {}
+
+    /**
+     * Execute the update {{lowerResource}} action.
+     *
+     * @param  {{Module}}  ${{lowerResource}}  The {{lowerResource}} model instance.
+     * @param  Update{{Module}}Payload  $payload  The payload.
+     * @return {{Module}} The updated {{lowerResource}} instance.
+     */
+    public function handle({{Module}} ${{lowerResource}}, Update{{Module}}Payload $payload): {{Module}}
+    {
+        return $this->database->transaction(function () use (${{lowerResource}}, $payload) {
+            return $this->repository->update(${{lowerResource}}, $payload->toArray());
+        });
+    }
+}

@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Controllers\{{Version}};
+
+use App\Http\Responses\JsonDataResponse;
+use Modules\{{Module}}\Actions\Store{{Module}}Action;
+use Modules\{{Module}}\Requests\{{Version}}\Store{{Module}}Request;
+use Modules\{{Module}}\Resources\{{Module}}Resource;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * @group {{Module}} Management
+ *
+ * @authenticated
+ */
+final readonly class StoreController
+{
+    public function __construct(
+        private Store{{Module}}Action $action,
+    ) {}
+
+    /**
+     * Store a newly created {{lowerResource}} in storage.
+     */
+    public function __invoke(Store{{Module}}Request $request): JsonDataResponse
+    {
+        ${{lowerResource}} = $this->action->handle($request->payload());
+
+        return new JsonDataResponse(
+            data: new {{Module}}Resource(${{lowerResource}}),
+            status: Response::HTTP_CREATED,
+            message: __('messages.created', ['resource' => '{{Module}}'])
+        );
+    }
+}
