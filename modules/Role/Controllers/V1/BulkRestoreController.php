@@ -6,40 +6,34 @@ namespace Modules\Role\Controllers\V1;
 
 use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\JsonDataResponse;
-use Modules\Role\Actions\BulkDeleteRolesAction;
 use Modules\Role\Actions\BulkRestoreRolesAction;
 
 /**
- * @tags Role
+ * @group Role Management
+ *
+ * @authenticated
  */
-final readonly class BulkActionController
+final readonly class BulkRestoreController
 {
     public function __construct(
-        private BulkDeleteRolesAction $bulkDeleteRoles,
         private BulkRestoreRolesAction $bulkRestoreRoles,
     ) {}
 
     /**
-     * Perform bulk action on roles.
+     * Perform bulk restore on roles.
      */
     public function __invoke(BulkActionRequest $request): JsonDataResponse
     {
-        /** @var array{ids: array<int, string|int>, action: string} $validated */
+        /** @var array{ids: array<int, string>} $validated */
         $validated = $request->validated();
 
-        $count = match ($validated['action']) {
-            'delete' => $this->bulkDeleteRoles->handle($validated['ids']),
-            'restore' => $this->bulkRestoreRoles->handle($validated['ids']),
-            default => 0,
-        };
-
-        $action = $validated['action'];
+        $count = $this->bulkRestoreRoles->handle($validated['ids']);
 
         return new JsonDataResponse(
             data: ['count' => $count],
             message: __('messages.bulk_action', [
                 'resource' => 'Roles',
-                'action' => $action,
+                'action' => 'restore',
             ])
         );
     }

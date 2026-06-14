@@ -12,7 +12,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *
  * Validate bulk action requests for any module.
  */
-#[BodyParameter(name: 'action', description: 'The bulk action to perform.', required: true, example: 'delete')]
+#[BodyParameter(name: 'action', description: 'The bulk action to perform.', required: false, example: 'delete')]
 #[BodyParameter(name: 'ids', description: 'An array of resource IDs (ULID) to perform the action on.', required: true, example: ['01hpv4n8f8xrd2m8q0e4x8j9v1', '01hpv4n8f8xrd2m8q0e4x8j9v2'])]
 class BulkActionRequest extends FormRequest
 {
@@ -28,17 +28,29 @@ class BulkActionRequest extends FormRequest
         }
 
         $routeName = (string) $this->route()?->getName();
-        $action = $this->string('action')->toString();
 
         if (str_contains($routeName, '.users.')) {
-            return match ($action) {
-                'delete' => $user->can('user.delete'),
-                'restore' => $user->can('user.edit'),
-                default => false,
-            };
+            if (str_contains($routeName, '.delete')) {
+                return $user->can('user.delete');
+            }
+
+            if (str_contains($routeName, '.restore')) {
+                return $user->can('user.edit');
+            }
         }
 
         if (str_contains($routeName, '.roles.')) {
+            if (str_contains($routeName, '.delete')) {
+                return $user->can('role.delete');
+            }
+
+            if (str_contains($routeName, '.restore')) {
+                return $user->can('role.edit');
+            }
+
+            // Fallback for legacy single bulk route
+            $action = $this->string('action')->toString();
+
             return match ($action) {
                 'delete' => $user->can('role.delete'),
                 'restore' => $user->can('role.edit'),
@@ -59,7 +71,7 @@ class BulkActionRequest extends FormRequest
         return [
             'ids' => ['required', 'array', 'min:1', 'max:50'],
             'ids.*' => ['required', 'string', 'ulid'],
-            'action' => ['required', 'string', 'in:delete,restore'],
+            'action' => ['sometimes', 'string', 'in:delete,restore'],
         ];
     }
 }
