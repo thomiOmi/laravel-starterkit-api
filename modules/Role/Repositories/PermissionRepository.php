@@ -22,31 +22,6 @@ final readonly class PermissionRepository
 
     public function findById(string $id): ?Permission
     {
-        /** @var Permission|null */
         return Permission::find($id);
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    public function create(array $data): Permission
-    {
-        /** @var Permission */
-        return Permission::create($data);
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    public function update(Permission $permission, array $data): Permission
-    {
-        $permission->update($data);
-
-        return $permission;
-    }
-
-    public function delete(Permission $permission): bool
-    {
-        return (bool) $permission->delete();
     }
 }

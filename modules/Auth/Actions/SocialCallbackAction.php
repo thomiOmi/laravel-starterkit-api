@@ -20,7 +20,7 @@ final readonly class SocialCallbackAction
     /**
      * @return array{user: User, access_token: string, token_type: string}
      */
-    public function handle(string $provider): array
+    public function handle(string $provider, string $ipAddress, ?string $userAgent): array
     {
         if (! in_array($provider, self::ALLOWED_PROVIDERS, true)) {
             throw new InvalidArgumentException(__('validation.social_provider_invalid'));
@@ -75,8 +75,8 @@ final readonly class SocialCallbackAction
         $accessToken = $token->accessToken;
 
         $accessToken->forceFill([
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
+            'ip_address' => $ipAddress,
+            'user_agent' => $userAgent,
         ])->save();
 
         return [

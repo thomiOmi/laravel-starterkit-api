@@ -4,35 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Role\Actions;
 
-use Illuminate\Database\DatabaseManager;
 use Modules\Role\Models\Role;
-use Modules\Role\Repositories\RoleRepository;
 
-/**
- * Action for deleting a role.
- */
 final readonly class DeleteRoleAction
 {
-    /**
-     * Create a new DeleteRoleAction instance.
-     */
-    public function __construct(
-        private DatabaseManager $database,
-        private RoleRepository $repository
-    ) {}
-
-    /**
-     * Execute the delete role action.
-     *
-     * @param  Role  $role  The role model instance.
-     * @return bool True if the role was deleted successfully, false otherwise.
-     */
     public function handle(Role $role): bool
     {
         if ($role->name === 'super-admin') {
             return false;
         }
 
-        return $this->database->transaction(fn () => $this->repository->delete($role));
+        return (bool) $role->delete();
     }
 }

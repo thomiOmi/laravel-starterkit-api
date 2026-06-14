@@ -13,13 +13,11 @@ use Modules\User\Models\User;
  */
 class UserFilter extends BaseFilter
 {
-    /** @var array<int, string> */
     protected array $allowedFilters = [
         'role',
         'status',
     ];
 
-    /** @var array<int, string> */
     protected array $allowedSorts = [
         'name',
         'email',

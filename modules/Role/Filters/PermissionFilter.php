@@ -13,12 +13,10 @@ use Modules\Role\Models\Permission;
  */
 class PermissionFilter extends BaseFilter
 {
-    /** @var array<int, string> */
     protected array $allowedFilters = [
         'guard',
     ];
 
-    /** @var array<int, string> */
     protected array $allowedSorts = [
         'name',
         'guard_name',

@@ -4,32 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Role\Actions;
 
-use Illuminate\Database\DatabaseManager;
-use Modules\Role\Repositories\RoleRepository;
+use Modules\Role\Models\Role;
 
-/**
- * Action for bulk restoring roles.
- */
 final readonly class BulkRestoreRolesAction
 {
     /**
-     * Create a new BulkRestoreRolesAction instance.
-     */
-    public function __construct(
-        private DatabaseManager $database,
-        private RoleRepository $repository
-    ) {}
-
-    /**
-     * Execute the bulk restore roles action.
-     *
-     * @param  array<int, string|int>  $ids  The role IDs to restore.
-     * @return int The number of roles restored.
+     * @param  array<int, string|int>  $ids
      */
     public function handle(array $ids): int
     {
-        return $this->database->transaction(function () use ($ids) {
-            return $this->repository->bulkRestore($ids);
-        });
+        /** @var int $count */
+        $count = Role::onlyTrashed()->whereIn('id', $ids)->restore();
+
+        return $count;
     }
 }

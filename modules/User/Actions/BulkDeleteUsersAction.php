@@ -4,38 +4,29 @@ declare(strict_types=1);
 
 namespace Modules\User\Actions;
 
-use Illuminate\Database\DatabaseManager;
-use Modules\User\Repositories\UserRepository;
+use Illuminate\Contracts\Auth\Guard;
+use Modules\User\Models\User;
 
-/**
- * Action for bulk deleting users.
- */
 final readonly class BulkDeleteUsersAction
 {
-    /**
-     * Create a new BulkDeleteUsersAction instance.
-     */
     public function __construct(
-        private DatabaseManager $database,
-        private UserRepository $repository
+        private Guard $auth
     ) {}
 
     /**
-     * Execute the bulk delete users action.
-     *
-     * @param  array<int, string|int>  $ids  The user IDs to delete.
-     * @return int The number of users deleted.
+     * @param  array<int, string|int>  $ids
      */
     public function handle(array $ids): int
     {
-        $ids = array_filter($ids, fn ($id) => $id !== auth()->id());
+        $ids = array_filter($ids, fn (string|int $id): bool => $id !== $this->auth->id());
 
-        if (empty($ids)) {
+        if ($ids === []) {
             return 0;
         }
 
-        return $this->database->transaction(function () use ($ids) {
-            return $this->repository->bulkDelete($ids);
-        });
+        /** @var int $count */
+        $count = User::whereIn('id', $ids)->delete();
+
+        return $count;
     }
 }

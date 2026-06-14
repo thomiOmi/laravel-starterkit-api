@@ -13,10 +13,8 @@ use Modules\Role\Models\Role;
  */
 class RoleFilter extends BaseFilter
 {
-    /** @var array<int, string> */
     protected array $allowedFilters = [];
 
-    /** @var array<int, string> */
     protected array $allowedSorts = [
         'name',
         'created_at',

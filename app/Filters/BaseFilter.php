@@ -144,8 +144,6 @@ abstract class BaseFilter
     }
 
     /**
-     * Tokenize a search string into individual safe tokens.
-     *
      * @return array<int, string>
      */
     protected function tokenizeSearch(string $value): array

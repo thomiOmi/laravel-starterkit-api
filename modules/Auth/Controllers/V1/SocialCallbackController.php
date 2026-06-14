@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
+use Illuminate\Http\Request;
 use Modules\Auth\Actions\SocialCallbackAction;
 use Modules\User\Resources\UserResource;
 
@@ -17,9 +18,13 @@ final readonly class SocialCallbackController
         private SocialCallbackAction $socialCallback
     ) {}
 
-    public function __invoke(string $provider): JsonDataResponse
+    public function __invoke(string $provider, Request $request): JsonDataResponse
     {
-        $result = $this->socialCallback->handle($provider);
+        $result = $this->socialCallback->handle(
+            provider: $provider,
+            ipAddress: $request->ip() ?? '0.0.0.0',
+            userAgent: $request->userAgent(),
+        );
 
         return new JsonDataResponse(
             data: [
