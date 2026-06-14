@@ -74,9 +74,16 @@ describe('User CRUD Operations V1', function () {
             ->assertStatus(Response::HTTP_FORBIDDEN);
     });
 
-    it('handles invalid filter types gracefully', function () {
+    it('rejects invalid search parameter type', function () {
         $this->actingAs($this->admin)
             ->getJson('/api/v1/users?search[]=invalid')
-            ->assertSuccessful();
+            ->assertStatus(400)
+            ->assertJsonStructure([
+                'type',
+                'title',
+                'status',
+                'message',
+                'detail',
+            ]);
     });
 });

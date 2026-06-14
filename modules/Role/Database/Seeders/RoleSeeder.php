@@ -30,6 +30,10 @@ class RoleSeeder extends Seeder
             'role.create',
             'role.edit',
             'role.delete',
+            'permission.view',
+            'permission.create',
+            'permission.edit',
+            'permission.delete',
         ];
 
         foreach ($guards as $guard) {

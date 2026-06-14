@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'social_provider_invalid' => 'The selected social provider is invalid.',
 
     /*
     |--------------------------------------------------------------------------

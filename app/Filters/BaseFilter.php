@@ -7,91 +7,159 @@ namespace App\Filters;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 /**
  * @template TModel of \Illuminate\Database\Eloquent\Model
  */
 abstract class BaseFilter
 {
-    /**
-     * The builder instance.
-     *
-     * @var Builder<TModel>
-     */
-    protected Builder $builder; // @phpstan-ignore property.uninitialized
+    protected string $searchParameter = 'search';
 
-    /**
-     * The list of allowed filters.
-     *
-     * @var array<int, string>
-     */
+    /** @var array<int, string> */
     protected array $allowedFilters = [];
 
-    /**
-     * The list of allowed sorts.
-     *
-     * @var array<int, string>
-     */
+    /** @var array<int, string> */
     protected array $allowedSorts = [];
 
-    /**
-     * Create a new QueryFilters instance.
-     */
     public function __construct(protected Request $request) {}
 
     /**
-     * Apply the filters to the builder.
-     *
      * @param  Builder<TModel>  $builder
      * @return Builder<TModel>
      */
     public function apply(Builder $builder): Builder
     {
-        $this->builder = $builder;
+        $builder = $this->handleSearch($builder);
 
-        $filters = empty($this->allowedFilters)
-            ? $this->getFilters()
-            : $this->request->only($this->allowedFilters);
+        $builder = $this->handleFilters($builder);
+
+        $this->applySorting($builder);
+
+        return $builder;
+    }
+
+    /**
+     * @param  Builder<TModel>  $builder
+     * @return Builder<TModel>
+     */
+    protected function handleSearch(Builder $builder): Builder
+    {
+        $searchValue = $this->request->query($this->searchParameter);
+
+        if ($searchValue === null) {
+            return $builder;
+        }
+
+        if (! is_string($searchValue)) {
+            throw new InvalidArgumentException(sprintf(
+                'Search parameter "%s" must be a string.',
+                $this->searchParameter,
+            ));
+        }
+
+        $searchValue = trim($searchValue);
+
+        if ($searchValue === '') {
+            return $builder;
+        }
+
+        return $this->search($builder, $searchValue);
+    }
+
+    /**
+     * @param  Builder<TModel>  $builder
+     * @return Builder<TModel>
+     */
+    protected function handleFilters(Builder $builder): Builder
+    {
+        $filters = $this->request->query('filter', []);
+
+        if (! is_array($filters)) {
+            return $builder;
+        }
 
         foreach ($filters as $name => $value) {
+            if ($name === $this->searchParameter) {
+                continue;
+            }
+
+            if ($this->allowedFilters !== [] && ! in_array((string) $name, $this->allowedFilters, true)) {
+                continue;
+            }
+
             $method = Str::camel((string) $name);
 
             if ($value !== null && $value !== '' && method_exists($this, $method)) {
-                $this->{$method}($value);
+                $result = $this->{$method}($builder, $value);
+
+                if ($result instanceof Builder) {
+                    $builder = $result;
+                }
             }
         }
 
-        $this->applySorting();
-
-        return $this->builder;
+        return $builder;
     }
 
     /**
-     * Apply sorting to the query.
+     * @param  Builder<TModel>  $builder
      */
-    protected function applySorting(): void
+    protected function applySorting(Builder $builder): void
     {
-        $sortBy = trim((string) $this->request->query('sort_by', ''));
-        $sortDirection = strtolower((string) $this->request->query('sort_direction', 'desc'));
+        $sortParam = $this->request->query('sort', '');
 
-        /** @var 'asc'|'desc' $direction */
-        $direction = in_array($sortDirection, ['asc', 'desc'], true) ? $sortDirection : 'desc';
+        if (! is_string($sortParam) || trim($sortParam) === '') {
+            $builder->orderBy($builder->getModel()->getQualifiedKeyName(), 'desc');
 
-        if ($sortBy !== '' && in_array($sortBy, $this->allowedSorts, true)) {
-            $this->builder->orderBy($sortBy, $direction);
-        } else {
-            $this->builder->orderBy($this->builder->getModel()->getQualifiedKeyName(), 'desc');
+            return;
+        }
+
+        $columns = explode(',', $sortParam);
+        $applied = false;
+
+        foreach ($columns as $column) {
+            $column = trim($column);
+
+            if ($column === '') {
+                continue;
+            }
+
+            $direction = 'asc';
+
+            if (str_starts_with($column, '-')) {
+                $direction = 'desc';
+                $column = substr($column, 1);
+            }
+
+            if (in_array($column, $this->allowedSorts, true)) {
+                $builder->orderBy($column, $direction);
+                $applied = true;
+            }
+        }
+
+        if (! $applied) {
+            $builder->orderBy($builder->getModel()->getQualifiedKeyName(), 'desc');
         }
     }
 
     /**
-     * Get all applicable filters from the request.
+     * Tokenize a search string into individual safe tokens.
      *
-     * @return array<string, mixed>
+     * @return array<int, string>
      */
-    protected function getFilters(): array
+    protected function tokenizeSearch(string $value): array
     {
-        /** @var array<string, mixed> */
-        return $this->request->except(['sort_by', 'sort_direction', 'page', 'per_page']);
+        $tokens = explode(' ', $value);
+
+        $filtered = array_filter($tokens, fn (string $token): bool => trim($token) !== '');
+
+        return array_map(fn (string $token): string => addcslashes(trim($token), '%_'), array_values($filtered));
     }
+
+    /**
+     * @param  Builder<TModel>  $builder
+     * @return Builder<TModel>
+     */
+    abstract public function search(Builder $builder, string $value): Builder;
 }

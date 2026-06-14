@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'social_provider_invalid' => 'Penyedia sosial yang dipilih tidak valid.',
 
     /*
     |--------------------------------------------------------------------------

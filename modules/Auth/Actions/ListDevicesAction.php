@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Auth\Actions;
+
+use Illuminate\Database\Eloquent\Collection;
+use Laravel\Sanctum\PersonalAccessToken;
+use Modules\User\Models\User;
+
+final readonly class ListDevicesAction
+{
+    /**
+     * @return Collection<int, PersonalAccessToken>
+     */
+    public function handle(User $user): Collection
+    {
+        /** @var Collection<int, PersonalAccessToken> */
+        return $user->tokens()
+            ->orderBy('last_used_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+}

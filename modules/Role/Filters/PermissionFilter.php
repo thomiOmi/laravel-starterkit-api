@@ -6,25 +6,28 @@ namespace Modules\Role\Filters;
 
 use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\Role\Models\Role;
+use Modules\Role\Models\Permission;
 
 /**
- * @extends BaseFilter<Role>
+ * @extends BaseFilter<Permission>
  */
-class RoleFilter extends BaseFilter
+class PermissionFilter extends BaseFilter
 {
     /** @var array<int, string> */
-    protected array $allowedFilters = [];
+    protected array $allowedFilters = [
+        'guard',
+    ];
 
     /** @var array<int, string> */
     protected array $allowedSorts = [
         'name',
+        'guard_name',
         'created_at',
     ];
 
     /**
-     * @param  Builder<Role>  $builder
-     * @return Builder<Role>
+     * @param  Builder<Permission>  $builder
+     * @return Builder<Permission>
      */
     public function search(Builder $builder, string $value): Builder
     {
@@ -38,9 +41,22 @@ class RoleFilter extends BaseFilter
             foreach ($tokens as $token) {
                 $query->where(function (Builder $q) use ($token): void {
                     $q->where('name', 'like', "%{$token}%")
-                        ->orWhere('description', 'like', "%{$token}%");
+                        ->orWhere('guard_name', 'like', "%{$token}%");
                 });
             }
         });
+    }
+
+    /**
+     * @param  Builder<Permission>  $builder
+     * @return Builder<Permission>
+     */
+    public function guard(Builder $builder, mixed $value): Builder
+    {
+        if (! is_string($value)) {
+            return $builder;
+        }
+
+        return $builder->where('guard_name', $value);
     }
 }

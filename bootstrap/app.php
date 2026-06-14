@@ -114,5 +114,15 @@ return Application::configure(basePath: dirname(__DIR__))
                 type: 'https://example.com/problems/rate-limited',
             );
         });
+
+        $exceptions->render(function (InvalidArgumentException $e, Request $request): ProblemResponse {
+            return new ProblemResponse(
+                title: 'Bad Request',
+                status: Response::HTTP_BAD_REQUEST,
+                detail: $e->getMessage(),
+                type: 'https://example.com/problems/bad-request',
+                instance: $request->path(),
+            );
+        });
     })
     ->create();

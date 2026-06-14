@@ -6,7 +6,6 @@ namespace Modules\User\Filters;
 
 use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
 use Modules\User\Models\User;
 
 /**
@@ -14,22 +13,13 @@ use Modules\User\Models\User;
  */
 class UserFilter extends BaseFilter
 {
-    /**
-     * The list of allowed filters.
-     *
-     * @var array<int, string>
-     */
+    /** @var array<int, string> */
     protected array $allowedFilters = [
-        'search',
         'role',
-        'created_at',
+        'status',
     ];
 
-    /**
-     * The list of allowed sorts.
-     *
-     * @var array<int, string>
-     */
+    /** @var array<int, string> */
     protected array $allowedSorts = [
         'name',
         'email',
@@ -37,41 +27,33 @@ class UserFilter extends BaseFilter
     ];
 
     /**
-     * Filter by search term (name or email).
-     *
-     * @param  mixed  $value  The search term.
-     * @return Builder<User> The updated query builder instance.
+     * @param  Builder<User>  $builder
+     * @return Builder<User>
      */
-    public function search(mixed $value): Builder
+    public function search(Builder $builder, string $value): Builder
     {
-        /** @var Builder<User> $builder */
-        $builder = $this->builder;
+        $tokens = $this->tokenizeSearch($value);
 
-        if (! is_string($value)) {
+        if ($tokens === []) {
             return $builder;
         }
 
-        $value = trim($value);
-        $escapedValue = addcslashes($value, '%_');
-
-        return $builder->where(function (Builder $query) use ($escapedValue) {
-            /** @var Builder<User> $query */
-            $query->where('name', 'like', "%{$escapedValue}%")
-                ->orWhere('email', 'like', "%{$escapedValue}%");
+        return $builder->where(function (Builder $query) use ($tokens): void {
+            foreach ($tokens as $token) {
+                $query->where(function (Builder $q) use ($token): void {
+                    $q->where('name', 'like', "%{$token}%")
+                        ->orWhere('email', 'like', "%{$token}%");
+                });
+            }
         });
     }
 
     /**
-     * Filter by role name.
-     *
-     * @param  mixed  $value  The role name.
-     * @return Builder<User> The updated query builder instance.
+     * @param  Builder<User>  $builder
+     * @return Builder<User>
      */
-    public function role(mixed $value): Builder
+    public function role(Builder $builder, mixed $value): Builder
     {
-        /** @var Builder<User> $builder */
-        $builder = $this->builder;
-
         if (! is_string($value)) {
             return $builder;
         }
@@ -80,27 +62,21 @@ class UserFilter extends BaseFilter
     }
 
     /**
-     * Filter by created date range.
-     * Expects: ?created_at[from]=2023-01-01&created_at[to]=2023-12-31
-     *
-     * @param  mixed  $value  The date range values.
-     * @return Builder<User> The updated query builder instance.
+     * @param  Builder<User>  $builder
+     * @return Builder<User>
      */
-    public function createdAt(mixed $value): Builder
+    public function status(Builder $builder, mixed $value): Builder
     {
-        /** @var Builder<User> $builder */
-        $builder = $this->builder;
-
-        if (! is_array($value)) {
+        if (! is_string($value)) {
             return $builder;
         }
 
-        if (isset($value['from']) && is_string($value['from']) && strtotime($value['from']) !== false) {
-            $builder->where('created_at', '>=', $value['from']);
+        if ($value === 'verified') {
+            return $builder->whereNotNull('email_verified_at');
         }
 
-        if (isset($value['to']) && is_string($value['to']) && strtotime($value['to']) !== false) {
-            $builder->where('created_at', '<=', (string) Carbon::parse($value['to'])->endOfDay());
+        if ($value === 'unverified') {
+            return $builder->whereNull('email_verified_at');
         }
 
         return $builder;

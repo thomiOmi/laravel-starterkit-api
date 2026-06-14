@@ -28,6 +28,7 @@ final readonly class IndexController
     #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
     #[QueryParameter(name: 'search', description: 'Search keyword to filter roles by name or description.', type: 'string', required: false, example: 'admin')]
+    #[QueryParameter(name: 'sort', description: 'Sort columns. Prefix with - for descending order.', type: 'string', required: false, example: '-created_at')]
     public function __invoke(Request $request, RoleFilter $filter): JsonDataResponse
     {
         $roles = $this->listRoles->handle($filter, $request->integer('per_page', 10));
