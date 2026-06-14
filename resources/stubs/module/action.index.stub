@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Actions;
+
+use Illuminate\Contracts\Pagination\Paginator;
+use Modules\{{Module}}\Filters\{{Module}}Filter;
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
+
+/**
+ * Action for listing paginated {{lowerResource}}s with filters.
+ */
+final readonly class List{{Module}}Action
+{
+    /**
+     * Create a new List{{Module}}Action instance.
+     */
+    public function __construct(
+        private {{Module}}Repository $repository
+    ) {}
+
+    /**
+     * Execute the list {{lowerResource}}s action.
+     *
+     * @param  {{Module}}Filter  $filter  The {{lowerResource}} filter instance.
+     * @param  int  $perPage  Number of items per page.
+     * @return Paginator<int, {{Module}}> The paginated {{lowerResource}}s.
+     */
+    public function handle({{Module}}Filter $filter, int $perPage = 10): Paginator
+    {
+        return $this->repository->paginate($filter, $perPage);
+    }
+}

@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Actions;
+
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
+
+/**
+ * Action for retrieving a single {{lowerResource}} profile with cache optimization.
+ */
+final readonly class Show{{Module}}Action
+{
+    /**
+     * Create a new Show{{Module}}Action instance.
+     */
+    public function __construct(
+        private {{Module}}Repository $repository
+    ) {}
+
+    /**
+     * Execute the show {{lowerResource}} action.
+     *
+     * @param  string  $id  The {{lowerResource}} ID.
+     * @return {{Module}}|null The {{lowerResource}} instance or null if not found.
+     */
+    public function handle(string $id): ?{{Module}}
+    {
+        return $this->repository->findById($id);
+    }
+}

@@ -5,40 +5,34 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Responses\JsonDataResponse;
-use Modules\{{Module}}\Actions\Destroy{{Resource}}Action;
-use Modules\{{Module}}\Models\{{Resource}};
+use Modules\{{Module}}\Actions\Destroy{{Module}}Action;
+use Modules\{{Module}}\Models\{{Module}};
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Class DestroyController
+ * @group {{Module}} Management
  *
- * @package Modules\{{Module}}\Controllers\{{Version}}
+ * @authenticated
  */
 final readonly class DestroyController
 {
-    /**
-     * DestroyController constructor.
-     *
-     * @param Destroy{{Resource}}Action $action
-     */
     public function __construct(
-        private Destroy{{Resource}}Action $action,
+        private Destroy{{Module}}Action $delete{{Module}},
     ) {}
 
     /**
-     * Handle the incoming request.
-     *
-     * @param {{Resource}} ${{lowerResource}}
-     * @return JsonDataResponse
+     * Remove the specified {{lowerResource}} from storage.
      */
-    public function __invoke({{Resource}} ${{lowerResource}}): JsonDataResponse
+    public function __invoke({{Module}} ${{lowerResource}}): JsonDataResponse|Response
     {
-        $this->action->handle(${{lowerResource}});
+        if ($this->delete{{Module}}->handle(${{lowerResource}})) {
+            return response()->noContent();
+        }
 
         return new JsonDataResponse(
             data: null,
-            status: Response::HTTP_NO_CONTENT,
-            message: '{{Resource}} deleted successfully.',
+            status: Response::HTTP_FORBIDDEN,
+            message: __('messages.delete_error', ['resource' => '{{Module}}'])
         );
     }
 }

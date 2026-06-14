@@ -9,7 +9,9 @@ use Modules\Role\Models\Role;
 use Modules\Role\Resources\RoleResource;
 
 /**
- * @tags Role
+ * @group Role Management
+ *
+ * @authenticated
  */
 final readonly class ShowController
 {

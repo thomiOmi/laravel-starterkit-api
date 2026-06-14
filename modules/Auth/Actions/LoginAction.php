@@ -18,6 +18,9 @@ final readonly class LoginAction
     /**
      * Execute login action.
      *
+     * @param  LoginPayload  $payload  The login payload.
+     * @param  string|null  $ip  The IP address of the client.
+     * @param  string|null  $userAgent  The user agent of the client.
      * @return array{user: User, access_token: string, token_type: string}
      *
      * @throws ValidationException

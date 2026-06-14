@@ -5,27 +5,40 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Responses\JsonDataResponse;
-use Modules\{{Module}}\Models\{{Resource}};
-use Modules\{{Module}}\Resources\{{Resource}}Resource;
+use Modules\{{Module}}\Actions\Show{{Module}}Action;
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Resources\{{Module}}Resource;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Class ShowController
+ * @group {{Module}} Management
  *
- * @package Modules\{{Module}}\Controllers\{{Version}}
+ * @authenticated
  */
 final readonly class ShowController
 {
+    public function __construct(
+        private Show{{Module}}Action $show{{Module}}
+    ) {}
+
     /**
-     * Handle the incoming request.
-     *
-     * @param {{Resource}} ${{lowerResource}}
-     * @return JsonDataResponse
+     * Display the specified {{lowerResource}}.
      */
-    public function __invoke({{Resource}} ${{lowerResource}}): JsonDataResponse
+    public function __invoke({{Module}} ${{lowerResource}}): JsonDataResponse
     {
+        ${{lowerResource}} = $this->show{{Module}}->handle(${{lowerResource}}->id);
+
+        if (! ${{lowerResource}}) {
+            return new JsonDataResponse(
+                data: null,
+                status: Response::HTTP_NOT_FOUND,
+                message: __('messages.not_found', ['resource' => '{{Module}}'])
+            );
+        }
+
         return new JsonDataResponse(
-            data: new {{Resource}}Resource(${{lowerResource}}),
-            message: '{{Resource}} retrieved successfully.',
+            data: new {{Module}}Resource(${{lowerResource}}),
+            message: __('messages.retrieved', ['resource' => '{{Module}}'])
         );
     }
 }

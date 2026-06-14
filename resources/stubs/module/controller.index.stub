@@ -5,30 +5,36 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Responses\JsonDataResponse;
+use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
-use Modules\{{Module}}\Models\{{Resource}};
-use Modules\{{Module}}\Resources\{{Resource}}Resource;
+use Modules\{{Module}}\Actions\List{{Module}}Action;
+use Modules\{{Module}}\Filters\{{Module}}Filter;
+use Modules\{{Module}}\Resources\{{Module}}Resource;
 
 /**
- * Class IndexController
+ * @group {{Module}} Management
  *
- * @package Modules\{{Module}}\Controllers\{{Version}}
+ * @authenticated
  */
 final readonly class IndexController
 {
+    public function __construct(
+        private List{{Module}}Action $list{{Module}}
+    ) {}
+
     /**
-     * Handle the incoming request.
-     *
-     * @param Request $request
-     * @return JsonDataResponse
+     * Display a paginated listing of the {{lowerResource}}s.
      */
-    public function __invoke(Request $request): JsonDataResponse
+    #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
+    #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
+    #[QueryParameter(name: 'search', description: 'Search keyword to filter {{lowerResource}}s.', type: 'string', required: false, example: 'test')]
+    public function __invoke(Request $request, {{Module}}Filter $filter): JsonDataResponse
     {
-        $items = {{Resource}}::simplePaginate($request->integer('per_page', 10));
+        ${{lowerResource}}s = $this->list{{Module}}->handle($filter, $request->integer('per_page', 10));
 
         return new JsonDataResponse(
-            data: {{Resource}}Resource::collection($items),
-            message: '{{Resource}} list retrieved successfully.',
+            data: {{Module}}Resource::collection(${{lowerResource}}s),
+            message: __('messages.retrieved', ['resource' => '{{Module}}s'])
         );
     }
 }

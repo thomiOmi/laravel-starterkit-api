@@ -10,7 +10,9 @@ use Modules\Role\Models\Role;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @tags Role
+ * @group Role Management
+ *
+ * @authenticated
  */
 final readonly class DestroyController
 {
@@ -20,15 +22,19 @@ final readonly class DestroyController
 
     /**
      * Remove the specified role from storage.
+     *
+     * @param  Role  $role  The role model instance.
      */
-    public function __invoke(Role $role): JsonDataResponse
+    public function __invoke(Role $role): JsonDataResponse|Response
     {
-        $this->deleteRole->handle($role);
+        if ($this->deleteRole->handle($role)) {
+            return response()->noContent();
+        }
 
         return new JsonDataResponse(
             data: null,
-            status: Response::HTTP_NO_CONTENT,
-            message: __('messages.deleted', ['resource' => 'Role'])
+            status: Response::HTTP_FORBIDDEN,
+            message: __('messages.delete_error', ['resource' => 'Role'])
         );
     }
 }

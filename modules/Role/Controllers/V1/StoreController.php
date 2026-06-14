@@ -11,7 +11,9 @@ use Modules\Role\Resources\RoleResource;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @tags Role
+ * @group Role Management
+ *
+ * @authenticated
  */
 final readonly class StoreController
 {
@@ -21,6 +23,9 @@ final readonly class StoreController
 
     /**
      * Store a newly created role in storage.
+     *
+     * @param  RoleRequest  $request  The validated role creation request.
+     * @return JsonDataResponse The API response containing the new role.
      */
     public function __invoke(RoleRequest $request): JsonDataResponse
     {

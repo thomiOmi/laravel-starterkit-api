@@ -5,27 +5,43 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Responses\JsonDataResponse;
-use Modules\{{Module}}\Actions\{{Action}}{{Resource}}Action;
-use Modules\{{Module}}\Requests\{{Version}}\{{Action}}{{Resource}}Request;
-use Modules\{{Module}}\Resources\{{Resource}}Resource;
+use Modules\{{Module}}\Actions\{{Action}}{{Module}}Action;
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Requests\{{Version}}\{{Action}}{{Module}}Request;
+use Modules\{{Module}}\Resources\{{Module}}Resource;
 use Symfony\Component\HttpFoundation\Response;
-use Knuckles\Scribe\Attributes\Group;
 
-#[Group("{{Module}} Management")]
+/**
+ * @group {{Module}} Management
+ *
+ * @authenticated
+ */
 final readonly class {{Action}}Controller
 {
     public function __construct(
-        private {{Action}}{{Resource}}Action $action,
+        private {{Action}}{{Module}}Action $action,
     ) {}
 
-    public function __invoke({{Action}}{{Resource}}Request $request): JsonDataResponse
+    /**
+     * {{Action}} the specified {{lowerResource}}.
+     */
+    public function __invoke({{Action}}{{Module}}Request $request, ?{{Module}} ${{lowerResource}} = null): JsonDataResponse
     {
-        $result = $this->action->handle($request->payload());
+        if ($request->isMethod('POST')) {
+            ${{lowerResource}} = $this->action->store($request->payload());
+            $status = Response::HTTP_CREATED;
+            $message = __('messages.created', ['resource' => '{{Module}}']);
+        } else {
+            /** @var {{Module}} ${{lowerResource}} */
+            ${{lowerResource}} = $this->action->handle(${{lowerResource}}, $request->payload());
+            $status = Response::HTTP_OK;
+            $message = __('messages.updated', ['resource' => '{{Module}}']);
+        }
 
         return new JsonDataResponse(
-            data: new {{Resource}}Resource($result),
-            status: Response::HTTP_OK,
-            message: '{{Resource}} processed successfully.',
+            data: new {{Module}}Resource(${{lowerResource}}),
+            status: $status,
+            message: $message
         );
     }
 }

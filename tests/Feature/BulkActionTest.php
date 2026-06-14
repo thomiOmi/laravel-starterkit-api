@@ -46,7 +46,7 @@ test('admin can bulk delete roles', function () {
     $ids = collect($roles)->pluck('id')->map(fn (mixed $id) => is_scalar($id) ? (string) $id : '')->toArray();
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles/bulk', [
+        ->postJson('/api/v1/roles/bulk/delete', [
             'ids' => $ids,
             'action' => 'delete',
         ]);
@@ -66,7 +66,7 @@ test('bulk update action is rejected for security', function () {
     $ids = collect($roles)->pluck('id')->map(fn (mixed $id) => is_scalar($id) ? (string) $id : '')->toArray();
 
     $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles/bulk', [
+        ->postJson('/api/v1/roles/bulk/delete', [
             'ids' => $ids,
             'action' => 'update',
             'data' => ['description' => 'Bulk updated description'],

@@ -6,6 +6,7 @@ namespace Modules\Role\Actions;
 
 use Illuminate\Database\DatabaseManager;
 use Modules\Role\Models\Role;
+use Modules\Role\Repositories\RoleRepository;
 
 /**
  * Action for deleting a role.
@@ -16,7 +17,8 @@ final readonly class DeleteRoleAction
      * Create a new DeleteRoleAction instance.
      */
     public function __construct(
-        private DatabaseManager $database
+        private DatabaseManager $database,
+        private RoleRepository $repository
     ) {}
 
     /**
@@ -31,6 +33,6 @@ final readonly class DeleteRoleAction
             return false;
         }
 
-        return $this->database->transaction(fn () => (bool) $role->delete());
+        return $this->database->transaction(fn () => $this->repository->delete($role));
     }
 }

@@ -47,6 +47,13 @@ class RoleFilter extends BaseFilter
             return $builder;
         }
 
-        return $builder->where('name', 'like', "%{$value}%");
+        $value = trim($value);
+        $escapedValue = addcslashes($value, '%_');
+
+        return $builder->where(function (Builder $query) use ($escapedValue) {
+            /** @var Builder<Role> $query */
+            $query->where('name', 'like', "%{$escapedValue}%")
+                ->orWhere('description', 'like', "%{$escapedValue}%");
+        });
     }
 }

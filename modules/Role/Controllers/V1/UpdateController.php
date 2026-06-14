@@ -11,7 +11,9 @@ use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
 
 /**
- * @tags Role
+ * @group Role Management
+ *
+ * @authenticated
  */
 final readonly class UpdateController
 {
@@ -21,13 +23,17 @@ final readonly class UpdateController
 
     /**
      * Update the specified role in storage.
+     *
+     * @param  RoleRequest  $request  The validated role update request.
+     * @param  Role  $role  The role model instance.
+     * @return JsonDataResponse The API response containing the updated role.
      */
     public function __invoke(RoleRequest $request, Role $role): JsonDataResponse
     {
-        $updatedRole = $this->updateRole->handle($role, $request->payload());
+        $role = $this->updateRole->handle($role, $request->payload());
 
         return new JsonDataResponse(
-            data: new RoleResource($updatedRole),
+            data: new RoleResource($role),
             message: __('messages.updated', ['resource' => 'Role'])
         );
     }
