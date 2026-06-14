@@ -17,7 +17,6 @@ class UserServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
 
-        // Laravel 13 Centralized Queue Routing
         Queue::route(UserCreated::class, 'high-priority');
     }
 

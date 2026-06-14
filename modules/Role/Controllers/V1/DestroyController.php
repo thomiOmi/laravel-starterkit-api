@@ -25,10 +25,13 @@ final readonly class DestroyController
      *
      * @param  Role  $role  The role model instance.
      */
-    public function __invoke(Role $role): JsonDataResponse|Response
+    public function __invoke(Role $role): JsonDataResponse
     {
         if ($this->deleteRole->handle($role)) {
-            return response()->noContent();
+            return new JsonDataResponse(
+                data: null,
+                status: Response::HTTP_NO_CONTENT,
+            );
         }
 
         return new JsonDataResponse(

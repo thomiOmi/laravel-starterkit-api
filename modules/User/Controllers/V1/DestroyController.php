@@ -25,10 +25,13 @@ final readonly class DestroyController
      *
      * @param  User  $user  The user model instance.
      */
-    public function __invoke(User $user): JsonDataResponse|Response
+    public function __invoke(User $user): JsonDataResponse
     {
         if ($this->deleteUser->handle($user)) {
-            return response()->noContent();
+            return new JsonDataResponse(
+                data: null,
+                status: Response::HTTP_NO_CONTENT,
+            );
         }
 
         return new JsonDataResponse(
