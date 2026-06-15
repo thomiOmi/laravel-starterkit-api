@@ -26,34 +26,6 @@ abstract class BaseFilter
 
     /**
      * @param  Builder<TModel>  $builder
-     * @param  array<int, string>  $columns
-     * @return Builder<TModel>
-     */
-    protected function applySearch(Builder $builder, string $value, array $columns): Builder
-    {
-        $tokens = $this->tokenizeSearch($value);
-
-        if ($tokens === []) {
-            return $builder;
-        }
-
-        return $builder->where(function (Builder $query) use ($tokens, $columns): void {
-            foreach ($tokens as $token) {
-                $query->where(function (Builder $q) use ($token, $columns): void {
-                    foreach ($columns as $index => $column) {
-                        if ($index === 0) {
-                            $q->where($column, 'like', "%{$token}%");
-                        } else {
-                            $q->orWhere($column, 'like', "%{$token}%");
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    /**
-     * @param  Builder<TModel>  $builder
      * @return Builder<TModel>
      */
     public function apply(Builder $builder): Builder
@@ -169,6 +141,34 @@ abstract class BaseFilter
         if (! $applied) {
             $builder->orderBy($builder->getModel()->getQualifiedKeyName(), 'desc');
         }
+    }
+
+    /**
+     * @param  Builder<TModel>  $builder
+     * @param  array<int, string>  $columns
+     * @return Builder<TModel>
+     */
+    protected function applySearch(Builder $builder, string $value, array $columns): Builder
+    {
+        $tokens = $this->tokenizeSearch($value);
+
+        if ($tokens === []) {
+            return $builder;
+        }
+
+        return $builder->where(function (Builder $query) use ($tokens, $columns): void {
+            foreach ($tokens as $token) {
+                $query->where(function (Builder $q) use ($token, $columns): void {
+                    foreach ($columns as $index => $column) {
+                        if ($index === 0) {
+                            $q->where($column, 'like', "%{$token}%");
+                        } else {
+                            $q->orWhere($column, 'like', "%{$token}%");
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**
