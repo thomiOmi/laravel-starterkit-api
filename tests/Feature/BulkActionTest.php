@@ -55,6 +55,28 @@ test('admin can bulk delete roles', function () {
         ->assertJsonPath('data.count', 2);
 });
 
+test('admin cannot bulk delete super-admin role', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('super-admin');
+
+    $superAdminRole = Role::where('name', 'super-admin')->firstOrFail();
+    $otherRole = Role::create(['name' => 'other-role']);
+
+    $ids = [(string) $superAdminRole->id, (string) $otherRole->id];
+
+    $response = $this->actingAs($admin)
+        ->postJson('/api/v1/roles/bulk/delete', [
+            'ids' => $ids,
+            'action' => 'delete',
+        ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.count', 1);
+
+    $this->assertDatabaseHas('roles', ['name' => 'super-admin', 'deleted_at' => null]);
+    $this->assertSoftDeleted('roles', ['name' => 'other-role']);
+});
+
 test('bulk update action is rejected for security', function () {
     $admin = User::factory()->create();
     $admin->assignRole('super-admin');
