@@ -28,23 +28,38 @@ class BulkActionRequest extends FormRequest
         }
 
         $routeName = (string) $this->route()?->getName();
+        $action = $this->input('action');
 
-        if (str_contains($routeName, '.users.')) {
-            if (str_contains($routeName, '.delete')) {
+        // Identify action from route
+        $isDelete = str_contains($routeName, '.delete');
+        $isRestore = str_contains($routeName, '.restore');
+
+        // Security check: If action is provided, it must match the route's operation
+        if ($action !== null) {
+            if ($isDelete && $action !== 'delete') {
+                return false;
+            }
+            if ($isRestore && $action !== 'restore') {
+                return false;
+            }
+        }
+
+        if (str_contains($routeName, '.user.')) {
+            if ($isDelete) {
                 return $user->can('user.delete');
             }
 
-            if (str_contains($routeName, '.restore')) {
+            if ($isRestore) {
                 return $user->can('user.edit');
             }
         }
 
-        if (str_contains($routeName, '.roles.')) {
-            if (str_contains($routeName, '.delete')) {
+        if (str_contains($routeName, '.role.')) {
+            if ($isDelete) {
                 return $user->can('role.delete');
             }
 
-            if (str_contains($routeName, '.restore')) {
+            if ($isRestore) {
                 return $user->can('role.edit');
             }
         }
