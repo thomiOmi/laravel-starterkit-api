@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +14,7 @@ use Illuminate\Validation\ValidationException;
  */
 final readonly class ForgotPasswordController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request): JsonDataResponse
     {
         $request->validate(['email' => ['required', 'email']]);
 

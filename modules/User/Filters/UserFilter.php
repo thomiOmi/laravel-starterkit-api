@@ -30,20 +30,7 @@ class UserFilter extends BaseFilter
      */
     public function search(Builder $builder, string $value): Builder
     {
-        $tokens = $this->tokenizeSearch($value);
-
-        if ($tokens === []) {
-            return $builder;
-        }
-
-        return $builder->where(function (Builder $query) use ($tokens): void {
-            foreach ($tokens as $token) {
-                $query->where(function (Builder $q) use ($token): void {
-                    $q->where('name', 'like', "%{$token}%")
-                        ->orWhere('email', 'like', "%{$token}%");
-                });
-            }
-        });
+        return $this->applySearch($builder, $value, ['name', 'email']);
     }
 
     /**

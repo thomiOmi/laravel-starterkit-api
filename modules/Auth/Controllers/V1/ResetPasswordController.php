@@ -6,7 +6,6 @@ namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
 use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -19,7 +18,7 @@ use Modules\User\Models\User;
  */
 final readonly class ResetPasswordController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request): JsonDataResponse
     {
         $request->validate([
             'token' => ['required'],
