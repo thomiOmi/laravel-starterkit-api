@@ -12,7 +12,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *
  * Validate bulk action requests for any module.
  */
-#[BodyParameter(name: 'action', description: 'The bulk action to perform.', required: true, example: 'delete')]
+#[BodyParameter(name: 'action', description: 'The bulk action to perform (optional, inferred from route).', required: false, example: 'delete')]
 #[BodyParameter(name: 'ids', description: 'An array of resource IDs (ULID) to perform the action on.', required: true, example: ['01hpv4n8f8xrd2m8q0e4x8j9v1', '01hpv4n8f8xrd2m8q0e4x8j9v2'])]
 class BulkActionRequest extends FormRequest
 {

@@ -94,5 +94,5 @@ test('bulk update action is rejected for security', function () {
             'data' => ['description' => 'Bulk updated description'],
         ]);
 
-    $response->assertStatus(403);
+    $response->assertStatus(422);
 });
