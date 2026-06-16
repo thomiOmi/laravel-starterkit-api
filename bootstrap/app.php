@@ -6,11 +6,9 @@ use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
 use App\Http\Middleware\TraceIdMiddleware;
 use App\Http\Responses\ProblemResponse;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -21,6 +19,7 @@ use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
@@ -80,22 +79,12 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        $exceptions->render(function (AuthorizationException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+        $exceptions->render(function (AccessDeniedHttpException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'You are not authorised to perform this action.',
                 type: $errorTypeBaseUrl.'/forbidden',
-            );
-        });
-
-        $exceptions->render(function (ModelNotFoundException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
-            return new ProblemResponse(
-                title: __('auth.not_found'),
-                status: Response::HTTP_NOT_FOUND,
-                detail: 'The requested resource does not exist.',
-                type: $errorTypeBaseUrl.'/not-found',
-                instance: $request->path(),
             );
         });
 
