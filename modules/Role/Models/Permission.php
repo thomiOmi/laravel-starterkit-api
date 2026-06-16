@@ -13,8 +13,4 @@ class Permission extends SpatiePermission
 {
     /** @use HasFactory<PermissionFactory> */
     use HasDefaultBehavior, HasFactory;
-
-    protected $keyType = 'string';
-
-    public $incrementing = false;
 }

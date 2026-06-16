@@ -21,7 +21,7 @@ final readonly class UserRepository
             ->simplePaginate($perPage);
     }
 
-    public function findById(string|int $id): ?User
+    public function findById(string $id): ?User
     {
         return Cache::remember("user_{$id}", 300, function () use ($id): ?User {
             return User::with(['roles.permissions:id,name', 'permissions:id,name'])->find($id);

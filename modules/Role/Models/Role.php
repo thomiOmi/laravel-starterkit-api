@@ -25,8 +25,4 @@ class Role extends SpatieRole
 {
     /** @use HasFactory<RoleFactory> */
     use HasDefaultBehavior, HasFactory;
-
-    protected $keyType = 'string';
-
-    public $incrementing = false;
 }
