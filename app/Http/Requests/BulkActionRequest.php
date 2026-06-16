@@ -57,7 +57,7 @@ class BulkActionRequest extends FormRequest
         ];
 
         foreach ($permissions as $module => $actions) {
-            if (str_contains($routeName, $module.'.') && isset($actions[$inferredAction])) {
+            if (str_contains($routeName, $module.'.')) {
                 return $user->can($actions[$inferredAction]);
             }
         }
