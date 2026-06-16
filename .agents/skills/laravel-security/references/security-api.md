@@ -14,7 +14,7 @@ This document defines the security protocols and API communication standards for
 
 Boolean `success` is prohibited. Use integer `status` and standardized envelopes.
 
-### Success: `JsonDataResponse`
+### Success: `JsonResponse`
 
 ```json
 {

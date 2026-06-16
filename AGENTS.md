@@ -22,22 +22,14 @@
 | Base URL | `/api/v1/...` (lowercase) |
 | Auth | `Authorization: Bearer {token}` (Sanctum) |
 | Response | `JsonResponse` — `{status, message, data}` (NO `success` boolean) |
-| Error | `ProblemResponse` — RFC 7807 |
+| Error | `ProblemResponse` — RFC 9457 |
 | Date format | `Y-m-d H:i:s` |
 | Route names | `api.v1.{module}.{name}` |
-
-## Agentic Development (Laravel Boost)
-
-- This project is optimized for AI agents using **Laravel Boost**.
-- Use MCP tools (`database-query`, `search-docs`, etc.) whenever possible.
-- Custom guidelines are in `.ai/guidelines/`.
-- Task-specific **Agent Skills** are in `.ai/skills/` following the [agentskills.io](https://agentskills.io) spec.
-- Run `php artisan boost:install` or `boost:update` to synchronize AI resources.
 
 ## Testing Rules
 
 - Pest feature tests with `RefreshDatabase` trait
-- `beforeEach` seeds `RoleSeeder`, creates admin user, tenant, and cove
+- `beforeEach` seeds `RoleSeeder`, creates admin user
 - Test each CRUD operation: list, create, view, update, delete, unauthorized access
 
 ## Code Quality Rules
@@ -49,6 +41,13 @@
 - All datetime fields in API responses **MUST** use `Y-m-d H:i:s` format
 - Follow existing code conventions — check sibling files before creating new ones
 - Every change must have a corresponding test
+
+## Agentic Development (Laravel Boost & Agent Skills)
+
+- **Laravel Boost**: Accelerates development with framework-specific guidelines and MCP tools (`search-docs`, `database-schema`, etc.).
+- **Agent Skills**: Uses the [agentskills.io](https://agentskills.io) format for domain-specific expertise.
+- **Location**: Guidelines in `.ai/guidelines/`, Skills in `.ai/skills/`.
+- **Activation**: Guidelines are loaded upfront; Skills are activated on-demand via triggers.
 
 === foundation rules ===
 
