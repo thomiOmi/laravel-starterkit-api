@@ -45,3 +45,4 @@
 - **Agent Skills**: Uses the [agentskills.io](https://agentskills.io) format for domain-specific expertise.
 - **Location**: Guidelines in `.ai/guidelines/`, Skills in `.ai/skills/`.
 - **Activation**: Guidelines are loaded upfront; Skills are activated on-demand via triggers.
+- **Update**: Run `php artisan boost:install -n` to sync/re-apply all guidelines and skills.
