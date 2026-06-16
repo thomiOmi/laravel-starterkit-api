@@ -49,47 +49,47 @@ Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / 
 
 ```
 modules/
-+---Auth
-|   +---Actions/          -- Login, Register, SocialCallback, etc.
-|   +---Controllers/V1/   -- 13 invokable controllers
-|   +---Payloads/V1/      -- LoginPayload, RegisterPayload
-|   +---Providers/
-|   +---Requests/V1/      -- Form requests with validation
-|   +---Resources/
-|   +---Routes/            -- api/v1/auth/*
-|   \---Tests/             -- Feature + Unit (11 files)
-+---Role
-|   +---Actions/           -- CRUD + Bulk for roles & permissions
-|   +---Controllers/V1/    -- 10 invokable controllers
-|   +---Database/
-|   |   +---Factories/
-|   |   +---Migrations/
-|   |   \---Seeders/
-|   +---Filters/
-|   +---Models/            -- Role, Permission (Spatie)
-|   +---Payloads/V1/
-|   +---Providers/
-|   +---Repositories/
-|   +---Requests/V1/
-|   +---Resources/
-|   +---Routes/            -- api/v1/roles/*, api/v1/permissions/*
-|   \---Tests/             -- Feature + Unit (4 files)
-\---User
-    +---Actions/           -- CRUD + Bulk for users
-    +---Controllers/V1/    -- 6 invokable controllers
-    +---Database/
-    |   +---Factories/     -- UserFactory
-    |   \---Seeders/
-    +---Events/            -- UserCreated
-    +---Filters/
-    +---Models/            -- User (MustVerifyEmail, HasRoles)
-    +---Payloads/V1/
-    +---Providers/
-    +---Repositories/
-    +---Requests/V1/
-    +---Resources/
-    +---Routes/            -- api/v1/users/*
-    \---Tests/             -- Feature + Unit (3 files)
+  Auth/
+    Actions/             -- Login, Register, SocialCallback, etc.
+    Controllers/V1/      -- 13 invokable controllers
+    Payloads/V1/         -- LoginPayload, RegisterPayload
+    Providers/
+    Requests/V1/         -- Form request validation
+    Resources/
+    Routes/              -- api/v1/auth/*
+    Tests/               -- Feature + Unit (11 files)
+  Role/
+    Actions/             -- CRUD + Bulk for roles & permissions
+    Controllers/V1/      -- 10 invokable controllers
+    Database/
+      Factories/
+      Migrations/
+      Seeders/
+    Filters/
+    Models/              -- Role, Permission (Spatie)
+    Payloads/V1/
+    Providers/
+    Repositories/
+    Requests/V1/
+    Resources/
+    Routes/              -- api/v1/roles/*, api/v1/permissions/*
+    Tests/               -- Feature + Unit (4 files)
+  User/
+    Actions/             -- CRUD + Bulk for users
+    Controllers/V1/      -- 6 invokable controllers
+    Database/
+      Factories/         -- UserFactory
+      Seeders/
+    Events/              -- UserCreated
+    Filters/
+    Models/              -- User (MustVerifyEmail, HasRoles)
+    Payloads/V1/
+    Providers/
+    Repositories/
+    Requests/V1/
+    Resources/
+    Routes/              -- api/v1/users/*
+    Tests/               -- Feature + Unit (3 files)
 ```
 
 ## Testing
