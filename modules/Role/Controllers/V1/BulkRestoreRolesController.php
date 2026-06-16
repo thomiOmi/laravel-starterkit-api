@@ -6,11 +6,13 @@ namespace Modules\Role\Controllers\V1;
 
 use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\JsonDataResponse;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Group;
+use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\BulkRestoreRolesAction;
 
+#[Group('Role Management')]
 /**
- * @group Role Management
- *
  * @authenticated
  */
 final readonly class BulkRestoreRolesController
@@ -22,6 +24,8 @@ final readonly class BulkRestoreRolesController
     /**
      * Perform bulk restore on roles.
      */
+    #[Endpoint(operationId: 'bulkRestoreRoles', title: 'Bulk Restore Roles')]
+    #[Response(status: 200, description: 'Roles restored successfully', examples: ['status' => 200, 'message' => 'Roles restored.', 'data' => null])]
     public function __invoke(BulkActionRequest $request): JsonDataResponse
     {
         /** @var array{ids: array<int, string|int>} $validated */

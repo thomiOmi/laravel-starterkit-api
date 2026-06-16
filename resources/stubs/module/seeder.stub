@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\{{Module}}\Models\{{Resource}};
+use Modules\{{Module}}\Models\{{Module}};
 
-class {{Resource}}Seeder extends Seeder
+class {{Module}}Seeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        {{Resource}}::factory()->count(10)->create();
+        {{Module}}::factory()->count(10)->create();
     }
 }

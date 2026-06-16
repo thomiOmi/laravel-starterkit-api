@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Models;
 
 use App\Traits\Models\HasDefaultBehavior;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use Modules\{{Module}}\Database\Factories\{{Resource}}Factory;
+use Modules\{{Module}}\Database\Factories\{{Module}}Factory;
 
 /**
  * @property string $id The unique identifier (ULID).
@@ -16,21 +18,12 @@ use Modules\{{Module}}\Database\Factories\{{Resource}}Factory;
  * @property Carbon|null $updated_at The timestamp when updated.
  * @property Carbon|null $deleted_at The timestamp when soft deleted.
  */
-class {{Resource}} extends Model
+#[Fillable([
+    // Fillable attributes here
+])]
+#[UseFactory({{Module}}Factory::class)]
+class {{Module}} extends Model
 {
-    /** @use HasFactory<{{Resource}}Factory> */
+    /** @use HasFactory<{{Module}}Factory> */
     use HasDefaultBehavior, HasFactory;
-
-    /** @var list<string> */
-    protected $fillable = [
-        // Fillable attributes here
-    ];
-
-    /**
-     * Create a new factory instance for the model.
-     */
-    protected static function newFactory(): {{Resource}}Factory
-    {
-        return {{Resource}}Factory::new();
-    }
 }

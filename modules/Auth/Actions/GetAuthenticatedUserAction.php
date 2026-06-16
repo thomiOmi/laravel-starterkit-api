@@ -8,7 +8,7 @@ use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
 
 /**
- * Action for retrieving the currently authenticated user with cache orchestration.
+ * Action for retrieving the currently authenticated user.
  */
 final readonly class GetAuthenticatedUserAction
 {

@@ -18,7 +18,7 @@ use Modules\{{Module}}\Resources\{{Module}}Resource;
 final readonly class UpdateController
 {
     public function __construct(
-        private Update{{Module}}Action $action,
+        private Update{{Module}}Action $update{{Module}},
     ) {}
 
     /**
@@ -26,7 +26,7 @@ final readonly class UpdateController
      */
     public function __invoke(Update{{Module}}Request $request, {{Module}} ${{lowerResource}}): JsonDataResponse
     {
-        ${{lowerResource}} = $this->action->handle(${{lowerResource}}, $request->payload());
+        ${{lowerResource}} = $this->update{{Module}}->handle(${{lowerResource}}, $request->payload());
 
         return new JsonDataResponse(
             data: new {{Module}}Resource(${{lowerResource}}),

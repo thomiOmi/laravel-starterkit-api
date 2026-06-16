@@ -4,21 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Database\Factories;
 
+use Illuminate\Database\Eloquent\Factories\Attributes\UseModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Modules\{{Module}}\Models\{{Resource}};
+use Modules\{{Module}}\Models\{{Module}};
 
 /**
- * @extends Factory<{{Resource}}>
+ * @extends Factory<{{Module}}>
  */
-class {{Resource}}Factory extends Factory
+#[UseModel({{Module}}::class)]
+class {{Module}}Factory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var class-string<{{Resource}}>
-     */
-    protected $model = {{Resource}}::class;
-
     /**
      * Define the model's default state.
      */

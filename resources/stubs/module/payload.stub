@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Payloads\{{Version}};
 
-use Modules\{{Module}}\Requests\{{Version}}\{{Action}}{{Resource}}Request;
+use Modules\{{Module}}\Requests\{{Version}}\{{Action}}{{Module}}Request;
 
 /**
- * Payload for {{Action}} {{Resource}} data.
+ * Payload for {{Action}} {{Module}} data.
  */
-final readonly class {{Action}}{{Resource}}Payload
+final readonly class {{Action}}{{Module}}Payload
 {
     public function __construct() {}
 
     /**
      * Create a payload from the request.
      */
-    public static function fromRequest({{Action}}{{Resource}}Request $request): self
+    public static function fromRequest({{Action}}{{Module}}Request $request): self
     {
         return new self();
     }

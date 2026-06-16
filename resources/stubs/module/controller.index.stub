@@ -7,7 +7,7 @@ namespace Modules\{{Module}}\Controllers\{{Version}};
 use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
-use Modules\{{Module}}\Actions\List{{Module}}Action;
+use Modules\{{Module}}\Actions\List{{pluralModule}}Action;
 use Modules\{{Module}}\Filters\{{Module}}Filter;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 
@@ -19,7 +19,7 @@ use Modules\{{Module}}\Resources\{{Module}}Resource;
 final readonly class IndexController
 {
     public function __construct(
-        private List{{Module}}Action $list{{Module}}
+        private List{{pluralModule}}Action $list{{pluralModule}}
     ) {}
 
     /**
@@ -30,7 +30,7 @@ final readonly class IndexController
     #[QueryParameter(name: 'search', description: 'Search keyword to filter {{lowerResource}}s.', type: 'string', required: false, example: 'test')]
     public function __invoke(Request $request, {{Module}}Filter $filter): JsonDataResponse
     {
-        ${{lowerResource}}s = $this->list{{Module}}->handle($filter, $request->integer('per_page', 10));
+        ${{lowerResource}}s = $this->list{{pluralModule}}->handle($filter, $request->integer('per_page', 10));
 
         return new JsonDataResponse(
             data: {{Module}}Resource::collection(${{lowerResource}}s),

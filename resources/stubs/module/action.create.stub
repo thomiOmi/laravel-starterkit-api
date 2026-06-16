@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Actions;
+
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Payloads\{{Version}}\Create{{Module}}Payload;
+
+/**
+ * Action for creating a new {{label}}.
+ */
+final readonly class Create{{Module}}Action
+{
+    public function __construct() {}
+
+    /**
+     * Execute the create {{label}} action.
+     *
+     * @param  Create{{Module}}Payload  $payload  The payload.
+     * @return {{Module}} The newly created {{label}} instance.
+     */
+    public function handle(Create{{Module}}Payload $payload): {{Module}}
+    {
+        return {{Module}}::create($payload->toArray());
+    }
+}

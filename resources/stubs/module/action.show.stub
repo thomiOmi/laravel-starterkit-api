@@ -8,22 +8,19 @@ use Modules\{{Module}}\Models\{{Module}};
 use Modules\{{Module}}\Repositories\{{Module}}Repository;
 
 /**
- * Action for retrieving a single {{lowerResource}} profile with cache optimization.
+ * Action for retrieving a single {{label}} profile.
  */
 final readonly class Show{{Module}}Action
 {
-    /**
-     * Create a new Show{{Module}}Action instance.
-     */
     public function __construct(
         private {{Module}}Repository $repository
     ) {}
 
     /**
-     * Execute the show {{lowerResource}} action.
+     * Execute the show {{label}} action.
      *
-     * @param  string  $id  The {{lowerResource}} ID.
-     * @return {{Module}}|null The {{lowerResource}} instance or null if not found.
+     * @param  string  $id  The {{label}} ID.
+     * @return {{Module}}|null The {{label}} instance or null if not found.
      */
     public function handle(string $id): ?{{Module}}
     {

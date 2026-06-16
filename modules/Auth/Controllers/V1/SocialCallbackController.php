@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Group;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\SocialCallbackAction;
 use Modules\User\Resources\UserResource;
 
-/**
- * @tags Auth
- */
+#[Group('Auth')]
 final readonly class SocialCallbackController
 {
     public function __construct(
         private SocialCallbackAction $socialCallback
     ) {}
 
+    #[Endpoint(operationId: 'socialCallback', title: 'Social Login Callback')]
+    #[Response(status: 200, description: 'Social login successful', examples: ['status' => 200, 'message' => 'Login successful.', 'data' => ['user' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@gmail.com'], 'access_token' => '1|abc123token', 'token_type' => 'Bearer']])]
     public function __invoke(string $provider, Request $request): JsonDataResponse
     {
         $result = $this->socialCallback->handle(

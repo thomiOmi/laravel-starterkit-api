@@ -14,10 +14,8 @@ class {{Module}}ServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../Database/Migrations');
-
         // Centralized Queue Routing Map
-        // Queue::route(\Modules\{{Module}}\Events\SomeEvent::class, 'default');
+        // Queue::route(\Modules\{{Module}}\Events\{{Module}}Created::class, 'default');
     }
 
     /**

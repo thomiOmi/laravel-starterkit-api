@@ -6,17 +6,23 @@ test('strict types are used')
     ->expect(['App\\', 'Modules\\'])
     ->toUseStrictTypes();
 
-test('controllers should be final and readonly')
+test('controllers should be final, readonly, and invokable')
     ->expect('Modules\*\Controllers')
     ->toBeFinal()
     ->toBeReadonly()
+    ->not->toUse('Illuminate\Database\Eloquent\Model')
     ->toHaveMethod('__invoke');
 
-test('actions should be final and readonly')
+test('actions should be final, readonly, and have handle')
     ->expect('Modules\*\Actions')
     ->toBeFinal()
     ->toBeReadonly()
     ->toHaveMethod('handle');
+
+test('repositories should be final and readonly')
+    ->expect('Modules\*\Repositories')
+    ->toBeFinal()
+    ->toBeReadonly();
 
 test('payloads should be final and readonly')
     ->expect('Modules\*\Payloads')
@@ -30,17 +36,26 @@ test('models should not be used in controllers')
         'Modules\User\Controllers\V1\IndexController',
         'Modules\User\Controllers\V1\ShowController',
         'Modules\User\Controllers\V1\UpdateController',
-        'Modules\User\Controllers\V1\DestroyController',
+        'Modules\User\Controllers\V1\DeleteController',
         'Modules\User\Controllers\V1\BulkDeleteController',
         'Modules\User\Controllers\V1\BulkRestoreController',
         'Modules\Role\Controllers\V1\IndexController',
         'Modules\Role\Controllers\V1\ShowController',
         'Modules\Role\Controllers\V1\UpdateController',
-        'Modules\Role\Controllers\V1\DestroyController',
+        'Modules\Role\Controllers\V1\DeleteController',
         'Modules\Role\Controllers\V1\BulkDeleteRolesController',
         'Modules\Role\Controllers\V1\BulkRestoreRolesController',
         'Modules\Auth\Controllers\V1\MeController',
         'Modules\Auth\Controllers\V1\LogoutController',
+        'Modules\Auth\Controllers\V1\DeleteDeviceController',
+        'Modules\Auth\Controllers\V1\ListDevicesController',
+        'Modules\Auth\Controllers\V1\LogoutOtherDevicesController',
+        'Modules\Auth\Controllers\V1\ResendVerificationController',
+        'Modules\Auth\Controllers\V1\ResetPasswordController',
+        'Modules\Auth\Controllers\V1\VerifyEmailController',
+        'Modules\Role\Controllers\V1\PermissionDeleteController',
+        'Modules\Role\Controllers\V1\PermissionShowController',
+        'Modules\Role\Controllers\V1\PermissionUpdateController',
     ]);
 
 test('actions should not use request directly')

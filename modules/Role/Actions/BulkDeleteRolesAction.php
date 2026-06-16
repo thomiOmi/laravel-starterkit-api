@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Role\Actions;
 
+use Illuminate\Support\Facades\Cache;
 use Modules\Role\Models\Role;
 
 final readonly class BulkDeleteRolesAction
@@ -13,6 +14,10 @@ final readonly class BulkDeleteRolesAction
      */
     public function handle(array $ids): int
     {
+        foreach ($ids as $id) {
+            Cache::forget("role_{$id}");
+        }
+
         /** @var int $count */
         $count = Role::whereIn('id', $ids)
             ->where('name', '!=', 'super-admin')

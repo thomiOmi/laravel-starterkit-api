@@ -6,7 +6,9 @@ namespace Modules\Role\Models;
 
 use App\Traits\Models\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
+use Modules\Role\Database\Factories\RoleFactory;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role as SpatieRole;
 
@@ -21,7 +23,8 @@ use Spatie\Permission\Models\Role as SpatieRole;
  */
 class Role extends SpatieRole
 {
-    use HasDefaultBehavior;
+    /** @use HasFactory<RoleFactory> */
+    use HasDefaultBehavior, HasFactory;
 
     protected $keyType = 'string';
 

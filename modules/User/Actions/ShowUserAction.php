@@ -8,7 +8,7 @@ use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
 
 /**
- * Action for retrieving a single user profile with cache optimization.
+ * Action for retrieving a single user profile.
  */
 final readonly class ShowUserAction
 {

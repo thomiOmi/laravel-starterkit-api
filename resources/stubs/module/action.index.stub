@@ -10,23 +10,20 @@ use Modules\{{Module}}\Models\{{Module}};
 use Modules\{{Module}}\Repositories\{{Module}}Repository;
 
 /**
- * Action for listing paginated {{lowerResource}}s with filters.
+ * Action for listing paginated {{labelPlural}} with filters.
  */
-final readonly class List{{Module}}Action
+final readonly class List{{pluralModule}}Action
 {
-    /**
-     * Create a new List{{Module}}Action instance.
-     */
     public function __construct(
         private {{Module}}Repository $repository
     ) {}
 
     /**
-     * Execute the list {{lowerResource}}s action.
+     * Execute the list {{labelPlural}} action.
      *
-     * @param  {{Module}}Filter  $filter  The {{lowerResource}} filter instance.
+     * @param  {{Module}}Filter  $filter  The {{label}} filter instance.
      * @param  int  $perPage  Number of items per page.
-     * @return Paginator<int, {{Module}}> The paginated {{lowerResource}}s.
+     * @return Paginator<int, {{Module}}> The paginated {{labelPlural}}.
      */
     public function handle({{Module}}Filter $filter, int $perPage = 10): Paginator
     {

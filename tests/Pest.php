@@ -17,6 +17,9 @@ use Tests\TestCase;
 uses(TestCase::class, RefreshDatabase::class)
     ->in('Feature', '../modules/*/Tests');
 
+uses()
+    ->in('Architecture');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations

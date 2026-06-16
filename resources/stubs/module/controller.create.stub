@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Responses\JsonDataResponse;
-use Modules\{{Module}}\Actions\Store{{Module}}Action;
-use Modules\{{Module}}\Requests\{{Version}}\Store{{Module}}Request;
+use Modules\{{Module}}\Actions\Create{{Module}}Action;
+use Modules\{{Module}}\Requests\{{Version}}\Create{{Module}}Request;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -15,18 +15,18 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @authenticated
  */
-final readonly class StoreController
+final readonly class CreateController
 {
     public function __construct(
-        private Store{{Module}}Action $action,
+        private Create{{Module}}Action $create{{Module}},
     ) {}
 
     /**
-     * Store a newly created {{lowerResource}} in storage.
+     * Create a newly created {{lowerResource}} in storage.
      */
-    public function __invoke(Store{{Module}}Request $request): JsonDataResponse
+    public function __invoke(Create{{Module}}Request $request): JsonDataResponse
     {
-        ${{lowerResource}} = $this->action->handle($request->payload());
+        ${{lowerResource}} = $this->create{{Module}}->handle($request->payload());
 
         return new JsonDataResponse(
             data: new {{Module}}Resource(${{lowerResource}}),

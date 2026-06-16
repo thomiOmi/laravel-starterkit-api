@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\User\Actions;
 
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Support\Facades\Cache;
 use Modules\User\Models\User;
 
 final readonly class BulkDeleteUsersAction
@@ -22,6 +23,10 @@ final readonly class BulkDeleteUsersAction
 
         if ($ids === []) {
             return 0;
+        }
+
+        foreach ($ids as $id) {
+            Cache::forget("user_{$id}");
         }
 
         /** @var int $count */

@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);

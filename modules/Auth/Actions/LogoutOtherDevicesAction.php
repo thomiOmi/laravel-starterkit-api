@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
-use Laravel\Sanctum\PersonalAccessToken;
+use App\Models\Sanctum\PersonalAccessToken;
 use Modules\User\Models\User;
 
 final readonly class LogoutOtherDevicesAction

@@ -4,36 +4,35 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Actions;
 
-use Illuminate\Database\DatabaseManager;
-use Modules\{{Module}}\Repositories\{{Module}}Repository;
+use Illuminate\Contracts\Auth\Guard;
+use Modules\{{Module}}\Models\{{Module}};
 
 /**
- * Action for bulk deleting {{lowerResource}}s.
+ * Action for bulk deleting {{labelPlural}}.
  */
-final readonly class BulkDelete{{Module}}Action
+final readonly class BulkDelete{{pluralModule}}Action
 {
-    /**
-     * Create a new BulkDelete{{Module}}Action instance.
-     */
     public function __construct(
-        private DatabaseManager $database,
-        private {{Module}}Repository $repository
+        private Guard $auth,
     ) {}
 
     /**
-     * Execute the bulk delete {{lowerResource}}s action.
+     * Execute the bulk delete {{labelPlural}} action.
      *
-     * @param  array<int, string|int>  $ids  The {{lowerResource}} IDs to delete.
-     * @return int The number of {{lowerResource}}s deleted.
+     * @param  array<int, string|int>  $ids  The {{label}} IDs to delete.
+     * @return int The number of {{labelPlural}} deleted.
      */
     public function handle(array $ids): int
     {
-        if (empty($ids)) {
+        $ids = array_filter($ids, fn (string|int $id): bool => $id !== $this->auth->id());
+
+        if ($ids === []) {
             return 0;
         }
 
-        return $this->database->transaction(function () use ($ids) {
-            return $this->repository->bulkDelete($ids);
-        });
+        /** @var int $count */
+        $count = {{Module}}::whereIn('id', $ids)->delete();
+
+        return $count;
     }
 }

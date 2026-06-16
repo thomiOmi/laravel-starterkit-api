@@ -2,16 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Modules\{{name}}\Requests;
+namespace Modules\{{Module}}\Requests\{{Version}};
 
 use Dedoc\Scramble\Attributes\BodyParameter;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\{{Module}}\Payloads\{{Version}}\{{Action}}{{Module}}Payload;
 
-#[BodyParameter(name: 'name', description: 'The name of the resource.', required: true, example: 'Example Name')]
-class {{name}}Request extends FormRequest
+/**
+ * {{Action}} {{Module}} Request
+ */
+#[BodyParameter(name: 'name', description: 'The name of the {{label}}.', required: true, example: 'Example Name')]
+final class {{Action}}{{Module}}Request extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
     public function authorize(): bool
     {
@@ -21,12 +28,24 @@ class {{name}}Request extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, array<int, string|ValidationRule>>
      */
     public function rules(): array
     {
+        $id = $this->route('{{lowerResource}}');
+
         return [
             'name' => ['required', 'string', 'max:255'],
         ];
+    }
+
+    /**
+     * Get the request payload.
+     *
+     * @return {{Action}}{{Module}}Payload
+     */
+    public function payload(): {{Action}}{{Module}}Payload
+    {
+        return {{Action}}{{Module}}Payload::fromRequest($this);
     }
 }

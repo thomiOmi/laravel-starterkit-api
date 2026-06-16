@@ -10,7 +10,7 @@ use Modules\User\Events\UserCreated;
 use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
 
-final readonly class StoreUserAction
+final readonly class CreateUserAction
 {
     public function handle(UserPayload $payload): User
     {

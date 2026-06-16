@@ -1,0 +1,9 @@
+[project]
+php_version = "8.4"
+ 
+[diagnostics]
+unused_variables = true
+deprecated_symbols = true
+ 
+[indexing]
+strategy = "composer"

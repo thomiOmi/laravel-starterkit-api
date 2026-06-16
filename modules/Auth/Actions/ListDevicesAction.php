@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
+use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Database\Eloquent\Collection;
-use Laravel\Sanctum\PersonalAccessToken;
 use Modules\User\Models\User;
 
 final readonly class ListDevicesAction

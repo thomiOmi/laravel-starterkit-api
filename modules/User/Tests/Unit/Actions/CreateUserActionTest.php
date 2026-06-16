@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Modules\User\Actions\StoreUserAction;
+use Modules\User\Actions\CreateUserAction;
 use Modules\User\Events\UserCreated;
 use Modules\User\Payloads\V1\UserPayload;
 
-uses(RefreshDatabase::class);
-
-describe('StoreUserAction', function () {
+describe('CreateUserAction', function () {
     beforeEach(function () {
         $this->withoutDefer();
     });
@@ -24,7 +21,7 @@ describe('StoreUserAction', function () {
             password: 'secret123',
         );
 
-        $action = app(StoreUserAction::class);
+        $action = app(CreateUserAction::class);
         $user = $action->handle($payload);
 
         expect($user->name)->toBe('John Doe');
@@ -47,7 +44,7 @@ describe('StoreUserAction', function () {
             email: 'jane@example.com',
         );
 
-        $action = app(StoreUserAction::class);
+        $action = app(CreateUserAction::class);
         $user = $action->handle($payload);
 
         expect($user->name)->toBe('Jane Doe');

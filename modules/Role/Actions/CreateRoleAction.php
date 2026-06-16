@@ -7,7 +7,7 @@ namespace Modules\Role\Actions;
 use Modules\Role\Models\Role;
 use Modules\Role\Payloads\V1\RolePayload;
 
-final readonly class StoreRoleAction
+final readonly class CreateRoleAction
 {
     public function handle(RolePayload $payload): Role
     {

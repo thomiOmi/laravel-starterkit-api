@@ -4,25 +4,15 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
+#[Signature('module:list')]
+#[Description('List all modules and their status')]
 class ModuleList extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'module:list';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'List all modules and their status';
-
     /**
      * Execute the console command.
      */
@@ -50,28 +40,29 @@ class ModuleList extends Command
             $hasProvider = File::exists("{$modulePathString}/Providers/{$name}ServiceProvider.php");
 
             // Counts
-            $controllers = $this->countFiles("{$modulePathString}/Controllers");
+            $controllers = $this->countFilesRecursive("{$modulePathString}/Controllers");
             $actions = $this->countFiles("{$modulePathString}/Actions");
-            $services = $this->countFiles("{$modulePathString}/Services");
-            $dtos = $this->countFiles("{$modulePathString}/DTOs");
+            $payloads = $this->countFilesRecursive("{$modulePathString}/Payloads");
+            $filters = $this->countFiles("{$modulePathString}/Filters");
             $migrations = $this->countFiles("{$modulePathString}/Database/Migrations");
 
-            $hasRoutes = File::exists("{$modulePathString}/Routes/api.php");
+            $hasRoutes = File::exists("{$modulePathString}/Routes/V1.php")
+                || File::exists("{$modulePathString}/Routes/api.php");
 
             $data[] = [
                 $name,
                 $hasProvider ? '<fg=green>Active</>' : '<fg=red>Inactive</>',
                 $controllers,
                 $actions,
-                $services,
-                $dtos,
+                $payloads,
+                $filters,
                 $migrations,
                 $hasRoutes ? '<fg=green>Yes</>' : '<fg=red>No</>',
             ];
         }
 
         $this->table(
-            ['Module Name', 'Status', 'Ctlr', 'Actn', 'Svc', 'DTO', 'Migr', 'Rte'],
+            ['Module Name', 'Status', 'Ctlr', 'Actn', 'Pld', 'Flt', 'Migr', 'Rte'],
             $data
         );
     }
@@ -82,5 +73,17 @@ class ModuleList extends Command
     protected function countFiles(string $path): int
     {
         return File::exists($path) ? count(File::files($path)) : 0;
+    }
+
+    /**
+     * Helper to count files recursively in a directory.
+     */
+    protected function countFilesRecursive(string $path): int
+    {
+        if (! File::exists($path)) {
+            return 0;
+        }
+
+        return count(File::allFiles($path));
     }
 }

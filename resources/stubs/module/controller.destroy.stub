@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Responses\JsonDataResponse;
-use Modules\{{Module}}\Actions\Destroy{{Module}}Action;
+use Modules\{{Module}}\Actions\Delete{{Module}}Action;
 use Modules\{{Module}}\Models\{{Module}};
 use Symfony\Component\HttpFoundation\Response;
 
@@ -14,10 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @authenticated
  */
-final readonly class DestroyController
+final readonly class DeleteController
 {
     public function __construct(
-        private Destroy{{Module}}Action $delete{{Module}},
+        private Delete{{Module}}Action $delete{{Module}},
     ) {}
 
     /**

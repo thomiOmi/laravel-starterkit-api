@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Role\Repositories;
 
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
 use Modules\Role\Filters\PermissionFilter;
 use Modules\Role\Models\Permission;
 
@@ -22,6 +23,8 @@ final readonly class PermissionRepository
 
     public function findById(string $id): ?Permission
     {
-        return Permission::find($id);
+        return Cache::remember("permission_{$id}", 60, function () use ($id): ?Permission {
+            return Permission::find($id);
+        });
     }
 }

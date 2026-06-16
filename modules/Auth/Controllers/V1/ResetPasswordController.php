@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Group;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,11 +16,11 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\User\Models\User;
 
-/**
- * @tags Auth
- */
+#[Group('Auth')]
 final readonly class ResetPasswordController
 {
+    #[Endpoint(operationId: 'resetPassword', title: 'Reset Password')]
+    #[Response(status: 200, description: 'Password reset successfully', examples: ['status' => 200, 'message' => 'Password has been reset.', 'data' => null])]
     public function __invoke(Request $request): JsonDataResponse
     {
         $request->validate([

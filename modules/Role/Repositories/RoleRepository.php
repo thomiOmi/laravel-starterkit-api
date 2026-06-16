@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Role\Repositories;
 
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
 use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Models\Role;
 
@@ -22,6 +23,8 @@ final readonly class RoleRepository
 
     public function findById(string $id): ?Role
     {
-        return Role::with(['permissions:id,name'])->find($id);
+        return Cache::remember("role_{$id}", 60, function () use ($id): ?Role {
+            return Role::with(['permissions:id,name'])->find($id);
+        });
     }
 }

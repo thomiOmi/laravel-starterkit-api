@@ -6,7 +6,7 @@ namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\JsonDataResponse;
-use Modules\{{Module}}\Actions\BulkDelete{{Module}}Action;
+use Modules\{{Module}}\Actions\BulkDelete{{pluralModule}}Action;
 
 /**
  * @group {{Module}} Management
@@ -16,7 +16,7 @@ use Modules\{{Module}}\Actions\BulkDelete{{Module}}Action;
 final readonly class BulkDeleteController
 {
     public function __construct(
-        private BulkDelete{{Module}}Action $action,
+        private BulkDelete{{pluralModule}}Action $bulkDelete{{pluralModule}},
     ) {}
 
     /**
@@ -27,7 +27,7 @@ final readonly class BulkDeleteController
         /** @var array{ids: array<int, string|int>} $validated */
         $validated = $request->validated();
 
-        $count = $this->action->handle($validated['ids']);
+        $count = $this->bulkDelete{{pluralModule}}->handle($validated['ids']);
 
         return new JsonDataResponse(
             data: ['count' => $count],

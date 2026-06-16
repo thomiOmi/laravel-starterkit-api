@@ -6,14 +6,14 @@ namespace Modules\{{Module}}\Resources;
 
 use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
-use Modules\{{Module}}\Models\{{Resource}};
+use Modules\{{Module}}\Models\{{Module}};
 
 /**
- * @property-read {{Resource}} $resource
+ * @property-read {{Module}} $resource
  *
- * @mixin {{Resource}}
+ * @mixin {{Module}}
  */
-class {{Resource}}Resource extends BaseResource
+class {{Module}}Resource extends BaseResource
 {
     /**
      * Transform the resource into an array.

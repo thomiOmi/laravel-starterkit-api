@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Group;
+use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\LogoutAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
+#[Group('Auth')]
 /**
- * @tags Auth
+ * @authenticated
  */
 final readonly class LogoutController
 {
@@ -19,6 +23,8 @@ final readonly class LogoutController
         private LogoutAction $logoutAction
     ) {}
 
+    #[Endpoint(operationId: 'logout', title: 'Logout')]
+    #[ScrambleResponse(status: 204, description: 'User logged out successfully')]
     public function __invoke(Request $request): JsonDataResponse
     {
         /** @var User $user */

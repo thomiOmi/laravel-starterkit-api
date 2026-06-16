@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Modules\User\Models\User;
-
-uses(RefreshDatabase::class);
 
 test('system returns 404 for non-existent routes', function () {
     $response = $this->getJson('/api/v1/non-existent-route');

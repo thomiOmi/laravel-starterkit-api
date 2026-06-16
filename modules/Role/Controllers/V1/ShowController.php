@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace Modules\Role\Controllers\V1;
 
 use App\Http\Responses\JsonDataResponse;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Group;
+use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
 use Modules\Role\Actions\ShowRoleAction;
 use Modules\Role\Models\Role;
 use Modules\Role\Resources\RoleResource;
 use Symfony\Component\HttpFoundation\Response;
 
+#[Group('Role Management')]
 /**
- * @group Role Management
- *
  * @authenticated
  */
 final readonly class ShowController
@@ -24,6 +26,8 @@ final readonly class ShowController
     /**
      * Display the specified role.
      */
+    #[Endpoint(operationId: 'showRole', title: 'Show Role')]
+    #[ScrambleResponse(status: 200, description: 'Role details retrieved', examples: ['status' => 200, 'message' => 'Role retrieved.', 'data' => ['id' => 1, 'name' => 'admin', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list']]]])]
     public function __invoke(Role $role): JsonDataResponse
     {
         $role = $this->showRole->handle($role->id);

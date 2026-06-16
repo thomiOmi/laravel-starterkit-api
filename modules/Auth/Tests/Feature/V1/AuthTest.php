@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);

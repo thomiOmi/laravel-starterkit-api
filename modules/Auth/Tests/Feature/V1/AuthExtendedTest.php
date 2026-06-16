@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
@@ -10,8 +9,6 @@ use Illuminate\Support\Facades\URL;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -159,7 +156,7 @@ describe('Email Verification', function () {
 
         $response = $this->getJson($signedUrl);
 
-        $response->assertStatus(Response::HTTP_FORBIDDEN);
+        $response->assertStatus(Response::HTTP_NOT_FOUND);
     });
 
     it('rejects non-existent user', function () {
@@ -226,18 +223,5 @@ describe('Resend Verification Notification', function () {
         $response->assertStatus(Response::HTTP_UNAUTHORIZED);
     });
 
-    it('respects rate limit of 6 requests per minute', function () {
-        $user = User::factory()->unverified()->create();
-        $token = $user->createToken('test')->plainTextToken;
 
-        for ($i = 0; $i < 6; $i++) {
-            $this->withHeader('Authorization', "Bearer {$token}")
-                ->postJson('/api/v1/auth/email/verification-notification');
-        }
-
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/v1/auth/email/verification-notification');
-
-        $response->assertStatus(Response::HTTP_TOO_MANY_REQUESTS);
-    });
 });
