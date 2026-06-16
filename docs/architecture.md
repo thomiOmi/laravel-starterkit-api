@@ -24,21 +24,31 @@ Eloquent models in `Modules/{Module}/Models/`. Uses `HasDefaultBehavior` trait w
 
 ```
 modules/{Module}/
-  Actions/           -- Business logic
-  Controllers/V1/    -- HTTP layer
+  Actions/           -- Business logic (Create, Update, Delete actions)
+  Controllers/V1/    -- HTTP layer (final readonly __invoke)
   Database/
     Factories/       -- Model factories
     Migrations/      -- Table migrations
     Seeders/         -- Data seeders
-  Filters/           -- Query string filtering
-  Models/            -- Eloquent models
-  Payloads/V1/       -- Typed DTOs
-  Providers/         -- Service provider (auto-registered)
-  Repositories/      -- Read-only data access
+  Events/            -- Domain events (optional)
+  Filters/           -- Query string filtering (search, sort, status)
+  Models/            -- Eloquent models with HasDefaultBehavior
+  Payloads/V1/       -- Typed DTOs for action input
+  Providers/         -- Service provider (auto-registered by ModuleServiceProvider)
+  Repositories/      -- Read-only data access (findById, paginate)
   Requests/V1/       -- Form request validation
   Resources/         -- API resource transformers
-  Routes/            -- Route files (V1.php)
-  Tests/             -- Pest tests
+  Routes/            -- Route files (V1.php loaded by RouteServiceProvider)
+  Tests/             -- Pest tests (Feature + Unit)
+```
+
+### Current Modules
+
+```
+modules/
++---Auth              -- Authentication, devices, social login
++---Role              -- Roles & permissions CRUD, Spatie integration
+\---User              -- User CRUD, bulk actions, UserCreated event
 ```
 
 ## Response Types
