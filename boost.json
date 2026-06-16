@@ -16,6 +16,8 @@
         "socialite-development",
         "pest-testing",
         "laravel-permission-development",
+        "api-reference",
+        "architecture",
         "laravel-patterns",
         "laravel-security",
         "laravel-verification",
