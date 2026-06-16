@@ -19,8 +19,8 @@ use Modules\Auth\Controllers\V1\VerifyEmailController;
 
 Route::prefix('auth')->middleware(['force.json', 'throttle:api'])->group(function () {
     // Public routes
-    Route::post('register', RegisterController::class)->name('register');
-    Route::post('login', LoginController::class)->name('login');
+    Route::post('register', RegisterController::class)->middleware('throttle:auth')->name('register');
+    Route::post('login', LoginController::class)->middleware('throttle:auth')->name('login');
     Route::post('forgot-password', ForgotPasswordController::class)->name('password.forgot');
     Route::post('reset-password', ResetPasswordController::class)->name('password.reset');
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)

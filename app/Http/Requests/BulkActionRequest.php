@@ -28,18 +28,33 @@ class BulkActionRequest extends FormRequest
         }
 
         $routeName = (string) $this->route()?->getName();
-        $action = $this->string('action')->toString();
 
-        if (str_contains($routeName, '.users.')) {
-            return match ($action) {
+        $inferredAction = null;
+        if (str_contains($routeName, '.delete')) {
+            $inferredAction = 'delete';
+        } elseif (str_contains($routeName, '.restore')) {
+            $inferredAction = 'restore';
+        }
+
+        if ($inferredAction === null) {
+            return false;
+        }
+
+        $bodyAction = $this->input('action');
+        if ($bodyAction !== null && $bodyAction !== $inferredAction) {
+            return false;
+        }
+
+        if (str_contains($routeName, 'users.')) {
+            return match ($inferredAction) {
                 'delete' => $user->can('user.delete'),
                 'restore' => $user->can('user.edit'),
                 default => false,
             };
         }
 
-        if (str_contains($routeName, '.roles.')) {
-            return match ($action) {
+        if (str_contains($routeName, 'roles.')) {
+            return match ($inferredAction) {
                 'delete' => $user->can('role.delete'),
                 'restore' => $user->can('role.edit'),
                 default => false,
@@ -59,7 +74,7 @@ class BulkActionRequest extends FormRequest
         return [
             'ids' => ['required', 'array', 'min:1', 'max:50'],
             'ids.*' => ['required', 'string', 'ulid'],
-            'action' => ['required', 'string', 'in:delete,restore'],
+            'action' => ['nullable', 'string', 'in:delete,restore'],
         ];
     }
 }

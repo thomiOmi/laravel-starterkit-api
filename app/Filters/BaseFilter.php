@@ -90,7 +90,7 @@ abstract class BaseFilter
 
             $method = Str::camel((string) $name);
 
-            if ($value !== null && $value !== '' && method_exists($this, $method)) {
+            if ($value !== null && $value !== '' && is_string($value) && method_exists($this, $method)) {
                 $result = $this->{$method}($builder, $value);
 
                 if ($result instanceof Builder) {
