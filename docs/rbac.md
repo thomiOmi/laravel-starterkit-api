@@ -1,21 +1,72 @@
-# RBAC (Role-Based Access Control)
+# Roles & Permissions (RBAC)
 
-The authorization system uses the **Spatie Laravel Permission** package, integrated with the modular architecture.
+Uses Spatie `laravel-permission` integrated with ULID primary keys and soft deletes.
 
-## 1. Basic Concepts
-- **Roles:** Groups of permissions (e.g., `super-admin`, `admin`, `user`).
-- **Permissions:** Specific access rights to certain features (e.g., `user.view`).
+## Permissions
 
-## 2. Usage in Middleware
-You can restrict route access based on roles or permissions directly in the module's route file:
+| Permission | Description |
+|------------|-------------|
+| `user.view` | View users |
+| `user.create` | Create users |
+| `user.edit` | Edit users |
+| `user.delete` | Delete users |
+| `role.view` | View roles |
+| `role.create` | Create roles |
+| `role.edit` | Edit roles |
+| `role.delete` | Delete roles |
+| `permission.view` | View permissions |
+| `permission.create` | Create permissions |
+| `permission.edit` | Edit permissions |
+| `permission.delete` | Delete permissions |
+
+## Roles
+
+| Role | Description |
+|------|-------------|
+| `super-admin` | Unrestricted access via `Gate::before()` |
+| `admin` | Full CRUD on users, roles, permissions |
+| `user` | Limited read-only access |
+
+## Route Protection
 
 ```php
-// Based on Role
-Route::get('/admin', [AdminController::class, 'index'])->middleware('role:admin');
+// Permission-based
+Route::get('/users', [IndexController::class])->middleware('can:user.view');
 
-// Based on Permission
-Route::post('/users', [UserController::class, 'store'])->middleware('permission:user.create');
+// Role-based (also available via Spatie)
+Route::get('/admin', [AdminController::class])->middleware('role:admin');
 ```
 
-## 3. Super Admin
-Users with the `super-admin` role are automatically granted access to **all features**. This logic is set in `App\Providers\AppServiceProvider` using `Gate::before`.
+## Endpoints
+
+### Roles (`/api/v1/roles/`)
+- `GET /roles` -- List (paginated, filterable)
+- `POST /roles` -- Create (with permissions)
+- `GET /roles/{role}` -- Show (with permissions)
+- `PUT /roles/{role}` -- Update (name, permissions)
+- `DELETE /roles/{role}` -- Soft delete
+- `POST /roles/bulk/delete` -- Bulk soft delete
+- `POST /roles/bulk/restore` -- Bulk restore
+
+### Permissions (`/api/v1/permissions/`)
+- `GET /permissions` -- List (paginated)
+- `POST /permissions` -- Create
+- `GET /permissions/{permission}` -- Show
+- `PUT /permissions/{permission}` -- Update
+- `DELETE /permissions/{permission}` -- Soft delete
+
+## Models
+
+- `Modules\Role\Models\Role` -- extends Spatie `Role` with ULID, soft deletes, `HasFactory`
+- `Modules\Role\Models\Permission` -- extends Spatie `Permission` with ULID, soft deletes, `HasFactory`
+- `Modules\User\Models\User` -- uses `HasRoles` trait
+
+## Gate
+
+Super-admin bypass is configured in `AppServiceProvider::boot()`:
+
+```php
+Gate::before(function (User $user) {
+    return $user->hasRole('super-admin') ? true : null;
+});
+```

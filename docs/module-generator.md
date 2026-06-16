@@ -1,34 +1,51 @@
 # Module Generator
 
-This project provides a custom command to accelerate the development of new modules with a standardized structure.
-
-## Basic Usage
-
-To create a new module, run:
+Creates a new module with standardized structure.
 
 ```bash
-php artisan make:module {ModuleName}
+php artisan make:module {name?} [options]
 ```
 
-This command will create the following folder structure and boilerplate files inside `modules/{ModuleName}`:
-- **Actions:** Separate classes for Create, Update, and Delete logic.
-- **Controllers/V1:** Uses dependency injection for Actions and Repositories.
-- **DTOs:** For type-safe data transfer between layers.
-- **Repositories:** Based on Generics for standardized data access.
-- **Filters:** For centralized handling of query strings (search, sort, filter).
-- **Tests/Feature:** Standard CRUD test template ready to run.
-- **Database:** Migrations, Factories, and Seeders.
+## Options
 
-## Interactive Mode
+| Flag | Shorthand | Description |
+|------|-----------|-------------|
+| `--force` | | Overwrite existing files |
+| `--api-version=V1` | | API version |
+| `--except=...` | `-x` | Skip components: repository,action,filter,migration,factory,seeder,event |
+| `--event` | `-E` | Create event |
+| `--repository` | `-r` | Create repository |
+| `--action` | `-a` | Create CRUD actions and payloads |
+| `--filter` | `-l` | Create query filter |
+| `--migration` | `-m` | Create migration |
+| `--factory` | `-y` | Create factory |
+| `--seeder` | `-s` | Create seeder |
 
-By default, the generator runs in **interactive mode**. You will be asked which components you want to create. If you want to overwrite an existing module, use the `--force` option:
+All shorthand flags: `-Eralmys`
 
-```bash
-php artisan make:module Product --force
+## Structure
+
+A created module has:
+
+```
+modules/{Module}/
+  Actions/              -- Business logic (Create, Update, Delete, Bulk*)
+  Controllers/V1/       -- Single-action invokable controllers
+  Database/
+    Factories/          -- Model factories
+    Migrations/         -- Database migrations
+    Seeders/            -- Database seeders
+  Filters/              -- Query string filtering
+  Models/               -- Eloquent models
+  Payloads/V1/          -- DTOs for action input
+  Providers/            -- Service provider
+  Repositories/         -- Read-only data access
+  Requests/V1/          -- Form request validation
+  Resources/            -- API resource transformers
+  Routes/               -- Route files (v1.php)
+  Tests/                -- Feature and unit tests
 ```
 
-## Automatic Module Registration
+## Registration
 
-Newly created modules are automatically detected if the `ModuleNameServiceProvider` exists in the `Providers` folder. The system will automatically load:
-1. **Migrations:** via `$this->loadMigrationsFrom()` in the Service Provider.
-2. **Routes:** via the global `RouteServiceProvider` which looks for `v1.php` files in the module's `Routes` folder.
+Modules are auto-detected by `RouteServiceProvider` and `ModuleServiceProvider`. The service provider must exist at `modules/{Module}/Providers/{Module}ServiceProvider.php`.

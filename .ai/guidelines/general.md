@@ -18,15 +18,15 @@
 | --- | --- |
 | Base URL | `/api/v1/...` (lowercase) |
 | Auth | `Authorization: Bearer {token}` (Sanctum) |
-| Response | `JsonDataResponse` — `{status, message, data}` (NO `success` boolean) |
-| Error | `ProblemResponse` — RFC 7807 |
+| Response | `JsonResponse` — `{status, message, data}` (NO `success` boolean) |
+| Error | `ProblemResponse` — RFC 9457 |
 | Date format | `Y-m-d H:i:s` |
 | Route names | `api.v1.{module}.{name}` |
 
 ## Testing Rules
 
 - Pest feature tests with `RefreshDatabase` trait
-- `beforeEach` seeds `RoleSeeder`, creates admin user, tenant, and cove
+- `beforeEach` seeds `RoleSeeder`, creates admin user
 - Test each CRUD operation: list, create, view, update, delete, unauthorized access
 
 ## Code Quality Rules

@@ -1,49 +1,45 @@
-# Authentication & Device Management
+# Authentication
 
-The authentication system in this project uses a clean custom implementation with **Laravel Sanctum** for API token management.
+All auth endpoints are under `/api/v1/auth/`. Uses Sanctum token-based auth with device tracking.
 
-## 1. Available Features
-All authentication endpoints are located under the `/api/v1/auth` prefix.
+## Endpoints
 
-- **Registration:** `POST /register` (Triggers `UserRegistered` Event).
-- **Login:** `POST /login`
-- **Logout:** `POST /logout`
-- **Password Reset:** `POST /forgot-password` and `POST /reset-password`
-- **Email Verification:** `POST /email/verification-notification` and `GET /email/verify/{id}/{hash}`
-- **Social Login:** Supports Google and GitHub via Laravel Socialite.
+| Method | Path | Auth | Rate Limit | Description |
+|--------|------|------|------------|-------------|
+| POST | `/auth/register` | No | `auth` (5/min/email + 10/min/IP) | Register new user |
+| POST | `/auth/login` | No | `auth` | Login, returns Bearer token |
+| POST | `/auth/logout` | Yes | `authenticated` (120/min) | Revoke current token |
+| GET | `/auth/me` | Yes | `authenticated` | Get authenticated user with roles/permissions |
+| POST | `/auth/forgot-password` | No | `auth` | Send password reset link |
+| POST | `/auth/reset-password` | No | `auth` | Reset password with token |
+| GET | `/auth/verify-email/{id}/{hash}` | No (signed) | `api` (60/min) | Verify email via signed URL |
+| POST | `/auth/email/verification-notification` | Yes | `authenticated` | Re-send verification email |
+| GET | `/auth/devices` | Yes | `authenticated` | List active sessions/devices |
+| DELETE | `/auth/devices/{device}` | Yes | `authenticated` | Revoke a specific device token |
+| POST | `/auth/devices/logout-others` | Yes | `authenticated` | Revoke all other device tokens |
 
-### Social Login Flow
-The system supports third-party authentication (Google & GitHub).
+## Social Login
 
-1. **Redirect**: Frontend directs the user to `GET /api/v1/auth/social/{provider}/redirect`.
-2. **Callback**: After the user logs in with the provider, the provider redirects back to the callback URL, which processes user data at `GET /api/v1/auth/social/{provider}/callback`.
-3. **Success**: The server creates/matches the user based on email and returns a Sanctum token.
+Supported providers: `google`, `github`.
 
-## 2. Standard JSON Response
-All authentication endpoints return consistent JSON responses using the `ApiResponser` trait:
-
-```json
-{
-    "status": "success",
-    "message": "Login successful.",
-    "data": {
-        "user": { ... },
-        "access_token": "...",
-        "token_type": "Bearer"
-    }
-}
+```
+GET /api/v1/auth/social/{provider}/redirect
+GET /api/v1/auth/social/{provider}/callback
 ```
 
-## 3. Device Management (Multi-Device)
-Every login generates a new `PersonalAccessToken` that records device information.
+The redirect endpoint returns the OAuth provider URL. The callback handles user matching:
+1. Match by `provider` + `provider_id`
+2. Match by `email` (link existing account)
+3. Create new user with `password = null`
 
-- **Device List:** `GET /auth/devices`
-- **Logout Specific Device:** `DELETE /auth/devices/{id}`
-- **Logout Other Devices:** `POST /auth/devices/logout-others`
+Configure credentials in `config/services.php` via `.env`:
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
+- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`
 
-## 4. Event-Driven Flow
-The authentication process utilizes Laravel Events for decoupling:
-- **UserRegistered**: Triggered after successful registration. The `SendEmailVerificationNotification` listener handles sending emails asynchronously via a Queue.
+## Email Verification
 
-## 5. Localization (i18n)
-Authentication error and success messages support multiple languages via the `Accept-Language` header (id/en).
+New users get `email_verified_at = null` by default. Verification uses signed URLs generated via `URL::temporarySignedRoute()`. The frontend URL is configured via `APP_FRONTEND_URL` in `.env`.
+
+## Password Reset
+
+Uses Laravel's built-in password broker. Reset link URLs are customized to point at `APP_FRONTEND_URL/reset-password?token=X&email=Y`. Password rules are configured in `AppServiceProvider` via `Password::defaults()` (min 8 chars, mixed case in production).

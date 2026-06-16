@@ -1,59 +1,77 @@
-# API Standards & Best Practices
+# API Standards
 
-This project follows strict standards for API development to ensure consistency and scalability.
+## Base URL
 
-## 1. API Versioning
-Versioning is managed through the URL prefix:
-- `/api/v1/`
+All endpoints: `/api/v1/{resource}/...`
 
-Each module's routes are separated by version in the `modules/{Module}/Routes/v1.php` file. This allows running multiple API versions simultaneously without conflicts.
+## Authentication
 
-## 2. Standard JSON Response
-All API responses use the `App\Traits\ApiResponser` trait to ensure a uniform format.
+```
+Authorization: Bearer {token}
+```
 
-### Success Response (200/201):
+## Response Format
+
+### Success (single resource)
+
 ```json
 {
-    "status": "success",
-    "message": "Resource created successfully",
-    "data": { ... },
+    "status": 200,
+    "message": "User retrieved successfully",
+    "data": { ... }
+}
+```
+
+### Success (paginated list)
+
+```json
+{
+    "status": 200,
+    "message": "Users retrieved successfully",
+    "data": [ ... ],
     "meta": {
-        "api_version": "v1"
+        "current_page": 1,
+        "last_page": 5,
+        "per_page": 15,
+        "total": 72
     }
 }
 ```
 
-### Error Response (4xx/5xx):
+### Error (RFC 9457 ProblemResponse)
+
 ```json
 {
-    "status": "error",
-    "message": "Validation failed",
+    "type": "http://localhost/validation-error",
+    "title": "Validation Error",
+    "status": 422,
+    "message": "Validation Error",
+    "detail": "The given data was invalid.",
     "errors": {
         "email": ["The email field is required."]
     }
 }
 ```
 
-## 3. Global Error Handling
-Common errors are automatically handled in `bootstrap/app.php` to ensure responses are always in JSON format, including:
-- **404 Not Found** (Route or Model)
-- **401 Unauthenticated**
-- **403 Unauthorized**
-- **422 Validation Error**
-- **500 Internal Server Error**
+Error types by status:
 
-## 4. Bulk Actions
-The system supports bulk actions for efficiency:
-- Endpoint: `POST /api/v1/{resource}/bulk`
-- Action: `delete`, `update`, `restore`, `forceDelete`.
-- Logic: Implemented at the Repository layer via the `bulk()` method.
+| Status | Type | Title |
+|--------|------|-------|
+| 400 | `/validation-error` | Validation Error |
+| 401 | `/unauthenticated` | Unauthenticated |
+| 403 | `/forbidden` | Forbidden |
+| 404 | `/not-found` | Not Found |
+| 422 | `/validation-error` | Validation Error |
+| 429 | `/rate-limited` | Too Many Requests |
 
-## 5. Testing Modules
-You can run tests for a specific module using the following commands:
-```bash
-# Run tests for a specific module using Pest
-./vendor/bin/pest modules/User
+## Date Format
 
-# Run tests using artisan filter
-php artisan test --filter Modules\\User
-```
+All datetime fields: `Y-m-d H:i:s` (e.g. `2026-04-23 15:19:09`)
+
+## Locale
+
+Set via `Accept-Language` header. Supported: `en` (default), `id`.
+
+## Versioning
+
+URL-prefixed (`/api/v1/`). Supported versions defined in `config/apiroute.php`. Unsupported versions return 404.

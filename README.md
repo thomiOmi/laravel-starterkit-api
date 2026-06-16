@@ -1,74 +1,78 @@
-# Laravel Starterkit API (Enterprise Ready)
+# Laravel Starterkit API
 
-A robust and opinionated Laravel starter kit for building scalable APIs. Built with Modular Architecture, Repository Pattern, and modern PHP 8.4 practices.
+Opinionated Laravel 13 starter kit for building scalable APIs. Modular architecture with single-action controllers, action classes, read-only repositories, and strict typing.
 
-## 🚀 Key Features
+## Technical Stack
 
--   **Feature Flags**: Dynamic feature control using Laravel Pennant.
--   **Enterprise Ready**: Clean Modular Architecture, Strict Typing (Level 9), and i18n support.
--   **Developer Experience**: Advanced Modular generator, Auto-API docs, and Pint formatting.
+| Layer | Technology |
+|-------|-----------|
+| Framework | Laravel 13 + PHP 8.4 |
+| Auth | Sanctum (Bearer tokens) |
+| RBAC | Spatie laravel-permission |
+| Social Auth | Laravel Socialite (Google, GitHub) |
+| Feature Flags | Laravel Pennant |
+| Testing | Pest 4 |
+| API Docs | Scramble (OpenAPI) |
+| Static Analysis | PHPStan level max |
+| Code Style | Laravel Pint |
 
----
+## Quick Start
 
-## 📚 Documentation
-
-Detailed guides for using and extending the starter kit:
-
-### 🌟 Business Features
--   [Feature Flags](docs/feature-flags.md) - Managing dynamic feature access with Pennant.
-
-### 🔐 Security & Core
--   [Authentication & Device Management](docs/auth.md) - Sanctum, login flows, and devices.
--   [RBAC (Roles & Permissions)](docs/rbac.md) - Granular access control using Spatie.
-
-### 🏗️ Technical Architecture
--   [Architecture & Data Flow](docs/architecture.md) - The Controller -> Action -> Repository pattern.
--   [Events & Queues](docs/events.md) - Background processing and decoupled logic.
--   [API Standards](docs/api-standard.md) - Versioning, responses, and error handling.
--   [Module Generator](docs/module-generator.md) - Rapid development with standard boilerplate.
--   [Coding Standards](docs/coding-standards.md) - Project-wide standards and best practices.
-
----
-
-## 🏗️ Technical Stack
-
--   **Backend**: PHP 8.4, Laravel 13, Sanctum, Spatie Permission, Laravel Pennant.
--   **Testing**: Pest PHP.
--   **Documentation**: Scramble (OpenAPI/Swagger).
--   **Standards**: Modular Architecture, DTOs, Repository Pattern.
-
----
-
-## 🛠️ Installation
-
-### Quick Start
 ```bash
 composer run setup
 ```
 
-### Manual Installation
-1.  **Clone & Install**: `composer install`
-2.  **Environment**: `cp .env.example .env && php artisan key:generate`
-3.  **Database**: Configure `.env` then run `php artisan migrate --seed`
-
----
-
-## 🚀 Quick Access
-
--   **Swagger UI**: `/docs/api`
--   **Base URL**: `/api/v1/`
-
-## 🧪 Testing
+Or manually:
 
 ```bash
-# Run all tests
-php artisan test
-
-# Run tests for a specific module
-./vendor/bin/pest modules/User
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
 ```
 
----
+Swagger UI: `/docs/api`
 
-## 📜 License
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Architecture
+
+```
+Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / Eloquent (write)
+```
+
+- **Controllers** are `final readonly` invokable classes -- no business logic.
+- **Actions** encapsulate single business operations.
+- **Repositories** are read-only (query/find). Writes use Eloquent directly in actions.
+- **Modules** are self-contained in `modules/{Module}/` with their own routes, controllers, actions, models, and tests.
+
+## Modules
+
+| Module | Routes | Description |
+|--------|--------|-------------|
+| Auth | `/api/v1/auth/*` | Register, login, logout, email verification, password reset, social login, device management |
+| User | `/api/v1/users/*` | User CRUD, bulk delete/restore |
+| Role | `/api/v1/roles/*`, `/api/v1/permissions/*` | Role and permission CRUD |
+
+## Testing
+
+```bash
+# Full suite (157+ tests)
+php artisan test --compact
+
+# Single module
+./vendor/bin/pest modules/User
+
+# Filter by test name
+php artisan test --compact --filter=SocialLoginTest
+```
+
+## Code Quality
+
+```bash
+./vendor/bin/pint --format agent
+./vendor/bin/phpstan analyse --memory-limit=512M
+```
+
+## License
+
+The Laravel framework is open-sourced under the MIT license.
