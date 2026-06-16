@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Modules\User\Controllers\V1;
 
 use App\Http\Requests\BulkActionRequest;
-use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\Response;
+use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
+use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\BulkDeleteUsersAction;
+use Symfony\Component\HttpFoundation\Response;
 
 #[Group('User Management')]
 /**
@@ -25,20 +26,21 @@ final readonly class BulkDeleteController
      * Perform bulk delete on users.
      */
     #[Endpoint(operationId: 'bulkDeleteUsers', title: 'Bulk Delete Users')]
-    #[Response(status: 204, description: 'Users deleted successfully')]
-    public function __invoke(BulkActionRequest $request): JsonDataResponse
+    #[ScrambleResponse(status: 200, description: 'Users deleted successfully')]
+    public function __invoke(BulkActionRequest $request): JsonResponse
     {
         /** @var array{ids: array<int, string|int>} $validated */
         $validated = $request->validated();
 
         $count = $this->bulkDeleteUsers->handle($validated['ids']);
 
-        return new JsonDataResponse(
-            data: ['count' => $count],
-            message: __('messages.bulk_action', [
-                'resource' => 'Users',
-                'action' => 'delete',
-            ])
+        return new JsonResponse(
+            [
+                'status' => Response::HTTP_OK,
+                'message' => __('messages.deleted', ['resource' => 'Users']),
+                'data' => ['count' => $count],
+            ],
+            Response::HTTP_OK,
         );
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Sanctum\PersonalAccessToken;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Pennant\Feature;
 use Laravel\Sanctum\Sanctum;
 use Modules\User\Models\User;
@@ -31,12 +33,21 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiting();
 
+        Password::defaults(function () {
+            $rule = Password::min(8);
+
+            return app()->isProduction()
+                ? $rule->mixedCase()->uncompromised()
+                : $rule;
+        });
+
         Gate::before(function ($user, $ability) {
             /** @var User $user */
             return $user->hasRole('super-admin') ? true : null;
         });
 
         $this->configureEmailVerification();
+        $this->configurePasswordReset();
     }
 
     protected function defineFeatures(): void
@@ -49,21 +60,44 @@ class AppServiceProvider extends ServiceProvider
     protected function configureRateLimiting(): void
     {
         RateLimiter::for('api', function (Request $request) {
-            $limit = 60;
-            $by = $request->user()?->id ?: $request->ip();
+            /** @var int $limit */
+            $limit = config('rate-limiting.api.limit');
 
-            return Limit::perMinute($limit)->by($by);
+            return Limit::perMinute($limit)
+                ->by($request->user()?->id ?: $request->ip());
         });
 
         RateLimiter::for('auth', function (Request $request) {
+            /** @var int $perEmail */
+            $perEmail = config('rate-limiting.auth.limit_per_email');
+            /** @var int $perIp */
+            $perIp = config('rate-limiting.auth.limit_per_ip');
+
             return [
-                Limit::perMinute(5)->by($request->input('email')),
-                Limit::perMinute(10)->by($request->ip()),
+                Limit::perMinute($perEmail)
+                    ->by($request->input('email')),
+                Limit::perMinute($perIp)
+                    ->by($request->ip()),
             ];
         });
 
         RateLimiter::for('authenticated', function (Request $request) {
-            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+            /** @var int $limit */
+            $limit = config('rate-limiting.authenticated.limit');
+
+            return Limit::perMinute($limit)
+                ->by($request->user()?->id ?: $request->ip());
+        });
+    }
+
+    protected function configurePasswordReset(): void
+    {
+        ResetPassword::createUrlUsing(function (mixed $user, string $token): string {
+            /** @var User $user */
+            /** @var string $frontendUrl */
+            $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
+
+            return $frontendUrl.'/reset-password?token='.$token.'&email='.$user->getEmailForPasswordReset();
         });
     }
 

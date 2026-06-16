@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
+use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\ShowPermissionAction;
 use Modules\Role\Models\Permission;
 use Modules\Role\Resources\PermissionResource;
@@ -28,21 +28,28 @@ final readonly class PermissionShowController
      */
     #[Endpoint(operationId: 'showPermission', title: 'Show Permission')]
     #[ScrambleResponse(status: 200, description: 'Permission details retrieved', examples: ['status' => 200, 'message' => 'Permission retrieved.', 'data' => ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']])]
-    public function __invoke(Permission $permission): JsonDataResponse
+    public function __invoke(Permission $permission): JsonResponse
     {
         $permission = $this->showPermission->handle((string) $permission->id);
 
         if ($permission === null) {
-            return new JsonDataResponse(
-                data: null,
-                status: Response::HTTP_NOT_FOUND,
-                message: __('messages.not_found', ['resource' => 'Permission'])
+            return new JsonResponse(
+                [
+                    'status' => Response::HTTP_NOT_FOUND,
+                    'message' => __('messages.not_found', ['resource' => 'Permission']),
+                    'data' => null,
+                ],
+                Response::HTTP_NOT_FOUND,
             );
         }
 
-        return new JsonDataResponse(
-            data: new PermissionResource($permission),
-            message: __('messages.retrieved', ['resource' => 'Permission'])
+        return new JsonResponse(
+            [
+                'status' => Response::HTTP_OK,
+                'message' => __('messages.retrieved', ['resource' => 'Permission']),
+                'data' => new PermissionResource($permission),
+            ],
+            Response::HTTP_OK,
         );
     }
 }

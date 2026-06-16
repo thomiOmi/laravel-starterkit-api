@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetAuthenticatedUserAction;
 use Modules\User\Models\User;
@@ -29,7 +29,7 @@ final readonly class MeController
      */
     #[Endpoint(operationId: 'me', title: 'Get Authenticated User')]
     #[ScrambleResponse(status: 200, description: 'User profile retrieved', examples: ['status' => 200, 'message' => 'User profile retrieved.', 'data' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com']])]
-    public function __invoke(Request $request): JsonDataResponse
+    public function __invoke(Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -37,16 +37,23 @@ final readonly class MeController
         $profile = $this->getAuthenticatedUser->handle($user->id);
 
         if (! $profile) {
-            return new JsonDataResponse(
-                data: null,
-                status: Response::HTTP_NOT_FOUND,
-                message: __('messages.not_found', ['resource' => 'User profile'])
+            return new JsonResponse(
+                [
+                    'status' => Response::HTTP_NOT_FOUND,
+                    'message' => __('messages.not_found', ['resource' => 'User profile']),
+                    'data' => null,
+                ],
+                Response::HTTP_NOT_FOUND,
             );
         }
 
-        return new JsonDataResponse(
-            data: new UserResource($profile),
-            message: __('messages.retrieved', ['resource' => 'User profile'])
+        return new JsonResponse(
+            [
+                'status' => Response::HTTP_OK,
+                'message' => __('messages.retrieved', ['resource' => 'User profile']),
+                'data' => new UserResource($profile),
+            ],
+            Response::HTTP_OK,
         );
     }
 }

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Modules\Role\Controllers\V1;
 
 use App\Http\Requests\BulkActionRequest;
-use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\Response;
+use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
+use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\BulkRestoreRolesAction;
+use Symfony\Component\HttpFoundation\Response;
 
 #[Group('Role Management')]
 /**
@@ -25,20 +26,21 @@ final readonly class BulkRestoreRolesController
      * Perform bulk restore on roles.
      */
     #[Endpoint(operationId: 'bulkRestoreRoles', title: 'Bulk Restore Roles')]
-    #[Response(status: 200, description: 'Roles restored successfully', examples: ['status' => 200, 'message' => 'Roles restored.', 'data' => null])]
-    public function __invoke(BulkActionRequest $request): JsonDataResponse
+    #[ScrambleResponse(status: 200, description: 'Roles restored successfully')]
+    public function __invoke(BulkActionRequest $request): JsonResponse
     {
         /** @var array{ids: array<int, string|int>} $validated */
         $validated = $request->validated();
 
         $count = $this->bulkRestoreRoles->handle($validated['ids']);
 
-        return new JsonDataResponse(
-            data: ['count' => $count],
-            message: __('messages.bulk_action', [
-                'resource' => 'Roles',
-                'action' => 'restore',
-            ])
+        return new JsonResponse(
+            [
+                'status' => Response::HTTP_OK,
+                'message' => __('messages.restored', ['resource' => 'Roles']),
+                'data' => ['count' => $count],
+            ],
+            Response::HTTP_OK,
         );
     }
 }

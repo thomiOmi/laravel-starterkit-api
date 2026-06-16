@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\ListRolesAction;
 use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Resources\RoleResource;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Role Management')]
 /**
@@ -33,13 +34,23 @@ final readonly class IndexController
     #[QueryParameter(name: 'sort', description: 'Sort columns. Prefix with - for descending order.', type: 'string', required: false, example: '-created_at')]
     #[Endpoint(operationId: 'listRoles', title: 'List Roles')]
     #[Response(status: 200, description: 'Paginated list of roles', examples: ['status' => 200, 'message' => 'Roles retrieved.', 'data' => [['id' => 1, 'name' => 'admin', 'guard_name' => 'web', 'permissions' => []]]])]
-    public function __invoke(Request $request, RoleFilter $filter): JsonDataResponse
+    public function __invoke(Request $request, RoleFilter $filter): JsonResponse
     {
         $roles = $this->listRoles->handle($filter, $request->integer('per_page', 10));
 
-        return new JsonDataResponse(
-            data: RoleResource::collection($roles),
-            message: __('messages.retrieved', ['resource' => 'Roles'])
+        $resource = RoleResource::collection($roles);
+        /** @var array<string, mixed> $raw */
+        $raw = $resource->toResponse($request)->getData(true);
+
+        return new JsonResponse(
+            array_filter([
+                'status' => SymfonyResponse::HTTP_OK,
+                'message' => __('messages.retrieved', ['resource' => 'Roles']),
+                'data' => $raw['data'] ?? [],
+                'meta' => $raw['meta'] ?? null,
+                'links' => $raw['links'] ?? null,
+            ], fn ($value) => $value !== null),
+            SymfonyResponse::HTTP_OK,
         );
     }
 }

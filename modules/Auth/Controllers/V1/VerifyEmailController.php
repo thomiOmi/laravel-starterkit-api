@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
 use App\Http\Responses\ProblemResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
+use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\VerifyEmailAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,7 +22,7 @@ final readonly class VerifyEmailController
 
     #[Endpoint(operationId: 'verifyEmail', title: 'Verify Email')]
     #[ScrambleResponse(status: 200, description: 'Email verified successfully', examples: ['status' => 200, 'message' => 'Email verified.', 'data' => ['verified' => true]])]
-    public function __invoke(string $id, string $hash): JsonDataResponse|ProblemResponse
+    public function __invoke(string $id, string $hash): JsonResponse|ProblemResponse
     {
         $user = $this->verifyEmail->handle($id, $hash);
 
@@ -34,9 +34,13 @@ final readonly class VerifyEmailController
             );
         }
 
-        return new JsonDataResponse(
-            data: ['verified' => true],
-            message: __('auth.verified'),
+        return new JsonResponse(
+            [
+                'status' => Response::HTTP_OK,
+                'message' => __('auth.verified'),
+                'data' => ['verified' => true],
+            ],
+            Response::HTTP_OK,
         );
     }
 }

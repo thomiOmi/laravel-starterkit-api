@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
-use App\Http\Responses\JsonDataResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
+use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
 use Modules\Role\Models\Permission;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,20 +27,19 @@ final readonly class PermissionDeleteController
      */
     #[Endpoint(operationId: 'deletePermission', title: 'Delete Permission')]
     #[ScrambleResponse(status: 204, description: 'Permission deleted successfully')]
-    public function __invoke(Permission $permission): JsonDataResponse
+    public function __invoke(Permission $permission): JsonResponse
     {
         if ($this->deletePermission->handle($permission)) {
-            return new JsonDataResponse(
-                data: null,
-                status: Response::HTTP_NO_CONTENT,
-                message: __('messages.deleted', ['resource' => 'Permission'])
-            );
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }
 
-        return new JsonDataResponse(
-            data: null,
-            status: Response::HTTP_FORBIDDEN,
-            message: __('messages.delete_error', ['resource' => 'Permission'])
+        return new JsonResponse(
+            [
+                'status' => Response::HTTP_FORBIDDEN,
+                'message' => __('messages.delete_error', ['resource' => 'Permission']),
+                'data' => null,
+            ],
+            Response::HTTP_FORBIDDEN,
         );
     }
 }
