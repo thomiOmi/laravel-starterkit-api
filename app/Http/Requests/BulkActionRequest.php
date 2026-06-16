@@ -45,23 +45,20 @@ class BulkActionRequest extends FormRequest
             return false;
         }
 
-        if (str_contains($routeName, 'users.')) {
-            if ($inferredAction === 'delete') {
-                return $user->can('user.delete');
-            }
+        $permissions = [
+            'users' => [
+                'delete' => 'user.delete',
+                'restore' => 'user.edit',
+            ],
+            'roles' => [
+                'delete' => 'role.delete',
+                'restore' => 'role.edit',
+            ],
+        ];
 
-            if ($inferredAction === 'restore') {
-                return $user->can('user.edit');
-            }
-        }
-
-        if (str_contains($routeName, 'roles.')) {
-            if ($inferredAction === 'delete') {
-                return $user->can('role.delete');
-            }
-
-            if ($inferredAction === 'restore') {
-                return $user->can('role.edit');
+        foreach ($permissions as $module => $actions) {
+            if (str_contains($routeName, $module.'.') && isset($actions[$inferredAction])) {
+                return $user->can($actions[$inferredAction]);
             }
         }
 
