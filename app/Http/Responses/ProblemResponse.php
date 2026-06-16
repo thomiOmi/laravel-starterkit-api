@@ -15,10 +15,11 @@ final class ProblemResponse extends JsonResponse
         string $title,
         int $status,
         string $detail = '',
-        string $type = 'about:blank',
+        string $type = '',
         mixed $errors = null,
         string $instance = '',
     ) {
+        $type = $type ?: 'about:blank';
         $payload = [
             'type' => $type,
             'title' => $title,

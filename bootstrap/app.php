@@ -57,70 +57,73 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(fn ($request) => $request->is('api/*'));
 
-        $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
+        $errorTypeBaseUrl = config('app.url', 'about:blank');
+        assert(is_string($errorTypeBaseUrl));
+
+        $exceptions->render(function (ValidationException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.validation_failed'),
                 status: Response::HTTP_UNPROCESSABLE_ENTITY,
                 detail: 'The given data was invalid.',
-                type: 'https://example.com/problems/validation-error',
+                type: $errorTypeBaseUrl.'/validation-error',
                 errors: $e->errors(),
                 instance: $request->path(),
             );
         });
 
-        $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
+        $exceptions->render(function (AuthenticationException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.unauthenticated'),
                 status: Response::HTTP_UNAUTHORIZED,
                 detail: 'You must be authenticated to access this resource.',
-                type: 'https://example.com/problems/unauthenticated',
+                type: $errorTypeBaseUrl.'/unauthenticated',
             );
         });
 
-        $exceptions->render(function (AuthorizationException $e, Request $request): ProblemResponse {
+        $exceptions->render(function (AuthorizationException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'You are not authorised to perform this action.',
-                type: 'https://example.com/problems/forbidden',
+                type: $errorTypeBaseUrl.'/forbidden',
             );
         });
 
-        $exceptions->render(function (ModelNotFoundException $e, Request $request): ProblemResponse {
+        $exceptions->render(function (ModelNotFoundException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.not_found'),
                 status: Response::HTTP_NOT_FOUND,
                 detail: 'The requested resource does not exist.',
-                type: 'https://example.com/problems/not-found',
+                type: $errorTypeBaseUrl.'/not-found',
                 instance: $request->path(),
             );
         });
 
-        $exceptions->render(function (NotFoundHttpException $e, Request $request): ProblemResponse {
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.not_found'),
                 status: Response::HTTP_NOT_FOUND,
                 detail: $e->getMessage() ?: 'The requested URL does not exist.',
-                type: 'https://example.com/problems/not-found',
+                type: $errorTypeBaseUrl.'/not-found',
                 instance: $request->path(),
             );
         });
 
-        $exceptions->render(function (TooManyRequestsHttpException $e, Request $request): ProblemResponse {
+        $exceptions->render(function (TooManyRequestsHttpException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.too_many_requests'),
                 status: Response::HTTP_TOO_MANY_REQUESTS,
                 detail: 'You have exceeded the request rate limit. Please try again later.',
-                type: 'https://example.com/problems/rate-limited',
+                type: $errorTypeBaseUrl.'/rate-limited',
             );
         });
 
-        $exceptions->render(function (InvalidArgumentException $e, Request $request): ProblemResponse {
+        $exceptions->render(function (InvalidArgumentException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: 'Bad Request',
                 status: Response::HTTP_BAD_REQUEST,
                 detail: $e->getMessage(),
-                type: 'https://example.com/problems/bad-request',
+                type: $errorTypeBaseUrl.'/bad-request',
                 instance: $request->path(),
             );
         });
