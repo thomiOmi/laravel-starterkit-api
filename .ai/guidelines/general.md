@@ -38,3 +38,10 @@
 - All datetime fields in API responses **MUST** use `Y-m-d H:i:s` format
 - Follow existing code conventions — check sibling files before creating new ones
 - Every change must have a corresponding test
+
+## Agentic Development (Laravel Boost & Agent Skills)
+
+- **Laravel Boost**: Accelerates development with framework-specific guidelines and MCP tools (`search-docs`, `database-schema`, etc.).
+- **Agent Skills**: Uses the [agentskills.io](https://agentskills.io) format for domain-specific expertise.
+- **Location**: Guidelines in `.ai/guidelines/`, Skills in `.ai/skills/`.
+- **Activation**: Guidelines are loaded upfront; Skills are activated on-demand via triggers.

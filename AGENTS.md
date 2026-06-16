@@ -21,10 +21,18 @@
 | --- | --- |
 | Base URL | `/api/v1/...` (lowercase) |
 | Auth | `Authorization: Bearer {token}` (Sanctum) |
-| Response | `JsonDataResponse` — `{status, message, data}` (NO `success` boolean) |
+| Response | `JsonResponse` — `{status, message, data}` (NO `success` boolean) |
 | Error | `ProblemResponse` — RFC 7807 |
 | Date format | `Y-m-d H:i:s` |
 | Route names | `api.v1.{module}.{name}` |
+
+## Agentic Development (Laravel Boost)
+
+- This project is optimized for AI agents using **Laravel Boost**.
+- Use MCP tools (`database-query`, `search-docs`, etc.) whenever possible.
+- Custom guidelines are in `.ai/guidelines/`.
+- Task-specific **Agent Skills** are in `.ai/skills/` following the [agentskills.io](https://agentskills.io) spec.
+- Run `php artisan boost:install` or `boost:update` to synchronize AI resources.
 
 ## Testing Rules
 
