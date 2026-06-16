@@ -13,6 +13,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -85,6 +86,15 @@ return Application::configure(basePath: dirname(__DIR__))
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'You are not authorised to perform this action.',
                 type: $errorTypeBaseUrl.'/forbidden',
+            );
+        });
+
+        $exceptions->render(function (InvalidSignatureException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+            return new ProblemResponse(
+                title: 'Invalid Signature',
+                status: Response::HTTP_FORBIDDEN,
+                detail: 'The request signature is invalid or has expired.',
+                type: $errorTypeBaseUrl.'/invalid-signature',
             );
         });
 
