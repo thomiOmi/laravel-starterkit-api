@@ -37,7 +37,7 @@ final readonly class BulkRestoreRolesController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_OK,
-                'message' => __('messages.restored', ['resource' => 'Roles']),
+                'message' => __('general.restored', ['resource' => 'Roles']),
                 'data' => ['count' => $count],
             ],
             Response::HTTP_OK,

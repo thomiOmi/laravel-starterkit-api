@@ -37,7 +37,7 @@ final readonly class BulkDeleteRolesController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_OK,
-                'message' => __('messages.deleted', ['resource' => 'Roles']),
+                'message' => __('general.deleted', ['resource' => 'Roles']),
                 'data' => ['count' => $count],
             ],
             Response::HTTP_OK,

@@ -40,7 +40,7 @@ final readonly class PermissionIndexController
         return new JsonResponse(
             array_filter([
                 'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('messages.retrieved', ['resource' => 'Permissions']),
+                'message' => __('general.retrieved', ['resource' => 'Permissions']),
                 'data' => $raw['data'] ?? [],
                 'meta' => $raw['meta'] ?? null,
                 'links' => $raw['links'] ?? null,

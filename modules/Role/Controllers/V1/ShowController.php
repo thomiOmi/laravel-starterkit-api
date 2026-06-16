@@ -36,7 +36,7 @@ final readonly class ShowController
             return new JsonResponse(
                 [
                     'status' => Response::HTTP_NOT_FOUND,
-                    'message' => __('messages.not_found', ['resource' => 'Role']),
+                    'message' => __('general.not_found', ['resource' => 'Role']),
                     'data' => null,
                 ],
                 Response::HTTP_NOT_FOUND,
@@ -46,7 +46,7 @@ final readonly class ShowController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_OK,
-                'message' => __('messages.retrieved', ['resource' => 'Role']),
+                'message' => __('general.retrieved', ['resource' => 'Role']),
                 'data' => new RoleResource($role),
             ],
             Response::HTTP_OK,

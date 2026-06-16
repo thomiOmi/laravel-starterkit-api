@@ -40,7 +40,7 @@ final readonly class MeController
             return new JsonResponse(
                 [
                     'status' => Response::HTTP_NOT_FOUND,
-                    'message' => __('messages.not_found', ['resource' => 'User profile']),
+                    'message' => __('general.not_found', ['resource' => 'User profile']),
                     'data' => null,
                 ],
                 Response::HTTP_NOT_FOUND,
@@ -50,7 +50,7 @@ final readonly class MeController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_OK,
-                'message' => __('messages.retrieved', ['resource' => 'User profile']),
+                'message' => __('general.retrieved', ['resource' => 'User profile']),
                 'data' => new UserResource($profile),
             ],
             Response::HTTP_OK,

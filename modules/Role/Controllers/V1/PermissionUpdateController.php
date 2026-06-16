@@ -36,7 +36,7 @@ final readonly class PermissionUpdateController
         return new JsonResponse(
             [
                 'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('messages.updated', ['resource' => 'Permission']),
+                'message' => __('general.updated', ['resource' => 'Permission']),
                 'data' => new PermissionResource($permission),
             ],
             SymfonyResponse::HTTP_OK,

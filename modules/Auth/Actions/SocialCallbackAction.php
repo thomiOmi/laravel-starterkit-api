@@ -48,6 +48,7 @@ final readonly class SocialCallbackAction
                     $user->update([
                         'provider' => $provider,
                         'provider_id' => (string) $socialUser->getId(),
+                        'avatar' => $socialUser->getAvatar(),
                     ]);
 
                     return $user;
@@ -61,6 +62,7 @@ final readonly class SocialCallbackAction
                 'password' => null,
                 'provider' => $provider,
                 'provider_id' => (string) $socialUser->getId(),
+                'avatar' => $socialUser->getAvatar(),
             ]);
 
             return $user;

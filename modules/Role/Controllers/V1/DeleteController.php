@@ -38,7 +38,7 @@ final readonly class DeleteController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_FORBIDDEN,
-                'message' => __('messages.delete_error', ['resource' => 'Role']),
+                'message' => __('general.delete_error', ['resource' => 'Role']),
                 'data' => null,
             ],
             Response::HTTP_FORBIDDEN,

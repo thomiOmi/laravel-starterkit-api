@@ -38,7 +38,7 @@ final readonly class CreateController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_CREATED,
-                'message' => __('messages.created', ['resource' => 'User']),
+                'message' => __('general.created', ['resource' => 'User']),
                 'data' => new UserResource($user),
             ],
             Response::HTTP_CREATED,

@@ -36,7 +36,7 @@ final readonly class PermissionShowController
             return new JsonResponse(
                 [
                     'status' => Response::HTTP_NOT_FOUND,
-                    'message' => __('messages.not_found', ['resource' => 'Permission']),
+                    'message' => __('general.not_found', ['resource' => 'Permission']),
                     'data' => null,
                 ],
                 Response::HTTP_NOT_FOUND,
@@ -46,7 +46,7 @@ final readonly class PermissionShowController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_OK,
-                'message' => __('messages.retrieved', ['resource' => 'Permission']),
+                'message' => __('general.retrieved', ['resource' => 'Permission']),
                 'data' => new PermissionResource($permission),
             ],
             Response::HTTP_OK,

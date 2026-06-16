@@ -40,7 +40,7 @@ final readonly class ListDevicesController
         return new JsonResponse(
             array_filter([
                 'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('messages.retrieved', ['resource' => 'Devices']),
+                'message' => __('general.retrieved', ['resource' => 'Devices']),
                 'data' => $raw['data'] ?? [],
                 'meta' => $raw['meta'] ?? null,
                 'links' => $raw['links'] ?? null,

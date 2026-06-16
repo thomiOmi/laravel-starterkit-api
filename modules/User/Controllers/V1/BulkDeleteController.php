@@ -37,7 +37,7 @@ final readonly class BulkDeleteController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_OK,
-                'message' => __('messages.deleted', ['resource' => 'Users']),
+                'message' => __('general.deleted', ['resource' => 'Users']),
                 'data' => ['count' => $count],
             ],
             Response::HTTP_OK,

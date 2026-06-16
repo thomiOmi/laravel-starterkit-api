@@ -45,6 +45,7 @@ describe('Social Callback', function () {
         $socialUser->id = 'google-123';
         $socialUser->name = 'John Doe';
         $socialUser->email = 'john@example.com';
+        $socialUser->avatar = 'https://example.com/avatar.jpg';
         $socialUser->token = 'mock-token';
         $socialUser->refreshToken = 'mock-refresh';
         $socialUser->expiresIn = 3600;
@@ -67,6 +68,7 @@ describe('Social Callback', function () {
             'email' => 'john@example.com',
             'provider' => 'google',
             'provider_id' => 'google-123',
+            'avatar' => 'https://example.com/avatar.jpg',
         ]);
     });
 
@@ -108,6 +110,7 @@ describe('Social Callback', function () {
         $socialUser->id = 'new-link-123';
         $socialUser->name = 'Linked User';
         $socialUser->email = 'existing@example.com';
+        $socialUser->avatar = 'https://example.com/linked-avatar.jpg';
         $socialUser->token = 'mock-token';
 
         $providerMock = Mockery::mock('Laravel\Socialite\Contracts\Provider');
@@ -125,6 +128,7 @@ describe('Social Callback', function () {
         $user->refresh();
         expect($user->provider)->toBe('google');
         expect($user->provider_id)->toBe('new-link-123');
+        expect($user->avatar)->toBe('https://example.com/linked-avatar.jpg');
     });
 
     it('returns 422 for invalid provider callback', function () {

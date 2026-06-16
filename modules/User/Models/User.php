@@ -29,6 +29,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $remember_token The remember token for the user.
  * @property string|null $provider The social auth provider.
  * @property string|null $provider_id The social auth provider ID.
+ * @property string|null $avatar The avatar URL of the user.
  * @property Carbon|null $email_verified_at The timestamp when the email was verified.
  * @property Carbon|null $created_at The timestamp when the user was created.
  * @property Carbon|null $updated_at The timestamp when the user was last updated.
@@ -36,7 +37,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Role> $roles The roles assigned to the user.
  * @property-read Collection<int, Permission> $permissions The permissions assigned to the user.
  */
-#[Fillable(['name', 'email', 'password', 'provider', 'provider_id'])]
+#[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
 /**
  * @implements MustVerifyEmail

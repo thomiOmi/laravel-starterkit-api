@@ -40,7 +40,7 @@ final readonly class UpdateController
         return new JsonResponse(
             [
                 'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('messages.updated', ['resource' => 'User']),
+                'message' => __('general.updated', ['resource' => 'User']),
                 'data' => new UserResource($user),
             ],
             SymfonyResponse::HTTP_OK,

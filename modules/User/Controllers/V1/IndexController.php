@@ -46,7 +46,7 @@ final readonly class IndexController
         return new JsonResponse(
             array_filter([
                 'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('messages.retrieved', ['resource' => 'Users']),
+                'message' => __('general.retrieved', ['resource' => 'Users']),
                 'data' => $raw['data'] ?? [],
                 'meta' => $raw['meta'] ?? null,
                 'links' => $raw['links'] ?? null,

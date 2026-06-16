@@ -50,6 +50,17 @@ class UserResource extends BaseResource
             'email' => $this->resource->email,
 
             /**
+             * The avatar URL of the user.
+             *
+             * @example "https://lh3.googleusercontent.com/a/..."
+             *
+             * @format url
+             *
+             * @default null
+             */
+            'avatar' => $this->resource->avatar,
+
+            /**
              * The list of roles assigned to the user.
              *
              * @example ["user"]

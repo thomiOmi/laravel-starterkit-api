@@ -35,7 +35,7 @@ final readonly class PermissionCreateController
         return new JsonResponse(
             [
                 'status' => Response::HTTP_CREATED,
-                'message' => __('messages.created', ['resource' => 'Permission']),
+                'message' => __('general.created', ['resource' => 'Permission']),
                 'data' => new PermissionResource($permission),
             ],
             Response::HTTP_CREATED,
