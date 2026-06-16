@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
-use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Payloads\V1\LoginPayload;
 use Modules\User\Models\User;
@@ -36,22 +36,23 @@ final readonly class LoginAction
         /** @var User $user */
         $user = Auth::user();
 
-        $token = $user->createToken(
-            $payload->deviceName ?? $userAgent ?? 'auth_token',
-            ['*'],
-        );
+        $plainTextToken = Str::random(40);
+        $prefix = config('sanctum.token_prefix');
+        if (is_string($prefix) && $prefix !== '') {
+            $plainTextToken = $prefix.$plainTextToken;
+        }
 
-        /** @var PersonalAccessToken $accessToken */
-        $accessToken = $token->accessToken;
-
-        $accessToken->forceFill([
+        $token = $user->tokens()->create([
+            'name' => $payload->deviceName ?? $userAgent ?? 'auth_token',
+            'token' => hash('sha256', $plainTextToken),
+            'abilities' => ['*'],
             'ip_address' => $ip,
             'user_agent' => $userAgent,
-        ])->save();
+        ]);
 
         return [
             'user' => $user,
-            'access_token' => $token->plainTextToken,
+            'access_token' => $token->getKey().'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use Modules\User\Models\User;
-use Modules\User\Repositories\UserRepository;
 
 /**
  * Action for retrieving the currently authenticated user with cache orchestration.
@@ -13,20 +12,13 @@ use Modules\User\Repositories\UserRepository;
 final readonly class GetAuthenticatedUserAction
 {
     /**
-     * Create a new GetAuthenticatedUserAction instance.
-     */
-    public function __construct(
-        private UserRepository $userRepository
-    ) {}
-
-    /**
      * Execute the action to get the current user profile.
      *
-     * @param  string  $userId  The authenticated user ID.
-     * @return User|null The user instance or null.
+     * @param  User  $user  The authenticated user.
+     * @return User The user instance.
      */
-    public function handle(string $userId): ?User
+    public function handle(User $user): User
     {
-        return $this->userRepository->findById($userId);
+        return $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']);
     }
 }

@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetAuthenticatedUserAction;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @group Auth
@@ -30,15 +29,7 @@ final readonly class MeController
         /** @var User $user */
         $user = $request->user();
 
-        $profile = $this->getAuthenticatedUser->handle($user->id);
-
-        if (! $profile) {
-            return new JsonDataResponse(
-                data: null,
-                status: Response::HTTP_NOT_FOUND,
-                message: __('messages.not_found', ['resource' => 'User profile'])
-            );
-        }
+        $profile = $this->getAuthenticatedUser->handle($user);
 
         return new JsonDataResponse(
             data: new UserResource($profile),
