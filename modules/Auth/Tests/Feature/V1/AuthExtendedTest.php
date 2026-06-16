@@ -223,5 +223,4 @@ describe('Resend Verification Notification', function () {
         $response->assertStatus(Response::HTTP_UNAUTHORIZED);
     });
 
-
 });

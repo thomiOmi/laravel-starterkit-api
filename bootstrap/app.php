@@ -80,21 +80,21 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        $exceptions->render(function (AccessDeniedHttpException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
-            return new ProblemResponse(
-                title: __('auth.forbidden'),
-                status: Response::HTTP_FORBIDDEN,
-                detail: 'You are not authorised to perform this action.',
-                type: $errorTypeBaseUrl.'/forbidden',
-            );
-        });
-
         $exceptions->render(function (InvalidSignatureException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
             return new ProblemResponse(
                 title: 'Invalid Signature',
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'The request signature is invalid or has expired.',
                 type: $errorTypeBaseUrl.'/invalid-signature',
+            );
+        });
+
+        $exceptions->render(function (AccessDeniedHttpException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+            return new ProblemResponse(
+                title: __('auth.forbidden'),
+                status: Response::HTTP_FORBIDDEN,
+                detail: 'You are not authorised to perform this action.',
+                type: $errorTypeBaseUrl.'/forbidden',
             );
         });
 
