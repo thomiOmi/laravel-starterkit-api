@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Requests\BulkActionRequest;
-use App\Http\Responses\JsonDataResponse;
+use Illuminate\Http\JsonResponse;
 use Modules\{{Module}}\Actions\BulkDelete{{pluralModule}}Action;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @group {{Module}} Management
@@ -22,19 +23,23 @@ final readonly class BulkDeleteController
     /**
      * Perform bulk delete on {{lowerResource}}s.
      */
-    public function __invoke(BulkActionRequest $request): JsonDataResponse
+    public function __invoke(BulkActionRequest $request): JsonResponse
     {
         /** @var array{ids: array<int, string|int>} $validated */
         $validated = $request->validated();
 
         $count = $this->bulkDelete{{pluralModule}}->handle($validated['ids']);
 
-        return new JsonDataResponse(
-            data: ['count' => $count],
-            message: __('messages.bulk_action', [
-                'resource' => '{{Module}}s',
-                'action' => 'delete',
-            ])
+        return new JsonResponse(
+            [
+                'status' => Response::HTTP_OK,
+                'message' => __('general.bulk_action', [
+                    'resource' => '{{Module}}s',
+                    'action' => 'delete',
+                ]),
+                'data' => ['count' => $count],
+            ],
+            Response::HTTP_OK,
         );
     }
 }
