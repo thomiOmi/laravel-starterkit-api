@@ -33,6 +33,7 @@ final readonly class IndexController
     #[QueryParameter(name: 'search', description: 'Search keyword to filter users by name or email.', type: 'string', required: false, example: 'john')]
     #[QueryParameter(name: 'sort', description: 'Sort columns. Prefix with - for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: '-created_at,name')]
     #[QueryParameter(name: 'filter[role]', description: 'Filter by role name.', type: 'string', required: false, example: 'admin')]
+    #[QueryParameter(name: 'filter[status]', description: 'Filter by email verification status: verified or unverified.', type: 'string', required: false, example: 'verified')]
     #[Endpoint(operationId: 'listUsers', title: 'List Users')]
     #[Response(status: 200, description: 'Paginated list of users', examples: ['status' => 200, 'message' => 'Users retrieved.', 'data' => [['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'roles' => [], 'permissions' => []]]])]
     public function __invoke(Request $request, UserFilter $filter): JsonResponse

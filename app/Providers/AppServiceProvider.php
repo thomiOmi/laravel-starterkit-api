@@ -9,6 +9,7 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -30,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->defineFeatures();
 
         Model::shouldBeStrict(! app()->isProduction());
+        FormRequest::failOnUnknownFields(! app()->isProduction());
 
         $this->configureRateLimiting();
 

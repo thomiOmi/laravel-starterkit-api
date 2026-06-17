@@ -6,6 +6,7 @@ namespace Modules\Role\Controllers\V1;
 
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
+use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,11 @@ final readonly class PermissionIndexController
     /**
      * Display a paginated listing of permissions.
      */
+    #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
+    #[QueryParameter(name: 'per_page', description: 'Number of items per page. Defaults to 20 for permissions.', type: 'integer', required: false, default: 20, example: 20)]
+    #[QueryParameter(name: 'search', description: 'Search keyword to filter permissions by name or guard name.', type: 'string', required: false, example: 'user.view')]
+    #[QueryParameter(name: 'sort', description: 'Sort columns. Prefix with - for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: 'name')]
+    #[QueryParameter(name: 'filter[guard]', description: 'Filter by guard name.', type: 'string', required: false, example: 'web')]
     #[Endpoint(operationId: 'listPermissions', title: 'List Permissions')]
     #[Response(status: 200, description: 'Paginated list of permissions', examples: ['status' => 200, 'message' => 'Permissions retrieved.', 'data' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]])]
     public function __invoke(Request $request, PermissionFilter $filter): JsonResponse
