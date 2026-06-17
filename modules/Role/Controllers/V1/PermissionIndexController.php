@@ -39,7 +39,8 @@ final readonly class PermissionIndexController
         description: 'Paginated list of permissions. Includes `meta` (pagination info) and `links` when applicable.',
         examples: [[
             'status' => 200,
-            'message' => 'Permissions retrieved.',
+            'title' => 'OK',
+            'detail' => 'Permissions retrieved.',
             'data' => [
                 ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
                 ['id' => 2, 'name' => 'user.create', 'guard_name' => 'web'],
@@ -54,7 +55,6 @@ final readonly class PermissionIndexController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -66,7 +66,6 @@ final readonly class PermissionIndexController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]

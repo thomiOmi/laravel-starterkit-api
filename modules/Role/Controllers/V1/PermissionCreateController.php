@@ -31,7 +31,8 @@ final readonly class PermissionCreateController
         description: 'Permission created successfully. Returns the new permission record.',
         examples: [[
             'status' => 201,
-            'message' => 'Permission created.',
+            'title' => 'Created',
+            'detail' => 'Permission created.',
             'data' => ['id' => 1, 'name' => 'post.create', 'guard_name' => 'web'],
         ]],
     )]
@@ -43,7 +44,6 @@ final readonly class PermissionCreateController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -55,7 +55,6 @@ final readonly class PermissionCreateController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
@@ -67,7 +66,6 @@ final readonly class PermissionCreateController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => ['name' => ['The name has already been taken.']],
         ]],

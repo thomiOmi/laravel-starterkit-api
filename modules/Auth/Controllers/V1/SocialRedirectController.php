@@ -23,7 +23,8 @@ final readonly class SocialRedirectController
         description: 'Returns the OAuth provider redirect URL. The frontend should redirect the user to this URL to begin the social authentication flow.',
         examples: [[
             'status' => 200,
-            'message' => 'Redirect URL generated.',
+            'title' => 'OK',
+            'detail' => 'Redirect URL generated.',
             'data' => ['url' => 'https://accounts.google.com/o/oauth2/auth?client_id=...&redirect_uri=...&response_type=code&scope=...'],
         ]],
     )]
@@ -35,7 +36,6 @@ final readonly class SocialRedirectController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => [
                 'provider' => ['The selected provider is invalid. Supported providers: google, github.'],

@@ -25,7 +25,8 @@ final readonly class LoginController
         description: 'Authentication successful. Returns the authenticated user profile with a Bearer access token for subsequent API requests.',
         examples: [[
             'status' => 200,
-            'message' => 'Login successful.',
+            'title' => 'OK',
+            'detail' => 'Login successful.',
             'data' => [
                 'user' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'avatar' => null, 'roles' => ['admin'], 'permissions' => ['user.view', 'user.create', 'role.view'], 'email_verified_at' => '2026-04-23 15:19:09', 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
                 'access_token' => '1|abc123token',
@@ -41,7 +42,6 @@ final readonly class LoginController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => [
                 'email' => ['The email field is required.'],
@@ -56,7 +56,6 @@ final readonly class LoginController
             'type' => 'https://example.com/problems',
             'title' => 'Too Many Requests',
             'status' => 429,
-            'message' => 'Too Many Requests',
             'detail' => 'You have exceeded the request rate limit. Please try again later.',
         ]],
     )]

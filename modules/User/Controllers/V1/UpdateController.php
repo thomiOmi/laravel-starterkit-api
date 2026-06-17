@@ -36,7 +36,8 @@ final readonly class UpdateController
         description: 'User updated successfully. Returns the updated user profile.',
         examples: [[
             'status' => 200,
-            'message' => 'User updated.',
+            'title' => 'OK',
+            'detail' => 'User updated.',
             'data' => ['id' => '01abcd', 'name' => 'John Updated', 'email' => 'john@example.com', 'avatar' => null, 'roles' => ['admin'], 'permissions' => ['user.view'], 'email_verified_at' => '2026-04-23 15:19:09', 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 16:00:00', 'deleted_at' => null],
         ]],
     )]
@@ -48,7 +49,6 @@ final readonly class UpdateController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -60,7 +60,6 @@ final readonly class UpdateController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
@@ -72,7 +71,6 @@ final readonly class UpdateController
             'type' => 'https://example.com/problems',
             'title' => 'Not Found',
             'status' => 404,
-            'message' => 'Not Found',
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
@@ -84,7 +82,6 @@ final readonly class UpdateController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => ['email' => ['The email has already been taken.']],
         ]],

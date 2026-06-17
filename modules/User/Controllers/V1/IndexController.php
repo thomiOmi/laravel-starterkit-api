@@ -39,7 +39,8 @@ final readonly class IndexController
         description: 'Paginated list of users. Includes `meta` (pagination info) and `links` when applicable.',
         examples: [[
             'status' => 200,
-            'message' => 'Users retrieved.',
+            'title' => 'OK',
+            'detail' => 'Users retrieved.',
             'data' => [
                 ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'roles' => ['admin'], 'permissions' => ['user.view']],
                 ['id' => '02efgh', 'name' => 'Jane Smith', 'email' => 'jane@example.com', 'roles' => ['user'], 'permissions' => []],
@@ -54,7 +55,6 @@ final readonly class IndexController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -66,7 +66,6 @@ final readonly class IndexController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]

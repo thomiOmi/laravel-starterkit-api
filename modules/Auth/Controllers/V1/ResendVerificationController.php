@@ -23,7 +23,8 @@ final readonly class ResendVerificationController
         description: 'Verification email sent (or user already verified). Returns a message indicating the result.',
         examples: [[
             'status' => 200,
-            'message' => 'Verification link sent.',
+            'title' => 'OK',
+            'detail' => 'Verification link sent.',
             'data' => null,
         ]],
     )]
@@ -35,7 +36,6 @@ final readonly class ResendVerificationController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]

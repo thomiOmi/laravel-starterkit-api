@@ -21,7 +21,8 @@ final readonly class ForgotPasswordController
         description: 'Password reset link sent successfully. An email with a reset link will be dispatched if the email exists in the system. Always returns success to prevent email enumeration.',
         examples: [[
             'status' => 200,
-            'message' => 'Password reset link sent.',
+            'title' => 'OK',
+            'detail' => 'Password reset link sent.',
             'data' => null,
         ]],
     )]
@@ -33,7 +34,6 @@ final readonly class ForgotPasswordController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => [
                 'email' => ['The email field is required.'],
@@ -48,7 +48,6 @@ final readonly class ForgotPasswordController
             'type' => 'https://example.com/problems',
             'title' => 'Too Many Requests',
             'status' => 429,
-            'message' => 'Too Many Requests',
             'detail' => 'You have exceeded the request rate limit. Please try again later.',
         ]],
     )]

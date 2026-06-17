@@ -25,7 +25,8 @@ final readonly class VerifyEmailController
         description: 'Email verified successfully. The user account is now marked as verified.',
         examples: [[
             'status' => 200,
-            'message' => 'Email verified.',
+            'title' => 'OK',
+            'detail' => 'Email verified.',
             'data' => ['verified' => true],
         ]],
     )]
@@ -37,7 +38,6 @@ final readonly class VerifyEmailController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
@@ -49,7 +49,6 @@ final readonly class VerifyEmailController
             'type' => 'https://example.com/problems',
             'title' => 'Not Found',
             'status' => 404,
-            'message' => 'Not Found',
             'detail' => 'The requested resource does not exist.',
         ]],
     )]

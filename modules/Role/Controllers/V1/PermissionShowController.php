@@ -32,7 +32,8 @@ final readonly class PermissionShowController
         description: 'Permission details retrieved successfully.',
         examples: [[
             'status' => 200,
-            'message' => 'Permission retrieved.',
+            'title' => 'OK',
+            'detail' => 'Permission retrieved.',
             'data' => ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
         ]],
     )]
@@ -44,7 +45,6 @@ final readonly class PermissionShowController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -56,7 +56,6 @@ final readonly class PermissionShowController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
@@ -68,7 +67,6 @@ final readonly class PermissionShowController
             'type' => 'https://example.com/problems',
             'title' => 'Not Found',
             'status' => 404,
-            'message' => 'Not Found',
             'detail' => 'The requested resource does not exist.',
         ]],
     )]

@@ -34,7 +34,8 @@ final readonly class CreateController
         description: 'User created successfully. Returns the new user profile.',
         examples: [[
             'status' => 201,
-            'message' => 'User created.',
+            'title' => 'Created',
+            'detail' => 'User created.',
             'data' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'avatar' => null, 'roles' => [], 'permissions' => [], 'email_verified_at' => null, 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
         ]],
     )]
@@ -46,7 +47,6 @@ final readonly class CreateController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -58,7 +58,6 @@ final readonly class CreateController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
@@ -70,7 +69,6 @@ final readonly class CreateController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => ['email' => ['The email has already been taken.'], 'password' => ['The password must be at least 8 characters.']],
         ]],

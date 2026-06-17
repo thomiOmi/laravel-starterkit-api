@@ -26,7 +26,8 @@ final readonly class ResetPasswordController
         description: 'Password has been reset successfully. The user can now log in with the new password.',
         examples: [[
             'status' => 200,
-            'message' => 'Password has been reset.',
+            'title' => 'OK',
+            'detail' => 'Password has been reset.',
             'data' => null,
         ]],
     )]
@@ -38,7 +39,6 @@ final readonly class ResetPasswordController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => [
                 'email' => ['The selected email is invalid.'],
@@ -54,7 +54,6 @@ final readonly class ResetPasswordController
             'type' => 'https://example.com/problems',
             'title' => 'Too Many Requests',
             'status' => 429,
-            'message' => 'Too Many Requests',
             'detail' => 'You have exceeded the request rate limit. Please try again later.',
         ]],
     )]

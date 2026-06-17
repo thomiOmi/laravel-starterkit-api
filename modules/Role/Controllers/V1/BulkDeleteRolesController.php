@@ -30,7 +30,8 @@ final readonly class BulkDeleteRolesController
         description: 'Roles deleted successfully. Returns the count of deleted records.',
         examples: [[
             'status' => 200,
-            'message' => 'Roles deleted.',
+            'title' => 'OK',
+            'detail' => 'Roles deleted.',
             'data' => ['count' => 2],
         ]],
     )]
@@ -42,7 +43,6 @@ final readonly class BulkDeleteRolesController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -54,7 +54,6 @@ final readonly class BulkDeleteRolesController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
@@ -66,7 +65,6 @@ final readonly class BulkDeleteRolesController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => ['ids' => ['The ids field is required.']],
         ]],

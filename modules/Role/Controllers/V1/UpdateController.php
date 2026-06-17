@@ -36,7 +36,8 @@ final readonly class UpdateController
         description: 'Role updated successfully. Returns the updated role with assigned permissions.',
         examples: [[
             'status' => 200,
-            'message' => 'Role updated.',
+            'title' => 'OK',
+            'detail' => 'Role updated.',
             'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]],
         ]],
     )]
@@ -48,7 +49,6 @@ final readonly class UpdateController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -60,7 +60,6 @@ final readonly class UpdateController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
@@ -72,7 +71,6 @@ final readonly class UpdateController
             'type' => 'https://example.com/problems',
             'title' => 'Not Found',
             'status' => 404,
-            'message' => 'Not Found',
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
@@ -84,7 +82,6 @@ final readonly class UpdateController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => ['name' => ['The name field is required.']],
         ]],

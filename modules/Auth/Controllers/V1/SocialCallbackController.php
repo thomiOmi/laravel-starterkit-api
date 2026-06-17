@@ -25,7 +25,8 @@ final readonly class SocialCallbackController
         description: 'Social authentication successful. Returns the authenticated user profile with a Bearer access token.',
         examples: [[
             'status' => 200,
-            'message' => 'Login successful.',
+            'title' => 'OK',
+            'detail' => 'Login successful.',
             'data' => [
                 'user' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@gmail.com', 'avatar' => null, 'roles' => ['user'], 'permissions' => [], 'email_verified_at' => '2026-04-23 15:19:09', 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
                 'access_token' => '1|abc123token',
@@ -41,7 +42,6 @@ final readonly class SocialCallbackController
             'type' => 'https://example.com/problems',
             'title' => 'Validation Error',
             'status' => 422,
-            'message' => 'Validation Error',
             'detail' => 'The given data was invalid.',
             'errors' => [
                 'provider' => ['The selected provider is invalid.'],
@@ -56,7 +56,6 @@ final readonly class SocialCallbackController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]

@@ -33,7 +33,8 @@ final readonly class MeController
         description: 'Authenticated user profile retrieved successfully. Includes roles and permissions when available.',
         examples: [[
             'status' => 200,
-            'message' => 'User profile retrieved.',
+            'title' => 'OK',
+            'detail' => 'User profile retrieved.',
             'data' => [
                 'id' => '01abcd',
                 'name' => 'John Doe',
@@ -56,7 +57,6 @@ final readonly class MeController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -68,7 +68,6 @@ final readonly class MeController
             'type' => 'https://example.com/problems',
             'title' => 'Not Found',
             'status' => 404,
-            'message' => 'Not Found',
             'detail' => 'The requested resource does not exist.',
         ]],
     )]

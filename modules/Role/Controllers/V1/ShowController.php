@@ -32,7 +32,8 @@ final readonly class ShowController
         description: 'Role details retrieved successfully. Includes assigned permissions.',
         examples: [[
             'status' => 200,
-            'message' => 'Role retrieved.',
+            'title' => 'OK',
+            'detail' => 'Role retrieved.',
             'data' => ['id' => 1, 'name' => 'admin', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'], ['id' => 2, 'name' => 'user.create', 'guard_name' => 'web']]],
         ]],
     )]
@@ -44,7 +45,6 @@ final readonly class ShowController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
@@ -56,7 +56,6 @@ final readonly class ShowController
             'type' => 'https://example.com/problems',
             'title' => 'Forbidden',
             'status' => 403,
-            'message' => 'Forbidden',
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
@@ -68,7 +67,6 @@ final readonly class ShowController
             'type' => 'https://example.com/problems',
             'title' => 'Not Found',
             'status' => 404,
-            'message' => 'Not Found',
             'detail' => 'The requested resource does not exist.',
         ]],
     )]

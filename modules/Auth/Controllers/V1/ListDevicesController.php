@@ -29,7 +29,8 @@ final readonly class ListDevicesController
         description: 'List of authenticated devices (personal access tokens) for the current user. Each device includes a boolean `is_current` flag to identify the device used for this request.',
         examples: [[
             'status' => 200,
-            'message' => 'Devices retrieved.',
+            'title' => 'OK',
+            'detail' => 'Devices retrieved.',
             'data' => [
                 ['id' => 1, 'name' => 'test-device', 'last_used_at' => '2026-06-16 20:00:00', 'is_current' => true],
                 ['id' => 2, 'name' => 'second-device', 'last_used_at' => '2026-06-15 10:00:00', 'is_current' => false],
@@ -44,7 +45,6 @@ final readonly class ListDevicesController
             'type' => 'https://example.com/problems',
             'title' => 'Unauthenticated',
             'status' => 401,
-            'message' => 'Unauthenticated',
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
