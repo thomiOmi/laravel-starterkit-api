@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\ShowPermissionAction;
 use Modules\Role\Models\Permission;
 use Modules\Role\Resources\PermissionResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Permission Management')]
 /**
@@ -72,28 +72,22 @@ final readonly class PermissionShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Permission $permission): JsonResponse
+    public function __invoke(Permission $permission): SuccessResponse|ProblemResponse
     {
         $permission = $this->showPermission->handle((string) $permission->id);
 
         if ($permission === null) {
-            return new JsonResponse(
-                [
-                    'status' => SymfonyResponse::HTTP_NOT_FOUND,
-                    'message' => __('general.not_found', ['resource' => 'Permission']),
-                    'data' => null,
-                ],
-                SymfonyResponse::HTTP_NOT_FOUND,
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
             );
         }
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.retrieved', ['resource' => 'Permission']),
-                'data' => new PermissionResource($permission),
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('general.retrieved', ['resource' => 'Permission']),
+            new PermissionResource($permission),
         );
     }
 }

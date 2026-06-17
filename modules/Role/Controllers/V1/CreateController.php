@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\CreateRoleAction;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Role Management')]
 /**
@@ -27,7 +26,7 @@ final readonly class CreateController
      * Store a newly created role in storage.
      *
      * @param  RoleRequest  $request  The validated role creation request.
-     * @return JsonResponse The API response containing the new role.
+     * @return SuccessResponse The API response containing the new role.
      */
     #[Endpoint(operationId: 'createRole', title: 'Create Role')]
     #[Response(
@@ -76,17 +75,15 @@ final readonly class CreateController
             'errors' => ['name' => ['The name has already been taken.']],
         ]],
     )]
-    public function __invoke(RoleRequest $request): JsonResponse
+    public function __invoke(RoleRequest $request): SuccessResponse
     {
         $role = $this->createRole->handle($request->payload());
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_CREATED,
-                'message' => __('general.created', ['resource' => 'Role']),
-                'data' => new RoleResource($role),
-            ],
-            SymfonyResponse::HTTP_CREATED,
+        return new SuccessResponse(
+            'Created',
+            __('general.created', ['resource' => 'Role']),
+            new RoleResource($role),
+            201,
         );
     }
 }

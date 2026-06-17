@@ -21,6 +21,7 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
@@ -55,80 +56,116 @@ return Application::configure(basePath: dirname(__DIR__))
         // $middleware->throttleApi(); // We will define custom throttle in routes
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(fn ($request) => $request->is('api/*'));
+        $exceptions->shouldRenderJsonWhen(fn (Request $request) => $request->is('api/*'));
 
-        $errorTypeBaseUrl = config('app.url', 'https://example.com/problems');
-        assert(is_string($errorTypeBaseUrl));
-
-        $exceptions->render(function (ValidationException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+        $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.validation_failed'),
                 status: Response::HTTP_UNPROCESSABLE_ENTITY,
                 detail: 'The given data was invalid.',
-                type: $errorTypeBaseUrl.'/validation-error',
+                typeKey: 'validation',
                 errors: $e->errors(),
-                instance: $request->path(),
+                instance: $request->url(),
             );
         });
 
-        $exceptions->render(function (AuthenticationException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+        $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.unauthenticated'),
                 status: Response::HTTP_UNAUTHORIZED,
                 detail: 'You must be authenticated to access this resource.',
-                type: $errorTypeBaseUrl.'/unauthenticated',
-                instance: $request->path(),
+                typeKey: 'unauthenticated',
+                instance: $request->url(),
             );
         });
 
-        $exceptions->render(function (InvalidSignatureException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+        $exceptions->render(function (InvalidSignatureException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 title: 'Invalid Signature',
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'The request signature is invalid or has expired.',
-                type: $errorTypeBaseUrl.'/invalid-signature',
-                instance: $request->path(),
+                typeKey: 'forbidden',
+                instance: $request->url(),
             );
         });
 
-        $exceptions->render(function (AccessDeniedHttpException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+        $exceptions->render(function (AccessDeniedHttpException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'You are not authorised to perform this action.',
-                type: $errorTypeBaseUrl.'/forbidden',
-                instance: $request->path(),
+                typeKey: 'forbidden',
+                instance: $request->url(),
             );
         });
 
-        $exceptions->render(function (NotFoundHttpException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+        $exceptions->render(function (NotFoundHttpException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.not_found'),
                 status: Response::HTTP_NOT_FOUND,
                 detail: $e->getMessage() ?: 'The requested URL does not exist.',
-                type: $errorTypeBaseUrl.'/not-found',
-                instance: $request->path(),
+                typeKey: 'not_found',
+                instance: $request->url(),
             );
         });
 
-        $exceptions->render(function (TooManyRequestsHttpException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+        $exceptions->render(function (TooManyRequestsHttpException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.too_many_requests'),
                 status: Response::HTTP_TOO_MANY_REQUESTS,
                 detail: 'You have exceeded the request rate limit. Please try again later.',
-                type: $errorTypeBaseUrl.'/rate-limited',
-                instance: $request->path(),
+                typeKey: 'rate_limited',
+                instance: $request->url(),
             );
         });
 
-        $exceptions->render(function (InvalidArgumentException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {
+        $exceptions->render(function (InvalidArgumentException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 title: 'Bad Request',
                 status: Response::HTTP_BAD_REQUEST,
                 detail: $e->getMessage(),
-                type: $errorTypeBaseUrl.'/bad-request',
-                instance: $request->path(),
+                typeKey: 'bad_request',
+                instance: $request->url(),
             );
+        });
+
+        $exceptions->render(function (HttpExceptionInterface $e, Request $request): ProblemResponse {
+            return new ProblemResponse(
+                title: $e->getMessage() ?: 'HTTP Error',
+                status: $e->getStatusCode(),
+                detail: $e->getMessage() ?: 'An HTTP error occurred.',
+                typeKey: 'about:blank',
+                instance: $request->url(),
+            );
+        });
+
+        $exceptions->render(function (Throwable $e, Request $request): ProblemResponse {
+            $detail = 'An internal server error occurred.';
+
+            if (config('app.debug', false)) {
+                $detail = $e->getMessage();
+            }
+
+            $payload = new ProblemResponse(
+                title: 'Internal Server Error',
+                status: Response::HTTP_INTERNAL_SERVER_ERROR,
+                detail: $detail,
+                typeKey: 'internal_error',
+                instance: $request->url(),
+            );
+
+            if (config('app.debug', false)) {
+                $payload->setData(array_merge(
+                    (array) $payload->getData(true),
+                    [
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTrace(),
+                    ],
+                ));
+            }
+
+            return $payload;
         });
     })
     ->create();

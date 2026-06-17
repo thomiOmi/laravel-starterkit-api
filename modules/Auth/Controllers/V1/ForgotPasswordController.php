@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Auth')]
 final readonly class ForgotPasswordController
@@ -53,7 +52,7 @@ final readonly class ForgotPasswordController
             'detail' => 'You have exceeded the request rate limit. Please try again later.',
         ]],
     )]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request): SuccessResponse
     {
         $request->validate(['email' => ['required', 'email']]);
 
@@ -62,13 +61,9 @@ final readonly class ForgotPasswordController
         );
 
         if ($status === Password::RESET_LINK_SENT) {
-            return new JsonResponse(
-                [
-                    'status' => SymfonyResponse::HTTP_OK,
-                    'message' => __($status),
-                    'data' => null,
-                ],
-                SymfonyResponse::HTTP_OK,
+            return new SuccessResponse(
+                'OK',
+                __($status),
             );
         }
 

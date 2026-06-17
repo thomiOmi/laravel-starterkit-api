@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\UpdateUserAction;
 use Modules\User\Models\User;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
 /**
@@ -29,7 +28,7 @@ final readonly class UpdateController
      *
      * @param  UserRequest  $request  The validated user update request.
      * @param  User  $user  The user model instance.
-     * @return JsonResponse The API response containing the updated user.
+     * @return SuccessResponse The API response containing the updated user.
      */
     #[Endpoint(operationId: 'updateUser', title: 'Update User')]
     #[Response(
@@ -90,17 +89,14 @@ final readonly class UpdateController
             'errors' => ['email' => ['The email has already been taken.']],
         ]],
     )]
-    public function __invoke(UserRequest $request, User $user): JsonResponse
+    public function __invoke(UserRequest $request, User $user): SuccessResponse
     {
         $user = $this->updateUser->handle($user, $request->payload());
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.updated', ['resource' => 'User']),
-                'data' => new UserResource($user),
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('general.updated', ['resource' => 'User']),
+            new UserResource($user),
         );
     }
 }

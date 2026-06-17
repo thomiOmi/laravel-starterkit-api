@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\SocialCallbackAction;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Auth')]
 final readonly class SocialCallbackController
@@ -61,7 +60,7 @@ final readonly class SocialCallbackController
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
-    public function __invoke(string $provider, Request $request): JsonResponse
+    public function __invoke(string $provider, Request $request): SuccessResponse
     {
         $result = $this->socialCallback->handle(
             provider: $provider,
@@ -69,17 +68,14 @@ final readonly class SocialCallbackController
             userAgent: $request->userAgent(),
         );
 
-        return new JsonResponse(
+        return new SuccessResponse(
+            'OK',
+            __('auth.social_login_success'),
             [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('auth.social_login_success'),
-                'data' => [
-                    'user' => new UserResource($result['user']),
-                    'access_token' => $result['access_token'],
-                    'token_type' => $result['token_type'],
-                ],
+                'user' => new UserResource($result['user']),
+                'access_token' => $result['access_token'],
+                'token_type' => $result['token_type'],
             ],
-            SymfonyResponse::HTTP_OK,
         );
     }
 }

@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\UpdateRoleAction;
 use Modules\Role\Models\Role;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Role Management')]
 /**
@@ -29,7 +28,7 @@ final readonly class UpdateController
      *
      * @param  RoleRequest  $request  The validated role update request.
      * @param  Role  $role  The role model instance.
-     * @return JsonResponse The API response containing the updated role.
+     * @return SuccessResponse The API response containing the updated role.
      */
     #[Endpoint(operationId: 'updateRole', title: 'Update Role')]
     #[Response(
@@ -90,17 +89,14 @@ final readonly class UpdateController
             'errors' => ['name' => ['The name field is required.']],
         ]],
     )]
-    public function __invoke(RoleRequest $request, Role $role): JsonResponse
+    public function __invoke(RoleRequest $request, Role $role): SuccessResponse
     {
         $role = $this->updateRole->handle($role, $request->payload());
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.updated', ['resource' => 'Role']),
-                'data' => new RoleResource($role),
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('general.updated', ['resource' => 'Role']),
+            new RoleResource($role),
         );
     }
 }

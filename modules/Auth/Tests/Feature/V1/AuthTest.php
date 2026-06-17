@@ -38,7 +38,8 @@ describe('Auth Core Features V1', function () {
 
         $response->assertSuccessful()
             ->assertJsonStructure([
-                'message',
+                'title',
+                'detail',
                 'data' => [
                     'user',
                     'access_token',

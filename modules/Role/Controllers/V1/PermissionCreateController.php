@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\CreatePermissionAction;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Permission Management')]
 /**
@@ -73,17 +72,15 @@ final readonly class PermissionCreateController
             'errors' => ['name' => ['The name has already been taken.']],
         ]],
     )]
-    public function __invoke(PermissionRequest $request): JsonResponse
+    public function __invoke(PermissionRequest $request): SuccessResponse
     {
         $permission = $this->createPermission->handle($request->payload());
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_CREATED,
-                'message' => __('general.created', ['resource' => 'Permission']),
-                'data' => new PermissionResource($permission),
-            ],
-            SymfonyResponse::HTTP_CREATED,
+        return new SuccessResponse(
+            'Created',
+            __('general.created', ['resource' => 'Permission']),
+            new PermissionResource($permission),
+            201,
         );
     }
 }

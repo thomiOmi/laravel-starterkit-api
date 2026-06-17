@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetAuthenticatedUserAction;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Auth')]
 /**
@@ -72,7 +72,7 @@ final readonly class MeController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request): SuccessResponse|ProblemResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -80,23 +80,17 @@ final readonly class MeController
         $profile = $this->getAuthenticatedUser->handle($user->id);
 
         if (! $profile) {
-            return new JsonResponse(
-                [
-                    'status' => SymfonyResponse::HTTP_NOT_FOUND,
-                    'message' => __('general.not_found', ['resource' => 'User profile']),
-                    'data' => null,
-                ],
-                SymfonyResponse::HTTP_NOT_FOUND,
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User profile']),
             );
         }
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.retrieved', ['resource' => 'User profile']),
-                'data' => new UserResource($profile),
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('general.retrieved', ['resource' => 'User profile']),
+            new UserResource($profile),
         );
     }
 }

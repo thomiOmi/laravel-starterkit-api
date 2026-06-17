@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Role\Resources;
 
-use App\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 use Modules\Role\Models\Permission;
 
 /**
@@ -13,8 +14,17 @@ use Modules\Role\Models\Permission;
  *
  * @mixin Permission
  */
-class PermissionResource extends BaseResource
+class PermissionResource extends JsonResource
 {
+    protected function formatDate(\DateTimeInterface|string|null $date): ?string
+    {
+        if (is_string($date)) {
+            $date = Carbon::parse($date);
+        }
+
+        return $date?->format('Y-m-d H:i:s');
+    }
+
     /**
      * @return array<string, mixed>
      */

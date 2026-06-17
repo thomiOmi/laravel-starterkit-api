@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\User\Models\User;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Auth')]
 /**
@@ -40,31 +39,23 @@ final readonly class ResendVerificationController
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request): SuccessResponse
     {
         /** @var User $user */
         $user = $request->user();
 
         if ($user->hasVerifiedEmail()) {
-            return new JsonResponse(
-                [
-                    'status' => SymfonyResponse::HTTP_OK,
-                    'message' => __('auth.verified'),
-                    'data' => null,
-                ],
-                SymfonyResponse::HTTP_OK,
+            return new SuccessResponse(
+                'OK',
+                __('auth.verified'),
             );
         }
 
         $user->sendEmailVerificationNotification();
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('auth.verification_link_sent'),
-                'data' => null,
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('auth.verification_link_sent'),
         );
     }
 }

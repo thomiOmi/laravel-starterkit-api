@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
@@ -74,13 +75,10 @@ final readonly class DeleteController
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_FORBIDDEN,
-                'message' => __('general.delete_error', ['resource' => 'Role']),
-                'data' => null,
-            ],
-            SymfonyResponse::HTTP_FORBIDDEN,
+        return new ProblemResponse(
+            title: 'Forbidden',
+            status: 403,
+            detail: __('general.delete_error', ['resource' => 'Role']),
         );
     }
 }

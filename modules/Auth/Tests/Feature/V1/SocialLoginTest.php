@@ -61,7 +61,7 @@ describe('Social Callback', function () {
         $response = $this->getJson('/api/v1/auth/social/google/callback');
 
         $response->assertSuccessful()
-            ->assertJsonPath('message', __('auth.social_login_success'))
+            ->assertJsonPath('detail', __('auth.social_login_success'))
             ->assertJsonStructure(['data' => ['user', 'access_token', 'token_type']]);
 
         $this->assertDatabaseHas('users', [
@@ -95,7 +95,7 @@ describe('Social Callback', function () {
         $response = $this->getJson('/api/v1/auth/social/google/callback');
 
         $response->assertSuccessful()
-            ->assertJsonPath('message', __('auth.social_login_success'))
+            ->assertJsonPath('detail', __('auth.social_login_success'))
             ->assertJsonStructure(['data' => ['user', 'access_token', 'token_type']]);
     });
 

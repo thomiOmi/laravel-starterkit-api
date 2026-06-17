@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\ListDevicesAction;
 use Modules\Auth\Resources\DeviceResource;
 use Modules\User\Models\User;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Auth')]
 /**
@@ -49,7 +48,7 @@ final readonly class ListDevicesController
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request): SuccessResponse
     {
         /** @var User $user */
         $user = $request->user();
@@ -60,15 +59,15 @@ final readonly class ListDevicesController
         /** @var array<string, mixed> $raw */
         $raw = $resource->toResponse($request)->getData(true);
 
-        return new JsonResponse(
+        return new SuccessResponse(
+            'OK',
+            __('general.retrieved', ['resource' => 'Devices']),
+            $raw['data'] ?? [],
+            200,
             array_filter([
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.retrieved', ['resource' => 'Devices']),
-                'data' => $raw['data'] ?? [],
                 'meta' => $raw['meta'] ?? null,
                 'links' => $raw['links'] ?? null,
             ], fn ($value) => $value !== null),
-            SymfonyResponse::HTTP_OK,
         );
     }
 }

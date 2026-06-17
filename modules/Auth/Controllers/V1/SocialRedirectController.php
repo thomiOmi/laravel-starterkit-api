@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\SocialRedirectAction;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Auth')]
 final readonly class SocialRedirectController
@@ -43,17 +42,14 @@ final readonly class SocialRedirectController
             ],
         ]],
     )]
-    public function __invoke(string $provider): JsonResponse
+    public function __invoke(string $provider): SuccessResponse
     {
         $url = $this->socialRedirect->handle($provider);
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('auth.social_login_success'),
-                'data' => ['url' => $url],
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('auth.social_login_success'),
+            ['url' => $url],
         );
     }
 }

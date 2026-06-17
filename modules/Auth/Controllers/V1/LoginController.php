@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\Requests\V1\LoginRequest;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Auth')]
 final readonly class LoginController
@@ -61,7 +60,7 @@ final readonly class LoginController
             'detail' => 'You have exceeded the request rate limit. Please try again later.',
         ]],
     )]
-    public function __invoke(LoginRequest $request): JsonResponse
+    public function __invoke(LoginRequest $request): SuccessResponse
     {
         $result = $this->loginAction->handle(
             payload: $request->payload(),
@@ -69,17 +68,14 @@ final readonly class LoginController
             userAgent: $request->userAgent()
         );
 
-        return new JsonResponse(
+        return new SuccessResponse(
+            'OK',
+            __('auth.login_success'),
             [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('auth.login_success'),
-                'data' => [
-                    'user' => new UserResource($result['user']),
-                    'access_token' => $result['access_token'],
-                    'token_type' => $result['token_type'],
-                ],
+                'user' => new UserResource($result['user']),
+                'access_token' => $result['access_token'],
+                'token_type' => $result['token_type'],
             ],
-            SymfonyResponse::HTTP_OK,
         );
     }
 }

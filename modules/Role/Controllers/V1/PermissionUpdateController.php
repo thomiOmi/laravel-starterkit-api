@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\UpdatePermissionAction;
 use Modules\Role\Models\Permission;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Permission Management')]
 /**
@@ -86,17 +85,14 @@ final readonly class PermissionUpdateController
             'errors' => ['name' => ['The name field is required.']],
         ]],
     )]
-    public function __invoke(PermissionRequest $request, Permission $permission): JsonResponse
+    public function __invoke(PermissionRequest $request, Permission $permission): SuccessResponse
     {
         $permission = $this->updatePermission->handle($permission, $request->payload());
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.updated', ['resource' => 'Permission']),
-                'data' => new PermissionResource($permission),
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('general.updated', ['resource' => 'Permission']),
+            new PermissionResource($permission),
         );
     }
 }

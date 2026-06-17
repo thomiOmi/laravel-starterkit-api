@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Resources;
 
-use App\Http\Resources\BaseResource;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
 use Modules\{{Module}}\Models\{{Module}};
 
@@ -13,7 +13,7 @@ use Modules\{{Module}}\Models\{{Module}};
  *
  * @mixin {{Module}}
  */
-class {{Module}}Resource extends BaseResource
+class {{Module}}Resource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -27,5 +27,14 @@ class {{Module}}Resource extends BaseResource
             'created_at' => $this->formatDate($this->resource->created_at),
             'updated_at' => $this->formatDate($this->resource->updated_at),
         ];
+    }
+
+    private function formatDate(?string $date): ?string
+    {
+        if ($date === null) {
+            return null;
+        }
+
+        return \Carbon\Carbon::parse($date)->format('Y-m-d H:i:s');
     }
 }

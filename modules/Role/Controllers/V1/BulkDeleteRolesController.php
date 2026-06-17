@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace Modules\Role\Controllers\V1;
 
 use App\Http\Requests\BulkActionRequest;
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\BulkDeleteRolesAction;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Role Management')]
 /**
@@ -72,20 +71,17 @@ final readonly class BulkDeleteRolesController
             'errors' => ['ids' => ['The ids field is required.']],
         ]],
     )]
-    public function __invoke(BulkActionRequest $request): JsonResponse
+    public function __invoke(BulkActionRequest $request): SuccessResponse
     {
         /** @var array{ids: array<int, string|int>} $validated */
         $validated = $request->validated();
 
         $count = $this->bulkDeleteRoles->handle($validated['ids']);
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.deleted', ['resource' => 'Roles']),
-                'data' => ['count' => $count],
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('general.deleted', ['resource' => 'Roles']),
+            ['count' => $count],
         );
     }
 }

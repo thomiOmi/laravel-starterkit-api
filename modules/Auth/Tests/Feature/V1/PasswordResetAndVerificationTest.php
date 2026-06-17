@@ -25,7 +25,7 @@ describe('Forgot Password', function () {
         ]);
 
         $response->assertSuccessful()
-            ->assertJsonPath('message', __('passwords.sent'));
+            ->assertJsonPath('detail', __('passwords.sent'));
     });
 
     it('returns validation error for invalid email', function () {
@@ -59,7 +59,7 @@ describe('Reset Password', function () {
         ]);
 
         $response->assertSuccessful()
-            ->assertJsonPath('message', __('passwords.reset'));
+            ->assertJsonPath('detail', __('passwords.reset'));
 
         $this->assertTrue(Hash::check('new-password-123', $user->fresh()->password));
     });
@@ -203,7 +203,7 @@ describe('Resend Verification Notification', function () {
             ->postJson('/api/v1/auth/email/verification-notification');
 
         $response->assertSuccessful()
-            ->assertJsonPath('message', __('auth.verification_link_sent'));
+            ->assertJsonPath('detail', __('auth.verification_link_sent'));
     });
 
     it('returns success for already verified user', function () {
@@ -214,7 +214,7 @@ describe('Resend Verification Notification', function () {
             ->postJson('/api/v1/auth/email/verification-notification');
 
         $response->assertSuccessful()
-            ->assertJsonPath('message', __('auth.verified'));
+            ->assertJsonPath('detail', __('auth.verified'));
     });
 
     it('requires authentication', function () {

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\ShowUserAction;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
 /**
@@ -72,28 +72,22 @@ final readonly class ShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(User $user): JsonResponse
+    public function __invoke(User $user): SuccessResponse|ProblemResponse
     {
         $user = $this->showUser->handle($user->id);
 
         if (! $user) {
-            return new JsonResponse(
-                [
-                    'status' => SymfonyResponse::HTTP_NOT_FOUND,
-                    'message' => __('general.not_found', ['resource' => 'User']),
-                    'data' => null,
-                ],
-                SymfonyResponse::HTTP_NOT_FOUND,
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User']),
             );
         }
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.retrieved', ['resource' => 'User']),
-                'data' => new UserResource($user),
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('general.retrieved', ['resource' => 'User']),
+            new UserResource($user),
         );
     }
 }

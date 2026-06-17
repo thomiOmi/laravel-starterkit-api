@@ -17,17 +17,17 @@ beforeEach(function () {
 describe('List', function () {
     it('users', function () {
         $this->adminGet('/api/v1/users')
-            ->assertJsonStructure(['data', 'message']);
+            ->assertJsonStructure(['status', 'title', 'detail', 'data']);
     });
 
     it('roles', function () {
         $this->adminGet('/api/v1/roles')
-            ->assertJsonStructure(['data', 'message']);
+            ->assertJsonStructure(['status', 'title', 'detail', 'data']);
     });
 
     it('permissions', function () {
         $this->adminGet('/api/v1/permissions')
-            ->assertJsonStructure(['data', 'message']);
+            ->assertJsonStructure(['status', 'title', 'detail', 'data']);
     });
 });
 

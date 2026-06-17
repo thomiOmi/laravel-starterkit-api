@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\VerifyEmailAction;
 use Modules\User\Models\User;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Auth')]
 final readonly class VerifyEmailController
@@ -54,25 +53,22 @@ final readonly class VerifyEmailController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(string $id, string $hash): JsonResponse|ProblemResponse
+    public function __invoke(string $id, string $hash): SuccessResponse|ProblemResponse
     {
         $user = $this->verifyEmail->handle($id, $hash);
 
         if (! $user instanceof User) {
             return new ProblemResponse(
                 title: __('auth.not_found'),
-                status: SymfonyResponse::HTTP_NOT_FOUND,
+                status: 404,
                 detail: 'User not found.',
             );
         }
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('auth.verified'),
-                'data' => ['verified' => true],
-            ],
-            SymfonyResponse::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('auth.verified'),
+            ['verified' => true],
         );
     }
 }

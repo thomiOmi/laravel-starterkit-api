@@ -45,7 +45,8 @@ describe('User CRUD Operations V1', function () {
             ->assertCreated()
             ->assertJsonStructure([
                 'status',
-                'message',
+                'title',
+                'detail',
                 'data' => ['id', 'name', 'email'],
             ])
             ->assertJsonPath('data.name', 'Jane Doe')

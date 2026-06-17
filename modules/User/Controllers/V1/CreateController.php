@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
 /**
@@ -27,7 +26,7 @@ final readonly class CreateController
      * Store a newly created user in storage.
      *
      * @param  UserRequest  $request  The validated user creation request.
-     * @return JsonResponse The API response containing the new user.
+     * @return SuccessResponse The API response containing the new user.
      */
     #[Endpoint(operationId: 'createUser', title: 'Create User')]
     #[Response(
@@ -76,17 +75,15 @@ final readonly class CreateController
             'errors' => ['email' => ['The email has already been taken.'], 'password' => ['The password must be at least 8 characters.']],
         ]],
     )]
-    public function __invoke(UserRequest $request): JsonResponse
+    public function __invoke(UserRequest $request): SuccessResponse
     {
         $user = $this->createUser->handle($request->payload());
 
-        return new JsonResponse(
-            [
-                'status' => SymfonyResponse::HTTP_CREATED,
-                'message' => __('general.created', ['resource' => 'User']),
-                'data' => new UserResource($user),
-            ],
-            SymfonyResponse::HTTP_CREATED,
+        return new SuccessResponse(
+            'Created',
+            __('general.created', ['resource' => 'User']),
+            new UserResource($user),
+            201,
         );
     }
 }

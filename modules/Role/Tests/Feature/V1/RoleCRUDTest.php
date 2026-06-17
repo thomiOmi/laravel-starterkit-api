@@ -32,7 +32,8 @@ describe('Role CRUD Operations V1', function () {
             ->assertCreated()
             ->assertJsonStructure([
                 'status',
-                'message',
+                'title',
+                'detail',
                 'data' => ['id', 'name', 'description', 'created_at', 'updated_at'],
             ])
             ->assertJsonPath('data.name', 'editor')

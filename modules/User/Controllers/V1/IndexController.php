@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\User\Actions\ListUsersAction;
 use Modules\User\Filters\UserFilter;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
 /**
@@ -71,7 +70,7 @@ final readonly class IndexController
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
-    public function __invoke(Request $request, UserFilter $filter): JsonResponse
+    public function __invoke(Request $request, UserFilter $filter): SuccessResponse
     {
         $users = $this->listUsers->handle(
             $filter,
@@ -83,15 +82,15 @@ final readonly class IndexController
         /** @var array<string, mixed> $raw */
         $raw = $resource->toResponse($request)->getData(true);
 
-        return new JsonResponse(
+        return new SuccessResponse(
+            'OK',
+            __('general.retrieved', ['resource' => 'Users']),
+            $raw['data'] ?? [],
+            200,
             array_filter([
-                'status' => SymfonyResponse::HTTP_OK,
-                'message' => __('general.retrieved', ['resource' => 'Users']),
-                'data' => $raw['data'] ?? [],
                 'meta' => $raw['meta'] ?? null,
                 'links' => $raw['links'] ?? null,
             ], fn ($value) => $value !== null),
-            SymfonyResponse::HTTP_OK,
         );
     }
 }
