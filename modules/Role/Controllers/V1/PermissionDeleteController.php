@@ -64,7 +64,7 @@ final readonly class PermissionDeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Permission $permission): JsonResponse
+    public function __invoke(Permission $permission): JsonResponse|ProblemResponse
     {
         if ($this->deletePermission->handle($permission)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);

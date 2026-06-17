@@ -66,7 +66,7 @@ final readonly class DeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Role $role): JsonResponse
+    public function __invoke(Role $role): JsonResponse|ProblemResponse
     {
         if ($this->deleteRole->handle($role)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
