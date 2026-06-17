@@ -77,6 +77,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 status: Response::HTTP_UNAUTHORIZED,
                 detail: 'You must be authenticated to access this resource.',
                 type: $errorTypeBaseUrl.'/unauthenticated',
+                instance: $request->path(),
             );
         });
 
@@ -86,6 +87,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'The request signature is invalid or has expired.',
                 type: $errorTypeBaseUrl.'/invalid-signature',
+                instance: $request->path(),
             );
         });
 
@@ -95,6 +97,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 status: Response::HTTP_FORBIDDEN,
                 detail: 'You are not authorised to perform this action.',
                 type: $errorTypeBaseUrl.'/forbidden',
+                instance: $request->path(),
             );
         });
 
@@ -114,6 +117,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 status: Response::HTTP_TOO_MANY_REQUESTS,
                 detail: 'You have exceeded the request rate limit. Please try again later.',
                 type: $errorTypeBaseUrl.'/rate-limited',
+                instance: $request->path(),
             );
         });
 

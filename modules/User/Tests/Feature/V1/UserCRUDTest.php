@@ -29,7 +29,6 @@ describe('User CRUD Operations V1', function () {
                 'type',
                 'title',
                 'status',
-                'message',
                 'detail',
             ]);
     });

@@ -42,7 +42,7 @@ describe('Forgot Password', function () {
         ]);
 
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
-            ->assertJsonPath('message', __('auth.validation_failed'));
+            ->assertJsonPath('title', __('auth.validation_failed'));
     });
 });
 

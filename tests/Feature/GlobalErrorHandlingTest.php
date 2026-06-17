@@ -17,12 +17,15 @@ test('system handles validation errors consistently', function () {
 
     $response->assertStatus(422)
         ->assertJsonStructure([
+            'type',
+            'title',
             'status',
-            'message',
+            'detail',
+            'instance',
             'errors',
         ])
         ->assertJsonPath('status', 422)
-        ->assertJsonPath('message', 'Validation Failed');
+        ->assertJsonPath('title', 'Validation Failed');
 });
 
 test('system handles unauthenticated access', function () {

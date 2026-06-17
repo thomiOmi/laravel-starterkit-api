@@ -24,7 +24,6 @@ final class ProblemResponse extends JsonResponse
             'type' => $type,
             'title' => $title,
             'status' => $status,
-            'message' => $title, // Compatibility with existing tests
             'detail' => $detail,
         ];
 

@@ -10,7 +10,7 @@ test('it sets the locale based on Accept-Language header to id', function () {
 
     // Should return 401 Unauthenticated but in Indonesian
     $response->assertStatus(401)
-        ->assertJsonPath('message', 'Tidak terautentikasi');
+        ->assertJsonPath('title', 'Tidak terautentikasi');
 });
 
 test('it sets the locale based on Accept-Language header to en', function () {
@@ -19,7 +19,7 @@ test('it sets the locale based on Accept-Language header to en', function () {
 
     // Should return 401 Unauthenticated in English
     $response->assertStatus(401)
-        ->assertJsonPath('message', 'Unauthenticated');
+        ->assertJsonPath('title', 'Unauthenticated');
 });
 
 test('it falls back to default locale if header is missing', function () {
@@ -27,7 +27,7 @@ test('it falls back to default locale if header is missing', function () {
 
     // Default is usually 'en'
     $response->assertStatus(401)
-        ->assertJsonPath('message', 'Unauthenticated');
+        ->assertJsonPath('title', 'Unauthenticated');
 });
 
 test('it falls back to default locale if header is unsupported', function () {
@@ -35,5 +35,5 @@ test('it falls back to default locale if header is unsupported', function () {
         ->getJson('/api/v1/auth/me');
 
     $response->assertStatus(401)
-        ->assertJsonPath('message', 'Unauthenticated');
+        ->assertJsonPath('title', 'Unauthenticated');
 });
