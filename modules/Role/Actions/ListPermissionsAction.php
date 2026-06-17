@@ -16,8 +16,8 @@ final readonly class ListPermissionsAction
     ) {}
 
     /** @return Paginator<int, Permission> */
-    public function handle(PermissionFilter $filter, int $perPage = 20): Paginator
+    public function handle(PermissionFilter $filter, int $pageSize = 20, ?int $page = null): Paginator
     {
-        return $this->repository->paginate($filter, $perPage);
+        return $this->repository->paginate($filter, $pageSize, $page);
     }
 }

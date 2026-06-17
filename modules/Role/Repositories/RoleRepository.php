@@ -14,11 +14,11 @@ final readonly class RoleRepository
     /**
      * @return Paginator<int, Role>
      */
-    public function paginate(RoleFilter $filter, int $perPage = 10): Paginator
+    public function paginate(RoleFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
         return $filter->apply(Role::query())
             ->with(['permissions:id,name'])
-            ->simplePaginate($perPage);
+            ->simplePaginate($pageSize, ['*'], 'page', $page);
     }
 
     public function findById(string $id): ?Role

@@ -28,17 +28,21 @@ final readonly class IndexController
     /**
      * Display a paginated listing of the users.
      */
-    #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
-    #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
+    #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
+    #[QueryParameter(name: 'page[size]', description: 'The number of results that will be returned per page.', type: 'integer', required: false, default: 10, example: 10)]
     #[QueryParameter(name: 'search', description: 'Search keyword to filter users by name or email.', type: 'string', required: false, example: 'john')]
-    #[QueryParameter(name: 'sort', description: 'Sort columns. Prefix with - for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: '-created_at,name')]
-    #[QueryParameter(name: 'filter[role]', description: 'Filter by role name.', type: 'string', required: false, example: 'admin')]
-    #[QueryParameter(name: 'filter[status]', description: 'Filter by email verification status: verified or unverified.', type: 'string', required: false, example: 'verified')]
+    #[QueryParameter(name: 'sort', description: 'Available sorts are `name`, `email`, `created_at`. Prefix with `-` for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: '-created_at,name')]
+    #[QueryParameter(name: 'filter[role]', description: 'The role name to filter users by.', type: 'string', required: false, example: 'admin')]
+    #[QueryParameter(name: 'filter[status]', description: 'The status to filter users by. Possible values: `verified`, `unverified`.', type: 'string', required: false, example: 'verified')]
     #[Endpoint(operationId: 'listUsers', title: 'List Users')]
     #[Response(status: 200, description: 'Paginated list of users', examples: ['status' => 200, 'message' => 'Users retrieved.', 'data' => [['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'roles' => [], 'permissions' => []]]])]
     public function __invoke(Request $request, UserFilter $filter): JsonResponse
     {
-        $users = $this->listUsers->handle($filter, $request->integer('per_page', 10));
+        $users = $this->listUsers->handle(
+            $filter,
+            $request->integer('page.size', 10),
+            $request->integer('page.number', 1),
+        );
 
         $resource = UserResource::collection($users);
         /** @var array<string, mixed> $raw */

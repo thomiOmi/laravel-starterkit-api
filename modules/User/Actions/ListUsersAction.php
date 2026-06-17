@@ -25,11 +25,12 @@ final readonly class ListUsersAction
      * Execute the list users action.
      *
      * @param  UserFilter  $filter  The user filter instance.
-     * @param  int  $perPage  Number of items per page.
+     * @param  int  $pageSize  Number of items per page.
+     * @param  int|null  $page  The page number.
      * @return Paginator<int, User> The paginated users.
      */
-    public function handle(UserFilter $filter, int $perPage = 10): Paginator
+    public function handle(UserFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
-        return $this->repository->paginate($filter, $perPage);
+        return $this->repository->paginate($filter, $pageSize, $page);
     }
 }

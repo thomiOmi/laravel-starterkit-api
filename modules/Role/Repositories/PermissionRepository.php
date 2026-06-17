@@ -14,11 +14,11 @@ final readonly class PermissionRepository
     /**
      * @return Paginator<int, Permission>
      */
-    public function paginate(PermissionFilter $filter, int $perPage = 20): Paginator
+    public function paginate(PermissionFilter $filter, int $pageSize = 20, ?int $page = null): Paginator
     {
         return $filter->apply(Permission::query())
             ->orderBy('name')
-            ->simplePaginate($perPage);
+            ->simplePaginate($pageSize, ['*'], 'page', $page);
     }
 
     public function findById(string $id): ?Permission

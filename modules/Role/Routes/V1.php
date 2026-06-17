@@ -17,7 +17,7 @@ use Modules\Role\Controllers\V1\ShowController as RoleShowController;
 use Modules\Role\Controllers\V1\UpdateController as RoleUpdateController;
 
 // Role routes
-Route::prefix('roles')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->name('roles.')->group(function () {
+Route::prefix('roles')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/', RoleIndexController::class)->middleware('can:role.view')->name('index');
     Route::post('/', RoleCreateController::class)->middleware('can:role.create')->name('create');
 

@@ -28,9 +28,13 @@ class BulkActionRequest extends FormRequest
         }
 
         $routeName = (string) $this->route()?->getName();
-        $action = $this->string('action')->toString();
+        $action = $this->resolveBulkAction($routeName);
 
-        if (str_contains($routeName, '.users.')) {
+        if ($action === null) {
+            return false;
+        }
+
+        if (str_contains($routeName, '.user.')) {
             return match ($action) {
                 'delete' => $user->can('user.delete'),
                 'restore' => $user->can('user.edit'),
@@ -38,7 +42,7 @@ class BulkActionRequest extends FormRequest
             };
         }
 
-        if (str_contains($routeName, '.roles.')) {
+        if (str_contains($routeName, '.role.')) {
             return match ($action) {
                 'delete' => $user->can('role.delete'),
                 'restore' => $user->can('role.edit'),
@@ -47,6 +51,30 @@ class BulkActionRequest extends FormRequest
         }
 
         return false;
+    }
+
+    /**
+     * Resolve the bulk action from the route name or request body.
+     */
+    private function resolveBulkAction(string $routeName): ?string
+    {
+        $segments = explode('.', $routeName);
+
+        $routeAction = null;
+        if (in_array('bulk', $segments, true)) {
+            $index = array_search('bulk', $segments, true);
+            $routeAction = $segments[$index + 1] ?? null;
+        }
+
+        if ($routeAction !== null && $this->has('action')) {
+            $bodyAction = $this->string('action')->toString();
+
+            if ($bodyAction !== $routeAction) {
+                return null;
+            }
+        }
+
+        return $routeAction ?? ($this->string('action')->toString() ?: null);
     }
 
     /**
@@ -59,7 +87,7 @@ class BulkActionRequest extends FormRequest
         return [
             'ids' => ['required', 'array', 'min:1', 'max:50'],
             'ids.*' => ['required', 'string', 'ulid'],
-            'action' => ['required', 'string', 'in:delete,restore'],
+            'action' => ['sometimes', 'string', 'in:delete,restore'],
         ];
     }
 }

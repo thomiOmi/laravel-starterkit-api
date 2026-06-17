@@ -25,11 +25,12 @@ final readonly class ListRolesAction
      * Execute the list roles action.
      *
      * @param  RoleFilter  $filter  The role filter instance.
-     * @param  int  $perPage  Number of items per page.
+     * @param  int  $pageSize  Number of items per page.
+     * @param  int|null  $page  The page number.
      * @return Paginator<int, Role> The paginated roles.
      */
-    public function handle(RoleFilter $filter, int $perPage = 10): Paginator
+    public function handle(RoleFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
-        return $this->repository->paginate($filter, $perPage);
+        return $this->repository->paginate($filter, $pageSize, $page);
     }
 }

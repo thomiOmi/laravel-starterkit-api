@@ -28,15 +28,19 @@ final readonly class IndexController
     /**
      * Display a paginated listing of the roles.
      */
-    #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
-    #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
+    #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
+    #[QueryParameter(name: 'page[size]', description: 'The number of results that will be returned per page.', type: 'integer', required: false, default: 10, example: 10)]
     #[QueryParameter(name: 'search', description: 'Search keyword to filter roles by name or description.', type: 'string', required: false, example: 'admin')]
-    #[QueryParameter(name: 'sort', description: 'Sort columns. Prefix with - for descending order.', type: 'string', required: false, example: '-created_at')]
+    #[QueryParameter(name: 'sort', description: 'Available sorts are `name`, `created_at`. Prefix with `-` for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: '-created_at')]
     #[Endpoint(operationId: 'listRoles', title: 'List Roles')]
     #[Response(status: 200, description: 'Paginated list of roles', examples: ['status' => 200, 'message' => 'Roles retrieved.', 'data' => [['id' => 1, 'name' => 'admin', 'guard_name' => 'web', 'permissions' => []]]])]
     public function __invoke(Request $request, RoleFilter $filter): JsonResponse
     {
-        $roles = $this->listRoles->handle($filter, $request->integer('per_page', 10));
+        $roles = $this->listRoles->handle(
+            $filter,
+            $request->integer('page.size', 10),
+            $request->integer('page.number', 1),
+        );
 
         $resource = RoleResource::collection($roles);
         /** @var array<string, mixed> $raw */
