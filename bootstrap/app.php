@@ -57,7 +57,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(fn ($request) => $request->is('api/*'));
 
-        $errorTypeBaseUrl = config('app.url', 'about:blank');
+        $errorTypeBaseUrl = config('app.url', 'https://example.com/problems');
         assert(is_string($errorTypeBaseUrl));
 
         $exceptions->render(function (ValidationException $e, Request $request) use ($errorTypeBaseUrl): ProblemResponse {

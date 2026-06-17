@@ -32,7 +32,64 @@ final readonly class UpdateController
      * @return JsonResponse The API response containing the updated role.
      */
     #[Endpoint(operationId: 'updateRole', title: 'Update Role')]
-    #[Response(status: 200, description: 'Role updated successfully', examples: ['status' => 200, 'message' => 'Role updated.', 'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => []]])]
+    #[Response(
+        status: 200,
+        description: 'Role updated successfully. Returns the updated role with assigned permissions.',
+        examples: [[
+            'status' => 200,
+            'message' => 'Role updated.',
+            'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]],
+        ]],
+    )]
+    #[Response(
+        status: 401,
+        description: 'Authentication required. The request lacks a valid Bearer token.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Unauthenticated',
+            'status' => 401,
+            'message' => 'Unauthenticated',
+            'detail' => 'You must be authenticated to access this resource.',
+        ]],
+    )]
+    #[Response(
+        status: 403,
+        description: 'Forbidden — the user does not have the required permissions to update roles.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Forbidden',
+            'status' => 403,
+            'message' => 'Forbidden',
+            'detail' => 'You are not authorised to perform this action.',
+        ]],
+    )]
+    #[Response(
+        status: 404,
+        description: 'Role not found with the given ID (handled by route model binding).',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Not Found',
+            'status' => 404,
+            'message' => 'Not Found',
+            'detail' => 'The requested resource does not exist.',
+        ]],
+    )]
+    #[Response(
+        status: 422,
+        description: 'Validation error — the provided data failed validation rules.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Validation Error',
+            'status' => 422,
+            'message' => 'Validation Error',
+            'detail' => 'The given data was invalid.',
+            'errors' => ['name' => ['The name field is required.']],
+        ]],
+    )]
     public function __invoke(RoleRequest $request, Role $role): JsonResponse
     {
         $role = $this->updateRole->handle($role, $request->payload());

@@ -1,5 +1,6 @@
 <?php
 
+use App\Extensions\CleanErrorResponseContentTypeExtension;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 
 return [
@@ -132,5 +133,7 @@ return [
         RestrictedDocsAccess::class,
     ],
 
-    'extensions' => [],
+    'extensions' => [
+        CleanErrorResponseContentTypeExtension::class,
+    ],
 ];

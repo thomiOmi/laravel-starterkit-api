@@ -21,7 +21,46 @@ final readonly class LoginController
     ) {}
 
     #[Endpoint(operationId: 'login', title: 'Login')]
-    #[Response(status: 200, description: 'Login successful', examples: ['status' => 200, 'message' => 'Login successful.', 'data' => ['user' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com'], 'access_token' => '1|abc123token', 'token_type' => 'Bearer']])]
+    #[Response(
+        status: 200,
+        description: 'Authentication successful. Returns the authenticated user profile with a Bearer access token for subsequent API requests.',
+        examples: [[
+            'status' => 200,
+            'message' => 'Login successful.',
+            'data' => [
+                'user' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'avatar' => null, 'roles' => ['admin'], 'permissions' => ['user.view', 'user.create', 'role.view'], 'email_verified_at' => '2026-04-23 15:19:09', 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
+                'access_token' => '1|abc123token',
+                'token_type' => 'Bearer',
+            ],
+        ]],
+    )]
+    #[Response(
+        status: 422,
+        description: 'Validation error — the provided credentials are invalid or missing required fields (email, password). Returns a ProblemResponse with field-level error details.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Validation Error',
+            'status' => 422,
+            'message' => 'Validation Error',
+            'detail' => 'The given data was invalid.',
+            'errors' => [
+                'email' => ['The email field is required.'],
+            ],
+        ]],
+    )]
+    #[Response(
+        status: 429,
+        description: 'Too many login attempts. Rate limited to prevent brute-force attacks. Wait before retrying.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Too Many Requests',
+            'status' => 429,
+            'message' => 'Too Many Requests',
+            'detail' => 'You have exceeded the request rate limit. Please try again later.',
+        ]],
+    )]
     public function __invoke(LoginRequest $request): JsonResponse
     {
         $result = $this->loginAction->handle(

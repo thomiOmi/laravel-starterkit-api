@@ -35,7 +35,42 @@ final readonly class PermissionIndexController
     #[QueryParameter(name: 'sort', description: 'Available sorts are `name`, `guard_name`, `created_at`. Prefix with `-` for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: 'name')]
     #[QueryParameter(name: 'filter[guard]', description: 'The guard name to filter permissions by.', type: 'string', required: false, example: 'web')]
     #[Endpoint(operationId: 'listPermissions', title: 'List Permissions')]
-    #[Response(status: 200, description: 'Paginated list of permissions', examples: ['status' => 200, 'message' => 'Permissions retrieved.', 'data' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]])]
+    #[Response(
+        status: 200,
+        description: 'Paginated list of permissions. Includes `meta` (pagination info) and `links` when applicable.',
+        examples: [[
+            'status' => 200,
+            'message' => 'Permissions retrieved.',
+            'data' => [
+                ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
+                ['id' => 2, 'name' => 'user.create', 'guard_name' => 'web'],
+            ],
+        ]],
+    )]
+    #[Response(
+        status: 401,
+        description: 'Authentication required. The request lacks a valid Bearer token.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Unauthenticated',
+            'status' => 401,
+            'message' => 'Unauthenticated',
+            'detail' => 'You must be authenticated to access this resource.',
+        ]],
+    )]
+    #[Response(
+        status: 403,
+        description: 'Forbidden — the user does not have the required permissions to list permissions.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Forbidden',
+            'status' => 403,
+            'message' => 'Forbidden',
+            'detail' => 'You are not authorised to perform this action.',
+        ]],
+    )]
     public function __invoke(Request $request, PermissionFilter $filter): JsonResponse
     {
         $permissions = $this->listPermissions->handle(

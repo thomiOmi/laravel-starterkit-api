@@ -6,12 +6,12 @@ namespace Modules\User\Controllers\V1;
 
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\Response as ScrambleResponse;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
 /**
@@ -30,18 +30,63 @@ final readonly class CreateController
      * @return JsonResponse The API response containing the new user.
      */
     #[Endpoint(operationId: 'createUser', title: 'Create User')]
-    #[ScrambleResponse(status: 201, description: 'User created successfully', examples: ['status' => 201, 'message' => 'User created.', 'data' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com']])]
+    #[Response(
+        status: 201,
+        description: 'User created successfully. Returns the new user profile.',
+        examples: [[
+            'status' => 201,
+            'message' => 'User created.',
+            'data' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'avatar' => null, 'roles' => [], 'permissions' => [], 'email_verified_at' => null, 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
+        ]],
+    )]
+    #[Response(
+        status: 401,
+        description: 'Authentication required. The request lacks a valid Bearer token.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Unauthenticated',
+            'status' => 401,
+            'message' => 'Unauthenticated',
+            'detail' => 'You must be authenticated to access this resource.',
+        ]],
+    )]
+    #[Response(
+        status: 403,
+        description: 'Forbidden — the user does not have the required permissions to create users.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Forbidden',
+            'status' => 403,
+            'message' => 'Forbidden',
+            'detail' => 'You are not authorised to perform this action.',
+        ]],
+    )]
+    #[Response(
+        status: 422,
+        description: 'Validation error — the provided data failed validation rules.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Validation Error',
+            'status' => 422,
+            'message' => 'Validation Error',
+            'detail' => 'The given data was invalid.',
+            'errors' => ['email' => ['The email has already been taken.'], 'password' => ['The password must be at least 8 characters.']],
+        ]],
+    )]
     public function __invoke(UserRequest $request): JsonResponse
     {
         $user = $this->createUser->handle($request->payload());
 
         return new JsonResponse(
             [
-                'status' => Response::HTTP_CREATED,
+                'status' => SymfonyResponse::HTTP_CREATED,
                 'message' => __('general.created', ['resource' => 'User']),
                 'data' => new UserResource($user),
             ],
-            Response::HTTP_CREATED,
+            SymfonyResponse::HTTP_CREATED,
         );
     }
 }

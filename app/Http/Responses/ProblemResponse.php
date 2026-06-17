@@ -19,7 +19,7 @@ final class ProblemResponse extends JsonResponse
         mixed $errors = null,
         string $instance = '',
     ) {
-        $type = $type ?: 'about:blank';
+        $type = $type ?: 'https://example.com/problems';
         $payload = [
             'type' => $type,
             'title' => $title,
