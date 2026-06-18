@@ -10,7 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\ShowPermissionAction;
-use Modules\Role\Models\Permission;
+use Modules\Role\Repositories\PermissionRepository;
 use Modules\Role\Resources\PermissionResource;
 
 #[Group('Permission Management')]
@@ -20,6 +20,7 @@ use Modules\Role\Resources\PermissionResource;
 final readonly class PermissionShowController
 {
     public function __construct(
+        private PermissionRepository $permissionRepository,
         private ShowPermissionAction $showPermission
     ) {}
 
@@ -70,9 +71,9 @@ final readonly class PermissionShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Permission $permission): SuccessResponse|ProblemResponse
+    public function __invoke(string $id): SuccessResponse|ProblemResponse
     {
-        $permission = $this->showPermission->handle((string) $permission->id);
+        $permission = $this->permissionRepository->findById($id);
 
         if ($permission === null) {
             return new ProblemResponse(
@@ -81,6 +82,8 @@ final readonly class PermissionShowController
                 detail: __('general.not_found', ['resource' => 'Permission']),
             );
         }
+
+        $permission = $this->showPermission->handle($permission->id);
 
         return new SuccessResponse(
             'OK',

@@ -33,18 +33,6 @@ test('models should not be used in controllers')
     ->expect('Modules\*\Models')
     ->not->toBeUsedIn('Modules\*\Controllers')
     ->ignoring([
-        'Modules\User\Controllers\V1\IndexController',
-        'Modules\User\Controllers\V1\ShowController',
-        'Modules\User\Controllers\V1\UpdateController',
-        'Modules\User\Controllers\V1\DeleteController',
-        'Modules\User\Controllers\V1\BulkDeleteController',
-        'Modules\User\Controllers\V1\BulkRestoreController',
-        'Modules\Role\Controllers\V1\IndexController',
-        'Modules\Role\Controllers\V1\ShowController',
-        'Modules\Role\Controllers\V1\UpdateController',
-        'Modules\Role\Controllers\V1\DeleteController',
-        'Modules\Role\Controllers\V1\BulkDeleteRolesController',
-        'Modules\Role\Controllers\V1\BulkRestoreRolesController',
         'Modules\Auth\Controllers\V1\MeController',
         'Modules\Auth\Controllers\V1\LogoutController',
         'Modules\Auth\Controllers\V1\DeleteDeviceController',
@@ -53,9 +41,6 @@ test('models should not be used in controllers')
         'Modules\Auth\Controllers\V1\ResendVerificationController',
         'Modules\Auth\Controllers\V1\ResetPasswordController',
         'Modules\Auth\Controllers\V1\VerifyEmailController',
-        'Modules\Role\Controllers\V1\PermissionDeleteController',
-        'Modules\Role\Controllers\V1\PermissionShowController',
-        'Modules\Role\Controllers\V1\PermissionUpdateController',
     ]);
 
 test('actions should not use request directly')
