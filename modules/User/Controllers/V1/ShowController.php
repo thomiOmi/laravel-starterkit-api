@@ -70,9 +70,9 @@ final readonly class ShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(User $user): SuccessResponse|ProblemResponse
+    public function __invoke(string $user): SuccessResponse|ProblemResponse
     {
-        $user = $this->showUser->handle($user->id);
+        $user = $this->showUser->handle($user);
 
         if (! $user) {
             return new ProblemResponse(
