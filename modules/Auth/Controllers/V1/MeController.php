@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
@@ -71,20 +70,12 @@ final readonly class MeController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Request $request): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request): SuccessResponse
     {
         /** @var User $user */
         $user = $request->user();
 
-        $profile = $this->getAuthenticatedUser->handle($user->id);
-
-        if (! $profile) {
-            return new ProblemResponse(
-                title: 'Not Found',
-                status: 404,
-                detail: __('general.not_found', ['resource' => 'User profile']),
-            );
-        }
+        $profile = $this->getAuthenticatedUser->handle($user);
 
         return new SuccessResponse(
             'OK',

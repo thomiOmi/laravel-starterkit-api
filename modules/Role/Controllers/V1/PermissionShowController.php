@@ -70,9 +70,9 @@ final readonly class PermissionShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Permission $permission): SuccessResponse|ProblemResponse
+    public function __invoke(string $permission): SuccessResponse|ProblemResponse
     {
-        $permission = $this->showPermission->handle((string) $permission->id);
+        $permission = $this->showPermission->handle($permission);
 
         if ($permission === null) {
             return new ProblemResponse(
