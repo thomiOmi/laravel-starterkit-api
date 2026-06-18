@@ -10,7 +10,7 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
-use Modules\Role\Models\Permission;
+use Modules\Role\Repositories\PermissionRepository;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Permission Management')]
@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 final readonly class PermissionDeleteController
 {
     public function __construct(
+        private PermissionRepository $permissionRepository,
         private DeletePermissionAction $deletePermission
     ) {}
 
@@ -55,7 +56,7 @@ final readonly class PermissionDeleteController
     )]
     #[Response(
         status: 404,
-        description: 'Permission not found with the given ID (handled by route model binding).',
+        description: 'Permission not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -64,8 +65,18 @@ final readonly class PermissionDeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Permission $permission): JsonResponse|ProblemResponse
+    public function __invoke(string $id): JsonResponse|ProblemResponse
     {
+        $permission = $this->permissionRepository->findById($id);
+
+        if ($permission === null) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
+
         if ($this->deletePermission->handle($permission)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }

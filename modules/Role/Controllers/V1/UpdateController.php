@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdateRoleAction;
-use Modules\Role\Models\Role;
+use Modules\Role\Repositories\RoleRepository;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
 
@@ -20,6 +21,7 @@ use Modules\Role\Resources\RoleResource;
 final readonly class UpdateController
 {
     public function __construct(
+        private RoleRepository $roleRepository,
         private UpdateRoleAction $updateRole,
     ) {}
 
@@ -27,18 +29,17 @@ final readonly class UpdateController
      * Update the specified role in storage.
      *
      * @param  RoleRequest  $request  The validated role update request.
-     * @param  Role  $role  The role model instance.
-     * @return SuccessResponse The API response containing the updated role.
+     * @param  string  $id  The role ID.
      */
     #[Endpoint(operationId: 'updateRole', title: 'Update Role')]
     #[Response(
         status: 200,
-        description: 'Role updated successfully. Returns the updated role with assigned permissions.',
+        description: 'Role updated successfully. Returns the updated role.',
         examples: [[
             'status' => 200,
             'title' => 'OK',
             'detail' => 'Role updated.',
-            'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]],
+            'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => []],
         ]],
     )]
     #[Response(
@@ -65,7 +66,7 @@ final readonly class UpdateController
     )]
     #[Response(
         status: 404,
-        description: 'Role not found with the given ID (handled by route model binding).',
+        description: 'Role not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -83,11 +84,21 @@ final readonly class UpdateController
             'title' => 'Validation Error',
             'status' => 422,
             'detail' => 'The given data was invalid.',
-            'errors' => ['name' => ['The name field is required.']],
+            'errors' => ['name' => ['The name has already been taken.']],
         ]],
     )]
-    public function __invoke(RoleRequest $request, Role $role): SuccessResponse
+    public function __invoke(RoleRequest $request, string $id): SuccessResponse|ProblemResponse
     {
+        $role = $this->roleRepository->findById($id);
+
+        if ($role === null) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Role']),
+            );
+        }
+
         $role = $this->updateRole->handle($role, $request->payload());
 
         return new SuccessResponse(

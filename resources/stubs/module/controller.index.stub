@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
-use Illuminate\Http\JsonResponse;
+use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
 use Modules\{{Module}}\Actions\List{{pluralModule}}Action;
@@ -26,20 +26,31 @@ final readonly class IndexController
     /**
      * Display a paginated listing of the {{lowerResource}}s.
      */
-    #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
-    #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
+    #[QueryParameter(name: 'page[number]', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
+    #[QueryParameter(name: 'page[size]', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
     #[QueryParameter(name: 'search', description: 'Search keyword to filter {{lowerResource}}s.', type: 'string', required: false, example: 'test')]
-    public function __invoke(Request $request, {{Module}}Filter $filter): JsonResponse
+    public function __invoke(Request $request, {{Module}}Filter $filter): SuccessResponse
     {
-        ${{lowerResource}}s = $this->list{{pluralModule}}->handle($filter, $request->integer('per_page', 10));
+        ${{lowerResource}}s = $this->list{{pluralModule}}->handle(
+            $filter,
+            $request->integer('page.size', 10),
+            $request->integer('page.number', 1)
+        );
 
-        return new JsonResponse(
-            [
-                'status' => Response::HTTP_OK,
-                'message' => __('general.retrieved', ['resource' => '{{Module}}s']),
-                'data' => {{Module}}Resource::collection(${{lowerResource}}s),
-            ],
+        $resource = {{Module}}Resource::collection(${{lowerResource}}s);
+
+        /** @var array<string, mixed> $raw */
+        $raw = $resource->toResponse($request)->getData(true);
+
+        return new SuccessResponse(
+            'OK',
+            __('general.retrieved', ['resource' => '{{Module}}s']),
+            $raw['data'] ?? [],
             Response::HTTP_OK,
+            array_filter([
+                'meta' => $raw['meta'] ?? null,
+                'links' => $raw['links'] ?? null,
+            ], fn ($value) => $value !== null),
         );
     }
 }

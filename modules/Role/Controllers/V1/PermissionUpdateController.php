@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdatePermissionAction;
-use Modules\Role\Models\Permission;
+use Modules\Role\Repositories\PermissionRepository;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
 
@@ -20,6 +21,7 @@ use Modules\Role\Resources\PermissionResource;
 final readonly class PermissionUpdateController
 {
     public function __construct(
+        private PermissionRepository $permissionRepository,
         private UpdatePermissionAction $updatePermission
     ) {}
 
@@ -29,12 +31,12 @@ final readonly class PermissionUpdateController
     #[Endpoint(operationId: 'updatePermission', title: 'Update Permission')]
     #[Response(
         status: 200,
-        description: 'Permission updated successfully. Returns the updated permission record.',
+        description: 'Permission updated successfully.',
         examples: [[
             'status' => 200,
             'title' => 'OK',
             'detail' => 'Permission updated.',
-            'data' => ['id' => 1, 'name' => 'post.create', 'guard_name' => 'web'],
+            'data' => ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
         ]],
     )]
     #[Response(
@@ -61,7 +63,7 @@ final readonly class PermissionUpdateController
     )]
     #[Response(
         status: 404,
-        description: 'Permission not found with the given ID (handled by route model binding).',
+        description: 'Permission not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -79,11 +81,21 @@ final readonly class PermissionUpdateController
             'title' => 'Validation Error',
             'status' => 422,
             'detail' => 'The given data was invalid.',
-            'errors' => ['name' => ['The name field is required.']],
+            'errors' => ['name' => ['The name has already been taken.']],
         ]],
     )]
-    public function __invoke(PermissionRequest $request, Permission $permission): SuccessResponse
+    public function __invoke(PermissionRequest $request, string $id): SuccessResponse|ProblemResponse
     {
+        $permission = $this->permissionRepository->findById($id);
+
+        if ($permission === null) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
+
         $permission = $this->updatePermission->handle($permission, $request->payload());
 
         return new SuccessResponse(

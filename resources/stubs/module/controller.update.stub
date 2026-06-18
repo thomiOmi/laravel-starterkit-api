@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
-use Illuminate\Http\JsonResponse;
+use App\Http\Responses\ProblemResponse;
+use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Update{{Module}}Action;
-use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
 use Modules\{{Module}}\Requests\{{Version}}\Update{{Module}}Request;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,23 +20,31 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class UpdateController
 {
     public function __construct(
+        private {{Module}}Repository ${{lowerResource}}Repository,
         private Update{{Module}}Action $update{{Module}},
     ) {}
 
     /**
      * Update the specified {{lowerResource}} in storage.
      */
-    public function __invoke(Update{{Module}}Request $request, {{Module}} ${{lowerResource}}): JsonResponse
+    public function __invoke(Update{{Module}}Request $request, string $id): SuccessResponse|ProblemResponse
     {
+        ${{lowerResource}} = $this->{{lowerResource}}Repository->findById($id);
+
+        if (! ${{lowerResource}}) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: Response::HTTP_NOT_FOUND,
+                detail: __('general.not_found', ['resource' => '{{Module}}']),
+            );
+        }
+
         ${{lowerResource}} = $this->update{{Module}}->handle(${{lowerResource}}, $request->payload());
 
-        return new JsonResponse(
-            [
-                'status' => Response::HTTP_OK,
-                'message' => __('general.updated', ['resource' => '{{Module}}']),
-                'data' => new {{Module}}Resource(${{lowerResource}}),
-            ],
-            Response::HTTP_OK,
+        return new SuccessResponse(
+            'OK',
+            __('general.updated', ['resource' => '{{Module}}']),
+            new {{Module}}Resource(${{lowerResource}}),
         );
     }
 }

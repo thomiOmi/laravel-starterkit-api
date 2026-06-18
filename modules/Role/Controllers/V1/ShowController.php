@@ -10,7 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\ShowRoleAction;
-use Modules\Role\Models\Role;
+use Modules\Role\Repositories\RoleRepository;
 use Modules\Role\Resources\RoleResource;
 
 #[Group('Role Management')]
@@ -20,6 +20,7 @@ use Modules\Role\Resources\RoleResource;
 final readonly class ShowController
 {
     public function __construct(
+        private RoleRepository $roleRepository,
         private ShowRoleAction $showRole
     ) {}
 
@@ -70,9 +71,9 @@ final readonly class ShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Role $role): SuccessResponse|ProblemResponse
+    public function __invoke(string $id): SuccessResponse|ProblemResponse
     {
-        $role = $this->showRole->handle($role->id);
+        $role = $this->roleRepository->findById($id);
 
         if ($role === null) {
             return new ProblemResponse(
@@ -81,6 +82,8 @@ final readonly class ShowController
                 detail: __('general.not_found', ['resource' => 'Role']),
             );
         }
+
+        $role = $this->showRole->handle($role->id);
 
         return new SuccessResponse(
             'OK',

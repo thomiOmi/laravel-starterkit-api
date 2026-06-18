@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
+use App\Http\Responses\ProblemResponse;
 use Illuminate\Http\JsonResponse;
 use Modules\{{Module}}\Actions\Delete{{Module}}Action;
-use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Repositories\{{Module}}Repository;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -17,32 +18,33 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class DeleteController
 {
     public function __construct(
+        private {{Module}}Repository ${{lowerResource}}Repository,
         private Delete{{Module}}Action $delete{{Module}},
     ) {}
 
     /**
      * Remove the specified {{lowerResource}} from storage.
      */
-    public function __invoke({{Module}} ${{lowerResource}}): JsonResponse
+    public function __invoke(string $id): JsonResponse|ProblemResponse
     {
-        if ($this->delete{{Module}}->handle(${{lowerResource}})) {
-            return new JsonResponse(
-                [
-                    'status' => Response::HTTP_NO_CONTENT,
-                    'message' => __('general.deleted', ['resource' => '{{Module}}']),
-                    'data' => null,
-                ],
-                Response::HTTP_NO_CONTENT,
+        ${{lowerResource}} = $this->{{lowerResource}}Repository->findById($id);
+
+        if (! ${{lowerResource}}) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: Response::HTTP_NOT_FOUND,
+                detail: __('general.not_found', ['resource' => '{{Module}}']),
             );
         }
 
-        return new JsonResponse(
-            [
-                'status' => Response::HTTP_FORBIDDEN,
-                'message' => __('general.delete_error', ['resource' => '{{Module}}']),
-                'data' => null,
-            ],
-            Response::HTTP_FORBIDDEN,
+        if ($this->delete{{Module}}->handle(${{lowerResource}})) {
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        }
+
+        return new ProblemResponse(
+            title: 'Forbidden',
+            status: Response::HTTP_FORBIDDEN,
+            detail: __('general.delete_error', ['resource' => '{{Module}}']),
         );
     }
 }

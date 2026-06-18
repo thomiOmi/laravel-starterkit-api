@@ -10,7 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\User\Actions\ShowUserAction;
-use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Modules\User\Resources\UserResource;
 
 #[Group('User Management')]
@@ -20,6 +20,7 @@ use Modules\User\Resources\UserResource;
 final readonly class ShowController
 {
     public function __construct(
+        private UserRepository $userRepository,
         private ShowUserAction $showUser
     ) {}
 
@@ -70,17 +71,19 @@ final readonly class ShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(User $user): SuccessResponse|ProblemResponse
+    public function __invoke(string $id): SuccessResponse|ProblemResponse
     {
-        $user = $this->showUser->handle($user->id);
+        $user = $this->userRepository->findById($id);
 
-        if (! $user) {
+        if ($user === null) {
             return new ProblemResponse(
                 title: 'Not Found',
                 status: 404,
                 detail: __('general.not_found', ['resource' => 'User']),
             );
         }
+
+        $user = $this->showUser->handle($user->id);
 
         return new SuccessResponse(
             'OK',

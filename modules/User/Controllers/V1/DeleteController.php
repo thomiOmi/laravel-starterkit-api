@@ -10,7 +10,7 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\DeleteUserAction;
-use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
@@ -20,13 +20,14 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 final readonly class DeleteController
 {
     public function __construct(
+        private UserRepository $userRepository,
         private DeleteUserAction $deleteUser,
     ) {}
 
     /**
      * Remove the specified user from storage.
      *
-     * @param  User  $user  The user model instance.
+     * @param  string  $id  The user ID.
      */
     #[Endpoint(operationId: 'deleteUser', title: 'Delete User')]
     #[Response(
@@ -57,7 +58,7 @@ final readonly class DeleteController
     )]
     #[Response(
         status: 404,
-        description: 'User not found with the given ID (handled by route model binding).',
+        description: 'User not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -66,8 +67,18 @@ final readonly class DeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(User $user): JsonResponse|ProblemResponse
+    public function __invoke(string $id): JsonResponse|ProblemResponse
     {
+        $user = $this->userRepository->findById($id);
+
+        if ($user === null) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User']),
+            );
+        }
+
         if ($this->deleteUser->handle($user)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
