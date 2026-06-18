@@ -34,20 +34,19 @@ class BulkActionRequest extends FormRequest
             return false;
         }
 
-        if (str_contains($routeName, '.user.')) {
-            return match ($action) {
-                'delete' => $user->can('user.delete'),
-                'restore' => $user->can('user.edit'),
-                default => false,
-            };
+        $segments = explode('.', $routeName);
+        $module = $segments[2] ?? '';
+
+        if ($module === 'user') {
+            return $action === 'delete'
+                ? $user->can('user.delete')
+                : ($action === 'restore' ? $user->can('user.edit') : false);
         }
 
-        if (str_contains($routeName, '.role.')) {
-            return match ($action) {
-                'delete' => $user->can('role.delete'),
-                'restore' => $user->can('role.edit'),
-                default => false,
-            };
+        if ($module === 'role') {
+            return $action === 'delete'
+                ? $user->can('role.delete')
+                : ($action === 'restore' ? $user->can('role.edit') : false);
         }
 
         return false;
