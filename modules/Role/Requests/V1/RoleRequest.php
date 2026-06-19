@@ -8,6 +8,7 @@ use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
+use Modules\Role\Models\Role;
 use Modules\Role\Payloads\V1\RolePayload;
 
 /**
@@ -43,7 +44,7 @@ final class RoleRequest extends FormRequest
      */
     public function rules(): array
     {
-        $roleId = $this->route('role');
+        $roleId = $this->getRoleId();
 
         return [
             'name' => [
@@ -56,6 +57,16 @@ final class RoleRequest extends FormRequest
             'permissions.*' => ['string', 'exists:permissions,name'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];
+    }
+
+    /**
+     * Get the role ID from the route.
+     */
+    private function getRoleId(): ?string
+    {
+        $role = $this->route('role');
+
+        return $role instanceof Role ? (string) $role->id : (string) $role;
     }
 
     /**
