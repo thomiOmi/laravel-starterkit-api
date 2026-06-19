@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdatePermissionAction;
-use Modules\Role\Models\Permission;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
 
@@ -25,6 +25,10 @@ final readonly class PermissionUpdateController
 
     /**
      * Update the specified permission.
+     *
+     * @param  PermissionRequest  $request  The validated permission update request.
+     * @param  string  $permission  The permission ID.
+     * @return SuccessResponse|ProblemResponse The API response containing the updated permission.
      */
     #[Endpoint(operationId: 'updatePermission', title: 'Update Permission')]
     #[Response(
@@ -82,9 +86,17 @@ final readonly class PermissionUpdateController
             'errors' => ['name' => ['The name field is required.']],
         ]],
     )]
-    public function __invoke(PermissionRequest $request, Permission $permission): SuccessResponse
+    public function __invoke(PermissionRequest $request, string $permission): SuccessResponse|ProblemResponse
     {
         $permission = $this->updatePermission->handle($permission, $request->payload());
+
+        if (! $permission) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
 
         return new SuccessResponse(
             'OK',

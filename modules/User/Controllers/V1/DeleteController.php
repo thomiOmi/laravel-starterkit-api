@@ -12,7 +12,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\DeleteUserAction;
-use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
@@ -23,12 +23,13 @@ final readonly class DeleteController
 {
     public function __construct(
         private DeleteUserAction $deleteUser,
+        private UserRepository $userRepository,
     ) {}
 
     /**
      * Remove the specified user from storage.
      *
-     * @param  User  $user  The user model instance.
+     * @param  string  $user  The user ID.
      */
     #[Endpoint(operationId: 'deleteUser', title: 'Delete User')]
     #[Response(
@@ -68,7 +69,7 @@ final readonly class DeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(User $user): JsonResponse|ProblemResponse
+    public function __invoke(string $user): JsonResponse|ProblemResponse
     {
         /** @var Authenticatable&Model $currentUser */
         $currentUser = auth()->user();
@@ -81,7 +82,17 @@ final readonly class DeleteController
             );
         }
 
-        if ($this->deleteUser->handle($user)) {
+        $userModel = $this->userRepository->findById($user);
+
+        if (! $userModel) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User']),
+            );
+        }
+
+        if ($this->deleteUser->handle($userModel)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 

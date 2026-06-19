@@ -12,7 +12,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeleteRoleAction;
-use Modules\Role\Models\Role;
+use Modules\Role\Repositories\RoleRepository;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Role Management')]
@@ -23,12 +23,13 @@ final readonly class DeleteController
 {
     public function __construct(
         private DeleteRoleAction $deleteRole,
+        private RoleRepository $roleRepository,
     ) {}
 
     /**
      * Remove the specified role from storage.
      *
-     * @param  Role  $role  The role model instance.
+     * @param  string  $role  The role ID.
      */
     #[Endpoint(operationId: 'deleteRole', title: 'Delete Role')]
     #[Response(
@@ -68,7 +69,7 @@ final readonly class DeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Role $role): JsonResponse|ProblemResponse
+    public function __invoke(string $role): JsonResponse|ProblemResponse
     {
         /** @var Authenticatable&Model $user */
         $user = auth()->user();
@@ -81,7 +82,17 @@ final readonly class DeleteController
             );
         }
 
-        if ($this->deleteRole->handle($role)) {
+        $roleModel = $this->roleRepository->findById($role);
+
+        if (! $roleModel) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Role']),
+            );
+        }
+
+        if ($this->deleteRole->handle($roleModel)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 
