@@ -17,6 +17,9 @@ final readonly class SocialRedirectController
         private SocialRedirectAction $socialRedirect
     ) {}
 
+    /**
+     * @return SuccessResponse<array{url: string}>
+     */
     #[Endpoint(operationId: 'socialRedirect', title: 'Social Login Redirect')]
     #[Response(
         status: 200,

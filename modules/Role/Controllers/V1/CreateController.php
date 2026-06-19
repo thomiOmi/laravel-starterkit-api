@@ -26,7 +26,7 @@ final readonly class CreateController
      * Store a newly created role in storage.
      *
      * @param  RoleRequest  $request  The validated role creation request.
-     * @return SuccessResponse The API response containing the new role.
+     * @return SuccessResponse<RoleResource>
      */
     #[Endpoint(operationId: 'createRole', title: 'Create Role')]
     #[Response(

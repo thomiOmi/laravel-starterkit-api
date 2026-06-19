@@ -23,6 +23,8 @@ final readonly class BulkRestoreController
 
     /**
      * Perform bulk restore on users.
+     *
+     * @return SuccessResponse<array{count: int}>
      */
     #[Endpoint(operationId: 'bulkRestoreUsers', title: 'Bulk Restore Users')]
     #[Response(

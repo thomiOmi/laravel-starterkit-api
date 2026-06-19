@@ -19,6 +19,9 @@ final readonly class LoginController
         private LoginAction $loginAction
     ) {}
 
+    /**
+     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     */
     #[Endpoint(operationId: 'login', title: 'Login')]
     #[Response(
         status: 200,

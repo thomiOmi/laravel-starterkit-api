@@ -18,6 +18,9 @@ final readonly class ResetPasswordController
         private ResetPasswordAction $resetPasswordAction
     ) {}
 
+    /**
+     * @return SuccessResponse<null>
+     */
     #[Endpoint(operationId: 'resetPassword', title: 'Reset Password')]
     #[Response(
         status: 200,

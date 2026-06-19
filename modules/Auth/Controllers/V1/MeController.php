@@ -25,6 +25,8 @@ final readonly class MeController
 
     /**
      * Get the authenticated user profile.
+     *
+     * @return SuccessResponse<UserResource>
      */
     #[Endpoint(operationId: 'me', title: 'Get Authenticated User')]
     #[Response(

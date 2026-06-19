@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\Role\Actions\ListRolesAction;
 use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Resources\RoleResource;
@@ -26,6 +27,8 @@ final readonly class IndexController
 
     /**
      * Display a paginated listing of the roles.
+     *
+     * @return SuccessResponse<AnonymousResourceCollection>
      */
     #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'page[size]', description: 'The number of results that will be returned per page.', type: 'integer', required: false, default: 10, example: 10)]
@@ -42,6 +45,21 @@ final readonly class IndexController
             'data' => [
                 ['id' => 1, 'name' => 'admin', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]],
                 ['id' => 2, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => []],
+            ],
+            'links' => [
+                'first' => 'http://localhost/api/v1/roles?page=1',
+                'last' => 'http://localhost/api/v1/roles?page=3',
+                'prev' => null,
+                'next' => 'http://localhost/api/v1/roles?page=2',
+            ],
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 3,
+                'path' => 'http://localhost/api/v1/roles',
+                'per_page' => 10,
+                'to' => 10,
+                'total' => 25,
             ],
         ]],
     )]
@@ -75,19 +93,11 @@ final readonly class IndexController
             $request->integer('page.number', 1),
         );
 
-        $resource = RoleResource::collection($roles);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
             'OK',
             __('general.retrieved', ['resource' => 'Roles']),
-            $raw['data'] ?? [],
+            RoleResource::collection($roles),
             200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
         );
     }
 }

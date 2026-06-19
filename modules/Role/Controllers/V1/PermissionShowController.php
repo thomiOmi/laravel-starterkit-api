@@ -25,6 +25,8 @@ final readonly class PermissionShowController
 
     /**
      * Display the specified permission.
+     *
+     * @return SuccessResponse<PermissionResource>|ProblemResponse
      */
     #[Endpoint(operationId: 'showPermission', title: 'Show Permission')]
     #[Response(

@@ -28,7 +28,7 @@ final readonly class UpdateController
      *
      * @param  RoleRequest  $request  The validated role update request.
      * @param  Role  $role  The role model instance.
-     * @return SuccessResponse The API response containing the updated role.
+     * @return SuccessResponse<RoleResource>
      */
     #[Endpoint(operationId: 'updateRole', title: 'Update Role')]
     #[Response(

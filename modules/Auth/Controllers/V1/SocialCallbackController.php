@@ -19,6 +19,9 @@ final readonly class SocialCallbackController
         private SocialCallbackAction $socialCallback
     ) {}
 
+    /**
+     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     */
     #[Endpoint(operationId: 'socialCallback', title: 'Social Login Callback')]
     #[Response(
         status: 200,

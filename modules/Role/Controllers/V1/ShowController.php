@@ -25,6 +25,8 @@ final readonly class ShowController
 
     /**
      * Display the specified role.
+     *
+     * @return SuccessResponse<RoleResource>|ProblemResponse
      */
     #[Endpoint(operationId: 'showRole', title: 'Show Role')]
     #[Response(

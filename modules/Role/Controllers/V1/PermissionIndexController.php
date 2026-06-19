@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\Role\Actions\ListPermissionsAction;
 use Modules\Role\Filters\PermissionFilter;
 use Modules\Role\Resources\PermissionResource;
@@ -26,6 +27,8 @@ final readonly class PermissionIndexController
 
     /**
      * Display a paginated listing of permissions.
+     *
+     * @return SuccessResponse<AnonymousResourceCollection>
      */
     #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
@@ -44,6 +47,21 @@ final readonly class PermissionIndexController
             'data' => [
                 ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
                 ['id' => 2, 'name' => 'user.create', 'guard_name' => 'web'],
+            ],
+            'links' => [
+                'first' => 'http://localhost/api/v1/permissions?page=1',
+                'last' => 'http://localhost/api/v1/permissions?page=2',
+                'prev' => null,
+                'next' => 'http://localhost/api/v1/permissions?page=2',
+            ],
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 2,
+                'path' => 'http://localhost/api/v1/permissions',
+                'per_page' => 20,
+                'to' => 20,
+                'total' => 35,
             ],
         ]],
     )]
@@ -77,19 +95,11 @@ final readonly class PermissionIndexController
             $request->integer('page.number', 1),
         );
 
-        $resource = PermissionResource::collection($permissions);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
             'OK',
             __('general.retrieved', ['resource' => 'Permissions']),
-            $raw['data'] ?? [],
+            PermissionResource::collection($permissions),
             200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
         );
     }
 }

@@ -28,7 +28,7 @@ final readonly class UpdateController
      *
      * @param  UserRequest  $request  The validated user update request.
      * @param  User  $user  The user model instance.
-     * @return SuccessResponse The API response containing the updated user.
+     * @return SuccessResponse<UserResource>
      */
     #[Endpoint(operationId: 'updateUser', title: 'Update User')]
     #[Response(

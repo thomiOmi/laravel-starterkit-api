@@ -25,6 +25,8 @@ final readonly class ShowController
 
     /**
      * Display the specified user.
+     *
+     * @return SuccessResponse<UserResource>|ProblemResponse
      */
     #[Endpoint(operationId: 'showUser', title: 'Show User')]
     #[Response(

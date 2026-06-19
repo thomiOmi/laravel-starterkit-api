@@ -23,6 +23,8 @@ final readonly class BulkRestoreRolesController
 
     /**
      * Perform bulk restore on roles.
+     *
+     * @return SuccessResponse<array{count: int}>
      */
     #[Endpoint(operationId: 'bulkRestoreRoles', title: 'Bulk Restore Roles')]
     #[Response(

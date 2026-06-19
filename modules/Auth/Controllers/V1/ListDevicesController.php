@@ -23,6 +23,9 @@ final readonly class ListDevicesController
         private ListDevicesAction $listDevices
     ) {}
 
+    /**
+     * @return SuccessResponse<mixed>
+     */
     #[Endpoint(operationId: 'listDevices', title: 'List Devices')]
     #[Response(
         status: 200,

@@ -23,6 +23,8 @@ final readonly class BulkDeleteRolesController
 
     /**
      * Perform bulk delete on roles.
+     *
+     * @return SuccessResponse<array{count: int}>
      */
     #[Endpoint(operationId: 'bulkDeleteRoles', title: 'Bulk Delete Roles')]
     #[Response(

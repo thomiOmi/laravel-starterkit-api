@@ -26,7 +26,7 @@ final readonly class CreateController
      * Store a newly created user in storage.
      *
      * @param  UserRequest  $request  The validated user creation request.
-     * @return SuccessResponse The API response containing the new user.
+     * @return SuccessResponse<UserResource>
      */
     #[Endpoint(operationId: 'createUser', title: 'Create User')]
     #[Response(

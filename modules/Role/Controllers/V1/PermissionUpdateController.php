@@ -25,6 +25,8 @@ final readonly class PermissionUpdateController
 
     /**
      * Update the specified permission.
+     *
+     * @return SuccessResponse<PermissionResource>
      */
     #[Endpoint(operationId: 'updatePermission', title: 'Update Permission')]
     #[Response(

@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\User\Actions\ListUsersAction;
 use Modules\User\Filters\UserFilter;
 use Modules\User\Resources\UserResource;
@@ -26,6 +27,8 @@ final readonly class IndexController
 
     /**
      * Display a paginated listing of the users.
+     *
+     * @return SuccessResponse<AnonymousResourceCollection>
      */
     #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'page[size]', description: 'The number of results that will be returned per page.', type: 'integer', required: false, default: 10, example: 10)]
@@ -36,14 +39,51 @@ final readonly class IndexController
     #[Endpoint(operationId: 'listUsers', title: 'List Users')]
     #[Response(
         status: 200,
-        description: 'Paginated list of users. Includes `meta` (pagination info) and `links` when applicable.',
+        description: 'Successful response containing the paginated users collection.',
         examples: [[
             'status' => 200,
             'title' => 'OK',
-            'detail' => 'Users retrieved.',
+            'detail' => 'Users retrieved successfully.',
             'data' => [
-                ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'roles' => ['admin'], 'permissions' => ['user.view']],
-                ['id' => '02efgh', 'name' => 'Jane Smith', 'email' => 'jane@example.com', 'roles' => ['user'], 'permissions' => []],
+                [
+                    'id' => '01abcd',
+                    'name' => 'John Doe',
+                    'email' => 'john@example.com',
+                    'avatar' => null,
+                    'roles' => ['admin'],
+                    'permissions' => ['user.view', 'user.create'],
+                    'email_verified_at' => '2026-06-19 08:24:36',
+                    'created_at' => '2026-06-19 08:24:36',
+                    'updated_at' => '2026-06-19 08:24:36',
+                    'deleted_at' => null,
+                ],
+                [
+                    'id' => '02efgh',
+                    'name' => 'Jane Smith',
+                    'email' => 'jane@example.com',
+                    'avatar' => null,
+                    'roles' => ['user'],
+                    'permissions' => [],
+                    'email_verified_at' => null,
+                    'created_at' => '2026-06-19 08:24:36',
+                    'updated_at' => '2026-06-19 08:24:36',
+                    'deleted_at' => null,
+                ],
+            ],
+            'links' => [
+                'first' => 'http://localhost/api/v1/users?page=1',
+                'last' => 'http://localhost/api/v1/users?page=5',
+                'prev' => null,
+                'next' => 'http://localhost/api/v1/users?page=2',
+            ],
+            'meta' => [
+                'current_page' => 1,
+                'from' => 1,
+                'last_page' => 5,
+                'path' => 'http://localhost/api/v1/users',
+                'per_page' => 10,
+                'to' => 10,
+                'total' => 50,
             ],
         ]],
     )]
@@ -52,10 +92,11 @@ final readonly class IndexController
         description: 'Authentication required. The request lacks a valid Bearer token.',
         mediaType: 'application/problem+json',
         examples: [[
-            'type' => 'https://example.com/problems',
+            'type' => 'about:blank',
             'title' => 'Unauthenticated',
             'status' => 401,
             'detail' => 'You must be authenticated to access this resource.',
+            'instance' => 'https://example.com',
         ]],
     )]
     #[Response(
@@ -63,10 +104,11 @@ final readonly class IndexController
         description: 'Forbidden — the user does not have the required permissions to list users.',
         mediaType: 'application/problem+json',
         examples: [[
-            'type' => 'https://example.com/problems',
+            'type' => 'about:blank',
             'title' => 'Forbidden',
             'status' => 403,
             'detail' => 'You are not authorised to perform this action.',
+            'instance' => 'https://example.com',
         ]],
     )]
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse
@@ -77,19 +119,11 @@ final readonly class IndexController
             $request->integer('page.number', 1),
         );
 
-        $resource = UserResource::collection($users);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'Users']),
-            $raw['data'] ?? [],
-            200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'Users']),
+            data: UserResource::collection($users),
+            status: 200
         );
     }
 }

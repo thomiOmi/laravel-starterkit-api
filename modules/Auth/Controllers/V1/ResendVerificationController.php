@@ -22,6 +22,9 @@ final readonly class ResendVerificationController
         private ResendVerificationAction $resendVerificationAction
     ) {}
 
+    /**
+     * @return SuccessResponse<null>
+     */
     #[Endpoint(operationId: 'resendVerification', title: 'Resend Verification Email')]
     #[Response(
         status: 200,

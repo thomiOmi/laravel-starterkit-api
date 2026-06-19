@@ -20,6 +20,9 @@ final readonly class RegisterController
         private RegisterAction $registerAction
     ) {}
 
+    /**
+     * @return SuccessResponse<UserResource>
+     */
     #[Endpoint(operationId: 'register', title: 'Register')]
     #[Response(
         status: 201,

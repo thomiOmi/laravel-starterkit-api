@@ -23,6 +23,8 @@ final readonly class BulkDeleteController
 
     /**
      * Perform bulk delete on users.
+     *
+     * @return SuccessResponse<array{count: int}>
      */
     #[Endpoint(operationId: 'bulkDeleteUsers', title: 'Bulk Delete Users')]
     #[Response(

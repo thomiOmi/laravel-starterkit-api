@@ -18,6 +18,9 @@ final readonly class ForgotPasswordController
         private ForgotPasswordAction $forgotPasswordAction
     ) {}
 
+    /**
+     * @return SuccessResponse<null>
+     */
     #[Endpoint(operationId: 'forgotPassword', title: 'Forgot Password')]
     #[Response(
         status: 200,

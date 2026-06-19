@@ -24,6 +24,8 @@ final readonly class PermissionCreateController
 
     /**
      * Store a newly created permission.
+     *
+     * @return SuccessResponse<PermissionResource>
      */
     #[Endpoint(operationId: 'createPermission', title: 'Create Permission')]
     #[Response(

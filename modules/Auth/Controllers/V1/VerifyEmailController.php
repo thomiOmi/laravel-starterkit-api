@@ -19,6 +19,9 @@ final readonly class VerifyEmailController
         private VerifyEmailAction $verifyEmail,
     ) {}
 
+    /**
+     * @return SuccessResponse<array{verified: bool}>|ProblemResponse
+     */
     #[Endpoint(operationId: 'verifyEmail', title: 'Verify Email')]
     #[Response(
         status: 200,

@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 
+/**
+ * @template TData
+ */
 class SuccessResponse extends JsonResponse
 {
     /**
+     * @param  TData  $data
      * @param  array<string, mixed>  $extra
      */
     public function __construct(
@@ -27,40 +32,63 @@ class SuccessResponse extends JsonResponse
             'detail' => $detail,
         ];
 
-        if ($data instanceof LengthAwarePaginator || $data instanceof Paginator || $data instanceof CursorPaginator) {
-            $paginated = $data->toArray();
+        if ($data instanceof ResourceCollection) {
+            $payload['data'] = $data->jsonSerialize();
 
-            $payload['data'] = $paginated['data'];
+            $inner = $data->resource;
+        } elseif ($data instanceof LengthAwarePaginator || $data instanceof Paginator || $data instanceof CursorPaginator) {
+            $payload['data'] = $data->toArray()['data'];
+            $inner = $data;
+        } else {
+            $payload['data'] = $data;
+            $inner = null;
+        }
+
+        if ($inner instanceof LengthAwarePaginator) {
+            $payload['links'] = array_filter([
+                'first' => $inner->url(1),
+                'last' => $inner->url($inner->lastPage()),
+                'prev' => $inner->previousPageUrl(),
+                'next' => $inner->nextPageUrl(),
+            ]);
+
+            $payload['meta'] = array_filter([
+                'current_page' => $inner->currentPage(),
+                'from' => $inner->firstItem(),
+                'last_page' => $inner->lastPage(),
+                'path' => $inner->path(),
+                'per_page' => $inner->perPage(),
+                'to' => $inner->lastItem(),
+                'total' => $inner->total(),
+            ], fn (mixed $value): bool => ! is_null($value));
+        } elseif ($inner instanceof Paginator) {
+            $payload['links'] = array_filter([
+                'first' => $inner->url(1),
+                'prev' => $inner->previousPageUrl(),
+                'next' => $inner->nextPageUrl(),
+            ]);
+
+            $payload['meta'] = array_filter([
+                'current_page' => $inner->currentPage(),
+                'from' => $inner->firstItem(),
+                'path' => $inner->path(),
+                'per_page' => $inner->perPage(),
+                'to' => $inner->lastItem(),
+            ], fn (mixed $value): bool => ! is_null($value));
+        } elseif ($inner instanceof CursorPaginator) {
+            $paginated = $inner->toArray();
 
             $payload['links'] = array_filter([
-                'first' => $paginated['first_page_url'] ?? null,
-                'last' => $paginated['last_page_url'] ?? null,
                 'prev' => $paginated['prev_page_url'] ?? null,
                 'next' => $paginated['next_page_url'] ?? null,
             ]);
 
-            $meta = [
-                'per_page' => $paginated['per_page'] ?? null,
-                'from' => $paginated['from'] ?? null,
-                'to' => $paginated['to'] ?? null,
-            ];
-
-            if ($data instanceof LengthAwarePaginator) {
-                $meta['current_page'] = $paginated['current_page'] ?? null;
-                $meta['last_page'] = $paginated['last_page'] ?? null;
-                $meta['total'] = $paginated['total'] ?? null;
-            } elseif (! $data instanceof CursorPaginator) {
-                $meta['current_page'] = $paginated['current_page'] ?? null;
-            }
-
-            if ($data instanceof CursorPaginator) {
-                $meta['next_cursor'] = $paginated['next_cursor'] ?? null;
-                $meta['prev_cursor'] = $paginated['prev_cursor'] ?? null;
-            }
-
-            $payload['meta'] = array_filter($meta, fn (mixed $value): bool => ! is_null($value));
-        } else {
-            $payload['data'] = $data;
+            $payload['meta'] = array_filter([
+                'path' => $inner->path(),
+                'per_page' => $inner->perPage(),
+                'next_cursor' => $paginated['next_cursor'] ?? null,
+                'prev_cursor' => $paginated['prev_cursor'] ?? null,
+            ], fn (mixed $value): bool => ! is_null($value));
         }
 
         if (! empty($extra)) {
