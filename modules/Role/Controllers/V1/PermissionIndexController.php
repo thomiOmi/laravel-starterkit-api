@@ -14,7 +14,6 @@ use Illuminate\Http\Request;
 use Modules\Role\Actions\ListPermissionsAction;
 use Modules\Role\Filters\PermissionFilter;
 use Modules\Role\Resources\PermissionResource;
-use Modules\User\Models\User;
 
 #[Group('Permission Management')]
 /**
@@ -73,7 +72,7 @@ final readonly class PermissionIndexController
     )]
     public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var User $user */
+        /** @var \Illuminate\Contracts\Auth\Authenticatable&\Illuminate\Database\Eloquent\Model $user */
         $user = auth()->user();
 
         if (! $user->can('permission.view')) {

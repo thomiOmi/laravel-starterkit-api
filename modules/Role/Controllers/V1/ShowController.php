@@ -10,9 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\ShowRoleAction;
-use Modules\Role\Models\Role;
 use Modules\Role\Resources\RoleResource;
-use Modules\User\Models\User;
 
 #[Group('Role Management')]
 /**
@@ -73,7 +71,7 @@ final readonly class ShowController
     )]
     public function __invoke(string $role): SuccessResponse|ProblemResponse
     {
-        /** @var User $user */
+        /** @var \Illuminate\Contracts\Auth\Authenticatable&\Illuminate\Database\Eloquent\Model $user */
         $user = auth()->user();
 
         if (! $user->can('role.view')) {

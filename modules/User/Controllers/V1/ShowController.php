@@ -10,7 +10,6 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\User\Actions\ShowUserAction;
-use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
 #[Group('User Management')]
@@ -72,7 +71,7 @@ final readonly class ShowController
     )]
     public function __invoke(string $user): SuccessResponse|ProblemResponse
     {
-        /** @var User $currentUser */
+        /** @var \Illuminate\Contracts\Auth\Authenticatable&\Illuminate\Database\Eloquent\Model $currentUser */
         $currentUser = auth()->user();
 
         if ($currentUser->id !== $user && ! $currentUser->can('user.view')) {

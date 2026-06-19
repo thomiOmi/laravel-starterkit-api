@@ -9,7 +9,6 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\User\Actions\UpdateUserAction;
-use Modules\User\Models\User;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
 
@@ -27,7 +26,7 @@ final readonly class UpdateController
      * Update the specified user in storage.
      *
      * @param  UserRequest  $request  The validated user update request.
-     * @param  User  $user  The user model instance.
+     * @param  \Modules\User\Models\User  $user  The user model instance.
      * @return SuccessResponse The API response containing the updated user.
      */
     #[Endpoint(operationId: 'updateUser', title: 'Update User')]
@@ -86,7 +85,7 @@ final readonly class UpdateController
             'errors' => ['email' => ['The email has already been taken.']],
         ]],
     )]
-    public function __invoke(UserRequest $request, User $user): SuccessResponse
+    public function __invoke(UserRequest $request, \Modules\User\Models\User $user): SuccessResponse
     {
         $user = $this->updateUser->handle($user, $request->payload());
 

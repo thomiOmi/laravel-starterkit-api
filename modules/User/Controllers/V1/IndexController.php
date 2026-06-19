@@ -13,7 +13,6 @@ use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Modules\User\Actions\ListUsersAction;
 use Modules\User\Filters\UserFilter;
-use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
 #[Group('User Management')]
@@ -73,7 +72,7 @@ final readonly class IndexController
     )]
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var User $currentUser */
+        /** @var \Illuminate\Contracts\Auth\Authenticatable&\Illuminate\Database\Eloquent\Model $currentUser */
         $currentUser = auth()->user();
 
         if (! $currentUser->can('user.view')) {

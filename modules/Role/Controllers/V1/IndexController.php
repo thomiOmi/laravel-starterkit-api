@@ -14,7 +14,6 @@ use Illuminate\Http\Request;
 use Modules\Role\Actions\ListRolesAction;
 use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Resources\RoleResource;
-use Modules\User\Models\User;
 
 #[Group('Role Management')]
 /**
@@ -71,7 +70,7 @@ final readonly class IndexController
     )]
     public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var User $user */
+        /** @var \Illuminate\Contracts\Auth\Authenticatable&\Illuminate\Database\Eloquent\Model $user */
         $user = auth()->user();
 
         if (! $user->can('role.view')) {

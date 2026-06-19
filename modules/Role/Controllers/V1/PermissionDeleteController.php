@@ -10,8 +10,6 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
-use Modules\Role\Models\Permission;
-use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Permission Management')]
@@ -65,9 +63,9 @@ final readonly class PermissionDeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Permission $permission): JsonResponse|ProblemResponse
+    public function __invoke(\Modules\Role\Models\Permission $permission): JsonResponse|ProblemResponse
     {
-        /** @var User $user */
+        /** @var \Illuminate\Contracts\Auth\Authenticatable&\Illuminate\Database\Eloquent\Model $user */
         $user = auth()->user();
 
         if (! $user->can('permission.delete')) {
