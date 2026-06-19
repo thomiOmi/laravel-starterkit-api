@@ -28,6 +28,8 @@ final readonly class IndexController
     /**
      * Display a paginated listing of the users.
      *
+     * @response SuccessResponse<AnonymousResourceCollection<UserResource>>
+     *
      * @return SuccessResponse<AnonymousResourceCollection>
      */
     #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
@@ -37,56 +39,6 @@ final readonly class IndexController
     #[QueryParameter(name: 'filter[role]', description: 'The role name to filter users by.', type: 'string', required: false, example: 'admin')]
     #[QueryParameter(name: 'filter[status]', description: 'The status to filter users by. Possible values: `verified`, `unverified`.', type: 'string', required: false, example: 'verified')]
     #[Endpoint(operationId: 'listUsers', title: 'List Users')]
-    #[Response(
-        status: 200,
-        description: 'Successful response containing the paginated users collection.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Users retrieved successfully.',
-            'data' => [
-                [
-                    'id' => '01abcd',
-                    'name' => 'John Doe',
-                    'email' => 'john@example.com',
-                    'avatar' => null,
-                    'roles' => ['admin'],
-                    'permissions' => ['user.view', 'user.create'],
-                    'email_verified_at' => '2026-06-19 08:24:36',
-                    'created_at' => '2026-06-19 08:24:36',
-                    'updated_at' => '2026-06-19 08:24:36',
-                    'deleted_at' => null,
-                ],
-                [
-                    'id' => '02efgh',
-                    'name' => 'Jane Smith',
-                    'email' => 'jane@example.com',
-                    'avatar' => null,
-                    'roles' => ['user'],
-                    'permissions' => [],
-                    'email_verified_at' => null,
-                    'created_at' => '2026-06-19 08:24:36',
-                    'updated_at' => '2026-06-19 08:24:36',
-                    'deleted_at' => null,
-                ],
-            ],
-            'links' => [
-                'first' => 'http://localhost/api/v1/users?page=1',
-                'last' => 'http://localhost/api/v1/users?page=5',
-                'prev' => null,
-                'next' => 'http://localhost/api/v1/users?page=2',
-            ],
-            'meta' => [
-                'current_page' => 1,
-                'from' => 1,
-                'last_page' => 5,
-                'path' => 'http://localhost/api/v1/users',
-                'per_page' => 10,
-                'to' => 10,
-                'total' => 50,
-            ],
-        ]],
-    )]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
