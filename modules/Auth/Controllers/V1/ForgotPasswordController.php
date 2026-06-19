@@ -8,13 +8,16 @@ use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
+use Modules\Auth\Actions\ForgotPasswordAction;
+use Modules\Auth\Requests\V1\ForgotPasswordRequest;
 
 #[Group('Auth')]
 final readonly class ForgotPasswordController
 {
+    public function __construct(
+        private ForgotPasswordAction $forgotPasswordAction
+    ) {}
+
     #[Endpoint(operationId: 'forgotPassword', title: 'Forgot Password')]
     #[Response(
         status: 200,
@@ -51,23 +54,13 @@ final readonly class ForgotPasswordController
             'detail' => 'You have exceeded the request rate limit. Please try again later.',
         ]],
     )]
-    public function __invoke(Request $request): SuccessResponse
+    public function __invoke(ForgotPasswordRequest $request): SuccessResponse
     {
-        $request->validate(['email' => ['required', 'email']]);
+        $this->forgotPasswordAction->handle($request->string('email')->toString());
 
-        $status = Password::sendResetLink(
-            $request->only('email'),
+        return new SuccessResponse(
+            'OK',
+            __('passwords.sent'),
         );
-
-        if ($status === Password::RESET_LINK_SENT) {
-            return new SuccessResponse(
-                'OK',
-                __($status),
-            );
-        }
-
-        throw ValidationException::withMessages([
-            'email' => [__($status)],
-        ]);
     }
 }
