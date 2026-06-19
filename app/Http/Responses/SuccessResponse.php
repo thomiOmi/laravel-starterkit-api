@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
@@ -27,7 +28,20 @@ class SuccessResponse extends JsonResponse
             'detail' => $detail,
         ];
 
-        if ($data instanceof LengthAwarePaginator || $data instanceof Paginator || $data instanceof CursorPaginator) {
+        if ($data instanceof JsonResource) {
+            /** @var array<string, mixed> $raw */
+            $raw = $data->toResponse(app('request'))->getData(true);
+
+            $payload['data'] = $raw['data'] ?? [];
+
+            if (isset($raw['links']) && ! empty($raw['links'])) {
+                $payload['links'] = $raw['links'];
+            }
+
+            if (isset($raw['meta']) && ! empty($raw['meta'])) {
+                $payload['meta'] = $raw['meta'];
+            }
+        } elseif ($data instanceof LengthAwarePaginator || $data instanceof Paginator || $data instanceof CursorPaginator) {
             $paginated = $data->toArray();
 
             $payload['data'] = $paginated['data'];

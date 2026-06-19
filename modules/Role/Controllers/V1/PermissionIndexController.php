@@ -77,19 +77,10 @@ final readonly class PermissionIndexController
             $request->integer('page.number', 1),
         );
 
-        $resource = PermissionResource::collection($permissions);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
             'OK',
             __('general.retrieved', ['resource' => 'Permissions']),
-            $raw['data'] ?? [],
-            200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
+            PermissionResource::collection($permissions),
         );
     }
 }
