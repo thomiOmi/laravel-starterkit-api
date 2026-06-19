@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Modules\Role\Actions\ListPermissionsAction;
 use Modules\Role\Filters\PermissionFilter;
 use Modules\Role\Resources\PermissionResource;
+use Modules\User\Models\User;
 
 #[Group('Permission Management')]
 /**
@@ -69,8 +70,19 @@ final readonly class PermissionIndexController
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
-    public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse
+    public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if (! $user->can('permission.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $permissions = $this->listPermissions->handle(
             $filter,
             $request->integer('page.size', 20),

@@ -68,6 +68,17 @@ final readonly class DeleteController
     )]
     public function __invoke(User $user): JsonResponse|ProblemResponse
     {
+        /** @var User $currentUser */
+        $currentUser = auth()->user();
+
+        if (! $currentUser->can('user.delete')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         if ($this->deleteUser->handle($user)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }

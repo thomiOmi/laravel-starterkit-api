@@ -72,6 +72,17 @@ final readonly class ShowController
     )]
     public function __invoke(string $user): SuccessResponse|ProblemResponse
     {
+        /** @var User $currentUser */
+        $currentUser = auth()->user();
+
+        if ($currentUser->id !== $user && ! $currentUser->can('user.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $user = $this->showUser->handle($user);
 
         if (! $user) {

@@ -9,6 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
+use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
 
 /**
@@ -22,6 +23,34 @@ use Modules\User\Payloads\V1\UserPayload;
 #[BodyParameter(name: 'password_confirmation', description: 'Password confirmation, must match password.', example: 'password123')]
 final class UserRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        $user = $this->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        if ($this->isMethod('POST')) {
+            return $user->can('user.create');
+        }
+
+        return $user->can('user.edit') || $user->id === $this->getUserId();
+    }
+
+    /**
+     * Get the user ID from the route.
+     */
+    private function getUserId(): ?string
+    {
+        $user = $this->route('user');
+
+        return $user instanceof User ? $user->id : (string) $user;
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

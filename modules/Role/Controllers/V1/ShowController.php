@@ -12,6 +12,7 @@ use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\ShowRoleAction;
 use Modules\Role\Models\Role;
 use Modules\Role\Resources\RoleResource;
+use Modules\User\Models\User;
 
 #[Group('Role Management')]
 /**
@@ -72,6 +73,17 @@ final readonly class ShowController
     )]
     public function __invoke(string $role): SuccessResponse|ProblemResponse
     {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if (! $user->can('role.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $role = $this->showRole->handle($role);
 
         if ($role === null) {

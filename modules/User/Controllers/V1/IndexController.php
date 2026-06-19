@@ -12,6 +12,7 @@ use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Modules\User\Actions\ListUsersAction;
 use Modules\User\Filters\UserFilter;
+use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
 #[Group('User Management')]
@@ -69,8 +70,19 @@ final readonly class IndexController
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
-    public function __invoke(Request $request, UserFilter $filter): SuccessResponse
+    public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
+        /** @var User $currentUser */
+        $currentUser = auth()->user();
+
+        if (! $currentUser->can('user.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $users = $this->listUsers->handle(
             $filter,
             $request->integer('page.size', 10),

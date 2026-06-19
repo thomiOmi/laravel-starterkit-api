@@ -12,6 +12,7 @@ use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\ShowPermissionAction;
 use Modules\Role\Models\Permission;
 use Modules\Role\Resources\PermissionResource;
+use Modules\User\Models\User;
 
 #[Group('Permission Management')]
 /**
@@ -72,6 +73,17 @@ final readonly class PermissionShowController
     )]
     public function __invoke(string $permission): SuccessResponse|ProblemResponse
     {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if (! $user->can('permission.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $permission = $this->showPermission->handle($permission);
 
         if ($permission === null) {
