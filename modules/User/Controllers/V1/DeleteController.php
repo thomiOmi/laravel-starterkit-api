@@ -8,8 +8,11 @@ use App\Http\Responses\ProblemResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\DeleteUserAction;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
@@ -25,7 +28,7 @@ final readonly class DeleteController
     /**
      * Remove the specified user from storage.
      *
-     * @param  \Modules\User\Models\User  $user  The user model instance.
+     * @param  User  $user  The user model instance.
      */
     #[Endpoint(operationId: 'deleteUser', title: 'Delete User')]
     #[Response(
@@ -65,9 +68,9 @@ final readonly class DeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(\Modules\User\Models\User $user): JsonResponse|ProblemResponse
+    public function __invoke(User $user): JsonResponse|ProblemResponse
     {
-        /** @var \Illuminate\Contracts\Auth\Authenticatable&\Illuminate\Database\Eloquent\Model $currentUser */
+        /** @var Authenticatable&Model $currentUser */
         $currentUser = auth()->user();
 
         if (! $currentUser->can('user.delete')) {
