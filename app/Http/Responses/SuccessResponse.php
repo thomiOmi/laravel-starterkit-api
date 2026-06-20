@@ -29,7 +29,7 @@ class SuccessResponse extends JsonResponse
             'detail' => $detail,
         ];
 
-        if ($data instanceof JsonResource || $data instanceof AnonymousResourceCollection) {
+        if ($data instanceof JsonResource) {
             /** @var array<string, mixed> $transformed */
             $transformed = $data->toResponse(app('request'))->getData(true);
 
