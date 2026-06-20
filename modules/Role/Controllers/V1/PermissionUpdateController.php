@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdatePermissionAction;
-use Modules\Role\Models\Permission;
+use Modules\Role\Repositories\PermissionRepository;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
 
@@ -20,7 +21,8 @@ use Modules\Role\Resources\PermissionResource;
 final readonly class PermissionUpdateController
 {
     public function __construct(
-        private UpdatePermissionAction $updatePermission
+        private UpdatePermissionAction $updatePermission,
+        private PermissionRepository $permissionRepository,
     ) {}
 
     /**
@@ -61,7 +63,7 @@ final readonly class PermissionUpdateController
     )]
     #[Response(
         status: 404,
-        description: 'Permission not found with the given ID (handled by route model binding).',
+        description: 'Permission not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -82,14 +84,24 @@ final readonly class PermissionUpdateController
             'errors' => ['name' => ['The name field is required.']],
         ]],
     )]
-    public function __invoke(PermissionRequest $request, Permission $permission): SuccessResponse
+    public function __invoke(PermissionRequest $request, string $permission): SuccessResponse|ProblemResponse
     {
-        $permission = $this->updatePermission->handle($permission, $request->payload());
+        $permissionModel = $this->permissionRepository->findById($permission);
+
+        if (! $permissionModel) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
+
+        $permissionModel = $this->updatePermission->handle($permissionModel, $request->payload());
 
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'Permission']),
-            new PermissionResource($permission),
+            new PermissionResource($permissionModel),
         );
     }
 }

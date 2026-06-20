@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\User\Actions\UpdateUserAction;
-use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
 
@@ -21,14 +22,15 @@ final readonly class UpdateController
 {
     public function __construct(
         private UpdateUserAction $updateUser,
+        private UserRepository $userRepository,
     ) {}
 
     /**
      * Update the specified user in storage.
      *
      * @param  UserRequest  $request  The validated user update request.
-     * @param  User  $user  The user model instance.
-     * @return SuccessResponse The API response containing the updated user.
+     * @param  string  $user  The user ID.
+     * @return SuccessResponse|ProblemResponse The API response containing the updated user.
      */
     #[Endpoint(operationId: 'updateUser', title: 'Update User')]
     #[Response(
@@ -65,7 +67,7 @@ final readonly class UpdateController
     )]
     #[Response(
         status: 404,
-        description: 'User not found with the given ID (handled by route model binding).',
+        description: 'User not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -86,8 +88,18 @@ final readonly class UpdateController
             'errors' => ['email' => ['The email has already been taken.']],
         ]],
     )]
-    public function __invoke(UserRequest $request, User $user): SuccessResponse
+    public function __invoke(UserRequest $request, string $user): SuccessResponse|ProblemResponse
     {
+        $user = $this->userRepository->findById($user);
+
+        if (! $user) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User']),
+            );
+        }
+
         $user = $this->updateUser->handle($user, $request->payload());
 
         return new SuccessResponse(
