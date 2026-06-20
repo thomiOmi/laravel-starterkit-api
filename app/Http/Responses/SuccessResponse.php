@@ -30,8 +30,11 @@ class SuccessResponse extends JsonResponse
         ];
 
         if ($data instanceof JsonResource || $data instanceof AnonymousResourceCollection) {
+            $response = $data->toResponse(app('request'));
+            $content = $response->getContent();
+
             /** @var array<string, mixed> $transformed */
-            $transformed = $data->toResponse(app('request'))->getData(true);
+            $transformed = is_string($content) ? json_decode($content, true) : [];
 
             $payload['data'] = $transformed['data'] ?? [];
 

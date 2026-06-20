@@ -16,7 +16,7 @@ final readonly class UserRepository
     public function paginate(UserFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
         return $filter->apply(User::query())
-            ->simplePaginate($pageSize, ['*'], 'page', $page);
+            ->paginate($pageSize, ['*'], 'page', $page);
     }
 
     public function findById(string $id): ?User

@@ -18,7 +18,7 @@ final readonly class PermissionRepository
     {
         return $filter->apply(Permission::query())
             ->orderBy('name')
-            ->simplePaginate($pageSize, ['*'], 'page', $page);
+            ->paginate($pageSize, ['*'], 'page', $page);
     }
 
     public function findById(string $id): ?Permission
