@@ -75,19 +75,10 @@ final readonly class IndexController
             $request->integer('page.number', 1),
         );
 
-        $resource = RoleResource::collection($roles);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
             'OK',
             __('general.retrieved', ['resource' => 'Roles']),
-            $raw['data'] ?? [],
-            200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
+            RoleResource::collection($roles),
         );
     }
 }

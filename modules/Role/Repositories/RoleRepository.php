@@ -17,7 +17,6 @@ final readonly class RoleRepository
     public function paginate(RoleFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
         return $filter->apply(Role::query())
-            ->with(['permissions:id,name'])
             ->simplePaginate($pageSize, ['*'], 'page', $page);
     }
 
