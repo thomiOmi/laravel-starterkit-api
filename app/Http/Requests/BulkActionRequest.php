@@ -70,14 +70,6 @@ class BulkActionRequest extends FormRequest
             return false;
         }
 
-        if (str_contains($routeName, '.permission.')) {
-            return match ($action) {
-                'delete' => $user->can('permission.delete'),
-                'restore' => $user->can('permission.edit'),
-                default => false,
-            };
-        }
-
         return false;
     }
 

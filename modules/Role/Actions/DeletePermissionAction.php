@@ -5,12 +5,22 @@ declare(strict_types=1);
 namespace Modules\Role\Actions;
 
 use Illuminate\Support\Facades\Cache;
-use Modules\Role\Models\Permission;
+use Modules\Role\Repositories\PermissionRepository;
 
 final readonly class DeletePermissionAction
 {
-    public function handle(Permission $permission): bool
+    public function __construct(
+        private PermissionRepository $repository
+    ) {}
+
+    public function handle(string $id): bool
     {
+        $permission = $this->repository->findById($id);
+
+        if (! $permission) {
+            return false;
+        }
+
         Cache::forget("permission_{$permission->id}");
 
         return (bool) $permission->delete();
