@@ -93,6 +93,14 @@ final readonly class PermissionUpdateController
 
         $model = $this->updatePermission->handle($model, $request->payload());
 
+        if (! $permission) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
+
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'Permission']),

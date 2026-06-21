@@ -93,6 +93,14 @@ final readonly class UpdateController
 
         $model = $this->updateRole->handle($model, $request->payload());
 
+        if (! $role) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Role']),
+            );
+        }
+
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'Role']),

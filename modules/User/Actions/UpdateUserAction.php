@@ -7,11 +7,22 @@ namespace Modules\User\Actions;
 use Illuminate\Support\Facades\Cache;
 use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
+use Modules\User\Repositories\UserRepository;
 
 final readonly class UpdateUserAction
 {
-    public function handle(User $user, UserPayload $payload): User
+    public function __construct(
+        private UserRepository $repository
+    ) {}
+
+    public function handle(string $id, UserPayload $payload): ?User
     {
+        $user = $this->repository->findById($id);
+
+        if (! $user) {
+            return null;
+        }
+
         $user->update($payload->toArray());
 
         Cache::forget("user_{$user->id}");

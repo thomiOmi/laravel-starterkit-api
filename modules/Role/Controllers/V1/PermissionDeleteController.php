@@ -24,7 +24,7 @@ final readonly class PermissionDeleteController
 {
     public function __construct(
         private DeletePermissionAction $deletePermission,
-        private PermissionRepository $repository,
+        private PermissionRepository $permissionRepository,
     ) {}
 
     /**
@@ -83,9 +83,9 @@ final readonly class PermissionDeleteController
             );
         }
 
-        $model = $this->repository->findById($permission);
+        $permissionModel = $this->permissionRepository->findById($permission);
 
-        if ($model === null) {
+        if (! $permissionModel) {
             return new ProblemResponse(
                 title: 'Not Found',
                 status: 404,
@@ -93,7 +93,7 @@ final readonly class PermissionDeleteController
             );
         }
 
-        if ($this->deletePermission->handle($model)) {
+        if ($this->deletePermission->handle($permissionModel)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 

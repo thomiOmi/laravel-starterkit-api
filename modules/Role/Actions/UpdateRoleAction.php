@@ -7,11 +7,24 @@ namespace Modules\Role\Actions;
 use Illuminate\Support\Facades\Cache;
 use Modules\Role\Models\Role;
 use Modules\Role\Payloads\V1\RolePayload;
+use Modules\Role\Repositories\RoleRepository;
 
 final readonly class UpdateRoleAction
 {
-    public function handle(Role $role, RolePayload $payload): Role
+    public function __construct(
+        private RoleRepository $repository
+    ) {}
+
+    public function handle(string|Role $role, RolePayload $payload): ?Role
     {
+        if (is_string($role)) {
+            $role = $this->repository->findById($role);
+        }
+
+        if (! $role) {
+            return null;
+        }
+
         $role->update($payload->toArray());
 
         if ($payload->permissions !== []) {

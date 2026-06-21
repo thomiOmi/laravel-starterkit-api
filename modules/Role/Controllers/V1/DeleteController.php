@@ -24,7 +24,7 @@ final readonly class DeleteController
 {
     public function __construct(
         private DeleteRoleAction $deleteRole,
-        private RoleRepository $repository,
+        private RoleRepository $roleRepository,
     ) {}
 
     /**
@@ -83,9 +83,9 @@ final readonly class DeleteController
             );
         }
 
-        $model = $this->repository->findById($role);
+        $roleModel = $this->roleRepository->findById($role);
 
-        if ($model === null) {
+        if (! $roleModel) {
             return new ProblemResponse(
                 title: 'Not Found',
                 status: 404,
@@ -93,7 +93,7 @@ final readonly class DeleteController
             );
         }
 
-        if ($this->deleteRole->handle($model)) {
+        if ($this->deleteRole->handle($roleModel)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 

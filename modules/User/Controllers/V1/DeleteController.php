@@ -24,7 +24,7 @@ final readonly class DeleteController
 {
     public function __construct(
         private DeleteUserAction $deleteUser,
-        private UserRepository $repository,
+        private UserRepository $userRepository,
     ) {}
 
     /**
@@ -83,9 +83,9 @@ final readonly class DeleteController
             );
         }
 
-        $model = $this->repository->findById($user);
+        $userModel = $this->userRepository->findById($user);
 
-        if (! $model) {
+        if (! $userModel) {
             return new ProblemResponse(
                 title: 'Not Found',
                 status: 404,
@@ -93,7 +93,7 @@ final readonly class DeleteController
             );
         }
 
-        if ($this->deleteUser->handle($model)) {
+        if ($this->deleteUser->handle($userModel)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 
