@@ -9,8 +9,9 @@ use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Modules\Role\Actions\ShowPermissionAction;
-use Modules\Role\Models\Permission;
 use Modules\Role\Resources\PermissionResource;
 
 #[Group('Permission Management')]
@@ -27,16 +28,7 @@ final readonly class PermissionShowController
      * Display the specified permission.
      */
     #[Endpoint(operationId: 'showPermission', title: 'Show Permission')]
-    #[Response(
-        status: 200,
-        description: 'Permission details retrieved successfully.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Permission retrieved.',
-            'data' => ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Permission retrieved successfully.', type: 'SuccessResponse<PermissionResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -72,6 +64,17 @@ final readonly class PermissionShowController
     )]
     public function __invoke(string $permission): SuccessResponse|ProblemResponse
     {
+        /** @var Authenticatable&Model $user */
+        $user = auth()->user();
+
+        if (! $user->can('permission.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $permission = $this->showPermission->handle($permission);
 
         if ($permission === null) {

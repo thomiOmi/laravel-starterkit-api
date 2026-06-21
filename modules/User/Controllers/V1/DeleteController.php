@@ -8,6 +8,8 @@ use App\Http\Responses\ProblemResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\DeleteUserAction;
 use Modules\User\Models\User;
@@ -68,6 +70,17 @@ final readonly class DeleteController
     )]
     public function __invoke(User $user): JsonResponse|ProblemResponse
     {
+        /** @var Authenticatable&Model $currentUser */
+        $currentUser = auth()->user();
+
+        if (! $currentUser->can('user.delete')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         if ($this->deleteUser->handle($user)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
