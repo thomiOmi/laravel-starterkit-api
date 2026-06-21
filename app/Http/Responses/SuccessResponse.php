@@ -61,9 +61,9 @@ class SuccessResponse extends JsonResponse
     private function extractPagination(array &$payload, AbstractPaginator|AbstractCursorPaginator $paginator): void
     {
         $links = [
-            'first' => method_exists($paginator, 'url') ? $paginator->url(1) : null,
+            'first' => $paginator instanceof AbstractPaginator ? $paginator->url(1) : $paginator->url(null),
             'last' => $paginator instanceof LengthAwarePaginator ? $paginator->url($paginator->lastPage()) : null,
-            'prev' => method_exists($paginator, 'previousPageUrl') ? $paginator->previousPageUrl() : null,
+            'prev' => $paginator->previousPageUrl(),
             'next' => method_exists($paginator, 'nextPageUrl') ? $paginator->nextPageUrl() : null,
         ];
 
@@ -72,14 +72,8 @@ class SuccessResponse extends JsonResponse
         ];
 
         if ($paginator instanceof AbstractPaginator) {
-            if (method_exists($paginator, 'firstItem')) {
-                $meta['from'] = $paginator->firstItem();
-            }
-
-            if (method_exists($paginator, 'lastItem')) {
-                $meta['to'] = $paginator->lastItem();
-            }
-
+            $meta['from'] = $paginator->firstItem();
+            $meta['to'] = $paginator->lastItem();
             $meta['current_page'] = $paginator->currentPage();
 
             if ($paginator instanceof LengthAwarePaginator) {
