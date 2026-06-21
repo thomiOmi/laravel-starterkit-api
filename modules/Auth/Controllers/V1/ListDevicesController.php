@@ -43,19 +43,10 @@ final readonly class ListDevicesController
 
         $devices = $this->listDevices->handle($user);
 
-        $resource = DeviceResource::collection($devices);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
             'OK',
             __('general.retrieved', ['resource' => 'Devices']),
-            $raw['data'] ?? [],
-            200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
+            DeviceResource::collection($devices),
         );
     }
 }
