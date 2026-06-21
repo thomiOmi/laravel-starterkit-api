@@ -21,12 +21,12 @@ class SetLocaleMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = (string) $request->header('Accept-Language');
-
         /** @var array<int, string> $availableLocales */
         $availableLocales = config('app.available_locales', ['en', 'id']);
 
-        if ($locale !== '' && in_array($locale, $availableLocales, true)) {
+        $locale = $request->getPreferredLanguage($availableLocales);
+
+        if ($locale !== null && in_array($locale, $availableLocales, true)) {
             App::setLocale($locale);
         } else {
             /** @var string $defaultLocale */
