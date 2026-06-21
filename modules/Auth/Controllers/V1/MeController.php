@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetAuthenticatedUserAction;
+use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
 #[Group('Auth')]
@@ -51,8 +52,9 @@ final readonly class MeController
     )]
     public function __invoke(Request $request): SuccessResponse
     {
-
-        $profile = $this->getAuthenticatedUser->handle(auth()->user());
+        /** @var User $user */
+        $user = $request->user();
+        $profile = $this->getAuthenticatedUser->handle($user);
 
         return new SuccessResponse(
             'OK',
