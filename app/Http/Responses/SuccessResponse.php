@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Pagination\AbstractCursorPaginator;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
 
 /**
  * @template TData = mixed
@@ -32,63 +34,19 @@ class SuccessResponse extends JsonResponse
             'detail' => $detail,
         ];
 
-        if ($data instanceof ResourceCollection) {
-            $payload['data'] = $data->jsonSerialize();
+        if ($data instanceof JsonResource) {
+            $payload['data'] = $data->resolve(app()->bound('request') ? app('request') : null);
 
-            $inner = $data->resource;
-        } elseif ($data instanceof LengthAwarePaginator || $data instanceof Paginator || $data instanceof CursorPaginator) {
-            $payload['data'] = $data->toArray()['data'];
-            $inner = $data;
+            $resource = $data->resource;
+
+            if ($resource instanceof AbstractPaginator || $resource instanceof AbstractCursorPaginator) {
+                $this->extractPagination($payload, $resource);
+            }
+        } elseif ($data instanceof AbstractPaginator || $data instanceof AbstractCursorPaginator) {
+            $payload['data'] = $data->items();
+            $this->extractPagination($payload, $data);
         } else {
             $payload['data'] = $data;
-            $inner = null;
-        }
-
-        if ($inner instanceof LengthAwarePaginator) {
-            $payload['links'] = array_filter([
-                'first' => $inner->url(1),
-                'last' => $inner->url($inner->lastPage()),
-                'prev' => $inner->previousPageUrl(),
-                'next' => $inner->nextPageUrl(),
-            ]);
-
-            $payload['meta'] = array_filter([
-                'current_page' => $inner->currentPage(),
-                'from' => $inner->firstItem(),
-                'last_page' => $inner->lastPage(),
-                'path' => $inner->path(),
-                'per_page' => $inner->perPage(),
-                'to' => $inner->lastItem(),
-                'total' => $inner->total(),
-            ], fn (mixed $value): bool => ! is_null($value));
-        } elseif ($inner instanceof Paginator) {
-            $payload['links'] = array_filter([
-                'first' => $inner->url(1),
-                'prev' => $inner->previousPageUrl(),
-                'next' => $inner->nextPageUrl(),
-            ]);
-
-            $payload['meta'] = array_filter([
-                'current_page' => $inner->currentPage(),
-                'from' => $inner->firstItem(),
-                'path' => $inner->path(),
-                'per_page' => $inner->perPage(),
-                'to' => $inner->lastItem(),
-            ], fn (mixed $value): bool => ! is_null($value));
-        } elseif ($inner instanceof CursorPaginator) {
-            $paginated = $inner->toArray();
-
-            $payload['links'] = array_filter([
-                'prev' => $paginated['prev_page_url'] ?? null,
-                'next' => $paginated['next_page_url'] ?? null,
-            ]);
-
-            $payload['meta'] = array_filter([
-                'path' => $inner->path(),
-                'per_page' => $inner->perPage(),
-                'next_cursor' => $paginated['next_cursor'] ?? null,
-                'prev_cursor' => $paginated['prev_cursor'] ?? null,
-            ], fn (mixed $value): bool => ! is_null($value));
         }
 
         if (! empty($extra)) {
@@ -96,5 +54,59 @@ class SuccessResponse extends JsonResponse
         }
 
         parent::__construct($payload, $status);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @param  AbstractPaginator<int, mixed>|AbstractCursorPaginator<int, mixed>  $paginator
+     */
+    private function extractPagination(array &$payload, AbstractPaginator|AbstractCursorPaginator $paginator): void
+    {
+        $payload['links'] = array_filter([
+            'first' => method_exists($paginator, 'url') ? $paginator->url(1) : null,
+            'last' => $paginator instanceof LengthAwarePaginator ? $paginator->url($paginator->lastPage()) : null,
+            'prev' => method_exists($paginator, 'previousPageUrl') ? $paginator->previousPageUrl() : null,
+            'next' => method_exists($paginator, 'nextPageUrl') ? $paginator->nextPageUrl() : null,
+        ], fn (mixed $value): bool => ! is_null($value));
+
+        $meta = [
+            'per_page' => $paginator->perPage(),
+        ];
+
+        if ($paginator instanceof AbstractPaginator) {
+            $links['first'] = $paginator->url(1);
+            $links['prev'] = $paginator->previousPageUrl();
+
+            if (method_exists($paginator, 'nextPageUrl')) {
+                $links['next'] = $paginator->nextPageUrl();
+            }
+
+            if (method_exists($paginator, 'firstItem')) {
+                $meta['from'] = $paginator->firstItem();
+            }
+
+            if (method_exists($paginator, 'lastItem')) {
+                $meta['to'] = $paginator->lastItem();
+            }
+
+            $meta['current_page'] = $paginator->currentPage();
+
+            if ($paginator instanceof LengthAwarePaginator) {
+                $links['last'] = $paginator->url($paginator->lastPage());
+                $meta['last_page'] = $paginator->lastPage();
+                $meta['total'] = $paginator->total();
+            }
+        }
+
+        if ($paginator instanceof AbstractCursorPaginator) {
+            $links['prev'] = $paginator->previousPageUrl();
+            $links['next'] = $paginator->nextPageUrl();
+
+            $meta['next_cursor'] = $paginator->nextCursor()?->encode();
+            $meta['prev_cursor'] = $paginator->previousCursor()?->encode();
+        }
+
+        $payload['links'] = array_filter($links, fn (mixed $value): bool => ! is_null($value));
+        $payload['meta'] = array_filter($meta, fn (mixed $value): bool => ! is_null($value));
     }
 }
