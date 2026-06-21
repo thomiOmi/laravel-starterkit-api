@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Auth\Actions;
+
+use Modules\User\Models\User;
+
+final readonly class ResendVerificationAction
+{
+    public function handle(User $user): string
+    {
+        if ($user->hasVerifiedEmail()) {
+            return __('auth.verified');
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return __('auth.verification_link_sent');
+    }
+}

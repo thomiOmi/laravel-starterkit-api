@@ -20,20 +20,7 @@ final readonly class LoginController
     ) {}
 
     #[Endpoint(operationId: 'login', title: 'Login')]
-    #[Response(
-        status: 200,
-        description: 'Authentication successful. Returns the authenticated user profile with a Bearer access token for subsequent API requests.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Login successful.',
-            'data' => [
-                'user' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'avatar' => null, 'roles' => ['admin'], 'permissions' => ['user.view', 'user.create', 'role.view'], 'email_verified_at' => '2026-04-23 15:19:09', 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
-                'access_token' => '1|abc123token',
-                'token_type' => 'Bearer',
-            ],
-        ]],
-    )]
+    #[Response(status: 200, type: 'SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>')]
     #[Response(
         status: 422,
         description: 'Validation error — the provided credentials are invalid or missing required fields (email, password). Returns a ProblemResponse with field-level error details.',
