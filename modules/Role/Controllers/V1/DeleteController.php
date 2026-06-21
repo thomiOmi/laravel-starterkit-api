@@ -12,7 +12,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeleteRoleAction;
-use Modules\Role\Models\Role;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Role Management')]
@@ -28,7 +27,7 @@ final readonly class DeleteController
     /**
      * Remove the specified role from storage.
      *
-     * @param  Role  $role  The role model instance.
+     * @param  string  $role  The role ID.
      */
     #[Endpoint(operationId: 'deleteRole', title: 'Delete Role')]
     #[Response(
@@ -59,7 +58,7 @@ final readonly class DeleteController
     )]
     #[Response(
         status: 404,
-        description: 'Role not found with the given ID (handled by route model binding).',
+        description: 'Role not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -68,7 +67,7 @@ final readonly class DeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Role $role): JsonResponse|ProblemResponse
+    public function __invoke(string $role): JsonResponse|ProblemResponse
     {
         /** @var Authenticatable&Model $user */
         $user = auth()->user();

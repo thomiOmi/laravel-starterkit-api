@@ -12,7 +12,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\DeleteUserAction;
-use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
@@ -28,7 +27,7 @@ final readonly class DeleteController
     /**
      * Remove the specified user from storage.
      *
-     * @param  User  $user  The user model instance.
+     * @param  string  $user  The user ID.
      */
     #[Endpoint(operationId: 'deleteUser', title: 'Delete User')]
     #[Response(
@@ -59,7 +58,7 @@ final readonly class DeleteController
     )]
     #[Response(
         status: 404,
-        description: 'User not found with the given ID (handled by route model binding).',
+        description: 'User not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -68,7 +67,7 @@ final readonly class DeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(User $user): JsonResponse|ProblemResponse
+    public function __invoke(string $user): JsonResponse|ProblemResponse
     {
         /** @var Authenticatable&Model $currentUser */
         $currentUser = auth()->user();

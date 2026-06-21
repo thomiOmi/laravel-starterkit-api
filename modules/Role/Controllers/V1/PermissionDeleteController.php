@@ -12,7 +12,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
-use Modules\Role\Models\Permission;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Permission Management')]
@@ -27,6 +26,8 @@ final readonly class PermissionDeleteController
 
     /**
      * Remove the specified permission.
+     *
+     * @param  string  $permission  The permission ID.
      */
     #[Endpoint(operationId: 'deletePermission', title: 'Delete Permission')]
     #[Response(
@@ -57,7 +58,7 @@ final readonly class PermissionDeleteController
     )]
     #[Response(
         status: 404,
-        description: 'Permission not found with the given ID (handled by route model binding).',
+        description: 'Permission not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -66,7 +67,7 @@ final readonly class PermissionDeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Permission $permission): JsonResponse|ProblemResponse
+    public function __invoke(string $permission): JsonResponse|ProblemResponse
     {
         /** @var Authenticatable&Model $user */
         $user = auth()->user();

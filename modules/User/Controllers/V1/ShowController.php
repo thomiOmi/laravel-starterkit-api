@@ -67,7 +67,7 @@ final readonly class ShowController
         /** @var Authenticatable&Model $currentUser */
         $currentUser = auth()->user();
 
-        if ($currentUser->id !== $user && ! $currentUser->can('user.view')) {
+        if ($currentUser->getKey() !== $user && ! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: 403,
