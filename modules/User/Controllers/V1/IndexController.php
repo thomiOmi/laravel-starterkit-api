@@ -34,28 +34,17 @@ final readonly class IndexController
     #[QueryParameter(name: 'filter[role]', description: 'The role name to filter users by.', type: 'string', required: false, example: 'admin')]
     #[QueryParameter(name: 'filter[status]', description: 'The status to filter users by. Possible values: `verified`, `unverified`.', type: 'string', required: false, example: 'verified')]
     #[Endpoint(operationId: 'listUsers', title: 'List Users')]
-    #[Response(
-        status: 200,
-        description: 'Paginated list of users. Includes `meta` (pagination info) and `links` when applicable.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Users retrieved.',
-            'data' => [
-                ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'roles' => ['admin'], 'permissions' => ['user.view']],
-                ['id' => '02efgh', 'name' => 'Jane Smith', 'email' => 'jane@example.com', 'roles' => ['user'], 'permissions' => []],
-            ],
-        ]],
-    )]
+    #[Response(status: 200, type: 'SuccessResponse<\Illuminate\Http\Resources\Json\AnonymousResourceCollection<UserResource>>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
         mediaType: 'application/problem+json',
         examples: [[
-            'type' => 'https://example.com/problems',
+            'type' => 'about:blank',
             'title' => 'Unauthenticated',
             'status' => 401,
             'detail' => 'You must be authenticated to access this resource.',
+            'instance' => 'https://example.com',
         ]],
     )]
     #[Response(
@@ -63,10 +52,11 @@ final readonly class IndexController
         description: 'Forbidden — the user does not have the required permissions to list users.',
         mediaType: 'application/problem+json',
         examples: [[
-            'type' => 'https://example.com/problems',
+            'type' => 'about:blank',
             'title' => 'Forbidden',
             'status' => 403,
             'detail' => 'You are not authorised to perform this action.',
+            'instance' => 'https://example.com',
         ]],
     )]
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse
@@ -78,9 +68,10 @@ final readonly class IndexController
         );
 
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'Users']),
-            UserResource::collection($users),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'Users']),
+            data: UserResource::collection($users),
+            status: 200
         );
     }
 }

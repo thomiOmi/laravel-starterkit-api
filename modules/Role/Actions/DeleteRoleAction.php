@@ -11,7 +11,7 @@ final readonly class DeleteRoleAction
 {
     public function handle(Role $role): bool
     {
-        if ($role->name === 'super-admin') {
+        if ($role->name === Role::SUPER_ADMIN) {
             return false;
         }
 

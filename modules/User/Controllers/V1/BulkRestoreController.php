@@ -25,16 +25,7 @@ final readonly class BulkRestoreController
      * Perform bulk restore on users.
      */
     #[Endpoint(operationId: 'bulkRestoreUsers', title: 'Bulk Restore Users')]
-    #[Response(
-        status: 200,
-        description: 'Users restored successfully. Returns the count of restored records.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Users restored.',
-            'data' => ['count' => 5],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Bulk restore completed. Returns the count of restored users.', type: 'SuccessResponse<array{count: int}>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

@@ -27,16 +27,7 @@ final readonly class PermissionShowController
      * Display the specified permission.
      */
     #[Endpoint(operationId: 'showPermission', title: 'Show Permission')]
-    #[Response(
-        status: 200,
-        description: 'Permission details retrieved successfully.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Permission retrieved.',
-            'data' => ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Permission retrieved successfully.', type: 'SuccessResponse<PermissionResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
