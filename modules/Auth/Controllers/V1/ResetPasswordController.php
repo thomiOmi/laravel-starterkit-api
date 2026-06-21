@@ -8,29 +8,18 @@ use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rules\Password as PasswordRule;
-use Illuminate\Validation\ValidationException;
-use Modules\User\Models\User;
+use Modules\Auth\Actions\ResetPasswordAction;
+use Modules\Auth\Requests\V1\ResetPasswordRequest;
 
 #[Group('Auth')]
 final readonly class ResetPasswordController
 {
+    public function __construct(
+        private ResetPasswordAction $resetPasswordAction
+    ) {}
+
     #[Endpoint(operationId: 'resetPassword', title: 'Reset Password')]
-    #[Response(
-        status: 200,
-        description: 'Password has been reset successfully. The user can now log in with the new password.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Password has been reset.',
-            'data' => null,
-        ]],
-    )]
+    #[Response(status: 200, description: 'Password reset successfully.', type: 'SuccessResponse<null>')]
     #[Response(
         status: 422,
         description: 'Validation error — invalid or expired token, mismatched email, or weak password. Includes field-level error details.',
@@ -57,42 +46,18 @@ final readonly class ResetPasswordController
             'detail' => 'You have exceeded the request rate limit. Please try again later.',
         ]],
     )]
-    public function __invoke(Request $request): SuccessResponse
+    public function __invoke(ResetPasswordRequest $request): SuccessResponse
     {
-        $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
-            'password' => ['required', PasswordRule::defaults(), 'confirmed'],
+        $this->resetPasswordAction->handle([
+            'token' => $request->string('token')->toString(),
+            'email' => $request->string('email')->toString(),
+            'password' => $request->string('password')->toString(),
+            'password_confirmation' => $request->string('password_confirmation')->toString(),
         ]);
 
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password): void {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->setRememberToken(Str::random(60));
-
-                $user->save();
-
-                event(new PasswordReset($user));
-            },
+        return new SuccessResponse(
+            'OK',
+            __('passwords.reset'),
         );
-
-        if (! is_string($status)) {
-            throw ValidationException::withMessages([
-                'email' => [__('passwords.reset')],
-            ]);
-        }
-
-        if ($status === Password::PASSWORD_RESET) {
-            return new SuccessResponse(
-                'OK',
-                __($status),
-            );
-        }
-
-        throw ValidationException::withMessages([
-            'email' => [__($status)],
-        ]);
     }
 }

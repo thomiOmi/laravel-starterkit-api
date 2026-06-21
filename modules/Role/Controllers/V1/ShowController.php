@@ -9,10 +9,10 @@ use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Modules\Role\Actions\ShowRoleAction;
-use Modules\Role\Models\Role;
 use Modules\Role\Resources\RoleResource;
-use Modules\User\Models\User;
 
 #[Group('Role Management')]
 /**
@@ -28,16 +28,7 @@ final readonly class ShowController
      * Display the specified role.
      */
     #[Endpoint(operationId: 'showRole', title: 'Show Role')]
-    #[Response(
-        status: 200,
-        description: 'Role details retrieved successfully. Includes assigned permissions.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Role retrieved.',
-            'data' => ['id' => 1, 'name' => 'admin', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'], ['id' => 2, 'name' => 'user.create', 'guard_name' => 'web']]],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Role retrieved successfully.', type: 'SuccessResponse<RoleResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -73,7 +64,7 @@ final readonly class ShowController
     )]
     public function __invoke(string $role): SuccessResponse|ProblemResponse
     {
-        /** @var User $user */
+        /** @var Authenticatable&Model $user */
         $user = auth()->user();
 
         if (! $user->can('role.view')) {

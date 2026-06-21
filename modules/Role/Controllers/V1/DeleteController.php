@@ -8,6 +8,8 @@ use App\Http\Responses\ProblemResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeleteRoleAction;
 use Modules\Role\Repositories\RoleRepository;
@@ -70,7 +72,7 @@ final readonly class DeleteController
     )]
     public function __invoke(string $role): JsonResponse|ProblemResponse
     {
-        /** @var User $user */
+        /** @var Authenticatable&Model $user */
         $user = auth()->user();
 
         if (! $user->can('role.delete')) {

@@ -9,6 +9,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
+use Modules\Auth\Actions\ResendVerificationAction;
 use Modules\User\Models\User;
 
 #[Group('Auth')]
@@ -17,17 +18,12 @@ use Modules\User\Models\User;
  */
 final readonly class ResendVerificationController
 {
+    public function __construct(
+        private ResendVerificationAction $resendVerificationAction
+    ) {}
+
     #[Endpoint(operationId: 'resendVerification', title: 'Resend Verification Email')]
-    #[Response(
-        status: 200,
-        description: 'Verification email sent (or user already verified). Returns a message indicating the result.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Verification link sent.',
-            'data' => null,
-        ]],
-    )]
+    #[Response(status: 200, description: 'Verification email resent successfully.', type: 'SuccessResponse<null>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -44,18 +40,8 @@ final readonly class ResendVerificationController
         /** @var User $user */
         $user = $request->user();
 
-        if ($user->hasVerifiedEmail()) {
-            return new SuccessResponse(
-                'OK',
-                __('auth.verified'),
-            );
-        }
+        $message = $this->resendVerificationAction->handle($user);
 
-        $user->sendEmailVerificationNotification();
-
-        return new SuccessResponse(
-            'OK',
-            __('auth.verification_link_sent'),
-        );
+        return new SuccessResponse('OK', $message);
     }
 }

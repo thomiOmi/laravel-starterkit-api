@@ -20,7 +20,7 @@ final readonly class BulkDeleteRolesAction
 
         /** @var int $count */
         $count = Role::whereIn('id', $ids)
-            ->where('name', '!=', 'super-admin')
+            ->where('name', '!=', Role::SUPER_ADMIN)
             ->delete();
 
         return $count;

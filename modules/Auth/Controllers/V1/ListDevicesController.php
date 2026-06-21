@@ -24,19 +24,7 @@ final readonly class ListDevicesController
     ) {}
 
     #[Endpoint(operationId: 'listDevices', title: 'List Devices')]
-    #[Response(
-        status: 200,
-        description: 'List of authenticated devices (personal access tokens) for the current user. Each device includes a boolean `is_current` flag to identify the device used for this request.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Devices retrieved.',
-            'data' => [
-                ['id' => 1, 'name' => 'test-device', 'last_used_at' => '2026-06-16 20:00:00', 'is_current' => true],
-                ['id' => 2, 'name' => 'second-device', 'last_used_at' => '2026-06-15 10:00:00', 'is_current' => false],
-            ],
-        ]],
-    )]
+    #[Response(status: 200, description: 'List of authenticated devices retrieved successfully.', type: 'SuccessResponse<array<DeviceResource>>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -55,19 +43,10 @@ final readonly class ListDevicesController
 
         $devices = $this->listDevices->handle($user);
 
-        $resource = DeviceResource::collection($devices);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
             'OK',
             __('general.retrieved', ['resource' => 'Devices']),
-            $raw['data'] ?? [],
-            200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
+            DeviceResource::collection($devices),
         );
     }
 }

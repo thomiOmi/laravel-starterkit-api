@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\ListPermissionsAction;
 use Modules\Role\Filters\PermissionFilter;
 use Modules\Role\Resources\PermissionResource;
-use Modules\User\Models\User;
 
 #[Group('Permission Management')]
 /**
@@ -35,19 +37,7 @@ final readonly class PermissionIndexController
     #[QueryParameter(name: 'sort', description: 'Available sorts are `name`, `guard_name`, `created_at`. Prefix with `-` for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: 'name')]
     #[QueryParameter(name: 'filter[guard]', description: 'The guard name to filter permissions by.', type: 'string', required: false, example: 'web')]
     #[Endpoint(operationId: 'listPermissions', title: 'List Permissions')]
-    #[Response(
-        status: 200,
-        description: 'Paginated list of permissions. Includes `meta` (pagination info) and `links` when applicable.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Permissions retrieved.',
-            'data' => [
-                ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
-                ['id' => 2, 'name' => 'user.create', 'guard_name' => 'web'],
-            ],
-        ]],
-    )]
+    #[Response(status: 200, type: 'SuccessResponse<\Illuminate\Http\Resources\Json\AnonymousResourceCollection<PermissionResource>>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -72,7 +62,7 @@ final readonly class PermissionIndexController
     )]
     public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var User $user */
+        /** @var Authenticatable&Model $user */
         $user = auth()->user();
 
         if (! $user->can('permission.view')) {
@@ -89,19 +79,11 @@ final readonly class PermissionIndexController
             $request->integer('page.number', 1),
         );
 
-        $resource = PermissionResource::collection($permissions);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
             'OK',
             __('general.retrieved', ['resource' => 'Permissions']),
-            $raw['data'] ?? [],
+            PermissionResource::collection($permissions),
             200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
         );
     }
 }
