@@ -32,8 +32,12 @@ class SuccessResponse extends JsonResponse
             'detail' => $detail,
         ];
 
-        if ($data instanceof ResourceCollection) {
-            $payload['data'] = $data->jsonSerialize();
+        if ($data instanceof JsonResource || $data instanceof AnonymousResourceCollection) {
+            $response = $data->toResponse(app('request'));
+            $content = $response->getContent();
+
+            /** @var array<string, mixed> $transformed */
+            $transformed = is_string($content) ? json_decode($content, true) : [];
 
             $inner = $data->resource;
         } elseif ($data instanceof LengthAwarePaginator || $data instanceof Paginator || $data instanceof CursorPaginator) {
