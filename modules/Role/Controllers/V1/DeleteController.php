@@ -9,6 +9,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Modules\Role\Actions\DeleteRoleAction;
 use Modules\Role\Models\Role;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -66,8 +67,16 @@ final readonly class DeleteController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Role $role): JsonResponse|ProblemResponse
+    public function __invoke(Request $request, Role $role): JsonResponse|ProblemResponse
     {
+        if (! $request->user()?->can('role.delete')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('auth.forbidden'),
+            );
+        }
+
         if ($this->deleteRole->handle($role)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }

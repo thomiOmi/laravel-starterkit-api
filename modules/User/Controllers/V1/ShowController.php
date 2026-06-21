@@ -9,6 +9,7 @@ use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Http\Request;
 use Modules\User\Actions\ShowUserAction;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
@@ -70,7 +71,7 @@ final readonly class ShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(string $user): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
     {
         $user = $this->showUser->handle($user);
 
@@ -79,6 +80,14 @@ final readonly class ShowController
                 title: 'Not Found',
                 status: 404,
                 detail: __('general.not_found', ['resource' => 'User']),
+            );
+        }
+
+        if (! $request->user()?->can('user.view') && $request->user()?->id !== $user->id) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('auth.forbidden'),
             );
         }
 

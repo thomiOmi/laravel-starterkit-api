@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
@@ -69,8 +70,16 @@ final readonly class IndexController
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
-    public function __invoke(Request $request, UserFilter $filter): SuccessResponse
+    public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
+        if (! $request->user()?->can('user.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('auth.forbidden'),
+            );
+        }
+
         $users = $this->listUsers->handle(
             $filter,
             $request->integer('page.size', 10),

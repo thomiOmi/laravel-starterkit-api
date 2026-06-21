@@ -9,6 +9,7 @@ use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Http\Request;
 use Modules\Role\Actions\ShowPermissionAction;
 use Modules\Role\Models\Permission;
 use Modules\Role\Resources\PermissionResource;
@@ -70,8 +71,16 @@ final readonly class PermissionShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(string $permission): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $permission): SuccessResponse|ProblemResponse
     {
+        if (! $request->user()?->can('permission.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('auth.forbidden'),
+            );
+        }
+
         $permission = $this->showPermission->handle($permission);
 
         if ($permission === null) {

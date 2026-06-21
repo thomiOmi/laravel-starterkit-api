@@ -53,7 +53,7 @@ final readonly class ForgotPasswordController
     )]
     public function __invoke(Request $request): SuccessResponse
     {
-        $request->validate(['email' => ['required', 'email']]);
+        $request->validate(['email' => ['required', 'email', 'max:255']]);
 
         $status = Password::sendResetLink(
             $request->only('email'),

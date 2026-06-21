@@ -21,6 +21,24 @@ use Modules\Role\Payloads\V1\RolePayload;
 final class RoleRequest extends FormRequest
 {
     /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        $user = $this->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        if ($this->isMethod('POST')) {
+            return $user->can('role.create');
+        }
+
+        return $user->can('role.edit');
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, array<int, string|Unique>> The validation rules.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
@@ -69,8 +70,16 @@ final readonly class PermissionIndexController
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
-    public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse
+    public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
+        if (! $request->user()?->can('permission.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('auth.forbidden'),
+            );
+        }
+
         $permissions = $this->listPermissions->handle(
             $filter,
             $request->integer('page.size', 20),
