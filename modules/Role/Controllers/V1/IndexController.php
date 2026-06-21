@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
@@ -68,16 +67,8 @@ final readonly class IndexController
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
-    public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, RoleFilter $filter): SuccessResponse
     {
-        if (! $request->user()?->can('role.view')) {
-            return new ProblemResponse(
-                title: 'Forbidden',
-                status: 403,
-                detail: __('auth.forbidden'),
-            );
-        }
-
         $roles = $this->listRoles->handle(
             $filter,
             $request->integer('page.size', 10),

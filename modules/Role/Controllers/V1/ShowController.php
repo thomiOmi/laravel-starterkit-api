@@ -9,7 +9,6 @@ use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
-use Illuminate\Http\Request;
 use Modules\Role\Actions\ShowRoleAction;
 use Modules\Role\Models\Role;
 use Modules\Role\Resources\RoleResource;
@@ -71,16 +70,8 @@ final readonly class ShowController
             'detail' => 'The requested resource does not exist.',
         ]],
     )]
-    public function __invoke(Request $request, string $role): SuccessResponse|ProblemResponse
+    public function __invoke(string $role): SuccessResponse|ProblemResponse
     {
-        if (! $request->user()?->can('role.view')) {
-            return new ProblemResponse(
-                title: 'Forbidden',
-                status: 403,
-                detail: __('auth.forbidden'),
-            );
-        }
-
         $role = $this->showRole->handle($role);
 
         if ($role === null) {

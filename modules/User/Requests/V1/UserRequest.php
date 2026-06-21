@@ -47,7 +47,7 @@ final class UserRequest extends FormRequest
     /**
      * Get the user ID from the route.
      */
-    private function getUserId(): ?string
+    private function getUserId(): string
     {
         $user = $this->route('user');
 
