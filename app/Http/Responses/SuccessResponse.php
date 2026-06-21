@@ -5,13 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Pagination\AbstractCursorPaginator;
+use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
 
+/**
+ * @template TData = mixed
+ */
 class SuccessResponse extends JsonResponse
 {
     /**
+     * @param  TData  $data
      * @param  array<string, mixed>  $extra
      */
     public function __construct(
@@ -27,38 +34,17 @@ class SuccessResponse extends JsonResponse
             'detail' => $detail,
         ];
 
-        if ($data instanceof LengthAwarePaginator || $data instanceof Paginator || $data instanceof CursorPaginator) {
-            $paginated = $data->toArray();
+        if ($data instanceof JsonResource) {
+            $payload['data'] = $data->resolve(app()->bound('request') ? app('request') : null);
 
-            $payload['data'] = $paginated['data'];
+            $resource = $data->resource;
 
-            $payload['links'] = array_filter([
-                'first' => $paginated['first_page_url'] ?? null,
-                'last' => $paginated['last_page_url'] ?? null,
-                'prev' => $paginated['prev_page_url'] ?? null,
-                'next' => $paginated['next_page_url'] ?? null,
-            ]);
-
-            $meta = [
-                'per_page' => $paginated['per_page'] ?? null,
-                'from' => $paginated['from'] ?? null,
-                'to' => $paginated['to'] ?? null,
-            ];
-
-            if ($data instanceof LengthAwarePaginator) {
-                $meta['current_page'] = $paginated['current_page'] ?? null;
-                $meta['last_page'] = $paginated['last_page'] ?? null;
-                $meta['total'] = $paginated['total'] ?? null;
-            } elseif (! $data instanceof CursorPaginator) {
-                $meta['current_page'] = $paginated['current_page'] ?? null;
+            if ($resource instanceof AbstractPaginator || $resource instanceof AbstractCursorPaginator) {
+                $this->extractPagination($payload, $resource);
             }
-
-            if ($data instanceof CursorPaginator) {
-                $meta['next_cursor'] = $paginated['next_cursor'] ?? null;
-                $meta['prev_cursor'] = $paginated['prev_cursor'] ?? null;
-            }
-
-            $payload['meta'] = array_filter($meta, fn (mixed $value): bool => ! is_null($value));
+        } elseif ($data instanceof AbstractPaginator || $data instanceof AbstractCursorPaginator) {
+            $payload['data'] = $data->items();
+            $this->extractPagination($payload, $data);
         } else {
             $payload['data'] = $data;
         }
@@ -68,5 +54,59 @@ class SuccessResponse extends JsonResponse
         }
 
         parent::__construct($payload, $status);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @param  AbstractPaginator<int, mixed>|AbstractCursorPaginator<int, mixed>  $paginator
+     */
+    private function extractPagination(array &$payload, AbstractPaginator|AbstractCursorPaginator $paginator): void
+    {
+        $payload['links'] = array_filter([
+            'first' => method_exists($paginator, 'url') ? $paginator->url(1) : null,
+            'last' => $paginator instanceof LengthAwarePaginator ? $paginator->url($paginator->lastPage()) : null,
+            'prev' => method_exists($paginator, 'previousPageUrl') ? $paginator->previousPageUrl() : null,
+            'next' => method_exists($paginator, 'nextPageUrl') ? $paginator->nextPageUrl() : null,
+        ], fn (mixed $value): bool => ! is_null($value));
+
+        $meta = [
+            'per_page' => $paginator->perPage(),
+        ];
+
+        if ($paginator instanceof AbstractPaginator) {
+            $links['first'] = $paginator->url(1);
+            $links['prev'] = $paginator->previousPageUrl();
+
+            if (method_exists($paginator, 'nextPageUrl')) {
+                $links['next'] = $paginator->nextPageUrl();
+            }
+
+            if (method_exists($paginator, 'firstItem')) {
+                $meta['from'] = $paginator->firstItem();
+            }
+
+            if (method_exists($paginator, 'lastItem')) {
+                $meta['to'] = $paginator->lastItem();
+            }
+
+            $meta['current_page'] = $paginator->currentPage();
+
+            if ($paginator instanceof LengthAwarePaginator) {
+                $links['last'] = $paginator->url($paginator->lastPage());
+                $meta['last_page'] = $paginator->lastPage();
+                $meta['total'] = $paginator->total();
+            }
+        }
+
+        if ($paginator instanceof AbstractCursorPaginator) {
+            $links['prev'] = $paginator->previousPageUrl();
+            $links['next'] = $paginator->nextPageUrl();
+
+            $meta['next_cursor'] = $paginator->nextCursor()?->encode();
+            $meta['prev_cursor'] = $paginator->previousCursor()?->encode();
+        }
+
+        $payload['links'] = array_filter($links, fn (mixed $value): bool => ! is_null($value));
+        $payload['meta'] = array_filter($meta, fn (mixed $value): bool => ! is_null($value));
     }
 }

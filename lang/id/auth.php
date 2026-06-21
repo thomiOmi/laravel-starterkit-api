@@ -20,7 +20,7 @@ return [
     'verification_link_sent' => 'Tautan verifikasi baru telah dikirim ke alamat email Anda.',
     'unauthenticated' => 'Tidak terautentikasi',
     'forbidden' => 'Terlarang',
-    'not_found' => 'Tidak Ditemukan',
-    'validation_failed' => 'Validasi Gagal',
-    'too_many_requests' => 'Terlalu Banyak Permintaan',
+    'not_found' => 'Tidak ditemukan',
+    'validation_failed' => 'Validasi gagal',
+    'too_many_requests' => 'Terlalu banyak permintaan',
 ];

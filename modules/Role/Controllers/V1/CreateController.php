@@ -26,19 +26,9 @@ final readonly class CreateController
      * Store a newly created role in storage.
      *
      * @param  RoleRequest  $request  The validated role creation request.
-     * @return SuccessResponse The API response containing the new role.
      */
     #[Endpoint(operationId: 'createRole', title: 'Create Role')]
-    #[Response(
-        status: 201,
-        description: 'Role created successfully. Returns the new role with assigned permissions.',
-        examples: [[
-            'status' => 201,
-            'title' => 'Created',
-            'detail' => 'Role created.',
-            'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => []],
-        ]],
-    )]
+    #[Response(status: 201, description: 'Role created successfully. Returns the new role with assigned permissions.', type: 'SuccessResponse<RoleResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
