@@ -56,17 +56,16 @@ class SuccessResponse extends JsonResponse
      */
     private function extractPagination(array &$payload, AbstractPaginator|AbstractCursorPaginator $paginator): void
     {
-        $links = [
-            'prev' => $paginator->previousPageUrl(),
-            'next' => $paginator->nextPageUrl(),
-        ];
-
+        $links = [];
         $meta = [
             'per_page' => $paginator->perPage(),
         ];
 
         if ($paginator instanceof AbstractPaginator) {
             $links['first'] = $paginator->url(1);
+            $links['prev'] = $paginator->previousPageUrl();
+            $links['next'] = $paginator->nextPageUrl();
+
             $meta['from'] = $paginator->firstItem();
             $meta['to'] = $paginator->lastItem();
             $meta['current_page'] = $paginator->currentPage();
@@ -79,6 +78,9 @@ class SuccessResponse extends JsonResponse
         }
 
         if ($paginator instanceof AbstractCursorPaginator) {
+            $links['prev'] = $paginator->previousPageUrl();
+            $links['next'] = $paginator->nextPageUrl();
+
             $meta['next_cursor'] = $paginator->nextCursor()?->encode();
             $meta['prev_cursor'] = $paginator->previousCursor()?->encode();
         }
