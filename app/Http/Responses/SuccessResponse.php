@@ -52,28 +52,30 @@ class SuccessResponse extends JsonResponse
 
     /**
      * @param  array<string, mixed>  $payload
+     * @param  AbstractPaginator<int, mixed>|AbstractCursorPaginator<int, mixed>  $paginator
      */
     private function extractPagination(array &$payload, AbstractPaginator|AbstractCursorPaginator $paginator): void
     {
-        $payload['links'] = array_filter([
-            'first' => $paginator instanceof AbstractPaginator ? $paginator->url(1) : null,
-            'last' => $paginator instanceof LengthAwarePaginator ? $paginator->url($paginator->lastPage()) : null,
+        $links = [
             'prev' => $paginator->previousPageUrl(),
             'next' => $paginator->nextPageUrl(),
-        ]);
+        ];
 
         $meta = [
             'per_page' => $paginator->perPage(),
-            'from' => $paginator->firstItem(),
-            'to' => $paginator->lastItem(),
         ];
 
-        if ($paginator instanceof LengthAwarePaginator) {
+        if ($paginator instanceof AbstractPaginator) {
+            $links['first'] = $paginator->url(1);
+            $meta['from'] = $paginator->firstItem();
+            $meta['to'] = $paginator->lastItem();
             $meta['current_page'] = $paginator->currentPage();
-            $meta['last_page'] = $paginator->lastPage();
-            $meta['total'] = $paginator->total();
-        } elseif ($paginator instanceof AbstractPaginator) {
-            $meta['current_page'] = $paginator->currentPage();
+
+            if ($paginator instanceof LengthAwarePaginator) {
+                $links['last'] = $paginator->url($paginator->lastPage());
+                $meta['last_page'] = $paginator->lastPage();
+                $meta['total'] = $paginator->total();
+            }
         }
 
         if ($paginator instanceof AbstractCursorPaginator) {
@@ -81,6 +83,7 @@ class SuccessResponse extends JsonResponse
             $meta['prev_cursor'] = $paginator->previousCursor()?->encode();
         }
 
+        $payload['links'] = array_filter($links, fn (mixed $value): bool => ! is_null($value));
         $payload['meta'] = array_filter($meta, fn (mixed $value): bool => ! is_null($value));
     }
 }
