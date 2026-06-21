@@ -29,7 +29,7 @@ class SuccessResponse extends JsonResponse
         ];
 
         if ($data instanceof JsonResource) {
-            $payload['data'] = $data->resolve(app('request'));
+            $payload['data'] = $data->resolve(app()->bound('request') ? app('request') : null);
 
             $resource = $data->resource;
 
@@ -64,10 +64,19 @@ class SuccessResponse extends JsonResponse
         if ($paginator instanceof AbstractPaginator) {
             $links['first'] = $paginator->url(1);
             $links['prev'] = $paginator->previousPageUrl();
-            $links['next'] = $paginator->nextPageUrl();
 
-            $meta['from'] = $paginator->firstItem();
-            $meta['to'] = $paginator->lastItem();
+            if (method_exists($paginator, 'nextPageUrl')) {
+                $links['next'] = $paginator->nextPageUrl();
+            }
+
+            if (method_exists($paginator, 'firstItem')) {
+                $meta['from'] = $paginator->firstItem();
+            }
+
+            if (method_exists($paginator, 'lastItem')) {
+                $meta['to'] = $paginator->lastItem();
+            }
+
             $meta['current_page'] = $paginator->currentPage();
 
             if ($paginator instanceof LengthAwarePaginator) {
