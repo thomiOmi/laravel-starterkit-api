@@ -34,15 +34,14 @@ final class UserRequest extends FormRequest
             return false;
         }
 
-        // POST means create, handled by 'can:user.create' middleware in route
         if ($this->isMethod('POST')) {
-            return true;
+            return $authenticatedUser->can('user.create');
         }
 
         $userId = $this->getUserId();
 
         // Check if the user is updating their own profile or has permission
-        return $authenticatedUser->id === $userId || $authenticatedUser->can('user.edit');
+        return $authenticatedUser->getKey() === $userId || $authenticatedUser->can('user.edit');
     }
 
     /**
@@ -52,7 +51,7 @@ final class UserRequest extends FormRequest
     {
         $user = $this->route('user');
 
-        return $user instanceof User ? (string) $user->id : (string) $user;
+        return $user instanceof User ? (string) $user->getKey() : (string) $user;
     }
 
     /**

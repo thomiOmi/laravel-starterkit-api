@@ -28,46 +28,25 @@ class BulkActionRequest extends FormRequest
         }
 
         $routeName = (string) $this->route()?->getName();
+        $segments = explode('.', $routeName);
         $action = $this->resolveBulkAction($routeName);
 
         if ($action === null) {
             return false;
         }
 
-        if (str_contains($routeName, '.user.')) {
-            if ($action === 'delete') {
-                return $user->can('user.delete');
-            }
+        $module = $segments[2] ?? '';
 
-            if ($action === 'restore') {
-                return $user->can('user.edit');
-            }
-
-            return false;
+        if ($module === 'user') {
+            return $action === 'delete' ? $user->can('user.delete') : ($action === 'restore' ? $user->can('user.edit') : false);
         }
 
-        if (str_contains($routeName, '.role.')) {
-            if ($action === 'delete') {
-                return $user->can('role.delete');
-            }
-
-            if ($action === 'restore') {
-                return $user->can('role.edit');
-            }
-
-            return false;
+        if ($module === 'role') {
+            return $action === 'delete' ? $user->can('role.delete') : ($action === 'restore' ? $user->can('role.edit') : false);
         }
 
-        if (str_contains($routeName, '.permission.')) {
-            if ($action === 'delete') {
-                return $user->can('permission.delete');
-            }
-
-            if ($action === 'restore') {
-                return $user->can('permission.edit');
-            }
-
-            return false;
+        if ($module === 'permission') {
+            return $action === 'delete' ? $user->can('permission.delete') : ($action === 'restore' ? $user->can('permission.edit') : false);
         }
 
         return false;
