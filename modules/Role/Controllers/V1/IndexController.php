@@ -35,19 +35,7 @@ final readonly class IndexController
     #[QueryParameter(name: 'search', description: 'Search keyword to filter roles by name or description.', type: 'string', required: false, example: 'admin')]
     #[QueryParameter(name: 'sort', description: 'Available sorts are `name`, `created_at`. Prefix with `-` for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: '-created_at')]
     #[Endpoint(operationId: 'listRoles', title: 'List Roles')]
-    #[Response(
-        status: 200,
-        description: 'Paginated list of roles. Includes `meta` (pagination info) and `links` when applicable.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Roles retrieved.',
-            'data' => [
-                ['id' => 1, 'name' => 'admin', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]],
-                ['id' => 2, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => []],
-            ],
-        ]],
-    )]
+    #[Response(status: 200, type: 'SuccessResponse<\Illuminate\Http\Resources\Json\AnonymousResourceCollection<RoleResource>>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -89,19 +77,11 @@ final readonly class IndexController
             $request->integer('page.number', 1),
         );
 
-        $resource = RoleResource::collection($roles);
-        /** @var array<string, mixed> $raw */
-        $raw = $resource->toResponse($request)->getData(true);
-
         return new SuccessResponse(
             'OK',
             __('general.retrieved', ['resource' => 'Roles']),
-            $raw['data'] ?? [],
+            RoleResource::collection($roles),
             200,
-            array_filter([
-                'meta' => $raw['meta'] ?? null,
-                'links' => $raw['links'] ?? null,
-            ], fn ($value) => $value !== null),
         );
     }
 }

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
 use Modules\Role\Repositories\PermissionRepository;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Permission Management')]
@@ -60,7 +61,7 @@ final readonly class PermissionDeleteController
     )]
     #[Response(
         status: 404,
-        description: 'Permission not found with the given ID (handled by route model binding).',
+        description: 'Permission not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',

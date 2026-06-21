@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdatePermissionAction;
+use Modules\Role\Repositories\PermissionRepository;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
 
@@ -20,7 +21,8 @@ use Modules\Role\Resources\PermissionResource;
 final readonly class PermissionUpdateController
 {
     public function __construct(
-        private UpdatePermissionAction $updatePermission
+        private UpdatePermissionAction $updatePermission,
+        private PermissionRepository $repository,
     ) {}
 
     /**
@@ -31,16 +33,7 @@ final readonly class PermissionUpdateController
      * @return SuccessResponse|ProblemResponse The API response containing the updated permission.
      */
     #[Endpoint(operationId: 'updatePermission', title: 'Update Permission')]
-    #[Response(
-        status: 200,
-        description: 'Permission updated successfully. Returns the updated permission record.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Permission updated.',
-            'data' => ['id' => 1, 'name' => 'post.create', 'guard_name' => 'web'],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Permission updated successfully.', type: 'SuccessResponse<PermissionResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -65,7 +58,7 @@ final readonly class PermissionUpdateController
     )]
     #[Response(
         status: 404,
-        description: 'Permission not found with the given ID (handled by route model binding).',
+        description: 'Permission not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -88,7 +81,17 @@ final readonly class PermissionUpdateController
     )]
     public function __invoke(PermissionRequest $request, string $permission): SuccessResponse|ProblemResponse
     {
-        $permission = $this->updatePermission->handle($permission, $request->payload());
+        $model = $this->repository->findById($permission);
+
+        if ($model === null) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
+
+        $model = $this->updatePermission->handle($model, $request->payload());
 
         if (! $permission) {
             return new ProblemResponse(
@@ -101,7 +104,7 @@ final readonly class PermissionUpdateController
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'Permission']),
-            new PermissionResource($permission),
+            new PermissionResource($model),
         );
     }
 }

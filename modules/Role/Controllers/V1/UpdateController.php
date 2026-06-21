@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdateRoleAction;
+use Modules\Role\Repositories\RoleRepository;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
 
@@ -21,6 +22,7 @@ final readonly class UpdateController
 {
     public function __construct(
         private UpdateRoleAction $updateRole,
+        private RoleRepository $repository,
     ) {}
 
     /**
@@ -31,16 +33,7 @@ final readonly class UpdateController
      * @return SuccessResponse|ProblemResponse The API response containing the updated role.
      */
     #[Endpoint(operationId: 'updateRole', title: 'Update Role')]
-    #[Response(
-        status: 200,
-        description: 'Role updated successfully. Returns the updated role with assigned permissions.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Role updated.',
-            'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Role updated successfully. Returns the updated role with assigned permissions.', type: 'SuccessResponse<RoleResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -65,7 +58,7 @@ final readonly class UpdateController
     )]
     #[Response(
         status: 404,
-        description: 'Role not found with the given ID (handled by route model binding).',
+        description: 'Role not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -88,7 +81,17 @@ final readonly class UpdateController
     )]
     public function __invoke(RoleRequest $request, string $role): SuccessResponse|ProblemResponse
     {
-        $role = $this->updateRole->handle($role, $request->payload());
+        $model = $this->repository->findById($role);
+
+        if (! $model) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Role']),
+            );
+        }
+
+        $model = $this->updateRole->handle($model, $request->payload());
 
         if (! $role) {
             return new ProblemResponse(
@@ -101,7 +104,7 @@ final readonly class UpdateController
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'Role']),
-            new RoleResource($role),
+            new RoleResource($model),
         );
     }
 }

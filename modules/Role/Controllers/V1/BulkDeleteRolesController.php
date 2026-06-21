@@ -25,16 +25,7 @@ final readonly class BulkDeleteRolesController
      * Perform bulk delete on roles.
      */
     #[Endpoint(operationId: 'bulkDeleteRoles', title: 'Bulk Delete Roles')]
-    #[Response(
-        status: 200,
-        description: 'Roles deleted successfully. Returns the count of deleted records.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Roles deleted.',
-            'data' => ['count' => 2],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Bulk delete completed. Returns the count of deleted roles.', type: 'SuccessResponse<array{count: int}>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

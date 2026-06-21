@@ -11,17 +11,6 @@ use Modules\User\Models\User;
  */
 final readonly class GetAuthenticatedUserAction
 {
-    /**
-     * Create a new GetAuthenticatedUserAction instance.
-     */
-    public function __construct() {}
-
-    /**
-     * Execute the action to get the current user profile.
-     *
-     * @param  User  $user  The authenticated user model.
-     * @return User The user instance with loaded relationships.
-     */
     public function handle(User $user): User
     {
         return $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']);

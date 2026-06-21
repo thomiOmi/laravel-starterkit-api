@@ -12,6 +12,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\DeleteUserAction;
+use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -60,7 +61,7 @@ final readonly class DeleteController
     )]
     #[Response(
         status: 404,
-        description: 'User not found with the given ID (handled by route model binding).',
+        description: 'User not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',

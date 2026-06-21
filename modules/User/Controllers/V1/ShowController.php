@@ -28,16 +28,7 @@ final readonly class ShowController
      * Display the specified user.
      */
     #[Endpoint(operationId: 'showUser', title: 'Show User')]
-    #[Response(
-        status: 200,
-        description: 'User details retrieved successfully. Includes roles and permissions when available.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'User retrieved.',
-            'data' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'avatar' => null, 'roles' => ['admin'], 'permissions' => ['user.view'], 'email_verified_at' => '2026-04-23 15:19:09', 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
-        ]],
-    )]
+    #[Response(status: 200, description: 'User retrieved successfully.', type: 'SuccessResponse<UserResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

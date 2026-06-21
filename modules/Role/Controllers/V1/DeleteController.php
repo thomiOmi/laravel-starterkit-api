@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeleteRoleAction;
 use Modules\Role\Repositories\RoleRepository;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Role Management')]
@@ -60,7 +61,7 @@ final readonly class DeleteController
     )]
     #[Response(
         status: 404,
-        description: 'Role not found with the given ID (handled by route model binding).',
+        description: 'Role not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',

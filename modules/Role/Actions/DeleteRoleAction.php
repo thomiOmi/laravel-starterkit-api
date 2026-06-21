@@ -24,7 +24,7 @@ final readonly class DeleteRoleAction
             return false;
         }
 
-        if ($role->name === 'super-admin') {
+        if ($role->name === Role::SUPER_ADMIN) {
             return false;
         }
 

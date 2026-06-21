@@ -26,16 +26,7 @@ final readonly class PermissionCreateController
      * Store a newly created permission.
      */
     #[Endpoint(operationId: 'createPermission', title: 'Create Permission')]
-    #[Response(
-        status: 201,
-        description: 'Permission created successfully. Returns the new permission record.',
-        examples: [[
-            'status' => 201,
-            'title' => 'Created',
-            'detail' => 'Permission created.',
-            'data' => ['id' => 1, 'name' => 'post.create', 'guard_name' => 'web'],
-        ]],
-    )]
+    #[Response(status: 201, description: 'Permission created successfully. Returns the new permission record.', type: 'SuccessResponse<PermissionResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

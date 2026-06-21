@@ -41,7 +41,7 @@ class RoleSeeder extends Seeder
                 Permission::firstOrCreate(['name' => $permission, 'guard_name' => $guard]);
             }
 
-            Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => $guard]);
+            Role::firstOrCreate(['name' => Role::SUPER_ADMIN, 'guard_name' => $guard]);
 
             $admin = Role::firstOrCreate(['name' => 'admin', 'guard_name' => $guard]);
             $admin->givePermissionTo($permissions);
@@ -60,7 +60,7 @@ class RoleSeeder extends Seeder
     private function assignRolesToExistingUsers(): void
     {
         $roleMap = [
-            'superadmin@example.com' => 'super-admin',
+            'superadmin@example.com' => Role::SUPER_ADMIN,
             'admin@example.com' => 'admin',
             'user@example.com' => 'user',
         ];

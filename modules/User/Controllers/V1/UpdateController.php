@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\User\Actions\UpdateUserAction;
+use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
 
@@ -21,6 +22,7 @@ final readonly class UpdateController
 {
     public function __construct(
         private UpdateUserAction $updateUser,
+        private UserRepository $repository,
     ) {}
 
     /**
@@ -31,16 +33,7 @@ final readonly class UpdateController
      * @return SuccessResponse|ProblemResponse The API response containing the updated user.
      */
     #[Endpoint(operationId: 'updateUser', title: 'Update User')]
-    #[Response(
-        status: 200,
-        description: 'User updated successfully. Returns the updated user profile.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'User updated.',
-            'data' => ['id' => '01abcd', 'name' => 'John Updated', 'email' => 'john@example.com', 'avatar' => null, 'roles' => ['admin'], 'permissions' => ['user.view'], 'email_verified_at' => '2026-04-23 15:19:09', 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 16:00:00', 'deleted_at' => null],
-        ]],
-    )]
+    #[Response(status: 200, description: 'User updated successfully. Returns the updated user profile.', type: 'SuccessResponse<UserResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -65,7 +58,7 @@ final readonly class UpdateController
     )]
     #[Response(
         status: 404,
-        description: 'User not found with the given ID (handled by route model binding).',
+        description: 'User not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -88,7 +81,17 @@ final readonly class UpdateController
     )]
     public function __invoke(UserRequest $request, string $user): SuccessResponse|ProblemResponse
     {
-        $user = $this->updateUser->handle($user, $request->payload());
+        $model = $this->repository->findById($user);
+
+        if (! $model) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User']),
+            );
+        }
+
+        $model = $this->updateUser->handle($model, $request->payload());
 
         if (! $user) {
             return new ProblemResponse(
@@ -101,7 +104,7 @@ final readonly class UpdateController
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'User']),
-            new UserResource($user),
+            new UserResource($model),
         );
     }
 }
