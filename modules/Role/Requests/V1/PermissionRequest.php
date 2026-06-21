@@ -8,6 +8,7 @@ use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\Role\Payloads\V1\PermissionPayload;
+use Spatie\Permission\Models\Permission;
 
 #[BodyParameter(name: 'name', description: 'The unique permission name (e.g., "post.create").', required: true, example: 'post.create')]
 #[BodyParameter(name: 'guard_name', description: 'The guard name for the permission.', required: false, example: 'web')]
@@ -34,7 +35,7 @@ final class PermissionRequest extends FormRequest
      */
     public function rules(): array
     {
-        $permissionId = $this->route('permission');
+        $permissionId = $this->getPermissionId();
 
         return [
             'name' => [
@@ -45,6 +46,16 @@ final class PermissionRequest extends FormRequest
             ],
             'guard_name' => ['nullable', 'string', 'max:255'],
         ];
+    }
+
+    /**
+     * Get the ID of the permission being updated.
+     */
+    public function getPermissionId(): string
+    {
+        $permission = $this->route('permission');
+
+        return $permission instanceof Permission ? (string) $permission->id : (string) $permission;
     }
 
     public function payload(): PermissionPayload
