@@ -73,24 +73,30 @@ abstract class BaseFilter
      */
     protected function handleFilters(Builder $builder): Builder
     {
-        $filters = $this->request->query('filter', []);
+        $filters = $this->request->query('filter');
 
         if (! is_array($filters)) {
             return $builder;
         }
 
-        foreach ($filters as $name => $value) {
+        // Performance: Only iterate over allowed filters
+        $filtersToProcess = $this->allowedFilters !== []
+            ? array_intersect_key($filters, array_flip($this->allowedFilters))
+            : $filters;
+
+        foreach ($filtersToProcess as $name => $value) {
             if ($name === $this->searchParameter) {
                 continue;
             }
 
-            if ($this->allowedFilters !== [] && ! in_array((string) $name, $this->allowedFilters, true)) {
+            // Security & Stability: Ensure value is a string to prevent TypeError in filters
+            if (! is_string($value) || $value === '') {
                 continue;
             }
 
             $method = Str::camel((string) $name);
 
-            if ($value !== null && $value !== '' && method_exists($this, $method)) {
+            if (method_exists($this, $method)) {
                 $result = $this->{$method}($builder, $value);
 
                 if ($result instanceof Builder) {
@@ -107,9 +113,9 @@ abstract class BaseFilter
      */
     protected function applySorting(Builder $builder): void
     {
-        $sortParam = $this->request->query('sort', '');
+        $sortParam = $this->request->query('sort');
 
-        if (! is_string($sortParam) || trim($sortParam) === '') {
+        if (! is_string($sortParam) || ($sortParam = trim($sortParam)) === '') {
             $builder->orderBy($builder->getModel()->getQualifiedKeyName(), 'desc');
 
             return;
