@@ -6,17 +6,24 @@ namespace Modules\User\Actions;
 
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Cache;
-use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 
 final readonly class DeleteUserAction
 {
     public function __construct(
-        private Guard $auth
+        private Guard $auth,
+        private UserRepository $repository
     ) {}
 
-    public function handle(User $user): bool
+    public function handle(string $id): bool
     {
-        if ($user->id === $this->auth->id()) {
+        if ($id === $this->auth->id()) {
+            return false;
+        }
+
+        $user = $this->repository->findById($id);
+
+        if (! $user) {
             return false;
         }
 

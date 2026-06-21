@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
-use Symfony\Component\HttpFoundation\Response;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -36,13 +36,13 @@ describe('Forgot Password', function () {
         $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     });
 
-    it('returns error for non-existent email', function () {
+    it('returns success for non-existent email to prevent enumeration', function () {
         $response = $this->postJson('/api/v1/auth/forgot-password', [
             'email' => 'nonexistent@example.com',
         ]);
 
-        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
-            ->assertJsonPath('title', __('auth.validation_failed'));
+        $response->assertSuccessful()
+            ->assertJsonPath('detail', __('passwords.sent'));
     });
 });
 

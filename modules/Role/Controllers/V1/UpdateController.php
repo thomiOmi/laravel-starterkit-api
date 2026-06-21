@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdateRoleAction;
-use Modules\Role\Models\Role;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
 
@@ -27,20 +27,10 @@ final readonly class UpdateController
      * Update the specified role in storage.
      *
      * @param  RoleRequest  $request  The validated role update request.
-     * @param  Role  $role  The role model instance.
-     * @return SuccessResponse The API response containing the updated role.
+     * @param  string  $role  The role ID.
      */
     #[Endpoint(operationId: 'updateRole', title: 'Update Role')]
-    #[Response(
-        status: 200,
-        description: 'Role updated successfully. Returns the updated role with assigned permissions.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Role updated.',
-            'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Role updated successfully. Returns the updated role with assigned permissions.', type: 'SuccessResponse<RoleResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',
@@ -65,7 +55,7 @@ final readonly class UpdateController
     )]
     #[Response(
         status: 404,
-        description: 'Role not found with the given ID (handled by route model binding).',
+        description: 'Role not found with the given ID.',
         mediaType: 'application/problem+json',
         examples: [[
             'type' => 'https://example.com/problems',
@@ -86,9 +76,17 @@ final readonly class UpdateController
             'errors' => ['name' => ['The name field is required.']],
         ]],
     )]
-    public function __invoke(RoleRequest $request, Role $role): SuccessResponse
+    public function __invoke(RoleRequest $request, string $role): SuccessResponse|ProblemResponse
     {
         $role = $this->updateRole->handle($role, $request->payload());
+
+        if (! $role) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Role']),
+            );
+        }
 
         return new SuccessResponse(
             'OK',

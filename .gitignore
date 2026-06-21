@@ -21,6 +21,7 @@
 /vendor
 _ide_helper.php
 /api.json
+/docs/openapi.json
 /openapi.json
 Homestead.json
 Homestead.yaml

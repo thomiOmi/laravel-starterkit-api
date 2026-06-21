@@ -8,11 +8,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\AbstractCursorPaginator;
 use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 
+/**
+ * @template TData = mixed
+ */
 class SuccessResponse extends JsonResponse
 {
     /**
+     * @param  TData  $data
      * @param  array<string, mixed>  $extra
      */
     public function __construct(
