@@ -35,17 +35,45 @@ class BulkActionRequest extends FormRequest
         }
 
         if (str_contains($routeName, '.user.')) {
-            return match ($action) {
-                'delete' => $user->can('user.delete'),
-                'restore' => $user->can('user.edit'),
-                default => false,
-            };
+            if ($action === 'delete') {
+                return $user->can('user.delete');
+            }
+
+            if ($action === 'restore') {
+                return $user->can('user.edit');
+            }
+
+            return false;
         }
 
         if (str_contains($routeName, '.role.')) {
+            if ($action === 'delete') {
+                return $user->can('role.delete');
+            }
+
+            if ($action === 'restore') {
+                return $user->can('role.edit');
+            }
+
+            return false;
+        }
+
+        if (str_contains($routeName, '.permission.')) {
+            if ($action === 'delete') {
+                return $user->can('permission.delete');
+            }
+
+            if ($action === 'restore') {
+                return $user->can('permission.edit');
+            }
+
+            return false;
+        }
+
+        if (str_contains($routeName, '.permission.')) {
             return match ($action) {
-                'delete' => $user->can('role.delete'),
-                'restore' => $user->can('role.edit'),
+                'delete' => $user->can('permission.delete'),
+                'restore' => $user->can('permission.edit'),
                 default => false,
             };
         }

@@ -20,16 +20,7 @@ final readonly class VerifyEmailController
     ) {}
 
     #[Endpoint(operationId: 'verifyEmail', title: 'Verify Email')]
-    #[Response(
-        status: 200,
-        description: 'Email verified successfully. The user account is now marked as verified.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Email verified.',
-            'data' => ['verified' => true],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Email verified successfully.', type: 'SuccessResponse<array{verified: bool}>')]
     #[Response(
         status: 403,
         description: 'Invalid or expired verification signature. The link may have been tampered with or already used.',
