@@ -10,7 +10,6 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\Role\Actions\ListPermissionsAction;
 use Modules\Role\Filters\PermissionFilter;
 use Modules\Role\Resources\PermissionResource;
@@ -27,8 +26,6 @@ final readonly class PermissionIndexController
 
     /**
      * Display a paginated listing of permissions.
-     *
-     * @return SuccessResponse<AnonymousResourceCollection>
      */
     #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
     #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
@@ -37,34 +34,7 @@ final readonly class PermissionIndexController
     #[QueryParameter(name: 'sort', description: 'Available sorts are `name`, `guard_name`, `created_at`. Prefix with `-` for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: 'name')]
     #[QueryParameter(name: 'filter[guard]', description: 'The guard name to filter permissions by.', type: 'string', required: false, example: 'web')]
     #[Endpoint(operationId: 'listPermissions', title: 'List Permissions')]
-    #[Response(
-        status: 200,
-        description: 'Paginated list of permissions. Includes `meta` (pagination info) and `links` when applicable.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Permissions retrieved.',
-            'data' => [
-                ['id' => 1, 'name' => 'user.list', 'guard_name' => 'web'],
-                ['id' => 2, 'name' => 'user.create', 'guard_name' => 'web'],
-            ],
-            'links' => [
-                'first' => 'http://localhost/api/v1/permissions?page=1',
-                'last' => 'http://localhost/api/v1/permissions?page=2',
-                'prev' => null,
-                'next' => 'http://localhost/api/v1/permissions?page=2',
-            ],
-            'meta' => [
-                'current_page' => 1,
-                'from' => 1,
-                'last_page' => 2,
-                'path' => 'http://localhost/api/v1/permissions',
-                'per_page' => 20,
-                'to' => 20,
-                'total' => 35,
-            ],
-        ]],
-    )]
+    #[Response(status: 200, type: 'SuccessResponse<\Illuminate\Http\Resources\Json\AnonymousResourceCollection<PermissionResource>>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

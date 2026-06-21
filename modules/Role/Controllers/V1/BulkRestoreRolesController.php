@@ -23,20 +23,9 @@ final readonly class BulkRestoreRolesController
 
     /**
      * Perform bulk restore on roles.
-     *
-     * @return SuccessResponse<array{count: int}>
      */
     #[Endpoint(operationId: 'bulkRestoreRoles', title: 'Bulk Restore Roles')]
-    #[Response(
-        status: 200,
-        description: 'Roles restored successfully. Returns the count of restored records.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Roles restored.',
-            'data' => ['count' => 3],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Bulk restore completed. Returns the count of restored roles.', type: 'SuccessResponse<array{count: int}>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

@@ -11,7 +11,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 
 /**
- * @template TData
+ * @template TData = mixed
  */
 class SuccessResponse extends JsonResponse
 {

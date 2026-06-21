@@ -26,19 +26,9 @@ final readonly class CreateController
      * Store a newly created user in storage.
      *
      * @param  UserRequest  $request  The validated user creation request.
-     * @return SuccessResponse<UserResource>
      */
     #[Endpoint(operationId: 'createUser', title: 'Create User')]
-    #[Response(
-        status: 201,
-        description: 'User created successfully. Returns the new user profile.',
-        examples: [[
-            'status' => 201,
-            'title' => 'Created',
-            'detail' => 'User created.',
-            'data' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@example.com', 'avatar' => null, 'roles' => [], 'permissions' => [], 'email_verified_at' => null, 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
-        ]],
-    )]
+    #[Response(status: 201, description: 'User created successfully. Returns the new user profile.', type: 'SuccessResponse<UserResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

@@ -23,20 +23,9 @@ final readonly class BulkDeleteController
 
     /**
      * Perform bulk delete on users.
-     *
-     * @return SuccessResponse<array{count: int}>
      */
     #[Endpoint(operationId: 'bulkDeleteUsers', title: 'Bulk Delete Users')]
-    #[Response(
-        status: 200,
-        description: 'Users deleted successfully. Returns the count of deleted records.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Users deleted.',
-            'data' => ['count' => 3],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Bulk delete completed. Returns the count of deleted users.', type: 'SuccessResponse<array{count: int}>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

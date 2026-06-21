@@ -28,19 +28,9 @@ final readonly class UpdateController
      *
      * @param  RoleRequest  $request  The validated role update request.
      * @param  Role  $role  The role model instance.
-     * @return SuccessResponse<RoleResource>
      */
     #[Endpoint(operationId: 'updateRole', title: 'Update Role')]
-    #[Response(
-        status: 200,
-        description: 'Role updated successfully. Returns the updated role with assigned permissions.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Role updated.',
-            'data' => ['id' => 1, 'name' => 'editor', 'guard_name' => 'web', 'permissions' => [['id' => 1, 'name' => 'user.list', 'guard_name' => 'web']]],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Role updated successfully. Returns the updated role with assigned permissions.', type: 'SuccessResponse<RoleResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

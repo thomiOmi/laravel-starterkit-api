@@ -20,31 +20,8 @@ final readonly class RegisterController
         private RegisterAction $registerAction
     ) {}
 
-    /**
-     * @return SuccessResponse<UserResource>
-     */
     #[Endpoint(operationId: 'register', title: 'Register')]
-    #[Response(
-        status: 201,
-        description: 'Account created successfully. Returns the newly registered user profile.',
-        examples: [[
-            'status' => 201,
-            'title' => 'Created',
-            'detail' => 'Account registered successfully.',
-            'data' => [
-                'id' => '01abcd',
-                'name' => 'John Doe',
-                'email' => 'john@example.com',
-                'avatar' => null,
-                'roles' => ['user'],
-                'permissions' => [],
-                'email_verified_at' => null,
-                'created_at' => '2026-06-19 08:24:36',
-                'updated_at' => '2026-06-19 08:24:36',
-                'deleted_at' => null,
-            ],
-        ]],
-    )]
+    #[Response(status: 201, description: 'Account created successfully. Returns the newly registered user profile.', type: 'SuccessResponse<UserResource>')]
     #[Response(
         status: 422,
         description: 'Validation error — invalid or missing fields (name, email, password). Returns a ProblemResponse with field-level error details.',

@@ -22,20 +22,8 @@ final readonly class ResendVerificationController
         private ResendVerificationAction $resendVerificationAction
     ) {}
 
-    /**
-     * @return SuccessResponse<null>
-     */
     #[Endpoint(operationId: 'resendVerification', title: 'Resend Verification Email')]
-    #[Response(
-        status: 200,
-        description: 'Verification email sent (or user already verified). Returns a message indicating the result.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Verification link sent.',
-            'data' => null,
-        ]],
-    )]
+    #[Response(status: 200, description: 'Verification email resent successfully.', type: 'SuccessResponse<null>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

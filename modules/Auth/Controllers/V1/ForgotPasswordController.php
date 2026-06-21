@@ -18,20 +18,8 @@ final readonly class ForgotPasswordController
         private ForgotPasswordAction $forgotPasswordAction
     ) {}
 
-    /**
-     * @return SuccessResponse<null>
-     */
     #[Endpoint(operationId: 'forgotPassword', title: 'Forgot Password')]
-    #[Response(
-        status: 200,
-        description: 'Password reset link sent successfully. An email with a reset link will be dispatched if the email exists in the system. Always returns success to prevent email enumeration.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Password reset link sent.',
-            'data' => null,
-        ]],
-    )]
+    #[Response(status: 200, description: 'Password reset link sent successfully.', type: 'SuccessResponse<null>')]
     #[Response(
         status: 422,
         description: 'Validation error — the email field is required and must be a valid email address.',

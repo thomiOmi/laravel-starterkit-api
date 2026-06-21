@@ -18,20 +18,8 @@ final readonly class ResetPasswordController
         private ResetPasswordAction $resetPasswordAction
     ) {}
 
-    /**
-     * @return SuccessResponse<null>
-     */
     #[Endpoint(operationId: 'resetPassword', title: 'Reset Password')]
-    #[Response(
-        status: 200,
-        description: 'Password has been reset successfully. The user can now log in with the new password.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Password has been reset.',
-            'data' => null,
-        ]],
-    )]
+    #[Response(status: 200, description: 'Password reset successfully.', type: 'SuccessResponse<null>')]
     #[Response(
         status: 422,
         description: 'Validation error — invalid or expired token, mismatched email, or weak password. Includes field-level error details.',

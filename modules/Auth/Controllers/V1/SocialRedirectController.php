@@ -17,20 +17,8 @@ final readonly class SocialRedirectController
         private SocialRedirectAction $socialRedirect
     ) {}
 
-    /**
-     * @return SuccessResponse<array{url: string}>
-     */
     #[Endpoint(operationId: 'socialRedirect', title: 'Social Login Redirect')]
-    #[Response(
-        status: 200,
-        description: 'Returns the OAuth provider redirect URL. The frontend should redirect the user to this URL to begin the social authentication flow.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Redirect URL generated.',
-            'data' => ['url' => 'https://accounts.google.com/o/oauth2/auth?client_id=...&redirect_uri=...&response_type=code&scope=...'],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Social login redirect URL generated successfully.', type: 'SuccessResponse<array{url: string}>')]
     #[Response(
         status: 422,
         description: 'Unsupported social provider. Only configured providers (e.g. google, github) are accepted.',

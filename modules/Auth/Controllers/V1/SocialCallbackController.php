@@ -19,24 +19,8 @@ final readonly class SocialCallbackController
         private SocialCallbackAction $socialCallback
     ) {}
 
-    /**
-     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
-     */
     #[Endpoint(operationId: 'socialCallback', title: 'Social Login Callback')]
-    #[Response(
-        status: 200,
-        description: 'Social authentication successful. Returns the authenticated user profile with a Bearer access token.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Login successful.',
-            'data' => [
-                'user' => ['id' => '01abcd', 'name' => 'John Doe', 'email' => 'john@gmail.com', 'avatar' => null, 'roles' => ['user'], 'permissions' => [], 'email_verified_at' => '2026-04-23 15:19:09', 'created_at' => '2026-04-23 15:19:09', 'updated_at' => '2026-04-23 15:19:09', 'deleted_at' => null],
-                'access_token' => '1|abc123token',
-                'token_type' => 'Bearer',
-            ],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Social login completed successfully.', type: 'SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>')]
     #[Response(
         status: 422,
         description: 'Invalid provider callback data — missing or malformed OAuth code or provider mismatch.',
