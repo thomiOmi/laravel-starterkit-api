@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\ListPermissionsAction;
 use Modules\Role\Filters\PermissionFilter;
@@ -57,8 +60,19 @@ final readonly class PermissionIndexController
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
-    public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse
+    public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
+        /** @var Authenticatable&Model $user */
+        $user = auth()->user();
+
+        if (! $user->can('permission.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $permissions = $this->listPermissions->handle(
             $filter,
             $request->integer('page.size', 20),

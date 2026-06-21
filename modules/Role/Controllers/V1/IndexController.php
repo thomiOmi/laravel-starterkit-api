@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Role\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\ListRolesAction;
 use Modules\Role\Filters\RoleFilter;
@@ -55,8 +58,19 @@ final readonly class IndexController
             'detail' => 'You are not authorised to perform this action.',
         ]],
     )]
-    public function __invoke(Request $request, RoleFilter $filter): SuccessResponse
+    public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
+        /** @var Authenticatable&Model $user */
+        $user = auth()->user();
+
+        if (! $user->can('role.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $roles = $this->listRoles->handle(
             $filter,
             $request->integer('page.size', 10),

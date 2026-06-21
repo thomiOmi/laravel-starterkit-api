@@ -9,6 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
+use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
 
 /**

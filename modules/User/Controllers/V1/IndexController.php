@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\User\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Modules\User\Actions\ListUsersAction;
 use Modules\User\Filters\UserFilter;
@@ -59,8 +62,19 @@ final readonly class IndexController
             'instance' => 'https://example.com',
         ]],
     )]
-    public function __invoke(Request $request, UserFilter $filter): SuccessResponse
+    public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
+        /** @var Authenticatable&Model $currentUser */
+        $currentUser = auth()->user();
+
+        if (! $currentUser->can('user.view')) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: 403,
+                detail: __('general.forbidden'),
+            );
+        }
+
         $users = $this->listUsers->handle(
             $filter,
             $request->integer('page.size', 10),
