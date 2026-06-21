@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdateRoleAction;
+use Modules\Role\Repositories\RoleRepository;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
 
@@ -21,6 +22,7 @@ final readonly class UpdateController
 {
     public function __construct(
         private UpdateRoleAction $updateRole,
+        private RoleRepository $repository,
     ) {}
 
     /**
@@ -28,6 +30,7 @@ final readonly class UpdateController
      *
      * @param  RoleRequest  $request  The validated role update request.
      * @param  string  $role  The role ID.
+     * @return SuccessResponse|ProblemResponse The API response containing the updated role.
      */
     #[Endpoint(operationId: 'updateRole', title: 'Update Role')]
     #[Response(status: 200, description: 'Role updated successfully. Returns the updated role with assigned permissions.', type: 'SuccessResponse<RoleResource>')]
@@ -78,7 +81,25 @@ final readonly class UpdateController
     )]
     public function __invoke(RoleRequest $request, string $role): SuccessResponse|ProblemResponse
     {
-        $role = $this->updateRole->handle($role, $request->payload());
+        $model = $this->repository->findById($role);
+
+        if (! $model) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Role']),
+            );
+        }
+
+        $model = $this->updateRole->handle($model, $request->payload());
+
+        if (! $role) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Role']),
+            );
+        }
 
         if (! $role) {
             return new ProblemResponse(
@@ -91,7 +112,7 @@ final readonly class UpdateController
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'Role']),
-            new RoleResource($role),
+            new RoleResource($model),
         );
     }
 }

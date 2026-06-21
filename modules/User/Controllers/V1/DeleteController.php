@@ -12,6 +12,8 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\User\Actions\DeleteUserAction;
+use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('User Management')]
@@ -22,6 +24,7 @@ final readonly class DeleteController
 {
     public function __construct(
         private DeleteUserAction $deleteUser,
+        private UserRepository $userRepository,
     ) {}
 
     /**
@@ -80,7 +83,17 @@ final readonly class DeleteController
             );
         }
 
-        if ($this->deleteUser->handle($user)) {
+        $userModel = $this->userRepository->findById($user);
+
+        if (! $userModel) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User']),
+            );
+        }
+
+        if ($this->deleteUser->handle($userModel)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 

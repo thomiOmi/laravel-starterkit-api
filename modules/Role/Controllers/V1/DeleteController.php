@@ -12,6 +12,8 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeleteRoleAction;
+use Modules\Role\Repositories\RoleRepository;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Role Management')]
@@ -22,6 +24,7 @@ final readonly class DeleteController
 {
     public function __construct(
         private DeleteRoleAction $deleteRole,
+        private RoleRepository $roleRepository,
     ) {}
 
     /**
@@ -80,7 +83,17 @@ final readonly class DeleteController
             );
         }
 
-        if ($this->deleteRole->handle($role)) {
+        $roleModel = $this->roleRepository->findById($role);
+
+        if (! $roleModel) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Role']),
+            );
+        }
+
+        if ($this->deleteRole->handle($roleModel)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 

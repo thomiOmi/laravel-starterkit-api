@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Role\Actions;
 
 use Illuminate\Support\Facades\Cache;
+use Modules\Role\Models\Permission;
 use Modules\Role\Repositories\PermissionRepository;
 
 final readonly class DeletePermissionAction

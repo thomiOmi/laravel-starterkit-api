@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Role\Actions\UpdatePermissionAction;
+use Modules\Role\Repositories\PermissionRepository;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
 
@@ -20,7 +21,8 @@ use Modules\Role\Resources\PermissionResource;
 final readonly class PermissionUpdateController
 {
     public function __construct(
-        private UpdatePermissionAction $updatePermission
+        private UpdatePermissionAction $updatePermission,
+        private PermissionRepository $repository,
     ) {}
 
     /**
@@ -28,6 +30,7 @@ final readonly class PermissionUpdateController
      *
      * @param  PermissionRequest  $request  The validated permission update request.
      * @param  string  $permission  The permission ID.
+     * @return SuccessResponse|ProblemResponse The API response containing the updated permission.
      */
     #[Endpoint(operationId: 'updatePermission', title: 'Update Permission')]
     #[Response(status: 200, description: 'Permission updated successfully.', type: 'SuccessResponse<PermissionResource>')]
@@ -78,7 +81,25 @@ final readonly class PermissionUpdateController
     )]
     public function __invoke(PermissionRequest $request, string $permission): SuccessResponse|ProblemResponse
     {
-        $permission = $this->updatePermission->handle($permission, $request->payload());
+        $model = $this->repository->findById($permission);
+
+        if ($model === null) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
+
+        $model = $this->updatePermission->handle($model, $request->payload());
+
+        if (! $permission) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
 
         if (! $permission) {
             return new ProblemResponse(
@@ -91,7 +112,7 @@ final readonly class PermissionUpdateController
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'Permission']),
-            new PermissionResource($permission),
+            new PermissionResource($model),
         );
     }
 }

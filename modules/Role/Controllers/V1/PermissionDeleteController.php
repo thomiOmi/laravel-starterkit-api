@@ -12,6 +12,8 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
+use Modules\Role\Repositories\PermissionRepository;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 #[Group('Permission Management')]
@@ -21,7 +23,8 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 final readonly class PermissionDeleteController
 {
     public function __construct(
-        private DeletePermissionAction $deletePermission
+        private DeletePermissionAction $deletePermission,
+        private PermissionRepository $permissionRepository,
     ) {}
 
     /**
@@ -80,7 +83,17 @@ final readonly class PermissionDeleteController
             );
         }
 
-        if ($this->deletePermission->handle($permission)) {
+        $permissionModel = $this->permissionRepository->findById($permission);
+
+        if (! $permissionModel) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'Permission']),
+            );
+        }
+
+        if ($this->deletePermission->handle($permissionModel)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 

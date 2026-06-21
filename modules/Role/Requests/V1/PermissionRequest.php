@@ -7,6 +7,7 @@ namespace Modules\Role\Requests\V1;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Modules\Role\Models\Permission;
 use Modules\Role\Payloads\V1\PermissionPayload;
 
 #[BodyParameter(name: 'name', description: 'The unique permission name (e.g., "post.create").', required: true, example: 'post.create')]
@@ -34,7 +35,7 @@ final class PermissionRequest extends FormRequest
      */
     public function rules(): array
     {
-        $permissionId = $this->route('permission');
+        $permissionId = $this->getPermissionId();
 
         return [
             'name' => [
@@ -45,6 +46,16 @@ final class PermissionRequest extends FormRequest
             ],
             'guard_name' => ['nullable', 'string', 'max:255'],
         ];
+    }
+
+    /**
+     * Get the permission ID from the route.
+     */
+    private function getPermissionId(): ?string
+    {
+        $permission = $this->route('permission');
+
+        return $permission instanceof Permission ? (string) $permission->id : (string) $permission;
     }
 
     public function payload(): PermissionPayload

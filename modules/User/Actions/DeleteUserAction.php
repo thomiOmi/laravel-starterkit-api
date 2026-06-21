@@ -6,6 +6,7 @@ namespace Modules\User\Actions;
 
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Cache;
+use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
 
 final readonly class DeleteUserAction

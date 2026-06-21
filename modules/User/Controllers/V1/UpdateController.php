@@ -10,6 +10,7 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\User\Actions\UpdateUserAction;
+use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
 
@@ -21,6 +22,7 @@ final readonly class UpdateController
 {
     public function __construct(
         private UpdateUserAction $updateUser,
+        private UserRepository $repository,
     ) {}
 
     /**
@@ -28,6 +30,7 @@ final readonly class UpdateController
      *
      * @param  UserRequest  $request  The validated user update request.
      * @param  string  $user  The user ID.
+     * @return SuccessResponse|ProblemResponse The API response containing the updated user.
      */
     #[Endpoint(operationId: 'updateUser', title: 'Update User')]
     #[Response(status: 200, description: 'User updated successfully. Returns the updated user profile.', type: 'SuccessResponse<UserResource>')]
@@ -78,7 +81,25 @@ final readonly class UpdateController
     )]
     public function __invoke(UserRequest $request, string $user): SuccessResponse|ProblemResponse
     {
-        $user = $this->updateUser->handle($user, $request->payload());
+        $model = $this->repository->findById($user);
+
+        if (! $model) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User']),
+            );
+        }
+
+        $model = $this->updateUser->handle($model, $request->payload());
+
+        if (! $user) {
+            return new ProblemResponse(
+                title: 'Not Found',
+                status: 404,
+                detail: __('general.not_found', ['resource' => 'User']),
+            );
+        }
 
         if (! $user) {
             return new ProblemResponse(
@@ -91,7 +112,7 @@ final readonly class UpdateController
         return new SuccessResponse(
             'OK',
             __('general.updated', ['resource' => 'User']),
-            new UserResource($user),
+            new UserResource($model),
         );
     }
 }
