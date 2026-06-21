@@ -82,10 +82,10 @@ final readonly class IndexController
         );
 
         return new SuccessResponse(
-            title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Users']),
-            data: UserResource::collection($users),
-            status: 200
+            'OK',
+            __('general.retrieved', ['resource' => 'Users']),
+            UserResource::collection($users),
+            200,
         );
     }
 }

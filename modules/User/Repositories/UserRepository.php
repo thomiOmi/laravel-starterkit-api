@@ -17,7 +17,7 @@ final readonly class UserRepository
     {
         return $filter->apply(User::query())
             ->with(['roles.permissions:id,name', 'permissions:id,name'])
-            ->simplePaginate($pageSize, ['*'], 'page', $page);
+            ->paginate($pageSize, ['*'], 'page', $page);
     }
 
     public function findById(string $id): ?User
