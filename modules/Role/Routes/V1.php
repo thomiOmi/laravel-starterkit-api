@@ -18,22 +18,22 @@ use Modules\Role\Controllers\V1\UpdateController as RoleUpdateController;
 
 // Role routes
 Route::prefix('roles')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->group(function () {
-    Route::get('/', RoleIndexController::class)->middleware('can:role.view')->name('index');
-    Route::post('/', RoleCreateController::class)->middleware('can:role.create')->name('create');
+    Route::get('/', RoleIndexController::class)->name('index');
+    Route::post('/', RoleCreateController::class)->name('create');
 
     Route::post('/bulk/delete', BulkDeleteRolesController::class)->name('bulk.delete');
     Route::post('/bulk/restore', BulkRestoreRolesController::class)->name('bulk.restore');
 
-    Route::get('/{role}', RoleShowController::class)->middleware('can:role.view')->name('show');
-    Route::put('/{role}', RoleUpdateController::class)->middleware('can:role.edit')->name('update');
-    Route::delete('/{role}', RoleDeleteController::class)->middleware('can:role.delete')->name('delete');
+    Route::get('/{role}', RoleShowController::class)->name('show');
+    Route::put('/{role}', RoleUpdateController::class)->name('update');
+    Route::delete('/{role}', RoleDeleteController::class)->name('delete');
 });
 
 // Permission routes
 Route::prefix('permissions')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->name('permissions.')->group(function () {
-    Route::get('/', PermissionIndexController::class)->middleware('can:permission.view')->name('index');
-    Route::post('/', PermissionCreateController::class)->middleware('can:permission.create')->name('create');
-    Route::get('/{permission}', PermissionShowController::class)->middleware('can:permission.view')->name('show');
-    Route::put('/{permission}', PermissionUpdateController::class)->middleware('can:permission.edit')->name('update');
-    Route::delete('/{permission}', PermissionDeleteController::class)->middleware('can:permission.delete')->name('delete');
+    Route::get('/', PermissionIndexController::class)->name('index');
+    Route::post('/', PermissionCreateController::class)->name('create');
+    Route::get('/{permission}', PermissionShowController::class)->name('show');
+    Route::put('/{permission}', PermissionUpdateController::class)->name('update');
+    Route::delete('/{permission}', PermissionDeleteController::class)->name('delete');
 });

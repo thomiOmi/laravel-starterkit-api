@@ -29,16 +29,7 @@ final readonly class PermissionUpdateController
      * Update the specified permission.
      */
     #[Endpoint(operationId: 'updatePermission', title: 'Update Permission')]
-    #[Response(
-        status: 200,
-        description: 'Permission updated successfully. Returns the updated permission record.',
-        examples: [[
-            'status' => 200,
-            'title' => 'OK',
-            'detail' => 'Permission updated.',
-            'data' => ['id' => 1, 'name' => 'post.create', 'guard_name' => 'web'],
-        ]],
-    )]
+    #[Response(status: 200, description: 'Permission updated successfully.', type: 'SuccessResponse<PermissionResource>')]
     #[Response(
         status: 401,
         description: 'Authentication required. The request lacks a valid Bearer token.',

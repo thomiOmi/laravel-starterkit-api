@@ -8,6 +8,8 @@ use App\Http\Responses\ProblemResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
 use Modules\Role\Repositories\PermissionRepository;

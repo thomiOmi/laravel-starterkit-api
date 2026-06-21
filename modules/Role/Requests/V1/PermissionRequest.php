@@ -14,6 +14,22 @@ use Modules\Role\Payloads\V1\PermissionPayload;
 final class PermissionRequest extends FormRequest
 {
     /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        $user = $this->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        return $this->isMethod('POST')
+            ? $user->can('permission.create')
+            : $user->can('permission.edit');
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function rules(): array
