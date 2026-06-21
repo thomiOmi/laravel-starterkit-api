@@ -11,7 +11,6 @@ use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\ListDevicesAction;
 use Modules\Auth\Resources\DeviceResource;
-use Modules\User\Models\User;
 
 #[Group('Auth')]
 /**
@@ -38,10 +37,8 @@ final readonly class ListDevicesController
     )]
     public function __invoke(Request $request): SuccessResponse
     {
-        /** @var User $user */
-        $user = $request->user();
 
-        $devices = $this->listDevices->handle($user);
+        $devices = $this->listDevices->handle($request->user());
 
         return new SuccessResponse(
             'OK',

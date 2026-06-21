@@ -10,7 +10,6 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Auth\Actions\VerifyEmailAction;
-use Modules\User\Models\User;
 
 #[Group('Auth')]
 final readonly class VerifyEmailController
@@ -47,7 +46,7 @@ final readonly class VerifyEmailController
     {
         $user = $this->verifyEmail->handle($id, $hash);
 
-        if (! $user instanceof User) {
+        if (! $user) {
             return new ProblemResponse(
                 title: __('auth.not_found'),
                 status: 404,

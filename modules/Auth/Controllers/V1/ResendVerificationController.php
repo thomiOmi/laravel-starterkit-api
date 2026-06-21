@@ -10,7 +10,6 @@ use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\ResendVerificationAction;
-use Modules\User\Models\User;
 
 #[Group('Auth')]
 /**
@@ -37,10 +36,8 @@ final readonly class ResendVerificationController
     )]
     public function __invoke(Request $request): SuccessResponse
     {
-        /** @var User $user */
-        $user = $request->user();
 
-        $message = $this->resendVerificationAction->handle($user);
+        $message = $this->resendVerificationAction->handle($request->user());
 
         return new SuccessResponse('OK', $message);
     }
