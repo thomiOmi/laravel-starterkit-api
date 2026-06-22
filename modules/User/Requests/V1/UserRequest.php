@@ -39,7 +39,10 @@ final class UserRequest extends FormRequest
             return $authenticatedUser->can('user.create');
         }
 
-        return (string) $authenticatedUser->getKey() === $this->getUserId() || $authenticatedUser->can('user.edit');
+        /** @var string|int $authId */
+        $authId = $authenticatedUser->getKey();
+
+        return (string) $authId === $this->getUserId() || $authenticatedUser->can('user.edit');
     }
 
     /**
@@ -76,7 +79,14 @@ final class UserRequest extends FormRequest
     {
         $user = $this->route('user');
 
-        return $user instanceof User ? (string) $user->getKey() : (string) ($user ?? '');
+        if ($user instanceof User) {
+            /** @var string|int $key */
+            $key = $user->getKey();
+
+            return (string) $key;
+        }
+
+        return is_string($user) || is_int($user) ? (string) $user : '';
     }
 
     /**

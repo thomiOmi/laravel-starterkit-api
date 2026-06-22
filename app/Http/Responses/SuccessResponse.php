@@ -9,6 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\AbstractCursorPaginator;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 /**
  * @template TData = mixed
@@ -68,7 +69,10 @@ class SuccessResponse extends JsonResponse
         if ($paginator instanceof AbstractPaginator) {
             $links['first'] = $paginator->url(1);
             $links['prev'] = $paginator->previousPageUrl();
-            $links['next'] = $paginator->nextPageUrl();
+
+            if ($paginator instanceof Paginator || $paginator instanceof LengthAwarePaginator) {
+                $links['next'] = $paginator->nextPageUrl();
+            }
 
             $meta['from'] = $paginator->firstItem();
             $meta['to'] = $paginator->lastItem();
