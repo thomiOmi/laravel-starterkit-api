@@ -68,7 +68,10 @@ class SuccessResponse extends JsonResponse
         if ($paginator instanceof AbstractPaginator) {
             $links['first'] = $paginator->url(1);
             $links['prev'] = $paginator->previousPageUrl();
-            $links['next'] = $paginator->nextPageUrl();
+
+            if (method_exists($paginator, 'nextPageUrl')) {
+                $links['next'] = $paginator->nextPageUrl();
+            }
 
             if ($paginator instanceof LengthAwarePaginator) {
                 $links['last'] = $paginator->url($paginator->lastPage());
