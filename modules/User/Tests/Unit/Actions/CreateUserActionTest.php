@@ -15,10 +15,11 @@ describe('CreateUserAction', function () {
     it('creates a user and dispatches UserCreated event', function () {
         Event::fake();
 
+        $password = config('auth.default_password');
         $payload = new UserPayload(
             name: 'John Doe',
             email: 'john@example.com',
-            password: 'secret123',
+            password: $password,
         );
 
         $action = app(CreateUserAction::class);

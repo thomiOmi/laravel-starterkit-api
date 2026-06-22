@@ -34,9 +34,8 @@ final class UserRequest extends FormRequest
             return false;
         }
 
-        // POST means create, handled by 'can:user.create' middleware in route
         if ($this->isMethod('POST')) {
-            return true;
+            return $authenticatedUser->can('user.create');
         }
 
         $userId = $this->route('user');

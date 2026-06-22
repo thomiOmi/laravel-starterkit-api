@@ -10,9 +10,9 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use Modules\Role\Actions\ShowPermissionAction;
 use Modules\Role\Resources\PermissionResource;
+use Modules\User\Models\User;
 
 #[Group('Permission Management')]
 /**
@@ -64,7 +64,7 @@ final readonly class PermissionShowController
     )]
     public function __invoke(string $permission): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&Model $user */
+        /** @var Authenticatable&User $user */
         $user = auth()->user();
 
         if (! $user->can('permission.view')) {

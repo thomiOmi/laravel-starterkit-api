@@ -33,11 +33,12 @@ describe('List', function () {
 
 describe('Create', function () {
     it('a user', function () {
+        $password = config('auth.default_password');
         $payload = [
             'name' => 'New User',
             'email' => 'newuser@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'password' => $password,
+            'password_confirmation' => $password,
         ];
 
         $this->adminPost('/api/v1/users', $payload)

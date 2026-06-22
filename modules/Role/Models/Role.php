@@ -27,4 +27,10 @@ class Role extends SpatieRole
 
     /** @use HasFactory<RoleFactory> */
     use HasDefaultBehavior, HasFactory;
+
+    protected $fillable = [
+        'name',
+        'guard_name',
+        'description',
+    ];
 }

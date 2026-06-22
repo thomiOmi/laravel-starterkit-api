@@ -34,11 +34,12 @@ describe('User CRUD Operations V1', function () {
     });
 
     it('creates a new user', function () {
+        $password = config('auth.default_password');
         $payload = [
             'name' => 'Jane Doe',
             'email' => 'jane@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'password' => $password,
+            'password_confirmation' => $password,
         ];
 
         $this->adminPost('/api/v1/users', $payload)

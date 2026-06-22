@@ -12,16 +12,18 @@ use Modules\User\Models\User;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $password = config('auth.default_password');
     $this->user = User::factory()->create([
-        'password' => 'secret123',
+        'password' => $password,
     ]);
 });
 
 it('authenticates user with valid credentials', function () {
+    $password = config('auth.default_password');
     $action = app(LoginAction::class);
     $payload = new LoginPayload(
         email: $this->user->email,
-        password: 'secret123',
+        password: $password,
         deviceName: 'test-device',
     );
 
@@ -33,12 +35,13 @@ it('authenticates user with valid credentials', function () {
 });
 
 it('authenticates and updates token with ip and user agent', function () {
+    $password = config('auth.default_password');
     Auth::login($this->user);
 
     $action = app(LoginAction::class);
     $payload = new LoginPayload(
         email: $this->user->email,
-        password: 'secret123',
+        password: $password,
     );
 
     $result = $action->handle($payload, '192.168.1.1', 'curl/7.68');

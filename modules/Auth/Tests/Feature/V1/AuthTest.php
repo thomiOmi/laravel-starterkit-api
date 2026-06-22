@@ -12,11 +12,12 @@ beforeEach(function () {
 
 describe('Auth Core Features V1', function () {
     it('can register a new user', function () {
+        $password = config('auth.default_password');
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'John Doe',
             'email' => 'john@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'password' => $password,
+            'password_confirmation' => $password,
         ]);
 
         $response->assertStatus(Response::HTTP_CREATED);
@@ -27,13 +28,14 @@ describe('Auth Core Features V1', function () {
     });
 
     it('can login with valid credentials', function () {
+        $password = config('auth.default_password');
         $user = User::factory()->create([
-            'password' => 'password123',
+            'password' => $password,
         ]);
 
         $response = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
-            'password' => 'password123',
+            'password' => $password,
         ]);
 
         $response->assertSuccessful()

@@ -13,4 +13,9 @@ class Permission extends SpatiePermission
 {
     /** @use HasFactory<PermissionFactory> */
     use HasDefaultBehavior, HasFactory;
+
+    protected $fillable = [
+        'name',
+        'guard_name',
+    ];
 }

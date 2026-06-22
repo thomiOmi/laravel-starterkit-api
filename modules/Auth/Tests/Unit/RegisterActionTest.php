@@ -14,7 +14,7 @@ it('creates a new user', function () {
     $payload = new RegisterPayload(
         name: 'John Doe',
         email: 'john@example.com',
-        password: 'password123',
+        password: config('auth.default_password'),
     );
 
     $user = $action->handle($payload);
@@ -25,16 +25,17 @@ it('creates a new user', function () {
 });
 
 it('creates user with hashed password', function () {
+    $password = config('auth.default_password');
     $action = app(RegisterAction::class);
     $payload = new RegisterPayload(
         name: 'Jane Doe',
         email: 'jane@example.com',
-        password: 'password123',
+        password: $password,
     );
 
     $user = $action->handle($payload);
 
-    expect(Hash::check('password123', $user->password))->toBeTrue();
+    expect(Hash::check($password, $user->password))->toBeTrue();
 });
 
 it('persists user in database', function () {
@@ -42,7 +43,7 @@ it('persists user in database', function () {
     $payload = new RegisterPayload(
         name: 'Persist Test',
         email: 'persist@example.com',
-        password: 'password123',
+        password: config('auth.default_password'),
     );
 
     $action->handle($payload);

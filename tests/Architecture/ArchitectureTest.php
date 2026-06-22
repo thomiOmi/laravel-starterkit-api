@@ -55,6 +55,7 @@ test('models should not be used in controllers')
         'Modules\Auth\Controllers\V1\VerifyEmailController',
         'Modules\Role\Controllers\V1\PermissionDeleteController',
         'Modules\Role\Controllers\V1\PermissionShowController',
+        'Modules\Role\Controllers\V1\PermissionIndexController',
         'Modules\Role\Controllers\V1\PermissionUpdateController',
     ]);
 
