@@ -67,6 +67,7 @@ final class UserRequest extends FormRequest
                 $this->isMethod('POST') ? 'required' : 'nullable',
                 'string',
                 'min:8',
+                'max:255',
                 'confirmed',
             ],
         ];
@@ -86,7 +87,7 @@ final class UserRequest extends FormRequest
             return (string) $key;
         }
 
-        return is_string($user) || is_int($user) ? (string) $user : '';
+        return is_scalar($user) ? (string) $user : '';
     }
 
     /**
