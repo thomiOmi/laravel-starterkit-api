@@ -44,7 +44,7 @@ class SuccessResponse extends JsonResponse
             $payload['data'] = $data->items();
             $this->extractPagination($payload, $data);
         } else {
-            $payload['data'] = $data;
+            $payload['data'] = $this->resolveData($data);
         }
 
         if (! empty($extra)) {
@@ -52,6 +52,22 @@ class SuccessResponse extends JsonResponse
         }
 
         parent::__construct($payload, $status);
+    }
+
+    /**
+     * Resolve data recursively if it contains JsonResource.
+     */
+    private function resolveData(mixed $data): mixed
+    {
+        if ($data instanceof JsonResource) {
+            return $data->resolve(app()->bound('request') ? app('request') : null);
+        }
+
+        if (is_array($data)) {
+            return array_map(fn (mixed $item): mixed => $this->resolveData($item), $data);
+        }
+
+        return $data;
     }
 
     /**
