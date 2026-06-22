@@ -26,8 +26,8 @@ jobs:
   turbo-scan:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
+      contents: write
+      pull-requests: write
 
     # Only run on main branches, not hotfixes
     if: |
@@ -148,42 +148,13 @@ jobs:
             - **Test baseline:** See test-baseline.log for current test health
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}
-          draft: true  # Create draft PR, require review
-          auto_commit_message: 'turbo: optimize performance pattern'
 
       - name: Verify Pest suite passes post-optimization
-        if: steps.turbo.outputs.pr_created == 'true'
         run: vendor/bin/pest --no-interaction
         continue-on-error: true
-
-      - name: Comment on PR with measurement context
-        if: steps.turbo.outputs.pr_url
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🔬 Performance Agent Context
-
-            **Test Baseline:** \`\`\`
-            ${{ steps.baseline_tests.outputs.stdout }}
-            \`\`\`
-
-            **Guardrails:**
-            - ✅ Must have Pest test coverage
-            - ✅ No breaking of Observers/Events
-            - ✅ No touching migrations or factories
-            - ✅ Changes ≤50 lines
-
-            **Measurement Required:** Ensure PR description includes specific performance metric (queries saved, ms reduced, etc).`
-            });
 
       - name: Summary
         if: always()
         run: |
           echo "## TURBO Optimization Scan Complete"
-          echo "- PR Created: ${{ steps.turbo.outputs.pr_created || 'false' }}"
-          echo "- PR URL: ${{ steps.turbo.outputs.pr_url || 'N/A' }}"
           echo "- Status: ${{ job.status }}"
