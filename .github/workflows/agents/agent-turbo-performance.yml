@@ -1,0 +1,189 @@
+name: Agent TURBO — Performance Optimization
+
+on:
+  schedule:
+    # Run daily at 4 AM UTC (after night batch jobs complete)
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Target branch for scan'
+        required: false
+        default: 'develop'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Framework context for Jules
+  PHP_VERSION: '8.4'
+  LARAVEL_VERSION: '13'
+  TEST_FRAMEWORK: 'Pest v4'
+  ARCHITECTURE: 'Modular (Repository/Action patterns)'
+
+jobs:
+  turbo-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    # Only run on main branches, not hotfixes
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.target_branch || github.ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, sqlite
+          tools: composer:latest
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run Pest baseline (pre-optimization)
+        id: baseline_tests
+        run: vendor/bin/pest --no-interaction 2>&1 | tee test-baseline.log
+        continue-on-error: true
+
+      - name: Invoke Jules — TURBO Optimization Agent
+        uses: google-labs-code/jules-action@v1.0.0
+        id: turbo
+        with:
+          # Load improved Laravel-specific prompt
+          prompt: |
+            # TURBO: Performance Optimization Agent for Laravel 13+
+
+            You are TURBO, a performance optimization agent for Laravel backends. Focus on **high-confidence, low-risk wins**.
+
+            ## What to Hunt
+
+            ### Eloquent Patterns (High Impact, Medium Risk)
+            - Missing `.with()` eager loads before loop/collection iteration
+            - Repeated query for same data (reachable via spy on Request lifecycle)
+            - N+1 on relationships: `->each(fn($m) => $m->related->property)`
+            - Unnecessary select/pluck before collection methods (`Model::all()->pluck('id')` → `Model::pluck('id')`)
+            - Fetching all rows then filtering in PHP (no where clause)
+
+            ### Query/Data Structure Issues (Medium Impact, Low Risk)
+            - Redundant `distinct()` or `groupBy()` without aggregation
+            - Collection methods on query builder (call on query, not result set)
+              - `Model::where(...)->get()->map()` → `Model::where(...)->map()`
+            - Circular eager load paths (user → posts → user) without `without()` guard
+            - Query results fetched but only 1-2 columns used (missing `select()`)
+
+            ### Caching Opportunities (High Impact, Medium Risk)
+            - Repeated lookups of config, feature flags, or permission rules
+            - Query results used in loop/map without prior collection
+            - Stateless lookups that don't change within request (`auth()->user()`, routes, config)
+
+            ### Architecture Issues (High Impact, High Risk — only if test coverage exists)
+            - Repository pattern: fetching full model when only ID needed
+            - Action classes: eager loading before filtering/hydration
+            - Middleware running expensive checks on every request
+
+            ## Process
+
+            1. **🔍 PROFILE** — Scan git diff for common anti-patterns
+            2. **⚡ SELECT** — Pick ONE that:
+               - Has **high confidence** (pattern is unambiguous)
+               - Won't break Observers/Listeners/Events
+               - **MUST be backed by test coverage** (Pest) in changed file
+            3. **🔧 OPTIMIZE** — Change + comment explaining Eloquent behavior
+            4. **✅ VERIFY** — Confirm tests pass; calculate expected speedup
+            5. **🎁 PRESENT** — Draft PR with measurement
+
+            ## PR Format
+
+            ```
+            🚀 Turbo: [optimization]
+
+            💡 Pattern: [N+1 eager load | Query result handling | etc]
+            🎯 Why: [Specific cost — e.g., "5 extra queries per request"]
+            📊 Impact: ~[X]ms saved per request (or queries reduced from N to M)
+            🔬 Method: [Ran Pest suite | Measured via Laravel Debugbar | SPX profiler]
+            ```
+
+            ## Rules & Guardrails
+
+            - **Only if tests exist** in the changed file. No test coverage = no PR.
+            - **Ignore if Observers/Events present** on the model. Too much hidden coupling.
+            - **Don't touch migrations, seeders, factories.** Risk of breaking cascades.
+            - **Avoid architectural changes.** Keep to single file, single pattern.
+            - Changes must be **≤50 lines** (diff context, not total).
+            - **Run Pest suite locally.** All tests must pass.
+            - **If no clear measurement possible,** don't open PR.
+
+            ## Non-Goals
+
+            - Cache invalidation logic (too complex for automated change)
+            - Query builder refactoring without schema knowledge
+            - Eloquent macro definitions (unless obvious duplication)
+            - Changes affecting request/response cycle timing (middleware, event dispatch order)
+
+            ## Context
+
+            - **Framework:** Laravel ${{ env.LARAVEL_VERSION }}
+            - **PHP:** ${{ env.PHP_VERSION }}
+            - **Tests:** ${{ env.TEST_FRAMEWORK }}
+            - **Architecture:** ${{ env.ARCHITECTURE }}
+            - **Test baseline:** See test-baseline.log for current test health
+
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          draft: true  # Create draft PR, require review
+          auto_commit_message: 'turbo: optimize performance pattern'
+
+      - name: Verify Pest suite passes post-optimization
+        if: steps.turbo.outputs.pr_created == 'true'
+        run: vendor/bin/pest --no-interaction
+        continue-on-error: true
+
+      - name: Comment on PR with measurement context
+        if: steps.turbo.outputs.pr_url
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🔬 Performance Agent Context
+
+            **Test Baseline:** \`\`\`
+            ${{ steps.baseline_tests.outputs.stdout }}
+            \`\`\`
+
+            **Guardrails:**
+            - ✅ Must have Pest test coverage
+            - ✅ No breaking of Observers/Events
+            - ✅ No touching migrations or factories
+            - ✅ Changes ≤50 lines
+
+            **Measurement Required:** Ensure PR description includes specific performance metric (queries saved, ms reduced, etc).`
+            });
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## TURBO Optimization Scan Complete"
+          echo "- PR Created: ${{ steps.turbo.outputs.pr_created || 'false' }}"
+          echo "- PR URL: ${{ steps.turbo.outputs.pr_url || 'N/A' }}"
+          echo "- Status: ${{ job.status }}"
