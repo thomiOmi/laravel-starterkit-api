@@ -60,13 +60,7 @@ class SuccessResponse extends JsonResponse
      */
     private function extractPagination(array &$payload, AbstractPaginator|AbstractCursorPaginator $paginator): void
     {
-        $payload['links'] = array_filter([
-            'first' => method_exists($paginator, 'url') ? $paginator->url(1) : null,
-            'last' => $paginator instanceof LengthAwarePaginator ? $paginator->url($paginator->lastPage()) : null,
-            'prev' => method_exists($paginator, 'previousPageUrl') ? $paginator->previousPageUrl() : null,
-            'next' => method_exists($paginator, 'nextPageUrl') ? $paginator->nextPageUrl() : null,
-        ], fn (mixed $value): bool => ! is_null($value));
-
+        $links = [];
         $meta = [
             'per_page' => $paginator->perPage(),
         ];
@@ -74,19 +68,10 @@ class SuccessResponse extends JsonResponse
         if ($paginator instanceof AbstractPaginator) {
             $links['first'] = $paginator->url(1);
             $links['prev'] = $paginator->previousPageUrl();
+            $links['next'] = $paginator->nextPageUrl();
 
-            if (method_exists($paginator, 'nextPageUrl')) {
-                $links['next'] = $paginator->nextPageUrl();
-            }
-
-            if (method_exists($paginator, 'firstItem')) {
-                $meta['from'] = $paginator->firstItem();
-            }
-
-            if (method_exists($paginator, 'lastItem')) {
-                $meta['to'] = $paginator->lastItem();
-            }
-
+            $meta['from'] = $paginator->firstItem();
+            $meta['to'] = $paginator->lastItem();
             $meta['current_page'] = $paginator->currentPage();
 
             if ($paginator instanceof LengthAwarePaginator) {
@@ -94,9 +79,8 @@ class SuccessResponse extends JsonResponse
                 $meta['last_page'] = $paginator->lastPage();
                 $meta['total'] = $paginator->total();
             }
-        }
-
-        if ($paginator instanceof AbstractCursorPaginator) {
+        } elseif ($paginator instanceof AbstractCursorPaginator) {
+            $links['first'] = $paginator->url(null);
             $links['prev'] = $paginator->previousPageUrl();
             $links['next'] = $paginator->nextPageUrl();
 
