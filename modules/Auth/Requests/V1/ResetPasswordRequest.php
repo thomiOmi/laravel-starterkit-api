@@ -23,8 +23,8 @@ final class ResetPasswordRequest extends FormRequest
 
         return [
             'token' => ['required'],
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string', $passwordRule, 'confirmed'],
+            'email' => ['required', 'email', 'max:255'],
+            'password' => ['required', 'string', 'max:255', $passwordRule, 'confirmed'],
             'password_confirmation' => ['required', 'string'],
         ];
     }
