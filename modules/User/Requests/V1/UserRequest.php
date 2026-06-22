@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\User\Requests\V1;
 
+use App\Traits\Rules\PasswordValidationRules;
+use App\Traits\Rules\ProfileValidationRules;
 use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
-use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
 
 /**
@@ -23,6 +24,8 @@ use Modules\User\Payloads\V1\UserPayload;
 #[BodyParameter(name: 'password_confirmation', description: 'Password confirmation, must match password.', example: 'password123')]
 final class UserRequest extends FormRequest
 {
+    use PasswordValidationRules, ProfileValidationRules;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -47,27 +50,15 @@ final class UserRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<int, string|Unique|ValidationRule>> The validation rules.
+     * @return array<string, array<int, Password|Unique|ValidationRule|string>> The validation rules.
      */
     public function rules(): array
     {
         $userId = $this->route('user');
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($userId),
-            ],
-            'password' => [
-                $this->isMethod('POST') ? 'required' : 'nullable',
-                'string',
-                'min:8',
-                'confirmed',
-            ],
+            ...$this->profileRules($userId),
+            'password' => $this->passwordRules($this->isMethod('POST')),
         ];
     }
 

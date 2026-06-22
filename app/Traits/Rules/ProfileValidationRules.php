@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits\Rules;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Unique;
 use Modules\User\Models\User;
 
 trait ProfileValidationRules
@@ -11,7 +13,7 @@ trait ProfileValidationRules
     /**
      * Get the validation rules used to validate user profiles.
      *
-     * @return array<string, array<int, ValidationRule|array<mixed>|string>>
+     * @return array<string, array<int, string|Unique>>
      */
     protected function profileRules(?string $userId = null): array
     {
@@ -24,7 +26,7 @@ trait ProfileValidationRules
     /**
      * Get the validation rules used to validate user names.
      *
-     * @return array<int, ValidationRule|array<mixed>|string>
+     * @return array<int, string>
      */
     protected function nameRules(): array
     {
@@ -34,7 +36,7 @@ trait ProfileValidationRules
     /**
      * Get the validation rules used to validate user emails.
      *
-     * @return array<int, ValidationRule|array<mixed>|string>
+     * @return array<int, string|Unique>
      */
     protected function emailRules(?string $userId = null): array
     {

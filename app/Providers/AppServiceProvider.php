@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Sanctum\PersonalAccessToken;
+use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
@@ -14,6 +15,8 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -25,27 +28,23 @@ use Modules\User\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Register any application services.
+     */
     public function register(): void {}
 
+    /**
+     * Bootstrap any application services.
+     */
     public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
-        $this->defineFeatures();
-
-        Model::shouldBeStrict(! app()->isProduction());
-        FormRequest::failOnUnknownFields(! app()->isProduction());
+        $this->configureDefaults();
 
         $this->configureRateLimiting();
 
-        Password::defaults(function () {
-            $rule = Password::min(8);
-
-            return app()->isProduction()
-                ? $rule->mixedCase()->uncompromised()
-                : $rule;
-        });
-
+        $this->defineFeatures();
         Gate::before(function ($user, $ability) {
             /** @var User $user */
             return $user->hasRole('super-admin') ? true : null;
@@ -55,6 +54,32 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureEmailVerification();
         $this->configurePasswordReset();
+    }
+
+    /**
+     * Configure default behaviors for production-ready applications.
+     */
+    protected function configureDefaults(): void
+    {
+        Date::use(CarbonImmutable::class);
+
+        Model::shouldBeStrict(! app()->isProduction());
+
+        FormRequest::failOnUnknownFields(! app()->isProduction());
+
+        DB::prohibitDestructiveCommands(
+            app()->isProduction(),
+        );
+
+        Password::defaults(fn (): ?Password => app()->isProduction()
+            ? Password::min(12)
+                ->mixedCase()
+                ->letters()
+                ->numbers()
+                ->symbols()
+                ->uncompromised()
+            : null,
+        );
     }
 
     protected function configureScramble(): void

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Traits\Rules;
 
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -10,17 +12,17 @@ trait PasswordValidationRules
     /**
      * Get the validation rules used to validate passwords.
      *
-     * @return array<int, Password|ValidationRule|array<mixed>|string>
+     * @return array<int, Password|ValidationRule|string>
      */
-    protected function passwordRules(): array
+    protected function passwordRules(bool $required = true): array
     {
-        return ['required', 'string', Password::default(), 'confirmed'];
+        return [$required ? 'required' : 'nullable', 'string', Password::defaults() ?? Password::min(8), 'confirmed'];
     }
 
     /**
      * Get the validation rules used to validate the current password.
      *
-     * @return array<int, Password|ValidationRule|array<mixed>|string>
+     * @return array<int, string>
      */
     protected function currentPasswordRules(): array
     {
