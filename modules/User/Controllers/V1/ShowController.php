@@ -9,8 +9,8 @@ use App\Http\Responses\SuccessResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use Modules\User\Actions\ShowUserAction;
 use Modules\User\Resources\UserResource;
 
@@ -64,10 +64,10 @@ final readonly class ShowController
     )]
     public function __invoke(string $user): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&Model $currentUser */
+        /** @var Authenticatable&Authorizable $currentUser */
         $currentUser = auth()->user();
 
-        if ($currentUser->getKey() !== $user && ! $currentUser->can('user.view')) {
+        if ($currentUser->getAuthIdentifier() !== $user && ! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: 403,

@@ -10,8 +10,8 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Modules\User\Actions\ListUsersAction;
 use Modules\User\Filters\UserFilter;
@@ -64,7 +64,7 @@ final readonly class IndexController
     )]
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&Model $currentUser */
+        /** @var Authenticatable&Authorizable $currentUser */
         $currentUser = auth()->user();
 
         if (! $currentUser->can('user.view')) {

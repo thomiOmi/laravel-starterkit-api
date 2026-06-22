@@ -10,7 +10,6 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Modules\Auth\Actions\VerifyEmailAction;
-use Modules\User\Models\User;
 
 #[Group('Auth')]
 final readonly class VerifyEmailController

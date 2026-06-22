@@ -8,8 +8,8 @@ use App\Http\Responses\ProblemResponse;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -69,7 +69,7 @@ final readonly class PermissionDeleteController
     )]
     public function __invoke(string $permission): JsonResponse|ProblemResponse
     {
-        /** @var Authenticatable&Model $user */
+        /** @var Authenticatable&Authorizable $user */
         $user = auth()->user();
 
         if (! $user->can('permission.delete')) {

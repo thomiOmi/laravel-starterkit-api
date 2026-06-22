@@ -10,8 +10,8 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\ListRolesAction;
 use Modules\Role\Filters\RoleFilter;
@@ -60,7 +60,7 @@ final readonly class IndexController
     )]
     public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&Model $user */
+        /** @var Authenticatable&Authorizable $user */
         $user = auth()->user();
 
         if (! $user->can('role.view')) {

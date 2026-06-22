@@ -10,8 +10,8 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\QueryParameter;
 use Dedoc\Scramble\Attributes\Response;
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\ListPermissionsAction;
 use Modules\Role\Filters\PermissionFilter;
@@ -62,7 +62,7 @@ final readonly class PermissionIndexController
     )]
     public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&Model $user */
+        /** @var Authenticatable&Authorizable $user */
         $user = auth()->user();
 
         if (! $user->can('permission.view')) {
