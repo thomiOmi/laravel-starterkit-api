@@ -55,15 +55,17 @@ class SuccessResponse extends JsonResponse
     }
 
     /**
-     * @param  array<string, mixed>  $payload
-     * @param  AbstractPaginator<int, mixed>|AbstractCursorPaginator<int, mixed>  $paginator
+     * Extract pagination metadata and links from the paginator.
+     *
+     * @param  array<string, mixed>  $payload  The response payload to update.
+     * @param  AbstractPaginator<int, mixed>|AbstractCursorPaginator<int, mixed>  $paginator  The paginator instance.
      */
     private function extractPagination(array &$payload, AbstractPaginator|AbstractCursorPaginator $paginator): void
     {
         $links = [
-            'first' => method_exists($paginator, 'url') ? $paginator->url(1) : null,
+            'first' => $paginator instanceof AbstractPaginator ? $paginator->url(1) : $paginator->url(null),
             'last' => $paginator instanceof LengthAwarePaginator ? $paginator->url($paginator->lastPage()) : null,
-            'prev' => method_exists($paginator, 'previousPageUrl') ? $paginator->previousPageUrl() : null,
+            'prev' => $paginator->previousPageUrl(),
             'next' => method_exists($paginator, 'nextPageUrl') ? $paginator->nextPageUrl() : null,
         ];
 
@@ -73,27 +75,14 @@ class SuccessResponse extends JsonResponse
 
         if ($paginator instanceof AbstractPaginator) {
             $meta['current_page'] = $paginator->currentPage();
-
-            if (method_exists($paginator, 'firstItem')) {
-                $meta['from'] = $paginator->firstItem();
-            }
-
-            if (method_exists($paginator, 'lastItem')) {
-                $meta['to'] = $paginator->lastItem();
-            }
+            $meta['from'] = $paginator->firstItem();
+            $meta['to'] = $paginator->lastItem();
 
             if ($paginator instanceof LengthAwarePaginator) {
                 $meta['last_page'] = $paginator->lastPage();
                 $meta['total'] = $paginator->total();
             }
-        }
-
-        if ($paginator instanceof AbstractCursorPaginator) {
-            // Some cursor paginators might implement url(null) for the first page
-            if (method_exists($paginator, 'url')) {
-                $links['first'] = $paginator->url(null);
-            }
-
+        } elseif ($paginator instanceof AbstractCursorPaginator) {
             $meta['next_cursor'] = $paginator->nextCursor()?->encode();
             $meta['prev_cursor'] = $paginator->previousCursor()?->encode();
         }

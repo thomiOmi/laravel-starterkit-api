@@ -37,8 +37,12 @@ class UserFilter extends BaseFilter
      * @param  Builder<User>  $builder
      * @return Builder<User>
      */
-    public function role(Builder $builder, string $value): Builder
+    public function role(Builder $builder, mixed $value): Builder
     {
+        if (! is_string($value)) {
+            return $builder;
+        }
+
         return $builder->whereRelation('roles', 'name', $value);
     }
 
@@ -46,8 +50,12 @@ class UserFilter extends BaseFilter
      * @param  Builder<User>  $builder
      * @return Builder<User>
      */
-    public function status(Builder $builder, string $value): Builder
+    public function status(Builder $builder, mixed $value): Builder
     {
+        if (! is_string($value)) {
+            return $builder;
+        }
+
         if ($value === 'verified') {
             return $builder->whereNotNull('email_verified_at');
         }
