@@ -28,21 +28,18 @@ final class UserRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        /** @var User|null $authenticatedUser */
         $authenticatedUser = $this->user();
 
         if ($authenticatedUser === null) {
             return false;
         }
 
-        // POST means create, handled by 'can:user.create' middleware in route
         if ($this->isMethod('POST')) {
-            return true;
+            return $authenticatedUser->can('user.create');
         }
 
-        $userId = $this->route('user');
-
-        // Check if the user is updating their own profile or has permission
-        return $authenticatedUser->id === $userId || $authenticatedUser->can('user.edit');
+        return $authenticatedUser->getKey() === $this->getUserId() || $authenticatedUser->can('user.edit');
     }
 
     /**
@@ -52,7 +49,7 @@ final class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('user');
+        $userId = $this->getUserId();
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -70,6 +67,16 @@ final class UserRequest extends FormRequest
                 'confirmed',
             ],
         ];
+    }
+
+    /**
+     * Get the user ID from the route.
+     */
+    public function getUserId(): string
+    {
+        $user = $this->route('user');
+
+        return $user instanceof User ? (string) $user->getKey() : (string) $user;
     }
 
     /**
