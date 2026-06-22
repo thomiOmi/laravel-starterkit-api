@@ -36,12 +36,8 @@ class PermissionFilter extends BaseFilter
      * @param  Builder<Permission>  $builder
      * @return Builder<Permission>
      */
-    public function guard(Builder $builder, mixed $value): Builder
+    public function guard(Builder $builder, string $value): Builder
     {
-        if (! is_string($value)) {
-            return $builder;
-        }
-
         return $builder->where('guard_name', $value);
     }
 }

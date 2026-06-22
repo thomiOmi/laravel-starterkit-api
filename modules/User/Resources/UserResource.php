@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\User\Resources;
 
+use App\Traits\HasDateFormatting;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 use Modules\User\Models\User;
 
 /**
@@ -16,14 +16,7 @@ use Modules\User\Models\User;
  */
 class UserResource extends JsonResource
 {
-    protected function formatDate(\DateTimeInterface|string|null $date): ?string
-    {
-        if (is_string($date)) {
-            $date = Carbon::parse($date);
-        }
-
-        return $date?->format('Y-m-d H:i:s');
-    }
+    use HasDateFormatting;
 
     /**
      * Transform the resource into an array.

@@ -8,8 +8,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\AbstractCursorPaginator;
 use Illuminate\Pagination\AbstractPaginator;
-use Illuminate\Http\Resources\Json\ResourceCollection;
-use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -62,24 +60,19 @@ class SuccessResponse extends JsonResponse
      */
     private function extractPagination(array &$payload, AbstractPaginator|AbstractCursorPaginator $paginator): void
     {
-        $payload['links'] = array_filter([
+        $links = [
             'first' => method_exists($paginator, 'url') ? $paginator->url(1) : null,
             'last' => $paginator instanceof LengthAwarePaginator ? $paginator->url($paginator->lastPage()) : null,
             'prev' => method_exists($paginator, 'previousPageUrl') ? $paginator->previousPageUrl() : null,
             'next' => method_exists($paginator, 'nextPageUrl') ? $paginator->nextPageUrl() : null,
-        ], fn (mixed $value): bool => ! is_null($value));
+        ];
 
         $meta = [
             'per_page' => $paginator->perPage(),
         ];
 
         if ($paginator instanceof AbstractPaginator) {
-            $links['first'] = $paginator->url(1);
-            $links['prev'] = $paginator->previousPageUrl();
-
-            if (method_exists($paginator, 'nextPageUrl')) {
-                $links['next'] = $paginator->nextPageUrl();
-            }
+            $meta['current_page'] = $paginator->currentPage();
 
             if (method_exists($paginator, 'firstItem')) {
                 $meta['from'] = $paginator->firstItem();
@@ -89,18 +82,17 @@ class SuccessResponse extends JsonResponse
                 $meta['to'] = $paginator->lastItem();
             }
 
-            $meta['current_page'] = $paginator->currentPage();
-
             if ($paginator instanceof LengthAwarePaginator) {
-                $links['last'] = $paginator->url($paginator->lastPage());
                 $meta['last_page'] = $paginator->lastPage();
                 $meta['total'] = $paginator->total();
             }
         }
 
         if ($paginator instanceof AbstractCursorPaginator) {
-            $links['prev'] = $paginator->previousPageUrl();
-            $links['next'] = $paginator->nextPageUrl();
+            // Some cursor paginators might implement url(null) for the first page
+            if (method_exists($paginator, 'url')) {
+                $links['first'] = $paginator->url(null);
+            }
 
             $meta['next_cursor'] = $paginator->nextCursor()?->encode();
             $meta['prev_cursor'] = $paginator->previousCursor()?->encode();
