@@ -5,30 +5,30 @@ declare(strict_types=1);
 namespace Modules\User\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\User\Models\User;
+use Modules\User\Database\Factories\UserFactory;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory()->create([
+        UserFactory::new()->create([
             'name' => 'Super Admin',
             'email' => 'superadmin@example.com',
             'password' => config('auth.default_password'),
         ]);
 
-        User::factory()->create([
+        UserFactory::new()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'password' => config('auth.default_password'),
         ]);
 
-        User::factory()->create([
+        UserFactory::new()->create([
             'name' => 'Regular User',
             'email' => 'user@example.com',
             'password' => config('auth.default_password'),
         ]);
 
-        User::factory(10)->create();
+        UserFactory::new()->count(10)->create();
     }
 }

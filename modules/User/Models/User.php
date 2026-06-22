@@ -10,6 +10,7 @@ use App\Traits\Models\HasDefaultBehavior;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -39,6 +40,7 @@ use Spatie\Permission\Traits\HasRoles;
  */
 #[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
+#[UseFactory(UserFactory::class)]
 /**
  * @implements MustVerifyEmail
  */
@@ -75,15 +77,5 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    /**
-     * Create a new factory instance for the model.
-     *
-     * @return UserFactory The user factory instance.
-     */
-    protected static function newFactory(): UserFactory
-    {
-        return UserFactory::new();
     }
 }
