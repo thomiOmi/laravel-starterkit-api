@@ -1,23 +1,125 @@
 ---
 name: laravel-verification
-description: "Rigorous verification loop ensuring code formatting, static analysis, and architectural integrity."
-metadata:
-  version: "1.3.0"
-  triggers: "Verification, Pint, PHPStan, Pest, Architecture Test, CI/CD"
+description: Verification loop for Laravel projects: env checks, linting, static analysis, tests with coverage, security scans, and deployment readiness.
+origin: ECC
 ---
 
-# Laravel Verification
+# Laravel Verification Loop
 
-Guarantees the quality and consistency of the codebase.
+Run before PRs, after major changes, and pre-deploy.
 
-## Instructions
-- Run Pint with `--format agent`.
-- Maintain PHPStan Level 9 compatibility without ignores.
-- Write Pest tests for every change.
-- Enforce architecture rules via Pest Arch.
-- Follow the sequence in `references/quality-assurance.md`.
+## When to Use
 
-## Quality Gates
-- No `env()` in code.
-- No direct Model access in Controllers.
-- All classes marked `final`.
+- Before opening a pull request for a Laravel project
+- After major refactors or dependency upgrades
+- Pre-deployment verification for staging or production
+- Running full lint -> test -> security -> deploy readiness pipeline
+
+## How It Works
+
+- Run phases sequentially from environment checks through deployment readiness so each layer builds on the last.
+- Environment and Composer checks gate everything else; stop immediately if they fail.
+- Linting/static analysis should be clean before running full tests and coverage.
+- Security and migration reviews happen after tests so you verify behavior before data or release steps.
+- Build/deploy readiness and queue/scheduler checks are final gates; any failure blocks release.
+
+## Phase 1: Environment Checks
+
+```bash
+php -v
+composer --version
+php artisan --version
+```
+
+- Verify `.env` is present and required keys exist
+- Confirm `APP_DEBUG=false` for production environments
+- Confirm `APP_ENV` matches the target deployment (`production`, `staging`)
+
+## Phase 1.5: Composer and Autoload
+
+```bash
+composer validate
+composer dump-autoload -o
+```
+
+## Phase 2: Linting and Static Analysis
+
+```bash
+./vendor/bin/pint --format agent
+./vendor/bin/phpstan analyse --memory-limit=512M
+```
+
+## Phase 3: Tests and Coverage
+
+```bash
+php artisan test --compact
+```
+
+Coverage (CI):
+
+```bash
+XDEBUG_MODE=coverage php artisan test --coverage
+```
+
+CI example:
+
+```bash
+./vendor/bin/pint --format agent
+./vendor/bin/phpstan analyse --memory-limit=512M
+XDEBUG_MODE=coverage php artisan test --coverage
+```
+
+## Phase 4: Security and Dependency Checks
+
+```bash
+composer audit
+```
+
+## Phase 5: Database and Migrations
+
+```bash
+php artisan migrate --pretend
+php artisan migrate:status
+```
+
+- Review destructive migrations carefully
+- Ensure migration filenames follow `Y_m_d_His_*` and describe the change clearly
+- Ensure rollbacks are possible
+
+## Phase 6: Build and Deployment Readiness
+
+```bash
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+- Ensure cache warmups succeed in production configuration
+- Verify queue workers and scheduler are configured
+- Confirm `storage/` and `bootstrap/cache/` are writable in the target environment
+
+## Phase 7: Queue and Scheduler Checks
+
+```bash
+php artisan schedule:list
+php artisan queue:failed
+```
+
+## Examples
+
+Minimal flow:
+
+```bash
+php -v
+composer --version
+php artisan --version
+composer validate
+./vendor/bin/pint --format agent
+./vendor/bin/phpstan analyse --memory-limit=512M
+php artisan test --compact
+composer audit
+php artisan migrate --pretend
+php artisan config:cache
+php artisan queue:failed
+```
