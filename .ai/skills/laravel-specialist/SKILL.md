@@ -1,12 +1,12 @@
 ---
 name: laravel-specialist
-description: Build and configure Laravel 10+ applications, including creating Eloquent models and relationships, implementing Sanctum authentication, configuring Horizon queues, designing RESTful APIs with API resources, and building reactive interfaces with Livewire. Use when creating Laravel models, setting up queue workers, implementing Sanctum auth flows, building Livewire components, optimising Eloquent queries, or writing Pest/PHPUnit tests for Laravel features.
+description: Build and configure Laravel 10+ applications, including creating Eloquent models and relationships, implementing Sanctum authentication, configuring queues, designing RESTful APIs with API resources. Use when creating Laravel models, setting up queue workers, implementing Sanctum auth flows, optimising Eloquent queries, or writing Pest tests for Laravel features.
 license: MIT
 metadata:
   author: https://github.com/Jeffallan
   version: "1.1.0"
   domain: backend
-  triggers: Laravel, Eloquent, PHP framework, Laravel API, Artisan, Blade templates, Laravel queues, Livewire, Laravel testing, Sanctum, Horizon
+  triggers: Laravel, Eloquent, PHP framework, Laravel API, Artisan, Laravel queues, Laravel testing, Sanctum
   role: specialist
   scope: implementation
   output-format: code
@@ -15,7 +15,7 @@ metadata:
 
 # Laravel Specialist
 
-Senior Laravel specialist with deep expertise in Laravel 10+, Eloquent ORM, and modern PHP 8.2+ development.
+Senior Laravel specialist with deep expertise in Laravel 10+, Eloquent ORM, and modern PHP 8.4+ development.
 
 ## Core Workflow
 
@@ -31,23 +31,25 @@ Load detailed guidance based on context:
 
 | Topic | Reference | Load When |
 |-------|-----------|-----------|
+| API Reference | `references/api-reference.md` | Exact endpoint paths, request params, response schemas |
+| Architecture | `references/architecture.md` | Module structure, data flow, patterns used |
 | Eloquent ORM | `references/eloquent.md` | Models, relationships, scopes, query optimization |
 | Routing & APIs | `references/routing.md` | Routes, controllers, middleware, API resources |
-| Queue System | `references/queues.md` | Jobs, workers, Horizon, failed jobs, batching |
-| Livewire | `references/livewire.md` | Components, wire:model, actions, real-time |
+| Queue System | `references/queues.md` | Jobs, workers, failed jobs, batching |
 | Testing | `references/testing.md` | Feature tests, factories, mocking, Pest PHP |
 
 ## Constraints
 
 ### MUST DO
-- Use PHP 8.2+ features (readonly, enums, typed properties)
+- Use PHP 8.4+ features (readonly, enums, typed properties, property hooks)
 - Type hint all method parameters and return types
 - Use Eloquent relationships properly (avoid N+1 with eager loading)
 - Implement API resources for transforming data
+- Use `declare(strict_types=1)` in all PHP files
 - Queue long-running tasks
-- Write comprehensive tests (>85% coverage)
+- Write comprehensive tests (Pest, >85% coverage)
 - Use service containers and dependency injection
-- Follow PSR-12 coding standards
+- Follow PSR-12 coding standards (enforced by Pint)
 
 ### MUST NOT DO
 - Use raw queries without protection (SQL injection)
@@ -70,7 +72,7 @@ Use these as starting points for every implementation.
 
 declare(strict_types=1);
 
-namespace App\Models;
+namespace Modules\Cms\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -85,11 +87,10 @@ final class Post extends Model
     protected $fillable = ['title', 'body', 'status', 'user_id'];
 
     protected $casts = [
-        'status' => PostStatus::class, // backed enum
+        'status' => PostStatus::class,
         'published_at' => 'immutable_datetime',
     ];
 
-    // Relationships — always eager-load via ::with() at call site
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -100,7 +101,6 @@ final class Post extends Model
         return $this->hasMany(Comment::class);
     }
 
-    // Local scope
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', PostStatus::Published);
@@ -147,7 +147,7 @@ return new class extends Migration
 
 declare(strict_types=1);
 
-namespace App\Http\Resources;
+namespace Modules\Cms\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -162,7 +162,7 @@ final class PostResource extends JsonResource
             'body'         => $this->body,
             'status'       => $this->status->value,
             'published_at' => $this->published_at?->toIso8601String(),
-            'author'       => new UserResource($this->whenLoaded('author')),
+            'author'       => UserResource::make($this->whenLoaded('author')),
             'comments'     => CommentResource::collection($this->whenLoaded('comments')),
         ];
     }
@@ -176,9 +176,9 @@ final class PostResource extends JsonResource
 
 declare(strict_types=1);
 
-namespace App\Jobs;
+namespace Modules\Cms\Jobs;
 
-use App\Models\Post;
+use Modules\Cms\Models\Post;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -206,7 +206,6 @@ final class PublishPost implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        // Log or notify — never silently swallow failures
         logger()->error('PublishPost failed', ['post' => $this->post->id, 'error' => $e->getMessage()]);
     }
 }
@@ -217,28 +216,33 @@ final class PublishPost implements ShouldQueue
 ```php
 <?php
 
-use App\Models\Post;
-use App\Models\User;
+declare(strict_types=1);
+
+use Modules\Cms\Models\Post;
+use Modules\Cms\Models\User;
+
+uses(Tests\RefreshDatabase::class);
+
+beforeEach(function (): void {
+    $this->user = User::factory()->create();
+    $this->actingAs($this->user);
+});
 
 it('returns a published post for authenticated users', function (): void {
-    $user = User::factory()->create();
-    $post = Post::factory()->published()->for($user, 'author')->create();
+    $post = Post::factory()->published()->for($this->user, 'author')->create();
 
-    $response = $this->actingAs($user)
-        ->getJson("/api/posts/{$post->id}");
+    $response = $this->getJson("/api/v1/posts/{$post->id}");
 
     $response->assertOk()
         ->assertJsonPath('data.status', 'published')
-        ->assertJsonPath('data.author.id', $user->id);
+        ->assertJsonPath('data.author.id', $this->user->id);
 });
 
 it('queues a publish job when a draft is submitted', function (): void {
     Queue::fake();
-    $user = User::factory()->create();
-    $post = Post::factory()->draft()->for($user, 'author')->create();
+    $post = Post::factory()->draft()->for($this->user, 'author')->create();
 
-    $this->actingAs($user)
-        ->postJson("/api/posts/{$post->id}/publish")
+    $this->postJson("/api/v1/posts/{$post->id}/publish")
         ->assertAccepted();
 
     Queue::assertPushed(PublishPost::class, fn ($job) => $job->post->is($post));
@@ -254,11 +258,11 @@ Run these at each workflow stage to confirm correctness before proceeding:
 | After migration | `php artisan migrate:status` | All migrations show `Ran` |
 | After routing | `php artisan route:list --path=api` | New routes appear with correct verbs |
 | After job dispatch | `php artisan queue:work --once` | Job processes without exception |
-| After implementation | `php artisan test --coverage` | >85% coverage, 0 failures |
-| Before PR | `./vendor/bin/pint --test` | PSR-12 linting passes |
+| After implementation | `php artisan test --compact --coverage` | >85% coverage, 0 failures |
+| Before PR | `./vendor/bin/pint --format agent && ./vendor/bin/phpstan analyse --memory-limit=512M` | Linting and static analysis pass |
 
 ## Knowledge Reference
 
-Laravel 10+, Eloquent ORM, PHP 8.2+, API resources, Sanctum/Passport, queues, Horizon, Livewire, Inertia, Octane, Pest/PHPUnit, Redis, broadcasting, events/listeners, notifications, task scheduling
+Laravel 10+, Eloquent ORM, PHP 8.4+, API resources, Sanctum, queues, Pest, Redis, events/listeners, notifications, task scheduling
 
 [Documentation](https://jeffallan.github.io/claude-skills/skills/backend/laravel-specialist/)

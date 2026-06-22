@@ -8,6 +8,12 @@ origin: ECC
 
 Run before PRs, after major changes, and pre-deploy.
 
+## Reference Guide
+
+| Topic | Reference | Load When |
+|-------|-----------|-----------|
+| Quality Assurance | `references/quality-assurance.md` | Detailed QA checklist, Git workflow, deployment steps |
+
 ## When to Use
 
 - Before opening a pull request for a Laravel project
@@ -35,13 +41,6 @@ php artisan --version
 - Confirm `APP_DEBUG=false` for production environments
 - Confirm `APP_ENV` matches the target deployment (`production`, `staging`)
 
-If using Laravel Sail locally:
-
-```bash
-./vendor/bin/sail php -v
-./vendor/bin/sail artisan --version
-```
-
 ## Phase 1.5: Composer and Autoload
 
 ```bash
@@ -52,34 +51,28 @@ composer dump-autoload -o
 ## Phase 2: Linting and Static Analysis
 
 ```bash
-vendor/bin/pint --test
-vendor/bin/phpstan analyse
-```
-
-If your project uses Psalm instead of PHPStan:
-
-```bash
-vendor/bin/psalm
+vendor/bin/pint --format agent
+vendor/bin/phpstan analyse --memory-limit=512M
 ```
 
 ## Phase 3: Tests and Coverage
 
 ```bash
-php artisan test
+php artisan test --compact
 ```
 
 Coverage (CI):
 
 ```bash
-XDEBUG_MODE=coverage php artisan test --coverage
+XDEBUG_MODE=coverage php artisan test --compact --coverage
 ```
 
 CI example (format -> static analysis -> tests):
 
 ```bash
-vendor/bin/pint --test
-vendor/bin/phpstan analyse
-XDEBUG_MODE=coverage php artisan test --coverage
+vendor/bin/pint --format agent
+vendor/bin/phpstan analyse --memory-limit=512M
+XDEBUG_MODE=coverage php artisan test --compact --coverage
 ```
 
 ## Phase 4: Security and Dependency Checks
@@ -106,7 +99,6 @@ php artisan migrate:status
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 ```
 
 - Ensure cache warmups succeed in production configuration
@@ -120,13 +112,7 @@ php artisan schedule:list
 php artisan queue:failed
 ```
 
-If Horizon is used:
-
-```bash
-php artisan horizon:status
-```
-
-If `queue:monitor` is available, use it to check backlog without processing jobs:
+Use `queue:monitor` to check backlog without processing jobs:
 
 ```bash
 php artisan queue:monitor default --max=100
@@ -152,9 +138,9 @@ php -v
 composer --version
 php artisan --version
 composer validate
-vendor/bin/pint --test
-vendor/bin/phpstan analyse
-php artisan test
+vendor/bin/pint --format agent
+vendor/bin/phpstan analyse --memory-limit=512M
+php artisan test --compact
 composer audit
 php artisan migrate --pretend
 php artisan config:cache
@@ -166,14 +152,14 @@ CI-style pipeline:
 ```bash
 composer validate
 composer dump-autoload -o
-vendor/bin/pint --test
-vendor/bin/phpstan analyse
-XDEBUG_MODE=coverage php artisan test --coverage
+vendor/bin/pint --format agent
+vendor/bin/phpstan analyse --memory-limit=512M
+XDEBUG_MODE=coverage php artisan test --compact --coverage
 composer audit
 php artisan migrate --pretend
 php artisan optimize:clear
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 php artisan schedule:list
+php artisan queue:failed
 ```

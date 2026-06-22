@@ -22,8 +22,9 @@
 /vendor
 _ide_helper.php
 /api.json
-/docs/openapi.json
 /openapi.json
+/docs/openapi.json
+/docs/api.json
 Homestead.json
 Homestead.yaml
 Thumbs.db

@@ -9,6 +9,12 @@ metadata:
 
 Production-grade Laravel architecture patterns for scalable, maintainable applications.
 
+## Reference Guide
+
+| Topic | Reference | Load When |
+|-------|-----------|-----------|
+| Modular Architecture | `references/modular-architecture.md` | Module structure, data flow, service providers |
+
 ## When to Use
 
 - Building Laravel web applications or APIs
@@ -31,36 +37,44 @@ Production-grade Laravel architecture patterns for scalable, maintainable applic
 
 Use a conventional Laravel layout with clear layer boundaries (HTTP, services/actions, models).
 
-### Recommended Layout
+### Recommended Layout (Modular DDD)
 
 ```
+modules/
+├── {Module}/
+│   ├── Actions/         # Single-purpose use cases
+│   ├── Controllers/     # V1/, V2/ for API versioning
+│   ├── Database/
+│   │   ├── factories/
+│   │   ├── migrations/
+│   │   └── seeders/
+│   ├── Events/
+│   ├── Filters/         # Query/filter objects
+│   ├── Jobs/
+│   ├── Models/
+│   ├── Payloads/        # DTOs with PHP 8.4 property hooks
+│   ├── Providers/       # Service providers
+│   ├── Repositories/
+│   ├── Requests/        # Form request validation
+│   ├── Resources/       # API resources
+│   ├── Routes/          # V1.php, V2.php
+│   └── Tests/           # Feature tests
+├── Auth/
+├── Role/
+└── User/
 app/
-├── Actions/            # Single-purpose use cases
-├── Console/
-├── Events/
-├── Exceptions/
 ├── Http/
-│   ├── Controllers/
-│   ├── Middleware/
-│   ├── Requests/       # Form request validation
-│   └── Resources/      # API resources
-├── Jobs/
-├── Models/
-├── Policies/
-├── Providers/
-├── Services/           # Coordinating domain services
-└── Support/
+│   ├── Controllers/     # Base controller
+│   ├── Middleware/      # force.json, etc.
+│   └── Responses/       # SuccessResponse, ProblemResponse
+└── Providers/           # AppServiceProvider
 config/
 database/
-├── factories/
-├── migrations/
-└── seeders/
-resources/
-├── views/
-└── lang/
+├── factories/           # Shared factories
+├── migrations/          # Shared migrations
+└── seeders/             # Shared seeders (RoleSeeder)
 routes/
-├── api.php
-├── web.php
+├── api.php              # Module route loader
 └── console.php
 ```
 
@@ -69,11 +83,21 @@ routes/
 Keep controllers thin. Put orchestration in services and single-purpose logic in actions.
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Sales\Actions;
+
+use Modules\Sales\Models\Order;
+use Modules\Sales\Payloads\CreateOrderPayload;
+use Modules\Sales\Repositories\OrderRepository;
+
 final class CreateOrderAction
 {
     public function __construct(private OrderRepository $orders) {}
 
-    public function handle(CreateOrderData $data): Order
+    public function handle(CreateOrderPayload $data): Order
     {
         return $this->orders->create($data);
     }
@@ -83,29 +107,44 @@ final class OrdersController extends Controller
 {
     public function __construct(private CreateOrderAction $createOrder) {}
 
-    public function store(StoreOrderRequest $request): JsonResponse
+    public function store(StoreOrderRequest $request): SuccessResponse
     {
-        $order = $this->createOrder->handle($request->toDto());
+        $order = $this->createOrder->handle($request->toPayload());
 
-        return response()->json([
-            'success' => true,
-            'data' => OrderResource::make($order),
-            'error' => null,
-            'meta' => null,
-        ], 201);
+        return new SuccessResponse(
+            title: 'Order Created',
+            detail: 'The order has been created successfully.',
+            data: OrderResource::make($order),
+            status: 201,
+        );
     }
 }
 ```
 
-### Routing and Controllers
+### Routing and Controllers (Single-Action Pattern)
 
-Prefer route-model binding and resource controllers for clarity.
+This project uses single-action controllers (`__invoke`) with explicit route definitions — not resource controllers.
 
 ```php
-use Illuminate\Support\Facades\Route;
+<?php
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('projects', ProjectController::class);
+declare(strict_types=1);
+
+namespace Modules\User\Routes;
+
+use Illuminate\Support\Facades\Route;
+use Modules\User\Controllers\V1\IndexController;
+use Modules\User\Controllers\V1\CreateController;
+use Modules\User\Controllers\V1\ShowController;
+use Modules\User\Controllers\V1\UpdateController;
+use Modules\User\Controllers\V1\DeleteController;
+
+Route::prefix('users')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->group(function () {
+    Route::get('/', IndexController::class)->name('users.index');
+    Route::post('/', CreateController::class)->name('users.create');
+    Route::get('/{user}', ShowController::class)->name('users.show');
+    Route::put('/{user}', UpdateController::class)->name('users.update');
+    Route::delete('/{user}', DeleteController::class)->name('users.delete');
 });
 ```
 
@@ -114,6 +153,10 @@ Route::middleware('auth:sanctum')->group(function () {
 Use scoped bindings to prevent cross-tenant access.
 
 ```php
+<?php
+
+declare(strict_types=1);
+
 Route::scopeBindings()->group(function () {
     Route::get('/accounts/{account}/projects/{project}', [ProjectController::class, 'show']);
 });
@@ -121,16 +164,20 @@ Route::scopeBindings()->group(function () {
 
 ### Nested Routes and Binding Names
 
-- Keep prefixes and paths consistent to avoid double nesting (e.g., `conversation` vs `conversations`).
-- Use a single parameter name that matches the bound model (e.g., `{conversation}` for `Conversation`).
+- Keep prefixes and paths consistent to avoid double nesting.
 - Prefer scoped bindings when nesting to enforce parent-child relationships.
+- Routes are defined in `modules/{Module}/Routes/V1.php` and loaded via a service provider.
 
 ```php
-use App\Http\Controllers\Api\ConversationController;
-use App\Http\Controllers\Api\MessageController;
+<?php
+
+declare(strict_types=1);
+
+use Modules\Cms\Controllers\V1\ConversationController;
+use Modules\Cms\Controllers\V1\MessageController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth:sanctum')->prefix('conversations')->group(function () {
+Route::middleware(['force.json', 'auth:sanctum'])->prefix('conversations')->group(function () {
     Route::post('/', [ConversationController::class, 'store'])->name('conversations.store');
 
     Route::scopeBindings()->group(function () {
@@ -139,20 +186,8 @@ Route::middleware('auth:sanctum')->prefix('conversations')->group(function () {
 
         Route::post('/{conversation}/messages', [MessageController::class, 'store'])
             ->name('conversation-messages.store');
-
-        Route::get('/{conversation}/messages/{message}', [MessageController::class, 'show'])
-            ->name('conversation-messages.show');
     });
 });
-```
-
-If you want a parameter to resolve to a different model class, define explicit binding. For custom binding logic, use `Route::bind()` or implement `resolveRouteBinding()` on the model.
-
-```php
-use App\Models\AiConversation;
-use Illuminate\Support\Facades\Route;
-
-Route::model('conversation', AiConversation::class);
 ```
 
 ### Service Container Bindings
@@ -160,11 +195,17 @@ Route::model('conversation', AiConversation::class);
 Bind interfaces to implementations in a service provider for clear dependency wiring.
 
 ```php
-use App\Repositories\EloquentOrderRepository;
-use App\Repositories\OrderRepository;
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Sales\Providers;
+
+use Modules\Sales\Repositories\EloquentOrderRepository;
+use Modules\Sales\Repositories\OrderRepository;
 use Illuminate\Support\ServiceProvider;
 
-final class AppServiceProvider extends ServiceProvider
+final class SalesServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
@@ -178,6 +219,16 @@ final class AppServiceProvider extends ServiceProvider
 ### Model Configuration
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Cms\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 final class Project extends Model
 {
     use HasFactory;
@@ -206,14 +257,16 @@ final class Project extends Model
 Use enums or value objects for strict typing.
 
 ```php
+<?php
+
+declare(strict_types=1);
+
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 protected $casts = [
     'status' => ProjectStatus::class,
 ];
-```
 
-```php
 protected function budgetCents(): Attribute
 {
     return Attribute::make(
@@ -235,7 +288,15 @@ $orders = Order::query()
 ### Query Objects for Complex Filters
 
 ```php
-final class ProjectQuery
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Cms\Filters;
+
+use Illuminate\Database\Eloquent\Builder;
+
+final class ProjectFilter
 {
     public function __construct(private Builder $query) {}
 
@@ -266,6 +327,13 @@ Use global scopes for default filtering and `SoftDeletes` for recoverable record
 Use either a global scope or a named scope for the same filter, not both, unless you intend layered behavior.
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Cms\Models;
+
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -285,6 +353,12 @@ final class Project extends Model
 ### Query Scopes for Reusable Filters
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Cms\Models;
+
 use Illuminate\Database\Eloquent\Builder;
 
 final class Project extends Model
@@ -295,13 +369,17 @@ final class Project extends Model
     }
 }
 
-// In service, repository etc.
+// Usage
 $projects = Project::ownedBy($user->id)->get();
 ```
 
 ### Transactions for Multi-Step Updates
 
 ```php
+<?php
+
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\DB;
 
 DB::transaction(function (): void {
@@ -321,6 +399,10 @@ DB::transaction(function (): void {
 ### Example Migration
 
 ```php
+<?php
+
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -350,13 +432,21 @@ return new class extends Migration
 Keep validation in form requests and transform inputs to DTOs.
 
 ```php
-use App\Models\Order;
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Sales\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Modules\Sales\Models\Order;
+use Modules\Sales\Payloads\CreateOrderPayload;
 
 final class StoreOrderRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', Order::class) ?? false;
+        return $this->user()?->can('orders.create') ?? false;
     }
 
     public function rules(): array
@@ -369,9 +459,9 @@ final class StoreOrderRequest extends FormRequest
         ];
     }
 
-    public function toDto(): CreateOrderData
+    public function toPayload(): CreateOrderPayload
     {
-        return new CreateOrderData(
+        return new CreateOrderPayload(
             customerId: (int) $this->validated('customer_id'),
             items: $this->validated('items'),
         );
@@ -384,18 +474,19 @@ final class StoreOrderRequest extends FormRequest
 Keep API responses consistent with resources and pagination.
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+use App\Http\Responses\SuccessResponse;
+
 $projects = Project::query()->active()->paginate(25);
 
-return response()->json([
-    'success' => true,
-    'data' => ProjectResource::collection($projects->items()),
-    'error' => null,
-    'meta' => [
-        'page' => $projects->currentPage(),
-        'per_page' => $projects->perPage(),
-        'total' => $projects->total(),
-    ],
-]);
+return new SuccessResponse(
+    title: 'Projects Retrieved',
+    detail: 'List of active projects.',
+    data: ProjectResource::collection($projects),
+);
 ```
 
 ### Events, Jobs, and Queues
