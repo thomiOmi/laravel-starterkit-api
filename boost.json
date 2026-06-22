@@ -16,11 +16,9 @@
         "socialite-development",
         "pest-testing",
         "laravel-permission-development",
-        "api-reference",
-        "architecture",
         "laravel-patterns",
         "laravel-security",
-        "laravel-verification",
+        "laravel-specialist",
         "php-pro"
     ]
 }

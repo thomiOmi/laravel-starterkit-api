@@ -40,6 +40,7 @@ Load detailed guidance based on context:
 ## Constraints
 
 ### MUST DO
+
 - Use PHP 8.2+ features (readonly, enums, typed properties)
 - Type hint all method parameters and return types
 - Use Eloquent relationships properly (avoid N+1 with eager loading)
@@ -50,6 +51,7 @@ Load detailed guidance based on context:
 - Follow PSR-12 coding standards
 
 ### MUST NOT DO
+
 - Use raw queries without protection (SQL injection)
 - Skip eager loading (causes N+1 problems)
 - Store sensitive data unencrypted

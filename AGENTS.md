@@ -71,12 +71,11 @@ Run `php artisan boost:install -n` to install Boost-provided guidelines and skil
 
 | Skill | Description |
 |---|---|
-| `api-reference` | Complete API endpoint reference |
-| `architecture` | Project architecture and data flow |
-| `laravel-patterns` | Modular DDD, Single-Action Controllers, Action pattern |
-| `laravel-security` | Security best practices, authorization, RFC-compliant API |
-| `laravel-verification` | Testing verification and quality assurance |
-| `php-pro` | PHP 8.4+ strict typing, immutability, property hooks |
+| `laravel-specialist` | Laravel 13+, modules, controllers, actions, Eloquent, API endpoints |
+| `laravel-patterns` | Modular DDD, Single-Action Controllers, Action pattern, Payloads |
+| `laravel-security` | Security best practices, Sanctum, Spatie permission, RFC 9457 |
+| `laravel-verification` | QA verification loop — Pint, PHPStan, Pest, Arch tests |
+| `php-pro` | PHP 8.4+ strict typing, immutability, Property Hooks |
 
 === .ai/general rules ===
 

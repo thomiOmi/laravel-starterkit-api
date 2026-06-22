@@ -1,6 +1,6 @@
 ---
 name: php-pro
-description: Use when building PHP applications with modern PHP 8.3+ features, Laravel, or Symfony frameworks. Invokes strict typing, PHPStan level 9, async patterns with Swoole, and PSR standards. Creates controllers, configures middleware, generates migrations, writes PHPUnit/Pest tests, defines typed DTOs and value objects, sets up dependency injection, and scaffolds REST/GraphQL APIs.
+description: Use when building PHP applications with modern PHP 8.3+ features, Laravel, or Symfony frameworks. Invokes strict typing, PHPStan level 9, async patterns with Swoole, and PSR standards. Creates controllers, configures middleware, generates migrations, writes PHPUnit/Pest tests, defines typed DTOs and value objects, sets up dependency injection, and scaffolds REST/GraphQL APIs. Use when working with Eloquent, Doctrine, Composer, Psalm, ReactPHP, or any PHP API development.
 license: MIT
 metadata:
   author: https://github.com/Jeffallan
@@ -15,7 +15,7 @@ metadata:
 
 # PHP Pro
 
-Senior PHP developer with deep expertise in PHP 8.3+ and modern PHP ecosystem, specializing in enterprise applications using Laravel.
+Senior PHP developer with deep expertise in PHP 8.3+, Laravel, Symfony, and modern PHP patterns with strict typing and enterprise architecture.
 
 ## Core Workflow
 
@@ -23,7 +23,19 @@ Senior PHP developer with deep expertise in PHP 8.3+ and modern PHP ecosystem, s
 2. **Design models** — Create typed domain models, value objects, DTOs
 3. **Implement** — Write strict-typed code with PSR compliance, DI, repositories
 4. **Secure** — Add validation, authentication, XSS/SQL injection protection
-5. **Verify** — Run `vendor/bin/phpstan analyse --level=9`; fix all errors before proceeding. Run `vendor/bin/pest`; enforce 80%+ coverage. Only deliver when both pass clean.
+5. **Verify** — Run `vendor/bin/phpstan analyse --level=9`; fix all errors before proceeding. Run `vendor/bin/phpunit` or `vendor/bin/pest`; enforce 80%+ coverage. Only deliver when both pass clean.
+
+## Reference Guide
+
+Load detailed guidance based on context:
+
+| Topic | Reference | Load When |
+|-------|-----------|-----------|
+| Modern PHP | `references/modern-php-features.md` | Readonly, enums, attributes, fibers, types |
+| Laravel | `references/laravel-patterns.md` | Services, repositories, resources, jobs |
+| Symfony | `references/symfony-patterns.md` | DI, events, commands, voters |
+| Async PHP | `references/async-patterns.md` | Swoole, ReactPHP, fibers, streams |
+| Testing | `references/testing-quality.md` | PHPUnit, PHPStan, Pest, mocking |
 
 ## Constraints
 
@@ -36,7 +48,6 @@ Senior PHP developer with deep expertise in PHP 8.3+ and modern PHP ecosystem, s
 - Write PHPDoc blocks for complex logic
 - Validate all user input with typed requests
 - Use dependency injection over global state
-- Use `set` Property Hooks for Payload data normalization (PHP 8.4)
 
 ### MUST NOT DO
 - Skip type declarations (no mixed types)
@@ -45,53 +56,20 @@ Senior PHP developer with deep expertise in PHP 8.3+ and modern PHP ecosystem, s
 - Mix business logic with controllers
 - Hardcode configuration (use .env)
 - Deploy without running tests and static analysis
-- Use `var_dump` in production code
-- Use property hooks for database queries or heavy I/O
+- Use var_dump in production code
 
 ## Code Patterns
 
-### Payload with Property Hooks (PHP 8.4)
+Every complete implementation delivers: a typed entity/DTO, a service class, and a test. Use these as the baseline structure.
+
+### Readonly DTO / Value Object
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\Blog\Payloads\V1;
-
-final class CreateUserPayload
-{
-    public string $email {
-        set => strtolower(trim($value));
-    }
-
-    public string $name {
-        set => trim($value);
-    }
-
-    public function __construct(
-        public readonly string $password,
-    ) {}
-
-    public static function fromRequest(CreateUserRequest $request): self
-    {
-        return new self(
-            name: $request->validated('name'),
-            email: $request->validated('email'),
-            password: $request->validated('password'),
-        );
-    }
-}
-```
-
-### Readonly DTO (when no transformation needed)
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace Modules\Blog\Payloads\V1;
+namespace App\DTO;
 
 final readonly class CreateUserDTO
 {
@@ -100,6 +78,15 @@ final readonly class CreateUserDTO
         public string $email,
         public string $password,
     ) {}
+
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            name: $data['name'],
+            email: $data['email'],
+            password: $data['password'],
+        );
+    }
 }
 ```
 
@@ -110,11 +97,11 @@ final readonly class CreateUserDTO
 
 declare(strict_types=1);
 
-namespace Modules\Blog\Services;
+namespace App\Services;
 
-use Modules\Blog\Payloads\V1\CreateUserDTO;
-use Modules\Blog\Models\User;
-use Modules\Blog\Repositories\UserRepositoryInterface;
+use App\DTO\CreateUserDTO;
+use App\Models\User;
+use App\Repositories\UserRepositoryInterface;
 use Illuminate\Support\Facades\Hash;
 
 final class UserService
@@ -134,6 +121,51 @@ final class UserService
 }
 ```
 
+### PHPUnit Test Structure
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Services;
+
+use App\DTO\CreateUserDTO;
+use App\Models\User;
+use App\Repositories\UserRepositoryInterface;
+use App\Services\UserService;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+
+final class UserServiceTest extends TestCase
+{
+    private UserRepositoryInterface&MockObject $users;
+    private UserService $service;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->users   = $this->createMock(UserRepositoryInterface::class);
+        $this->service = new UserService($this->users);
+    }
+
+    public function testCreateHashesPassword(): void
+    {
+        $dto  = new CreateUserDTO('Alice', 'alice@example.com', 'secret');
+        $user = new User(['name' => 'Alice', 'email' => 'alice@example.com']);
+
+        $this->users
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($user);
+
+        $result = $this->service->create($dto);
+
+        $this->assertSame('Alice', $result->name);
+    }
+}
+```
+
 ### Enum (PHP 8.1+)
 
 ```php
@@ -141,7 +173,7 @@ final class UserService
 
 declare(strict_types=1);
 
-namespace Modules\Blog\Enums;
+namespace App\Enums;
 
 enum UserStatus: string
 {
@@ -160,34 +192,17 @@ enum UserStatus: string
 }
 ```
 
-### Pest Test
-
-```php
-<?php
-
-use Modules\Blog\Models\User;
-use Modules\Blog\Payloads\V1\CreateUserDTO;
-use Modules\Blog\Services\UserService;
-
-it('creates a user', function (): void {
-    $dto = new CreateUserDTO('Alice', 'alice@example.com', 'secret');
-
-    $user = app(UserService::class)->create($dto);
-
-    expect($user->name)->toBe('Alice');
-    expect($user->email)->toBe('alice@example.com');
-});
-```
-
 ## Output Templates
 
 When implementing a feature, deliver in this order:
 1. Domain models (entities, value objects, enums)
 2. Service/repository classes
 3. Controller/API endpoints
-4. Test files (Pest)
+4. Test files (PHPUnit/Pest)
 5. Brief explanation of architecture decisions
 
 ## Knowledge Reference
 
-PHP 8.3+, Laravel 13, Composer 2.9+, PHPStan, Pest, Eloquent ORM, PSR standards, Redis, MySQL, REST APIs
+PHP 8.3+, Laravel 11, Symfony 7, Composer, PHPStan, Psalm, PHPUnit, Pest, Eloquent ORM, Doctrine, PSR standards, Swoole, ReactPHP, Redis, MySQL/PostgreSQL, REST/GraphQL APIs
+
+[Documentation](https://jeffallan.github.io/claude-skills/skills/language/php-pro/)

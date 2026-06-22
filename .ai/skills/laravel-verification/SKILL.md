@@ -35,6 +35,13 @@ php artisan --version
 - Confirm `APP_DEBUG=false` for production environments
 - Confirm `APP_ENV` matches the target deployment (`production`, `staging`)
 
+If using Laravel Sail locally:
+
+```bash
+./vendor/bin/sail php -v
+./vendor/bin/sail artisan --version
+```
+
 ## Phase 1.5: Composer and Autoload
 
 ```bash
@@ -45,14 +52,20 @@ composer dump-autoload -o
 ## Phase 2: Linting and Static Analysis
 
 ```bash
-./vendor/bin/pint --format agent
-./vendor/bin/phpstan analyse --memory-limit=512M
+vendor/bin/pint --test
+vendor/bin/phpstan analyse
+```
+
+If your project uses Psalm instead of PHPStan:
+
+```bash
+vendor/bin/psalm
 ```
 
 ## Phase 3: Tests and Coverage
 
 ```bash
-php artisan test --compact
+php artisan test
 ```
 
 Coverage (CI):
@@ -61,11 +74,11 @@ Coverage (CI):
 XDEBUG_MODE=coverage php artisan test --coverage
 ```
 
-CI example:
+CI example (format -> static analysis -> tests):
 
 ```bash
-./vendor/bin/pint --format agent
-./vendor/bin/phpstan analyse --memory-limit=512M
+vendor/bin/pint --test
+vendor/bin/phpstan analyse
 XDEBUG_MODE=coverage php artisan test --coverage
 ```
 
@@ -83,8 +96,9 @@ php artisan migrate:status
 ```
 
 - Review destructive migrations carefully
-- Ensure migration filenames follow `Y_m_d_His_*` and describe the change clearly
+- Ensure migration filenames follow `Y_m_d_His_*` (e.g., `2025_03_14_154210_create_orders_table.php`) and describe the change clearly
 - Ensure rollbacks are possible
+- Verify `down()` methods and avoid irreversible data loss without explicit backups
 
 ## Phase 6: Build and Deployment Readiness
 
@@ -106,6 +120,29 @@ php artisan schedule:list
 php artisan queue:failed
 ```
 
+If Horizon is used:
+
+```bash
+php artisan horizon:status
+```
+
+If `queue:monitor` is available, use it to check backlog without processing jobs:
+
+```bash
+php artisan queue:monitor default --max=100
+```
+
+Active verification (staging only): dispatch a no-op job to a dedicated queue and run a single worker to process it (ensure a non-`sync` queue connection is configured).
+
+```bash
+php artisan tinker --execute="dispatch((new App\\Jobs\\QueueHealthcheck())->onQueue('healthcheck'))"
+php artisan queue:work --once --queue=healthcheck
+```
+
+Verify the job produced the expected side effect (log entry, healthcheck table row, or metric).
+
+Only run this on non-production environments where processing a test job is safe.
+
 ## Examples
 
 Minimal flow:
@@ -115,11 +152,28 @@ php -v
 composer --version
 php artisan --version
 composer validate
-./vendor/bin/pint --format agent
-./vendor/bin/phpstan analyse --memory-limit=512M
-php artisan test --compact
+vendor/bin/pint --test
+vendor/bin/phpstan analyse
+php artisan test
 composer audit
 php artisan migrate --pretend
 php artisan config:cache
 php artisan queue:failed
+```
+
+CI-style pipeline:
+
+```bash
+composer validate
+composer dump-autoload -o
+vendor/bin/pint --test
+vendor/bin/phpstan analyse
+XDEBUG_MODE=coverage php artisan test --coverage
+composer audit
+php artisan migrate --pretend
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan schedule:list
 ```
