@@ -66,9 +66,9 @@ class SuccessResponse extends JsonResponse
         ];
 
         if ($paginator instanceof AbstractPaginator) {
-            $links['first'] = method_exists($paginator, 'url') ? $paginator->url(1) : null;
-            $links['prev'] = method_exists($paginator, 'previousPageUrl') ? $paginator->previousPageUrl() : null;
-            $links['next'] = method_exists($paginator, 'nextPageUrl') ? $paginator->nextPageUrl() : null;
+            $links['first'] = $paginator->url(1);
+            $links['prev'] = $paginator->previousPageUrl();
+            $links['next'] = $paginator->nextPageUrl();
 
             if ($paginator instanceof LengthAwarePaginator) {
                 $links['last'] = $paginator->url($paginator->lastPage());
@@ -76,21 +76,15 @@ class SuccessResponse extends JsonResponse
                 $meta['total'] = $paginator->total();
             }
 
-            if (method_exists($paginator, 'firstItem')) {
-                $meta['from'] = $paginator->firstItem();
-            }
-
-            if (method_exists($paginator, 'lastItem')) {
-                $meta['to'] = $paginator->lastItem();
-            }
-
+            $meta['from'] = $paginator->firstItem();
+            $meta['to'] = $paginator->lastItem();
             $meta['current_page'] = $paginator->currentPage();
         }
 
         if ($paginator instanceof AbstractCursorPaginator) {
-            $links['first'] = method_exists($paginator, 'url') ? $paginator->url(null) : null;
-            $links['prev'] = method_exists($paginator, 'previousPageUrl') ? $paginator->previousPageUrl() : null;
-            $links['next'] = method_exists($paginator, 'nextPageUrl') ? $paginator->nextPageUrl() : null;
+            $links['first'] = $paginator->url(null);
+            $links['prev'] = $paginator->previousPageUrl();
+            $links['next'] = $paginator->nextPageUrl();
 
             $meta['next_cursor'] = $paginator->nextCursor()?->encode();
             $meta['prev_cursor'] = $paginator->previousCursor()?->encode();
