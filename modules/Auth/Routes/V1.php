@@ -35,14 +35,15 @@ Route::prefix('auth')->middleware(['force.json'])->group(function () {
 
     // Protected routes — higher limit for authenticated users
     Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function () {
-        Route::post('logout', LogoutController::class)->name('logout');
-        Route::get('me', MeController::class)->name('me');
+        Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');
+        Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
         Route::post('email/verification-notification', ResendVerificationController::class)
+            ->middleware('ability:users:write')
             ->name('verification.send');
 
         // Device management
-        Route::get('devices', ListDevicesController::class)->name('devices.index');
-        Route::delete('devices/{device}', DeleteDeviceController::class)->name('devices.delete');
-        Route::post('devices/logout-others', LogoutOtherDevicesController::class)->name('devices.logout-others');
+        Route::get('devices', ListDevicesController::class)->middleware('ability:auth:manage')->name('devices.index');
+        Route::delete('devices/{device}', DeleteDeviceController::class)->middleware('ability:auth:manage')->name('devices.delete');
+        Route::post('devices/logout-others', LogoutOtherDevicesController::class)->middleware('ability:auth:manage')->name('devices.logout-others');
     });
 });

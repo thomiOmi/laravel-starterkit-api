@@ -20,7 +20,16 @@ describe('Auth Core Features V1', function () {
             'password_confirmation' => $password,
         ]);
 
-        $response->assertStatus(Response::HTTP_CREATED);
+        $response->assertStatus(Response::HTTP_CREATED)
+            ->assertJsonStructure([
+                'title',
+                'detail',
+                'data' => [
+                    'user',
+                    'access_token',
+                    'token_type',
+                ],
+            ]);
 
         $this->assertDatabaseHas('users', [
             'email' => 'john@example.com',
@@ -52,7 +61,7 @@ describe('Auth Core Features V1', function () {
 
     it('can logout', function () {
         $user = User::factory()->create();
-        $token = $user->createToken('test')->plainTextToken;
+        $token = $user->createToken('test', ['auth:manage'])->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
             ->postJson('/api/v1/auth/logout');
@@ -62,12 +71,56 @@ describe('Auth Core Features V1', function () {
 
     it('can get authenticated user profile', function () {
         $user = User::factory()->create();
-        $token = $user->createToken('test')->plainTextToken;
+        $token = $user->createToken('test', ['users:read'])->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")
             ->getJson('/api/v1/auth/me');
 
         $response->assertSuccessful()
             ->assertJsonPath('data.email', $user->email);
+    });
+
+    it('can logout other devices', function () {
+        $password = config('auth.default_password');
+        $user = User::factory()->create([
+            'password' => $password,
+        ]);
+        $user->assignRole('user');
+
+        $currentToken = $user->createToken('current', ['auth:manage'])->plainTextToken;
+        $user->createToken('other-device', ['auth:manage']);
+
+        $this->assertCount(2, $user->tokens);
+
+        $response = $this->withHeader('Authorization', "Bearer $currentToken")
+            ->postJson('/api/v1/auth/devices/logout-others', [
+                'current_password' => $password,
+            ]);
+
+        $response->assertStatus(Response::HTTP_NO_CONTENT);
+
+        $user->refresh();
+        $this->assertCount(1, $user->tokens);
+    });
+
+    it('rejects request without required ability', function () {
+        $user = User::factory()->create();
+        $token = $user->createToken('test', ['users:read'])->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->postJson('/api/v1/auth/logout');
+
+        $response->assertStatus(Response::HTTP_FORBIDDEN);
+    });
+
+    it('rejects logout-others without current password', function () {
+        $user = User::factory()->create();
+        $token = $user->createToken('test', ['auth:manage'])->plainTextToken;
+
+        $response = $this->withHeader('Authorization', "Bearer $token")
+            ->postJson('/api/v1/auth/devices/logout-others', []);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+            ->assertJsonValidationErrorFor('current_password');
     });
 });

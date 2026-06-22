@@ -82,7 +82,9 @@ describe('Logout Other Devices', function () {
         $this->user->createToken('device-3');
 
         $this->withHeader('Authorization', "Bearer {$this->token}")
-            ->postJson('/api/v1/auth/devices/logout-others')
+            ->postJson('/api/v1/auth/devices/logout-others', [
+                'current_password' => config('auth.default_password'),
+            ])
             ->assertStatus(Response::HTTP_NO_CONTENT);
 
         expect($this->user->tokens()->count())->toBe(1);
@@ -90,7 +92,9 @@ describe('Logout Other Devices', function () {
 
     it('keeps current device active', function () {
         $this->withHeader('Authorization', "Bearer {$this->token}")
-            ->postJson('/api/v1/auth/devices/logout-others')
+            ->postJson('/api/v1/auth/devices/logout-others', [
+                'current_password' => config('auth.default_password'),
+            ])
             ->assertStatus(Response::HTTP_NO_CONTENT);
 
         expect($this->user->tokens()->count())->toBe(1);

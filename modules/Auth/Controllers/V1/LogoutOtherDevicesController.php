@@ -8,8 +8,8 @@ use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
 use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Modules\Auth\Actions\LogoutOtherDevicesAction;
+use Modules\Auth\Requests\V1\LogoutOtherDevicesRequest;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -39,12 +39,29 @@ final readonly class LogoutOtherDevicesController
             'detail' => 'You must be authenticated to access this resource.',
         ]],
     )]
-    public function __invoke(Request $request): JsonResponse
+    #[Response(
+        status: 422,
+        description: 'Validation error — current_password is required or incorrect.',
+        mediaType: 'application/problem+json',
+        examples: [[
+            'type' => 'https://example.com/problems',
+            'title' => 'Validation Error',
+            'status' => 422,
+            'detail' => 'The given data was invalid.',
+            'errors' => [
+                'current_password' => ['The current password field is required.'],
+            ],
+        ]],
+    )]
+    public function __invoke(LogoutOtherDevicesRequest $request): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();
 
-        $this->logoutOtherDevices->handle($user);
+        $this->logoutOtherDevices->handle(
+            $user,
+            $request->string('current_password')->toString(),
+        );
 
         return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
     }

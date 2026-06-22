@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
+use Illuminate\Auth\Events\Verified;
 use Modules\User\Models\User;
 
 final readonly class VerifyEmailAction
@@ -22,6 +23,8 @@ final readonly class VerifyEmailAction
 
         if (! $user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
+
+            event(new Verified($user));
         }
 
         return $user;

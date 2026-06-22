@@ -21,7 +21,7 @@ final readonly class RegisterController
     ) {}
 
     #[Endpoint(operationId: 'register', title: 'Register')]
-    #[Response(status: 201, description: 'Account created successfully. Returns the newly registered user profile.', type: 'SuccessResponse<UserResource>')]
+    #[Response(status: 201, description: 'Account created successfully. Returns the newly registered user profile with an access token.', type: 'SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>')]
     #[Response(
         status: 422,
         description: 'Validation error — invalid or missing fields (name, email, password). Returns a ProblemResponse with field-level error details.',
@@ -50,14 +50,18 @@ final readonly class RegisterController
     )]
     public function __invoke(RegisterRequest $request): SuccessResponse
     {
-        $user = $this->registerAction->handle($request->payload());
+        $result = $this->registerAction->handle($request->payload());
 
-        event(new Registered($user));
+        event(new Registered($result['user']));
 
         return new SuccessResponse(
             'Created',
             __('auth.registered'),
-            new UserResource($user),
+            [
+                'user' => new UserResource($result['user']),
+                'access_token' => $result['access_token'],
+                'token_type' => $result['token_type'],
+            ],
             201,
         );
     }

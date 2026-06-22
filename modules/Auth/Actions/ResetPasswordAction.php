@@ -5,20 +5,24 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\User\Models\User;
 
 final readonly class ResetPasswordAction
 {
+    public function __construct(
+        private PasswordBroker $broker,
+    ) {}
+
     /**
      * @param  array{token: string, email: string, password: string, password_confirmation: string}  $data
      */
     public function handle(array $data): void
     {
-        $status = Password::reset(
+        $status = $this->broker->reset(
             $data,
             function (User $user, string $password): void {
                 $user->forceFill([
@@ -37,7 +41,7 @@ final readonly class ResetPasswordAction
             ]);
         }
 
-        if ($status !== Password::PASSWORD_RESET) {
+        if ($status !== PasswordBroker::PASSWORD_RESET) {
             throw ValidationException::withMessages([
                 'email' => [__($status)],
             ]);

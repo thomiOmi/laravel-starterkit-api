@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Payloads\V1\LoginPayload;
 use Modules\User\Models\User;
@@ -15,6 +15,10 @@ use Modules\User\Models\User;
  */
 final readonly class LoginAction
 {
+    public function __construct(
+        private AuthFactory $auth,
+    ) {}
+
     /**
      * Execute login action.
      *
@@ -27,18 +31,22 @@ final readonly class LoginAction
      */
     public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
-        if (! Auth::attempt(['email' => $payload->email, 'password' => $payload->password])) {
+        if (! $this->auth->guard()->attempt(['email' => $payload->email, 'password' => $payload->password])) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
             ]);
         }
 
         /** @var User $user */
-        $user = Auth::user();
+        $user = $this->auth->guard()->user();
+
+        $abilities = $user->hasRole(['admin', 'super-admin'])
+            ? ['*']
+            : ['users:read', 'users:write', 'auth:manage'];
 
         $token = $user->createToken(
             $payload->deviceName ?? $userAgent ?? 'auth_token',
-            ['*'],
+            $abilities,
         );
 
         /** @var PersonalAccessToken $accessToken */

@@ -17,11 +17,12 @@ it('creates a new user', function () {
         password: config('auth.default_password'),
     );
 
-    $user = $action->handle($payload);
+    $result = $action->handle($payload);
 
-    expect($user)
+    expect($result['user'])
         ->name->toBe('John Doe')
-        ->email->toBe('john@example.com');
+        ->email->toBe('john@example.com')
+        ->and($result)->toHaveKeys(['access_token', 'token_type']);
 });
 
 it('creates user with hashed password', function () {
@@ -33,9 +34,9 @@ it('creates user with hashed password', function () {
         password: $password,
     );
 
-    $user = $action->handle($payload);
+    $result = $action->handle($payload);
 
-    expect(Hash::check($password, $user->password))->toBeTrue();
+    expect(Hash::check($password, $result['user']->password))->toBeTrue();
 });
 
 it('persists user in database', function () {
