@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
-use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Payloads\V1\LoginPayload;
 use Modules\User\Models\User;
@@ -36,22 +36,25 @@ final readonly class LoginAction
         /** @var User $user */
         $user = Auth::user();
 
-        $token = $user->createToken(
-            $payload->deviceName ?? $userAgent ?? 'auth_token',
-            ['*'],
-        );
+        // Performance: Consolidate token creation and metadata update into a single database operation
+        /** @var string $prefix */
+        $prefix = config('sanctum.token_prefix', '');
+        $plainTextToken = $prefix.Str::random(40);
 
-        /** @var PersonalAccessToken $accessToken */
-        $accessToken = $token->accessToken;
-
-        $accessToken->forceFill([
+        $token = $user->tokens()->create([
+            'name' => $payload->deviceName ?? $userAgent ?? 'auth_token',
+            'token' => hash('sha256', $plainTextToken),
+            'abilities' => ['*'],
             'ip_address' => $ip,
             'user_agent' => $userAgent,
-        ])->save();
+        ]);
+
+        /** @var string|int $tokenId */
+        $tokenId = $token->getKey();
 
         return [
             'user' => $user,
-            'access_token' => $token->plainTextToken,
+            'access_token' => $tokenId.'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }
