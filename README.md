@@ -80,7 +80,7 @@ modules/
     Database/
       Factories/         -- UserFactory
       Seeders/
-    Events/              -- UserCreated
+    Actions/             -- User actions
     Filters/
     Models/              -- User (MustVerifyEmail, HasRoles)
     Payloads/V1/

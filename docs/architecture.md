@@ -48,7 +48,7 @@ modules/{Module}/
 modules/
   Auth/    -- Authentication, devices, social login
   Role/    -- Roles & permissions CRUD, Spatie integration
-  User/    -- User CRUD, bulk actions, UserCreated event
+  User/    -- User CRUD, bulk actions
 ```
 
 ## Response Types

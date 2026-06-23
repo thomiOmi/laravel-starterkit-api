@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Providers;
 
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
-use Modules\User\Events\UserCreated;
 
 class UserServiceProvider extends ServiceProvider
 {
@@ -15,7 +13,7 @@ class UserServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Queue::route(UserCreated::class, 'high-priority');
+        //
     }
 
     /**

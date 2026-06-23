@@ -2,19 +2,11 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Event;
 use Modules\User\Actions\CreateUserAction;
-use Modules\User\Events\UserCreated;
 use Modules\User\Payloads\V1\UserPayload;
 
 describe('CreateUserAction', function () {
-    beforeEach(function () {
-        $this->withoutDefer();
-    });
-
-    it('creates a user and dispatches UserCreated event', function () {
-        Event::fake();
-
+    it('creates a user', function () {
         $password = config('auth.default_password');
         $payload = new UserPayload(
             name: 'John Doe',
@@ -33,10 +25,6 @@ describe('CreateUserAction', function () {
             'name' => 'John Doe',
             'email' => 'john@example.com',
         ]);
-
-        Event::assertDispatched(UserCreated::class, function (UserCreated $event) use ($user) {
-            return $event->user->id === $user->id;
-        });
     });
 
     it('creates a user without password for optional field', function () {
