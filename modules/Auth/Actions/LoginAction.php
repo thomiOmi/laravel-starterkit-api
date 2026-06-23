@@ -56,9 +56,12 @@ final readonly class LoginAction
             'user_agent' => $userAgent,
         ]);
 
+        /** @var string|int $tokenId */
+        $tokenId = $token->getKey();
+
         return [
             'user' => $user,
-            'access_token' => $token->getKey().'|'.$plainTextToken,
+            'access_token' => $tokenId.'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }
