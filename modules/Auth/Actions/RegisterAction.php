@@ -22,7 +22,8 @@ final readonly class RegisterAction
             'password' => $payload->password,
         ]);
 
-        $plainTextToken = Str::random(40);
+        $tokenPrefix = config('sanctum.token_prefix', '');
+        $plainTextToken = $tokenPrefix.Str::random(40);
 
         /** @var PersonalAccessToken $token */
         $token = $user->tokens()->create([

@@ -69,7 +69,8 @@ final readonly class SocialCallbackAction
             return $user;
         });
 
-        $plainTextToken = Str::random(40);
+        $tokenPrefix = config('sanctum.token_prefix', '');
+        $plainTextToken = $tokenPrefix.Str::random(40);
 
         /** @var PersonalAccessToken $token */
         $token = $user->tokens()->create([

@@ -45,7 +45,8 @@ final readonly class LoginAction
             ? ['*']
             : ['users:read', 'users:write', 'auth:manage'];
 
-        $plainTextToken = Str::random(40);
+        $tokenPrefix = config('sanctum.token_prefix', '');
+        $plainTextToken = $tokenPrefix.Str::random(40);
 
         /** @var PersonalAccessToken $token */
         $token = $user->tokens()->create([
