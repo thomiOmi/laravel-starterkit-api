@@ -6,6 +6,7 @@ namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Payloads\V1\LoginPayload;
 use Modules\User\Models\User;
@@ -44,22 +45,21 @@ final readonly class LoginAction
             ? ['*']
             : ['users:read', 'users:write', 'auth:manage'];
 
-        $token = $user->createToken(
-            $payload->deviceName ?? $userAgent ?? 'auth_token',
-            $abilities,
-        );
-
-        /** @var PersonalAccessToken $accessToken */
-        $accessToken = $token->accessToken;
-
-        $accessToken->forceFill([
+        /** @var PersonalAccessToken $token */
+        $token = $user->tokens()->create([
+            'name' => $payload->deviceName ?? $userAgent ?? 'auth_token',
+            'token' => hash('sha256', $plainTextToken = Str::random(40)),
+            'abilities' => $abilities,
             'ip_address' => $ip,
             'user_agent' => $userAgent,
-        ])->save();
+        ]);
+
+        /** @var string|int $tokenId */
+        $tokenId = $token->getKey();
 
         return [
             'user' => $user,
-            'access_token' => $token->plainTextToken,
+            'access_token' => $tokenId.'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }

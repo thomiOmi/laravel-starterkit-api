@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Role\Requests\V1;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
@@ -39,7 +40,7 @@ final class RoleRequest extends FormRequest
      */
     public function rules(): array
     {
-        $roleId = $this->route('role');
+        $roleId = $this->getRoleId();
 
         return [
             'name' => [
@@ -52,6 +53,18 @@ final class RoleRequest extends FormRequest
             'permissions.*' => ['string', 'exists:permissions,name'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];
+    }
+
+    /**
+     * Get the role ID from the route.
+     */
+    public function getRoleId(): string
+    {
+        $roleId = $this->route('role');
+
+        return $roleId instanceof Model
+            ? (string) $roleId->getKey()
+            : (string) $roleId;
     }
 
     /**
