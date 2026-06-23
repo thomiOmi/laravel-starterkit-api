@@ -10,7 +10,6 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
-use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
 
 /**
@@ -74,7 +73,7 @@ final class UserRequest extends FormRequest
     {
         $user = $this->route('user');
 
-        if ($user instanceof User) {
+        if (is_object($user) && method_exists($user, 'getKey')) {
             return (string) $user->getKey();
         }
 

@@ -7,7 +7,6 @@ namespace Modules\Auth\Controllers\V1;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetAuthenticatedUserAction;
-use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
 final readonly class MeController
@@ -21,7 +20,7 @@ final readonly class MeController
      */
     public function __invoke(Request $request): SuccessResponse
     {
-        /** @var User $user */
+        /** @var \Modules\User\Models\User $user */
         $user = $request->user();
 
         $profile = $this->getAuthenticatedUser->handle($user);
