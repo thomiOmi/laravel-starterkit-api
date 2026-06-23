@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'failed' => 'Identitas tersebut tidak cocok dengan data kami.',
+    'failed' => 'Email atau kata sandi tidak valid. Silakan coba lagi.',
     'password' => 'Kata sandi yang diberikan salah.',
     'password_invalid' => 'Kata sandi yang diberikan tidak cocok dengan kata sandi Anda saat ini.',
     'throttle' => 'Terlalu banyak upaya masuk. Silahkan coba lagi dalam :seconds detik.',

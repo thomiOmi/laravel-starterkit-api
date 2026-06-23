@@ -34,6 +34,7 @@ final readonly class LoginAction
         if (! $this->auth->guard()->attempt(['email' => $payload->email, 'password' => $payload->password])) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
+                'password' => [__('auth.failed')],
             ]);
         }
 
