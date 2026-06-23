@@ -27,6 +27,7 @@ return [
     'device_logout_success' => 'Device logged out successfully.',
     'other_devices_logout_success' => 'Other devices logged out successfully.',
     'social_login_success' => 'Social login successful.',
+    'social_denied' => 'You have denied the authorization request.',
     'password_expired' => 'Your password has expired. Please update your password.',
     'verified' => 'Email verified successfully.',
     'verification_link_sent' => 'A new verification link has been sent to your email address.',

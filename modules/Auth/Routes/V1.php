@@ -35,15 +35,20 @@ Route::prefix('auth')->middleware(['force.json'])->group(function () {
 
     // Protected routes — higher limit for authenticated users
     Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function () {
-        Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');
-        Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
+        // Email verification resend — no 'verified' middleware so unverified users can request
         Route::post('email/verification-notification', ResendVerificationController::class)
             ->middleware('ability:users:write')
             ->name('verification.send');
 
-        // Device management
-        Route::get('devices', ListDevicesController::class)->middleware('ability:auth:manage')->name('devices.index');
-        Route::delete('devices/{device}', DeleteDeviceController::class)->middleware('ability:auth:manage')->name('devices.delete');
-        Route::post('devices/logout-others', LogoutOtherDevicesController::class)->middleware('ability:auth:manage')->name('devices.logout-others');
+        // Routes below require verified email
+        Route::middleware('verified')->group(function () {
+            Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');
+            Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
+
+            // Device management
+            Route::get('devices', ListDevicesController::class)->middleware('ability:auth:manage')->name('devices.index');
+            Route::delete('devices/{device}', DeleteDeviceController::class)->middleware('ability:auth:manage')->name('devices.delete');
+            Route::post('devices/logout-others', LogoutOtherDevicesController::class)->middleware('ability:auth:manage')->name('devices.logout-others');
+        });
     });
 });

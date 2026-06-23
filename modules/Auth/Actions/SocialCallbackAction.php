@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
+use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as SocialUser;
 use Modules\User\Models\User;
 
@@ -29,8 +30,12 @@ final readonly class SocialCallbackAction
         /** @var AbstractProvider $driver */
         $driver = Socialite::driver($provider);
 
-        /** @var SocialUser $socialUser */
-        $socialUser = $driver->stateless()->user();
+        try {
+            /** @var SocialUser $socialUser */
+            $socialUser = $driver->stateless()->user();
+        } catch (InvalidStateException) {
+            throw new InvalidArgumentException(__('auth.social_denied'));
+        }
 
         $user = DB::transaction(function () use ($provider, $socialUser): User {
             $user = User::where('provider', $provider)
@@ -58,7 +63,7 @@ final readonly class SocialCallbackAction
             /** @var User $user */
             $user = User::create([
                 'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? fake()->name(),
-                'email' => $socialUser->getEmail(),
+                'email' => $socialUser->getEmail() ?? "{$provider}-{$socialUser->getId()}@social.local",
                 'password' => null,
                 'provider' => $provider,
                 'provider_id' => (string) $socialUser->getId(),

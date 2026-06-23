@@ -11,7 +11,7 @@ final readonly class VerifyEmailAction
 {
     public function handle(string $id, string $hash): ?User
     {
-        $user = User::withTrashed()->find($id);
+        $user = User::find($id);
 
         if (! $user instanceof User) {
             return null;

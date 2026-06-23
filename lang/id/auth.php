@@ -15,6 +15,7 @@ return [
     'device_logout_success' => 'Berhasil keluar dari perangkat.',
     'other_devices_logout_success' => 'Berhasil keluar dari perangkat lainnya.',
     'social_login_success' => 'Login sosial berhasil.',
+    'social_denied' => 'Anda telah menolak permintaan otorisasi.',
     'password_expired' => 'Kata sandi Anda telah kedaluwarsa. Silakan perbarui kata sandi Anda.',
     'verified' => 'Email berhasil diverifikasi.',
     'verification_link_sent' => 'Tautan verifikasi baru telah dikirim ke alamat email Anda.',

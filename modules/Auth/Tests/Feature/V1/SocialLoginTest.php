@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Http\RedirectResponse;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as SocialUser;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
@@ -131,7 +132,23 @@ describe('Social Callback', function () {
         expect($user->avatar)->toBe('https://example.com/linked-avatar.jpg');
     });
 
-    it('returns 422 for invalid provider callback', function () {
+    it('returns 400 for denied authorization', function () {
+        $providerMock = Mockery::mock('Laravel\Socialite\Contracts\Provider');
+        $providerMock->shouldReceive('stateless')->andReturnSelf();
+        $providerMock->shouldReceive('user')
+            ->andThrow(new InvalidStateException);
+
+        Socialite::shouldReceive('driver')
+            ->with('google')
+            ->andReturn($providerMock);
+
+        $response = $this->getJson('/api/v1/auth/social/google/callback');
+
+        $response->assertStatus(Response::HTTP_BAD_REQUEST)
+            ->assertJsonPath('detail', __('auth.social_denied'));
+    });
+
+    it('returns 400 for invalid provider callback', function () {
         $response = $this->getJson('/api/v1/auth/social/twitter/callback');
 
         $response->assertStatus(Response::HTTP_BAD_REQUEST);
