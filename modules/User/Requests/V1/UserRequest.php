@@ -41,7 +41,7 @@ final class UserRequest extends FormRequest
         $authId = $authenticatedUser->getKey();
 
         // Check if the user is updating their own profile or has permission
-        return (is_scalar($authId) ? (string) $authId : '') === $userId || $authenticatedUser->can('user.edit');
+        return (is_string($authId) || is_int($authId) ? (string) $authId : '') === $userId || $authenticatedUser->can('user.edit');
     }
 
     /**
@@ -75,9 +75,11 @@ final class UserRequest extends FormRequest
         $user = $this->route('user');
 
         if ($user instanceof User) {
-            return (string) $user->getKey();
+            $key = $user->getKey();
+
+            return is_string($key) || is_int($key) ? (string) $key : '';
         }
 
-        return is_scalar($user) ? (string) $user : '';
+        return is_string($user) || is_int($user) ? (string) $user : '';
     }
 }

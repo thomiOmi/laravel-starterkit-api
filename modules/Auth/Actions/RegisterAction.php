@@ -37,7 +37,7 @@ final readonly class RegisterAction
 
         return [
             'user' => $user,
-            'access_token' => (is_scalar($tokenId) ? (string) $tokenId : '').'|'.$plainTextToken,
+            'access_token' => (is_string($tokenId) || is_int($tokenId) ? (string) $tokenId : '').'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }

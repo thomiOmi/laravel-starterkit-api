@@ -38,7 +38,7 @@ final readonly class DeleteController
 
         $currentId = $currentUser->getKey();
 
-        if ((is_scalar($currentId) ? (string) $currentId : '') === $user) {
+        if ((is_string($currentId) || is_int($currentId) ? (string) $currentId : '') === $user) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: SymfonyResponse::HTTP_FORBIDDEN,
