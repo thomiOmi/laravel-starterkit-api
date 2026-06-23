@@ -6,6 +6,7 @@ namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
@@ -68,22 +69,20 @@ final readonly class SocialCallbackAction
             return $user;
         });
 
-        $token = $user->createToken(
-            $provider.'-social-login',
-            ['*'],
-        );
+        $plainTextToken = Str::random(40);
 
-        /** @var PersonalAccessToken $accessToken */
-        $accessToken = $token->accessToken;
-
-        $accessToken->forceFill([
+        /** @var PersonalAccessToken $token */
+        $token = $user->tokens()->create([
+            'name' => $provider.'-social-login',
+            'token' => hash('sha256', $plainTextToken),
+            'abilities' => ['*'],
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
-        ])->save();
+        ]);
 
         return [
             'user' => $user,
-            'access_token' => $token->plainTextToken,
+            'access_token' => $token->getKey().'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }
