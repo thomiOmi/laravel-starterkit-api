@@ -6,15 +6,11 @@ namespace Modules\Role\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Dedoc\Scramble\Attributes\Endpoint;
-use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\Role\Actions\ShowPermissionAction;
 use Modules\Role\Resources\PermissionResource;
 use Modules\User\Models\User;
 
-#[Group('Permission Management')]
 /**
  * @authenticated
  */
@@ -27,41 +23,6 @@ final readonly class PermissionShowController
     /**
      * Display the specified permission.
      */
-    #[Endpoint(operationId: 'showPermission', title: 'Show Permission')]
-    #[Response(status: 200, description: 'Permission retrieved successfully.', type: 'SuccessResponse<PermissionResource>')]
-    #[Response(
-        status: 401,
-        description: 'Authentication required. The request lacks a valid Bearer token.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Unauthenticated',
-            'status' => 401,
-            'detail' => 'You must be authenticated to access this resource.',
-        ]],
-    )]
-    #[Response(
-        status: 403,
-        description: 'Forbidden — the user does not have the required permissions to view permissions.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Forbidden',
-            'status' => 403,
-            'detail' => 'You are not authorised to perform this action.',
-        ]],
-    )]
-    #[Response(
-        status: 404,
-        description: 'Permission not found with the given ID.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Not Found',
-            'status' => 404,
-            'detail' => 'The requested resource does not exist.',
-        ]],
-    )]
     public function __invoke(string $permission): SuccessResponse|ProblemResponse
     {
         /** @var Authenticatable&User $user */

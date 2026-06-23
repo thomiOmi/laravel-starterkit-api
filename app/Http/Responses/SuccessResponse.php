@@ -9,6 +9,7 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @template TData = mixed
@@ -16,14 +17,17 @@ use Illuminate\Pagination\Paginator;
 class SuccessResponse extends JsonResponse
 {
     /**
-     * @param  TData  $data
-     * @param  array<string, mixed>  $extra
+     * @param  string  $title  A short, human-readable summary of the response type.
+     * @param  string  $detail  A human-readable explanation of this specific response.
+     * @param  TData  $data  The response payload data.
+     * @param  int  $status  The HTTP status code for the response.
+     * @param  array<string, mixed>  $extra  Additional top-level fields to merge into the response.
      */
     public function __construct(
         string $title,
         string $detail,
         mixed $data = null,
-        int $status = 200,
+        int $status = Response::HTTP_OK,
         array $extra = [],
     ) {
         $payload = [

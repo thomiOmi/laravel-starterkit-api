@@ -6,10 +6,6 @@ namespace Modules\Role\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Dedoc\Scramble\Attributes\Endpoint;
-use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\QueryParameter;
-use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\ListRolesAction;
@@ -17,7 +13,6 @@ use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Resources\RoleResource;
 use Modules\User\Models\User;
 
-#[Group('Role Management')]
 /**
  * @authenticated
  */
@@ -30,34 +25,6 @@ final readonly class IndexController
     /**
      * Display a paginated listing of the roles.
      */
-    #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
-    #[QueryParameter(name: 'page[size]', description: 'The number of results that will be returned per page.', type: 'integer', required: false, default: 10, example: 10)]
-    #[QueryParameter(name: 'search', description: 'Search keyword to filter roles by name or description.', type: 'string', required: false, example: 'admin')]
-    #[QueryParameter(name: 'sort', description: 'Available sorts are `name`, `created_at`. Prefix with `-` for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: '-created_at')]
-    #[Endpoint(operationId: 'listRoles', title: 'List Roles')]
-    #[Response(status: 200, type: 'SuccessResponse<\Illuminate\Http\Resources\Json\AnonymousResourceCollection<RoleResource>>')]
-    #[Response(
-        status: 401,
-        description: 'Authentication required. The request lacks a valid Bearer token.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Unauthenticated',
-            'status' => 401,
-            'detail' => 'You must be authenticated to access this resource.',
-        ]],
-    )]
-    #[Response(
-        status: 403,
-        description: 'Forbidden — the user does not have the required permissions to list roles.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Forbidden',
-            'status' => 403,
-            'detail' => 'You are not authorised to perform this action.',
-        ]],
-    )]
     public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var Authenticatable&User $user */

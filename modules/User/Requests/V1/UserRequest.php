@@ -6,7 +6,6 @@ namespace Modules\User\Requests\V1;
 
 use App\Traits\Rules\PasswordValidationRules;
 use App\Traits\Rules\ProfileValidationRules;
-use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
@@ -18,10 +17,6 @@ use Modules\User\Payloads\V1\UserPayload;
  *
  * The request parameters for creating or updating a user.
  */
-#[BodyParameter(name: 'name', description: 'The full name of the user.', required: true, example: 'John Doe')]
-#[BodyParameter(name: 'email', description: 'The email address of the user. Must be unique.', required: true, example: 'john@example.com')]
-#[BodyParameter(name: 'password', description: 'The password (min 8 characters). Required on create, optional on update.', example: 'password123')]
-#[BodyParameter(name: 'password_confirmation', description: 'Password confirmation, must match password.', example: 'password123')]
 final class UserRequest extends FormRequest
 {
     use PasswordValidationRules, ProfileValidationRules;

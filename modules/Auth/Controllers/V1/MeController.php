@@ -5,15 +5,11 @@ declare(strict_types=1);
 namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Dedoc\Scramble\Attributes\Endpoint;
-use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetAuthenticatedUserAction;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
-#[Group('Auth')]
 /**
  * @authenticated
  */
@@ -26,30 +22,6 @@ final readonly class MeController
     /**
      * Get the authenticated user profile.
      */
-    #[Endpoint(operationId: 'me', title: 'Get Authenticated User')]
-    #[Response(status: 200, description: 'Authenticated user profile retrieved successfully.', type: 'SuccessResponse<UserResource>')]
-    #[Response(
-        status: 401,
-        description: 'Authentication required. The request lacks a valid Bearer token.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Unauthenticated',
-            'status' => 401,
-            'detail' => 'You must be authenticated to access this resource.',
-        ]],
-    )]
-    #[Response(
-        status: 404,
-        description: 'Authenticated user record not found in the database (e.g. user was deleted after authentication).',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Not Found',
-            'status' => 404,
-            'detail' => 'The requested resource does not exist.',
-        ]],
-    )]
     public function __invoke(Request $request): SuccessResponse
     {
         /** @var User $user */

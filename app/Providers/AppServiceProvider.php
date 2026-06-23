@@ -6,9 +6,6 @@ namespace App\Providers;
 
 use App\Models\Sanctum\PersonalAccessToken;
 use Carbon\CarbonImmutable;
-use Dedoc\Scramble\Scramble;
-use Dedoc\Scramble\Support\Generator\OpenApi;
-use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -50,8 +47,6 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('super-admin') ? true : null;
         });
 
-        $this->configureScramble();
-
         $this->configureEmailVerification();
         $this->configurePasswordReset();
     }
@@ -80,18 +75,6 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
-    }
-
-    protected function configureScramble(): void
-    {
-        Scramble::afterOpenApiGenerated(function (OpenApi $openApi): void {
-            $scheme = SecurityScheme::http('bearer');
-            assert($scheme instanceof SecurityScheme);
-            $scheme->as('bearerAuth')
-                ->setDescription('Sanctum token-based authentication. Provide your Bearer token.');
-
-            $openApi->secure($scheme);
-        });
     }
 
     protected function defineFeatures(): void

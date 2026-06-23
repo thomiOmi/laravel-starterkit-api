@@ -6,43 +6,15 @@ namespace Modules\Auth\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Dedoc\Scramble\Attributes\Endpoint;
-use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\Response;
 use Modules\Auth\Actions\VerifyEmailAction;
 use Modules\User\Models\User;
 
-#[Group('Auth')]
 final readonly class VerifyEmailController
 {
     public function __construct(
         private VerifyEmailAction $verifyEmail,
     ) {}
 
-    #[Endpoint(operationId: 'verifyEmail', title: 'Verify Email')]
-    #[Response(status: 200, description: 'Email verified successfully.', type: 'SuccessResponse<array{verified: bool}>')]
-    #[Response(
-        status: 403,
-        description: 'Invalid or expired verification signature. The link may have been tampered with or already used.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Forbidden',
-            'status' => 403,
-            'detail' => 'You are not authorised to perform this action.',
-        ]],
-    )]
-    #[Response(
-        status: 404,
-        description: 'User not found for the given ID.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Not Found',
-            'status' => 404,
-            'detail' => 'The requested resource does not exist.',
-        ]],
-    )]
     public function __invoke(string $id, string $hash): SuccessResponse|ProblemResponse
     {
         $user = $this->verifyEmail->handle($id, $hash);

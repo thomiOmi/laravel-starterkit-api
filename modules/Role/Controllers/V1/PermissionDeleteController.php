@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Modules\Role\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
-use Dedoc\Scramble\Attributes\Endpoint;
-use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Modules\Role\Actions\DeletePermissionAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-#[Group('Permission Management')]
 /**
  * @authenticated
  */
@@ -29,44 +25,6 @@ final readonly class PermissionDeleteController
      *
      * @param  string  $permission  The permission ID.
      */
-    #[Endpoint(operationId: 'deletePermission', title: 'Delete Permission')]
-    #[Response(
-        status: 204,
-        description: 'Permission deleted successfully. No content is returned.',
-    )]
-    #[Response(
-        status: 401,
-        description: 'Authentication required. The request lacks a valid Bearer token.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Unauthenticated',
-            'status' => 401,
-            'detail' => 'You must be authenticated to access this resource.',
-        ]],
-    )]
-    #[Response(
-        status: 403,
-        description: 'Forbidden — the permission cannot be deleted (e.g., protected system permission).',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Forbidden',
-            'status' => 403,
-            'detail' => 'You are not authorised to perform this action.',
-        ]],
-    )]
-    #[Response(
-        status: 404,
-        description: 'Permission not found with the given ID.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Not Found',
-            'status' => 404,
-            'detail' => 'The requested resource does not exist.',
-        ]],
-    )]
     public function __invoke(string $permission): JsonResponse|ProblemResponse
     {
         /** @var Authenticatable&User $user */

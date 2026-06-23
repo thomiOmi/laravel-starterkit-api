@@ -5,17 +5,11 @@ declare(strict_types=1);
 namespace Modules\User\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Dedoc\Scramble\Attributes\Endpoint;
-use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\Response;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
-#[Group('User Management')]
-/**
- * @authenticated
- */
 final readonly class CreateController
 {
     public function __construct(
@@ -23,46 +17,10 @@ final readonly class CreateController
     ) {}
 
     /**
-     * Store a newly created user in storage.
+     * Store a newly created user.
      *
      * @param  UserRequest  $request  The validated user creation request.
      */
-    #[Endpoint(operationId: 'createUser', title: 'Create User')]
-    #[Response(status: 201, description: 'User created successfully. Returns the new user profile.', type: 'SuccessResponse<UserResource>')]
-    #[Response(
-        status: 401,
-        description: 'Authentication required. The request lacks a valid Bearer token.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Unauthenticated',
-            'status' => 401,
-            'detail' => 'You must be authenticated to access this resource.',
-        ]],
-    )]
-    #[Response(
-        status: 403,
-        description: 'Forbidden — the user does not have the required permissions to create users.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Forbidden',
-            'status' => 403,
-            'detail' => 'You are not authorised to perform this action.',
-        ]],
-    )]
-    #[Response(
-        status: 422,
-        description: 'Validation error — the provided data failed validation rules.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'https://example.com/problems',
-            'title' => 'Validation Error',
-            'status' => 422,
-            'detail' => 'The given data was invalid.',
-            'errors' => ['email' => ['The email has already been taken.'], 'password' => ['The password must be at least 8 characters.']],
-        ]],
-    )]
     public function __invoke(UserRequest $request): SuccessResponse
     {
         $user = $this->createUser->handle($request->payload());
@@ -71,7 +29,7 @@ final readonly class CreateController
             'Created',
             __('general.created', ['resource' => 'User']),
             new UserResource($user),
-            201,
+            Response::HTTP_CREATED,
         );
     }
 }

@@ -6,10 +6,6 @@ namespace Modules\User\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Dedoc\Scramble\Attributes\Endpoint;
-use Dedoc\Scramble\Attributes\Group;
-use Dedoc\Scramble\Attributes\QueryParameter;
-use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\User\Actions\ListUsersAction;
@@ -17,7 +13,6 @@ use Modules\User\Filters\UserFilter;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
-#[Group('User Management')]
 /**
  * @authenticated
  */
@@ -30,38 +25,6 @@ final readonly class IndexController
     /**
      * Display a paginated listing of the users.
      */
-    #[QueryParameter(name: 'page[number]', description: 'The page number to start the pagination from.', type: 'integer', required: false, default: 1, example: 1)]
-    #[QueryParameter(name: 'page[size]', description: 'The number of results that will be returned per page.', type: 'integer', required: false, default: 10, example: 10)]
-    #[QueryParameter(name: 'search', description: 'Search keyword to filter users by name or email.', type: 'string', required: false, example: 'john')]
-    #[QueryParameter(name: 'sort', description: 'Available sorts are `name`, `email`, `created_at`. Prefix with `-` for descending order. Comma-separated for multi-column sort.', type: 'string', required: false, example: '-created_at,name')]
-    #[QueryParameter(name: 'filter[role]', description: 'The role name to filter users by.', type: 'string', required: false, example: 'admin')]
-    #[QueryParameter(name: 'filter[status]', description: 'The status to filter users by. Possible values: `verified`, `unverified`.', type: 'string', required: false, example: 'verified')]
-    #[Endpoint(operationId: 'listUsers', title: 'List Users')]
-    #[Response(status: 200, type: 'SuccessResponse<\Illuminate\Http\Resources\Json\AnonymousResourceCollection<UserResource>>')]
-    #[Response(
-        status: 401,
-        description: 'Authentication required. The request lacks a valid Bearer token.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'about:blank',
-            'title' => 'Unauthenticated',
-            'status' => 401,
-            'detail' => 'You must be authenticated to access this resource.',
-            'instance' => 'https://example.com',
-        ]],
-    )]
-    #[Response(
-        status: 403,
-        description: 'Forbidden — the user does not have the required permissions to list users.',
-        mediaType: 'application/problem+json',
-        examples: [[
-            'type' => 'about:blank',
-            'title' => 'Forbidden',
-            'status' => 403,
-            'detail' => 'You are not authorised to perform this action.',
-            'instance' => 'https://example.com',
-        ]],
-    )]
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var Authenticatable&User $currentUser */
