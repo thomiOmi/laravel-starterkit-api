@@ -27,6 +27,11 @@ class BulkActionRequest extends FormRequest
         $routeName = (string) $this->route()?->getName();
         $segments = explode('.', $routeName);
         $module = $segments[2] ?? null;
+
+        if ($module === 'v1') {
+            $module = $segments[3] ?? null;
+        }
+
         $action = $this->resolveBulkAction($routeName);
 
         if ($action === null || $module === null) {

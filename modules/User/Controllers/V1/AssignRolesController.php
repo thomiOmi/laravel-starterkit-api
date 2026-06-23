@@ -23,7 +23,7 @@ final readonly class AssignRolesController
 
     public function __invoke(string $user, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $formRequest->user();
 
         if ($currentUser === null || ! $currentUser->can('user.edit')) {

@@ -33,9 +33,11 @@ final readonly class RegisterAction
             'user_agent' => request()->userAgent(),
         ]);
 
+        $tokenId = $token->getKey();
+
         return [
             'user' => $user,
-            'access_token' => $token->getKey().'|'.$plainTextToken,
+            'access_token' => (is_scalar($tokenId) ? (string) $tokenId : '').'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }
