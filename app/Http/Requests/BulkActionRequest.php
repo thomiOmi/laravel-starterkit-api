@@ -25,13 +25,15 @@ class BulkActionRequest extends FormRequest
         }
 
         $routeName = (string) $this->route()?->getName();
+        $segments = explode('.', $routeName);
+        $module = $segments[2] ?? null;
         $action = $this->resolveBulkAction($routeName);
 
-        if ($action === null) {
+        if ($action === null || $module === null) {
             return false;
         }
 
-        if (str_contains($routeName, '.user.')) {
+        if ($module === 'user') {
             if ($action === 'delete') {
                 return $user->can('user.delete');
             }
@@ -43,7 +45,7 @@ class BulkActionRequest extends FormRequest
             return false;
         }
 
-        if (str_contains($routeName, '.role.')) {
+        if ($module === 'role') {
             if ($action === 'delete') {
                 return $user->can('role.delete');
             }
@@ -55,7 +57,7 @@ class BulkActionRequest extends FormRequest
             return false;
         }
 
-        if (str_contains($routeName, '.permissions.')) {
+        if ($module === 'permissions') {
             if ($action === 'delete') {
                 return $user->can('permission.delete');
             }

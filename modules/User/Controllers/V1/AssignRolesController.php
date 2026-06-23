@@ -9,6 +9,7 @@ use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\AssignRolesToUserAction;
 use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\V1\AssignRolesRequest;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +18,7 @@ final readonly class AssignRolesController
 {
     public function __construct(
         private AssignRolesToUserAction $assignRoles,
+        private UserRepository $userRepository,
     ) {}
 
     public function __invoke(string $user, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
@@ -24,7 +26,7 @@ final readonly class AssignRolesController
         /** @var Authenticatable&User $currentUser */
         $currentUser = $formRequest->user();
 
-        if (! $currentUser->can('user.edit')) {
+        if ($currentUser === null || ! $currentUser->can('user.edit')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -32,9 +34,9 @@ final readonly class AssignRolesController
             );
         }
 
-        $userModel = User::find($user);
+        $userModel = $this->userRepository->findById($user);
 
-        if (! $userModel) {
+        if ($userModel === null) {
             return new ProblemResponse(
                 title: 'Not Found',
                 status: Response::HTTP_NOT_FOUND,

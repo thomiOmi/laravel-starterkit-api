@@ -11,14 +11,7 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'token',
-        'abilities',
-        'expires_at',
-        'ip_address',
-        'user_agent',
-    ];
+    protected $guarded = [];
 }

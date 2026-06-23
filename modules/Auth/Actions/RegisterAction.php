@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Str;
 use Modules\Auth\Payloads\V1\RegisterPayload;
 use Modules\User\Models\User;
 
@@ -21,22 +22,20 @@ final readonly class RegisterAction
             'password' => $payload->password,
         ]);
 
-        $token = $user->createToken(
-            'register_token',
-            ['users:read', 'users:write', 'auth:manage'],
-        );
+        $plainTextToken = Str::random(40);
 
-        /** @var PersonalAccessToken $accessToken */
-        $accessToken = $token->accessToken;
-
-        $accessToken->forceFill([
+        /** @var PersonalAccessToken $token */
+        $token = $user->tokens()->create([
+            'name' => 'register_token',
+            'token' => hash('sha256', $plainTextToken),
+            'abilities' => ['users:read', 'users:write', 'auth:manage'],
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-        ])->save();
+        ]);
 
         return [
             'user' => $user,
-            'access_token' => $token->plainTextToken,
+            'access_token' => $token->getKey().'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }
