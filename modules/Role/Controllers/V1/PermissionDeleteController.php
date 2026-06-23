@@ -7,13 +7,11 @@ namespace Modules\Role\Controllers\V1;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Modules\Role\Actions\DeletePermissionAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-/**
- * @authenticated
- */
 final readonly class PermissionDeleteController
 {
     public function __construct(
@@ -25,15 +23,15 @@ final readonly class PermissionDeleteController
      *
      * @param  string  $permission  The permission ID.
      */
-    public function __invoke(string $permission): JsonResponse|ProblemResponse
+    public function __invoke(Request $request, string $permission): JsonResponse|ProblemResponse
     {
         /** @var Authenticatable&User $user */
-        $user = auth()->user();
+        $user = $request->user();
 
         if (! $user->can('permission.delete')) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: 403,
+                status: SymfonyResponse::HTTP_FORBIDDEN,
                 detail: __('general.forbidden'),
             );
         }
@@ -44,7 +42,7 @@ final readonly class PermissionDeleteController
 
         return new ProblemResponse(
             title: 'Forbidden',
-            status: 403,
+            status: SymfonyResponse::HTTP_FORBIDDEN,
             detail: __('general.delete_error', ['resource' => 'Permission']),
         );
     }

@@ -7,13 +7,12 @@ namespace Modules\User\Controllers\V1;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
 use Modules\User\Actions\ShowUserAction;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class ShowController
 {
     public function __construct(
@@ -23,15 +22,15 @@ final readonly class ShowController
     /**
      * Display the specified user.
      */
-    public function __invoke(string $user): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
     {
         /** @var Authenticatable&User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         if ($currentUser->getKey() !== $user && ! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: 403,
+                status: Response::HTTP_FORBIDDEN,
                 detail: __('general.forbidden'),
             );
         }
@@ -41,7 +40,7 @@ final readonly class ShowController
         if (! $user) {
             return new ProblemResponse(
                 title: 'Not Found',
-                status: 404,
+                status: Response::HTTP_NOT_FOUND,
                 detail: __('general.not_found', ['resource' => 'User']),
             );
         }

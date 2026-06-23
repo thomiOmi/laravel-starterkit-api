@@ -9,10 +9,8 @@ use App\Http\Responses\SuccessResponse;
 use Modules\User\Actions\UpdateUserAction;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class UpdateController
 {
     public function __construct(
@@ -32,7 +30,7 @@ final readonly class UpdateController
         if (! $user) {
             return new ProblemResponse(
                 title: 'Not Found',
-                status: 404,
+                status: Response::HTTP_NOT_FOUND,
                 detail: __('general.not_found', ['resource' => 'User']),
             );
         }

@@ -8,9 +8,6 @@ use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\SuccessResponse;
 use Modules\Role\Actions\BulkRestoreRolesAction;
 
-/**
- * @authenticated
- */
 final readonly class BulkRestoreRolesController
 {
     public function __construct(

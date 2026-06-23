@@ -9,10 +9,8 @@ use App\Http\Responses\SuccessResponse;
 use Modules\Role\Actions\UpdatePermissionAction;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class PermissionUpdateController
 {
     public function __construct(
@@ -32,7 +30,7 @@ final readonly class PermissionUpdateController
         if (! $permission) {
             return new ProblemResponse(
                 title: 'Not Found',
-                status: 404,
+                status: Response::HTTP_NOT_FOUND,
                 detail: __('general.not_found', ['resource' => 'Permission']),
             );
         }

@@ -7,13 +7,12 @@ namespace Modules\Role\Controllers\V1;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
 use Modules\Role\Actions\ShowRoleAction;
 use Modules\Role\Resources\RoleResource;
 use Modules\User\Models\User;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class ShowController
 {
     public function __construct(
@@ -23,15 +22,15 @@ final readonly class ShowController
     /**
      * Display the specified role.
      */
-    public function __invoke(string $role): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $role): SuccessResponse|ProblemResponse
     {
         /** @var Authenticatable&User $user */
-        $user = auth()->user();
+        $user = $request->user();
 
         if (! $user->can('role.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: 403,
+                status: Response::HTTP_FORBIDDEN,
                 detail: __('general.forbidden'),
             );
         }
@@ -41,7 +40,7 @@ final readonly class ShowController
         if ($role === null) {
             return new ProblemResponse(
                 title: 'Not Found',
-                status: 404,
+                status: Response::HTTP_NOT_FOUND,
                 detail: __('general.not_found', ['resource' => 'Role']),
             );
         }

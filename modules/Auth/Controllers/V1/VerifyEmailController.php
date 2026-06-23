@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Modules\Auth\Actions\VerifyEmailAction;
 use Modules\User\Models\User;
+use Symfony\Component\HttpFoundation\Response;
 
 final readonly class VerifyEmailController
 {
@@ -22,7 +23,7 @@ final readonly class VerifyEmailController
         if (! $user instanceof User) {
             return new ProblemResponse(
                 title: __('auth.not_found'),
-                status: 404,
+                status: Response::HTTP_NOT_FOUND,
                 detail: 'User not found.',
             );
         }

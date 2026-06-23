@@ -10,9 +10,6 @@ use Modules\Auth\Actions\DeleteDeviceAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-/**
- * @authenticated
- */
 final readonly class DeleteDeviceController
 {
     public function __construct(

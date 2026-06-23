@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Registered;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Requests\V1\RegisterRequest;
 use Modules\User\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
 final readonly class RegisterController
 {
@@ -30,7 +31,7 @@ final readonly class RegisterController
                 'access_token' => $result['access_token'],
                 'token_type' => $result['token_type'],
             ],
-            201,
+            Response::HTTP_CREATED,
         );
     }
 }

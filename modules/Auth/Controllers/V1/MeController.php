@@ -10,9 +10,6 @@ use Modules\Auth\Actions\GetAuthenticatedUserAction;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 
-/**
- * @authenticated
- */
 final readonly class MeController
 {
     public function __construct(

@@ -10,9 +10,6 @@ use Modules\Auth\Actions\LogoutAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-/**
- * @authenticated
- */
 final readonly class LogoutController
 {
     public function __construct(

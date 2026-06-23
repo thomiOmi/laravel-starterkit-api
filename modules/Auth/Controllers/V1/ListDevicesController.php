@@ -10,9 +10,6 @@ use Modules\Auth\Actions\ListDevicesAction;
 use Modules\Auth\Resources\DeviceResource;
 use Modules\User\Models\User;
 
-/**
- * @authenticated
- */
 final readonly class ListDevicesController
 {
     public function __construct(

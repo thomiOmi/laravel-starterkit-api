@@ -10,9 +10,6 @@ use Modules\Auth\Requests\V1\LogoutOtherDevicesRequest;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-/**
- * @authenticated
- */
 final readonly class LogoutOtherDevicesController
 {
     public function __construct(

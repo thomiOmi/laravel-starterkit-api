@@ -12,10 +12,8 @@ use Modules\Role\Actions\ListRolesAction;
 use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Resources\RoleResource;
 use Modules\User\Models\User;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class IndexController
 {
     public function __construct(
@@ -28,12 +26,12 @@ final readonly class IndexController
     public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var Authenticatable&User $user */
-        $user = auth()->user();
+        $user = $request->user();
 
         if (! $user->can('role.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: 403,
+                status: Response::HTTP_FORBIDDEN,
                 detail: __('general.forbidden'),
             );
         }
@@ -48,7 +46,6 @@ final readonly class IndexController
             'OK',
             __('general.retrieved', ['resource' => 'Roles']),
             RoleResource::collection($roles),
-            200,
         );
     }
 }

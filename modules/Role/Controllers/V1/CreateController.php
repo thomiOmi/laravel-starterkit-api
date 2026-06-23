@@ -8,10 +8,8 @@ use App\Http\Responses\SuccessResponse;
 use Modules\Role\Actions\CreateRoleAction;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class CreateController
 {
     public function __construct(
@@ -31,7 +29,7 @@ final readonly class CreateController
             'Created',
             __('general.created', ['resource' => 'Role']),
             new RoleResource($role),
-            201,
+            Response::HTTP_CREATED,
         );
     }
 }

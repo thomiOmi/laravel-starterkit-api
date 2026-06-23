@@ -8,10 +8,8 @@ use App\Http\Responses\SuccessResponse;
 use Modules\Role\Actions\CreatePermissionAction;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class PermissionCreateController
 {
     public function __construct(
@@ -29,7 +27,7 @@ final readonly class PermissionCreateController
             'Created',
             __('general.created', ['resource' => 'Permission']),
             new PermissionResource($permission),
-            201,
+            Response::HTTP_CREATED,
         );
     }
 }

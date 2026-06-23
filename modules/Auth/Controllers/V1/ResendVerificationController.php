@@ -9,9 +9,6 @@ use Illuminate\Http\Request;
 use Modules\Auth\Actions\ResendVerificationAction;
 use Modules\User\Models\User;
 
-/**
- * @authenticated
- */
 final readonly class ResendVerificationController
 {
     public function __construct(

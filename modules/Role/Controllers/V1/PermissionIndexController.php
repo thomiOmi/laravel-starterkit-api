@@ -12,10 +12,8 @@ use Modules\Role\Actions\ListPermissionsAction;
 use Modules\Role\Filters\PermissionFilter;
 use Modules\Role\Resources\PermissionResource;
 use Modules\User\Models\User;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class PermissionIndexController
 {
     public function __construct(
@@ -28,12 +26,12 @@ final readonly class PermissionIndexController
     public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var Authenticatable&User $user */
-        $user = auth()->user();
+        $user = $request->user();
 
         if (! $user->can('permission.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: 403,
+                status: Response::HTTP_FORBIDDEN,
                 detail: __('general.forbidden'),
             );
         }
@@ -48,7 +46,6 @@ final readonly class PermissionIndexController
             'OK',
             __('general.retrieved', ['resource' => 'Permissions']),
             PermissionResource::collection($permissions),
-            200,
         );
     }
 }

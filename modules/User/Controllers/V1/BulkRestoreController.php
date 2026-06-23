@@ -8,9 +8,6 @@ use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\SuccessResponse;
 use Modules\User\Actions\BulkRestoreUsersAction;
 
-/**
- * @authenticated
- */
 final readonly class BulkRestoreController
 {
     public function __construct(

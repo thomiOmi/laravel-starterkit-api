@@ -12,10 +12,8 @@ use Modules\User\Actions\ListUsersAction;
 use Modules\User\Filters\UserFilter;
 use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class IndexController
 {
     public function __construct(
@@ -28,12 +26,12 @@ final readonly class IndexController
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var Authenticatable&User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         if (! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: 403,
+                status: Response::HTTP_FORBIDDEN,
                 detail: __('general.forbidden'),
             );
         }
@@ -48,7 +46,6 @@ final readonly class IndexController
             'OK',
             __('general.retrieved', ['resource' => 'Users']),
             UserResource::collection($users),
-            200,
         );
     }
 }

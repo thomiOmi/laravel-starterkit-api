@@ -7,13 +7,11 @@ namespace Modules\User\Controllers\V1;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Modules\User\Actions\DeleteUserAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-/**
- * @authenticated
- */
 final readonly class DeleteController
 {
     public function __construct(
@@ -25,15 +23,15 @@ final readonly class DeleteController
      *
      * @param  string  $user  The user ID.
      */
-    public function __invoke(string $user): JsonResponse|ProblemResponse
+    public function __invoke(Request $request, string $user): JsonResponse|ProblemResponse
     {
         /** @var Authenticatable&User $currentUser */
-        $currentUser = auth()->user();
+        $currentUser = $request->user();
 
         if (! $currentUser->can('user.delete')) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: 403,
+                status: SymfonyResponse::HTTP_FORBIDDEN,
                 detail: __('general.forbidden'),
             );
         }
@@ -44,7 +42,7 @@ final readonly class DeleteController
 
         return new ProblemResponse(
             title: 'Forbidden',
-            status: 403,
+            status: SymfonyResponse::HTTP_FORBIDDEN,
             detail: __('general.delete_error', ['resource' => 'User']),
         );
     }

@@ -8,9 +8,6 @@ use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\SuccessResponse;
 use Modules\Role\Actions\BulkDeleteRolesAction;
 
-/**
- * @authenticated
- */
 final readonly class BulkDeleteRolesController
 {
     public function __construct(

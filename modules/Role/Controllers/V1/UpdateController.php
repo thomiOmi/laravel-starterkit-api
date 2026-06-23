@@ -9,10 +9,8 @@ use App\Http\Responses\SuccessResponse;
 use Modules\Role\Actions\UpdateRoleAction;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
+use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @authenticated
- */
 final readonly class UpdateController
 {
     public function __construct(
@@ -32,7 +30,7 @@ final readonly class UpdateController
         if (! $role) {
             return new ProblemResponse(
                 title: 'Not Found',
-                status: 404,
+                status: Response::HTTP_NOT_FOUND,
                 detail: __('general.not_found', ['resource' => 'Role']),
             );
         }

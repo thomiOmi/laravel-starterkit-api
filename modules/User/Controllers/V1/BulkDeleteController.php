@@ -8,9 +8,6 @@ use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\SuccessResponse;
 use Modules\User\Actions\BulkDeleteUsersAction;
 
-/**
- * @authenticated
- */
 final readonly class BulkDeleteController
 {
     public function __construct(
