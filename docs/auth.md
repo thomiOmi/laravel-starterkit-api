@@ -32,9 +32,79 @@ The redirect endpoint returns the OAuth provider URL. The callback handles user 
 2. Match by `email` (link existing account)
 3. Create new user with `password = null`
 
-Configure credentials in `config/services.php` via `.env`:
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
-- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`
+### Setup Guide
+
+#### 1. Register OAuth App
+
+**Google:**
+1. Go to https://console.cloud.google.com/apis/credentials
+2. Create an **OAuth 2.0 Client ID** (Web application)
+3. Add **Authorized redirect URIs**:
+   - `http://localhost:8000/api/v1/auth/social/google/callback` (development)
+   - `https://your-domain.com/api/v1/auth/social/google/callback` (production)
+4. Save the **Client ID** and **Client Secret**
+
+**GitHub:**
+1. Go to https://github.com/settings/developers → **OAuth Apps** → **New OAuth App**
+2. Fill in **Authorization callback URL**:
+   - `http://localhost:8000/api/v1/auth/social/github/callback` (development)
+   - `https://your-domain.com/api/v1/auth/social/github/callback` (production)
+3. Save the **Client ID** and **Client Secret**
+
+#### 2. Configure `.env`
+
+Add these to your `.env` file:
+
+```env
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/auth/social/google/callback
+
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GITHUB_REDIRECT_URI=http://localhost:8000/api/v1/auth/social/github/callback
+```
+
+> **Note:** If using `php artisan serve` (default port 8000), the redirect URI must include the port. Adjust the port if using a different one.
+
+#### 3. Test
+
+```bash
+# Step 1 - Get redirect URL (open in browser)
+curl http://localhost:8000/api/v1/auth/social/google/redirect
+
+# Step 2 - Browser redirects to Google login
+# Step 3 - Google redirects back to callback with auth code
+# Response: { status: 200, data: { user, access_token, token_type } }
+
+# Step 4 - Use the token for authenticated requests
+curl http://localhost:8000/api/v1/auth/me \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer {token}"
+```
+
+### Architecture
+
+```
+GET /api/v1/auth/social/{provider}/redirect
+  └── SocialRedirectController::__invoke($provider)
+       └── SocialRedirectAction::handle($provider)
+            └── Socialite::driver($provider)->stateless()->redirect()->getTargetUrl()
+            └── Returns: { url: "https://accounts.google.com/o/oauth2/auth?..." }
+
+GET /api/v1/auth/social/{provider}/callback
+  └── SocialCallbackController::__invoke($provider, $request)
+       └── SocialCallbackAction::handle($provider, $ip, $userAgent)
+            ├── Socialite::driver($provider)->stateless()->user()
+            ├── DB::transaction() — find-or-create user
+            │   ├── Match by provider + provider_id → return existing
+            │   ├── Match by email → link provider + update avatar
+            │   └── Create new user with password = null
+            └── createToken() — Sanctum token with [*] abilities
+            └── Returns: { user, access_token, token_type }
+```
+
+> Social users created via callback have `password = null` and cannot log in via the standard email/password flow.
 
 ## Email Verification
 

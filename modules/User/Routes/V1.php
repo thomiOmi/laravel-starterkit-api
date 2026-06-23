@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Modules\User\Controllers\V1\AssignRolesController;
 use Modules\User\Controllers\V1\BulkDeleteController;
 use Modules\User\Controllers\V1\BulkRestoreController;
 use Modules\User\Controllers\V1\CreateController;
@@ -21,5 +22,6 @@ Route::prefix('users')->middleware(['force.json', 'auth:sanctum', 'verified', 't
 
     Route::get('/{user}', ShowController::class)->name('show');
     Route::put('/{user}', UpdateController::class)->name('update');
+    Route::put('/{user}/roles', AssignRolesController::class)->name('roles.assign');
     Route::delete('/{user}', DeleteController::class)->name('delete');
 });

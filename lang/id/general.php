@@ -8,6 +8,8 @@ return [
     'restored' => ':resource berhasil dipulihkan',
     'delete_error' => 'Gagal menghapus :resource',
     'forbidden' => 'Anda tidak memiliki izin untuk melakukan tindakan ini',
+    'self_delete_forbidden' => 'Anda tidak dapat menghapus akun Anda sendiri',
     'not_found' => ':resource tidak ditemukan',
     'bulk_action' => ':resource :action berhasil dilakukan',
+    'roles_assigned' => 'Peran berhasil ditetapkan',
 ];

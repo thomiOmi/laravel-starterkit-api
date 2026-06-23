@@ -55,7 +55,7 @@ class BulkActionRequest extends FormRequest
             return false;
         }
 
-        if (str_contains($routeName, '.permission.')) {
+        if (str_contains($routeName, '.permissions.')) {
             if ($action === 'delete') {
                 return $user->can('permission.delete');
             }

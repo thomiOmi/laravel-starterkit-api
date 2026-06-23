@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Payloads\V1\LoginPayload;
@@ -40,6 +41,8 @@ final readonly class LoginAction
 
         /** @var User $user */
         $user = $this->auth->guard()->user();
+
+        event(new Login('web', $user, false));
 
         $abilities = $user->hasRole(['admin', 'super-admin'])
             ? ['*']

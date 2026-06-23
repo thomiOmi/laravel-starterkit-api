@@ -49,4 +49,19 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Indicate that the user is a social login user.
+     *
+     * @param  string  $provider  The social provider name.
+     */
+    public function social(string $provider = 'google'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'password' => null,
+            'provider' => $provider,
+            'provider_id' => fake()->numerify($provider.'-######'),
+            'avatar' => fake()->imageUrl(),
+        ]);
+    }
 }

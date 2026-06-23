@@ -11,6 +11,10 @@ final readonly class CreateUserAction
 {
     public function handle(UserPayload $payload): User
     {
-        return User::create($payload->toArray());
+        $user = User::create($payload->toArray());
+
+        $user->assignRole('user');
+
+        return $user;
     }
 }
