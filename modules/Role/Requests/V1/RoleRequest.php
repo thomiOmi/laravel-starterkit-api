@@ -62,9 +62,14 @@ final class RoleRequest extends FormRequest
     {
         $roleId = $this->route('role');
 
-        return $roleId instanceof Model
-            ? (string) $roleId->getKey()
-            : (string) $roleId;
+        if ($roleId instanceof Model) {
+            /** @var string|int $key */
+            $key = $roleId->getKey();
+
+            return (string) $key;
+        }
+
+        return (string) ($roleId ?? '');
     }
 
     /**

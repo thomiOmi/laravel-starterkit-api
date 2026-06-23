@@ -52,9 +52,14 @@ final class PermissionRequest extends FormRequest
     {
         $permissionId = $this->route('permission');
 
-        return $permissionId instanceof Model
-            ? (string) $permissionId->getKey()
-            : (string) $permissionId;
+        if ($permissionId instanceof Model) {
+            /** @var string|int $key */
+            $key = $permissionId->getKey();
+
+            return (string) $key;
+        }
+
+        return (string) ($permissionId ?? '');
     }
 
     public function payload(): PermissionPayload
