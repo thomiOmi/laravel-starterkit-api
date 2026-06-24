@@ -41,13 +41,20 @@ trait ProfileValidationRules
     protected function emailRules(?string $userId = null): array
     {
         return [
-            'required',
-            'string',
-            'email',
-            'max:255',
+            ...$this->baseEmailRules(),
             $userId === null
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),
         ];
+    }
+
+    /**
+     * Get the base validation rules for emails.
+     *
+     * @return array<int, string>
+     */
+    protected function baseEmailRules(): array
+    {
+        return ['required', 'string', 'email', 'max:255'];
     }
 }

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Requests\V1;
 
+use App\Traits\Rules\ProfileValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class ForgotPasswordRequest extends FormRequest
 {
+    use ProfileValidationRules;
+
     public function authorize(): bool
     {
         return true;
@@ -19,7 +22,7 @@ final class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
+            'email' => $this->baseEmailRules(),
         ];
     }
 }
