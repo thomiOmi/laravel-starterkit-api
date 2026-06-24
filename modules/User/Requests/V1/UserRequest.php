@@ -10,6 +10,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
+use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
 
 /**
@@ -26,7 +27,7 @@ final class UserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $this->user();
 
         if ($currentUser === null) {

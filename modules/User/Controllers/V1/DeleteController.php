@@ -25,7 +25,7 @@ final readonly class DeleteController
      */
     public function __invoke(Request $request, string $user): JsonResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if ($currentUser === null) {
