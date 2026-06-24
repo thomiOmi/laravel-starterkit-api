@@ -8,7 +8,6 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\AssignRolesToUserAction;
-use Modules\User\Models\User;
 use Modules\User\Requests\V1\AssignRolesRequest;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,10 +20,10 @@ final readonly class AssignRolesController
 
     public function __invoke(string $user, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
         $currentUser = $formRequest->user();
 
-        if (! $currentUser->can('user.edit')) {
+        if (! $currentUser?->can('user.edit')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -32,7 +31,10 @@ final readonly class AssignRolesController
             );
         }
 
-        $userModel = User::find($user);
+        /** @var array<int, string> $roles */
+        $roles = $formRequest->validated('roles');
+
+        $userModel = $this->assignRoles->handle($user, $roles);
 
         if (! $userModel) {
             return new ProblemResponse(
@@ -42,12 +44,7 @@ final readonly class AssignRolesController
             );
         }
 
-        /** @var array<int, string> $roles */
-        $roles = $formRequest->validated('roles');
-
-        $userModel = $this->assignRoles->handle($userModel, $roles);
-
-        $userModel->load('roles');
+        $userModel->loadMissing(['roles.permissions:id,name', 'permissions:id,name']);
 
         return new SuccessResponse(
             'OK',

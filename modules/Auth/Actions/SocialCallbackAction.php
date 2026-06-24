@@ -88,11 +88,12 @@ final readonly class SocialCallbackAction
             'user_agent' => $userAgent,
         ]);
 
+        /** @var string|int $tokenId */
         $tokenId = $token->getKey();
 
         return [
             'user' => $user,
-            'access_token' => (is_string($tokenId) || is_int($tokenId) ? (string) $tokenId : '').'|'.$plainTextToken,
+            'access_token' => (string) $tokenId.'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }
