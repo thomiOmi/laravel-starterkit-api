@@ -36,10 +36,20 @@ final class UserRequest extends FormRequest
             return $authenticatedUser->can('user.create');
         }
 
-        $userId = $this->route('user');
+        $userId = $this->getUserId();
 
         // Check if the user is updating their own profile or has permission
-        return $authenticatedUser->id === $userId || $authenticatedUser->can('user.edit');
+        return (string) $authenticatedUser->getKey() === $userId || $authenticatedUser->can('user.edit');
+    }
+
+    /**
+     * Get the user ID from the route.
+     */
+    public function getUserId(): string
+    {
+        $userId = $this->route('user');
+
+        return is_string($userId) || is_int($userId) ? (string) $userId : '';
     }
 
     /**

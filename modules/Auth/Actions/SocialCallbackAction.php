@@ -71,6 +71,8 @@ final readonly class SocialCallbackAction
                 'avatar' => $socialUser->getAvatar(),
             ]);
 
+            $user->assignRole('user');
+
             return $user;
         });
 

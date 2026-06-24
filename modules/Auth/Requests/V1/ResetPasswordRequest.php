@@ -25,7 +25,7 @@ final class ResetPasswordRequest extends FormRequest
     {
         return [
             'token' => ['required'],
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', 'max:255'],
             'password' => $this->passwordRules(),
         ];
     }
