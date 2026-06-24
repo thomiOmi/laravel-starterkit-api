@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\AssignRolesToUserAction;
+use Modules\User\Models\User;
 use Modules\User\Requests\V1\AssignRolesRequest;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +21,7 @@ final readonly class AssignRolesController
 
     public function __invoke(string $user, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $formRequest->user();
 
         if (! $currentUser?->can('user.edit')) {

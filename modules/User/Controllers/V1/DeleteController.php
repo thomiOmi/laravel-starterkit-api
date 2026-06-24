@@ -25,10 +25,10 @@ final readonly class DeleteController
      */
     public function __invoke(Request $request, string $user): JsonResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
-        if ($currentUser->id === $user) {
+        if ((string) $currentUser?->getKey() === $user) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: SymfonyResponse::HTTP_FORBIDDEN,
@@ -36,7 +36,7 @@ final readonly class DeleteController
             );
         }
 
-        if (! $currentUser->can('user.delete')) {
+        if (! $currentUser?->can('user.delete')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: SymfonyResponse::HTTP_FORBIDDEN,

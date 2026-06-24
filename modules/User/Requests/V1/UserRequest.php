@@ -36,10 +36,10 @@ final class UserRequest extends FormRequest
             return $authenticatedUser->can('user.create');
         }
 
-        $userId = $this->route('user');
+        $userId = $this->getUserId();
 
         // Check if the user is updating their own profile or has permission
-        return $authenticatedUser->id === $userId || $authenticatedUser->can('user.edit');
+        return (string) $authenticatedUser->getKey() === $userId || $authenticatedUser->can('user.edit');
     }
 
     /**
@@ -49,7 +49,7 @@ final class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('user');
+        $userId = $this->getUserId();
 
         return [
             ...$this->profileRules($userId),
@@ -63,5 +63,15 @@ final class UserRequest extends FormRequest
     public function payload(): UserPayload
     {
         return UserPayload::fromRequest($this);
+    }
+
+    /**
+     * Get user ID from route.
+     */
+    public function getUserId(): string
+    {
+        $user = $this->route('user');
+
+        return is_string($user) ? $user : (string) $user?->getKey();
     }
 }
