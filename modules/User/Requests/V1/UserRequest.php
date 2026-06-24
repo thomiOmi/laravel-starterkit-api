@@ -6,6 +6,7 @@ namespace Modules\User\Requests\V1;
 
 use App\Traits\Rules\PasswordValidationRules;
 use App\Traits\Rules\ProfileValidationRules;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
