@@ -15,6 +15,16 @@ final class AssignRolesRequest extends FormRequest
     }
 
     /**
+     * Get the user ID from the route.
+     */
+    public function getUserId(): string
+    {
+        $userId = $this->route('user');
+
+        return is_string($userId) || is_int($userId) ? (string) $userId : '';
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function rules(): array

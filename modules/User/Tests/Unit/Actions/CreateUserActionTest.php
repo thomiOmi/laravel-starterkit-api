@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
+use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Payloads\V1\UserPayload;
+
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+});
 
 describe('CreateUserAction', function () {
     it('creates a user', function () {
@@ -19,6 +24,7 @@ describe('CreateUserAction', function () {
 
         expect($user->name)->toBe('John Doe');
         expect($user->email)->toBe('john@example.com');
+        expect($user->hasRole('user'))->toBeTrue();
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
@@ -38,6 +44,7 @@ describe('CreateUserAction', function () {
 
         expect($user->name)->toBe('Jane Doe');
         expect($user->email)->toBe('jane@example.com');
+        expect($user->hasRole('user'))->toBeTrue();
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
