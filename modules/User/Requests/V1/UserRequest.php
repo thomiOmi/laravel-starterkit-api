@@ -26,20 +26,21 @@ final class UserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $authenticatedUser = $this->user();
+        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        $currentUser = $this->user();
 
-        if ($authenticatedUser === null) {
+        if ($currentUser === null) {
             return false;
         }
 
         if ($this->isMethod('POST')) {
-            return $authenticatedUser->can('user.create');
+            return $currentUser->can('user.create');
         }
 
         $userId = $this->getUserId();
 
         // Check if the user is updating their own profile or has permission
-        return (string) $authenticatedUser->getKey() === $userId || $authenticatedUser->can('user.edit');
+        return (string) $currentUser->getKey() === $userId || $currentUser->can('user.edit');
     }
 
     /**
@@ -49,7 +50,9 @@ final class UserRequest extends FormRequest
     {
         $userId = $this->route('user');
 
-        return is_string($userId) || is_int($userId) ? (string) $userId : '';
+        $id = is_string($userId) || is_int($userId) ? (string) $userId : '';
+
+        return $id;
     }
 
     /**
