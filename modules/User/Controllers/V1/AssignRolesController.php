@@ -9,6 +9,7 @@ use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\AssignRolesToUserAction;
 use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\V1\AssignRolesRequest;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,12 +18,21 @@ final readonly class AssignRolesController
 {
     public function __construct(
         private AssignRolesToUserAction $assignRoles,
+        private UserRepository $userRepository,
     ) {}
 
     public function __invoke(string $user, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $formRequest->user();
+
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
 
         if (! $currentUser->can('user.edit')) {
             return new ProblemResponse(
@@ -32,7 +42,7 @@ final readonly class AssignRolesController
             );
         }
 
-        $userModel = User::find($user);
+        $userModel = $this->userRepository->findById($user);
 
         if (! $userModel) {
             return new ProblemResponse(

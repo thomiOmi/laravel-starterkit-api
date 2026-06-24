@@ -8,6 +8,7 @@ use App\Traits\Rules\PasswordValidationRules;
 use App\Traits\Rules\ProfileValidationRules;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
@@ -50,11 +51,13 @@ final class UserRequest extends FormRequest
      */
     public function getUserId(): string
     {
-        $userId = $this->route('user');
+        $user = $this->route('user');
 
-        $id = is_string($userId) || is_int($userId) ? (string) $userId : '';
+        if ($user instanceof Model) {
+            return (string) $user->getKey();
+        }
 
-        return $id;
+        return is_string($user) || is_int($user) ? (string) $user : '';
     }
 
     /**

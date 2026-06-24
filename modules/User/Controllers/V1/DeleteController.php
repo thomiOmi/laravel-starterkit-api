@@ -30,9 +30,9 @@ final readonly class DeleteController
 
         if ($currentUser === null) {
             return new ProblemResponse(
-                title: 'Unauthorized',
+                title: 'Unauthenticated',
                 status: SymfonyResponse::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthorized'),
+                detail: __('auth.unauthenticated'),
             );
         }
 
