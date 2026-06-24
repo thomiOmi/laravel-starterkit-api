@@ -35,7 +35,7 @@ final readonly class RegisterAction
 
         return [
             'user' => $user,
-            'access_token' => $token->getKey().'|'.$plainTextToken,
+            'access_token' => (string) $token->getKey().'|'.$plainTextToken,
             'token_type' => 'Bearer',
         ];
     }
