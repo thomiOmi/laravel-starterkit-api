@@ -24,10 +24,10 @@ final readonly class ShowController
      */
     public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
-        if ($currentUser->getKey() !== $user && ! $currentUser->can('user.view')) {
+        if ($currentUser === null || ((string) $currentUser->getKey() !== $user && ! $currentUser->can('user.view'))) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
