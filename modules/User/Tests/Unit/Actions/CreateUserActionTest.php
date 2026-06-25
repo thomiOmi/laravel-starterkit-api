@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Payloads\V1\UserPayload;
-use Spatie\Permission\Models\Role;
 
 describe('CreateUserAction', function () {
     beforeEach(function () {
-        Role::create(['name' => 'user', 'guard_name' => 'web']);
+        \Modules\Role\Models\Role::factory()->create(['name' => 'user']);
     });
+
     it('creates a user', function () {
         $password = config('auth.default_password');
         $payload = new UserPayload(
