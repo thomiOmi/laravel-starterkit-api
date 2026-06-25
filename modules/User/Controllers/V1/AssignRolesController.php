@@ -8,7 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\AssignRolesToUserAction;
-use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\V1\AssignRolesRequest;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,11 +17,12 @@ final readonly class AssignRolesController
 {
     public function __construct(
         private AssignRolesToUserAction $assignRoles,
+        private UserRepository $userRepository,
     ) {}
 
     public function __invoke(string $user, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
         $currentUser = $formRequest->user();
 
         if (! $currentUser->can('user.edit')) {
@@ -32,7 +33,7 @@ final readonly class AssignRolesController
             );
         }
 
-        $userModel = User::find($user);
+        $userModel = $this->userRepository->findById($user);
 
         if (! $userModel) {
             return new ProblemResponse(
