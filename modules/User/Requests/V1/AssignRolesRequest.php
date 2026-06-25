@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\User\Requests\V1;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Modules\Role\Models\Role;
 
 final class AssignRolesRequest extends FormRequest
 {
@@ -22,7 +22,17 @@ final class AssignRolesRequest extends FormRequest
     {
         return [
             'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['required', 'string', Rule::exists(Role::class, 'name')],
+            'roles.*' => ['required', 'string', Rule::exists('roles', 'name')],
         ];
+    }
+
+    /**
+     * Get the user ID from the route.
+     */
+    public function getUserId(): string
+    {
+        $id = $this->route('user');
+
+        return $id instanceof Model ? (string) $id->getKey() : (string) $id;
     }
 }

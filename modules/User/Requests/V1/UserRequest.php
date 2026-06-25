@@ -6,10 +6,13 @@ namespace Modules\User\Requests\V1;
 
 use App\Traits\Rules\PasswordValidationRules;
 use App\Traits\Rules\ProfileValidationRules;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
+use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
 
 /**
@@ -26,6 +29,7 @@ final class UserRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        /** @var (Authenticatable&User)|null $authenticatedUser */
         $authenticatedUser = $this->user();
 
         if ($authenticatedUser === null) {
@@ -36,10 +40,10 @@ final class UserRequest extends FormRequest
             return $authenticatedUser->can('user.create');
         }
 
-        $userId = $this->route('user');
+        $userId = $this->getUserId();
 
         // Check if the user is updating their own profile or has permission
-        return $authenticatedUser->id === $userId || $authenticatedUser->can('user.edit');
+        return (string) $authenticatedUser->getKey() === $userId || $authenticatedUser->can('user.edit');
     }
 
     /**
@@ -49,7 +53,7 @@ final class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('user');
+        $userId = $this->getUserId();
 
         return [
             ...$this->profileRules($userId),
@@ -63,5 +67,15 @@ final class UserRequest extends FormRequest
     public function payload(): UserPayload
     {
         return UserPayload::fromRequest($this);
+    }
+
+    /**
+     * Get the user ID from the route.
+     */
+    public function getUserId(): string
+    {
+        $id = $this->route('user');
+
+        return $id instanceof Model ? (string) $id->getKey() : (string) $id;
     }
 }
