@@ -25,7 +25,7 @@ final class LoginRequest extends FormRequest
     {
         return [
             'email' => $this->baseEmailRules(),
-            'password' => ['required', 'string'],
+            'password' => $this->loginPasswordRules(),
             'device_name' => ['nullable', 'string', 'max:255'],
         ];
     }

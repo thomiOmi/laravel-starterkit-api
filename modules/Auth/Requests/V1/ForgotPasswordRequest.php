@@ -17,12 +17,12 @@ final class ForgotPasswordRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
         return [
-            'email' => $this->baseEmailRules(),
+            'email' => $this->emailExistsRules(),
         ];
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Traits\Rules;
 
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
 use Illuminate\Validation\Rules\Unique;
 use Modules\User\Models\User;
 
@@ -56,5 +57,18 @@ trait ProfileValidationRules
     protected function baseEmailRules(): array
     {
         return ['required', 'string', 'email', 'max:255'];
+    }
+
+    /**
+     * Get the validation rules for emails that must exist.
+     *
+     * @return array<int, string|Unique|Exists>
+     */
+    protected function emailExistsRules(): array
+    {
+        return [
+            ...$this->baseEmailRules(),
+            Rule::exists(User::class, 'email'),
+        ];
     }
 }

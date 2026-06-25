@@ -28,4 +28,14 @@ trait PasswordValidationRules
     {
         return ['required', 'string', 'current_password'];
     }
+
+    /**
+     * Get the validation rules used to validate the password for login.
+     *
+     * @return array<int, string>
+     */
+    protected function loginPasswordRules(): array
+    {
+        return ['required', 'string'];
+    }
 }
