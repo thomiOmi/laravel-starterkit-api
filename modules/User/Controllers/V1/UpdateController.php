@@ -6,7 +6,9 @@ namespace Modules\User\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\UpdateUserAction;
+use Modules\User\Models\User;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,6 +27,17 @@ final readonly class UpdateController
      */
     public function __invoke(UserRequest $request, string $user): SuccessResponse|ProblemResponse
     {
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
+
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
+
         $user = $this->updateUser->handle($user, $request->payload());
 
         if (! $user) {

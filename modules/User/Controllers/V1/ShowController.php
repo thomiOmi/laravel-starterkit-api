@@ -24,10 +24,18 @@ final readonly class ShowController
      */
     public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
-        if ($currentUser->getKey() !== $user && ! $currentUser->can('user.view')) {
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
+
+        if ((string) $currentUser->getKey() !== $user && ! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,

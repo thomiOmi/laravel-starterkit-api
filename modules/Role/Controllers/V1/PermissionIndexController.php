@@ -25,8 +25,16 @@ final readonly class PermissionIndexController
      */
     public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $user */
+        /** @var (Authenticatable&User)|null $user */
         $user = $request->user();
+
+        if ($user === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
 
         if (! $user->can('permission.view')) {
             return new ProblemResponse(

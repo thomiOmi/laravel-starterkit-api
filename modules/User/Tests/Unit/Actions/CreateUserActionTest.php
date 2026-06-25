@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
+use Modules\Role\Models\Role;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Payloads\V1\UserPayload;
 
 describe('CreateUserAction', function () {
     beforeEach(function () {
-        \Modules\Role\Models\Role::factory()->create(['name' => 'user']);
+        Role::create(['name' => 'user', 'guard_name' => 'web']);
     });
 
     it('creates a user', function () {

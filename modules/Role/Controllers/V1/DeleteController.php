@@ -25,8 +25,16 @@ final readonly class DeleteController
      */
     public function __invoke(Request $request, string $role): JsonResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $user */
+        /** @var (Authenticatable&User)|null $user */
         $user = $request->user();
+
+        if ($user === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: SymfonyResponse::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
 
         if (! $user->can('role.delete')) {
             return new ProblemResponse(
