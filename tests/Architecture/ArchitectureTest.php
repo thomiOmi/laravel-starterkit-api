@@ -37,6 +37,7 @@ test('models should not be used in controllers')
         'Modules\User\Controllers\V1\ShowController',
         'Modules\User\Controllers\V1\UpdateController',
         'Modules\User\Controllers\V1\DeleteController',
+        'Modules\User\Controllers\V1\AssignRolesController',
         'Modules\User\Controllers\V1\BulkDeleteController',
         'Modules\User\Controllers\V1\BulkRestoreController',
         'Modules\Role\Controllers\V1\IndexController',
