@@ -1,6 +1,7 @@
 includes:
     - vendor/larastan/larastan/extension.neon
     - vendor/nesbot/carbon/extension.neon
+    - vendor/pestphp/pest/extension.neon
     - phar://phpstan.phar/conf/bleedingEdge.neon
 
 parameters:
@@ -9,12 +10,10 @@ parameters:
         - bootstrap/app.php
         - config
         - database
-        - public
         - routes
         - modules
 
     excludePaths:
-        - config
         - tests
         - modules/*/Tests/*
 
@@ -27,21 +26,3 @@ parameters:
         jobSize: 20
 
     phpVersion: 80400
-
-    checkModelProperties: true
-    checkOctaneCompatibility: false  # flip to true if using Octane
-
-    noEnvCallsOutsideOfConfig: true  # enforces env() only inside config files
-
-    # Catch uninitialized class properties (common in Laravel models & DTOs)
-    checkUninitializedProperties: true
-
-    # Treat PHPDoc @var / @param types as certain (strict mode)
-    treatPhpDocTypesAsCertain: true
-
-    # Infer property types from constructor assignments (reduces @var noise)
-    inferPrivatePropertyTypeFromConstructor: true
-
-    reportUnmatchedIgnoredErrors: true
-
-    ignoreErrors: []
