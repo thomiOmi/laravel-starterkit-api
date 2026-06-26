@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use Modules\Role\Models\Role;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Payloads\V1\UserPayload;
 
 describe('CreateUserAction', function () {
+    beforeEach(function () {
+        Role::create(['name' => 'user', 'guard_name' => 'web']);
+    });
+
     it('creates a user', function () {
         $password = config('auth.default_password');
         $payload = new UserPayload(
