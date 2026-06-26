@@ -3,6 +3,7 @@
 ## Authentication (`/api/v1/auth/`)
 
 ### Register
+
 `POST /auth/register`
 ```json
 // Request
@@ -12,6 +13,7 @@
 ```
 
 ### Login
+
 `POST /auth/login`
 ```json
 // Request
@@ -21,36 +23,47 @@
 ```
 
 ### Logout
+
 `POST /auth/logout` (Auth: Bearer) -- Response 200
 
 ### Get Me
+
 `GET /auth/me` (Auth: Bearer) -- Returns user with roles/permissions
 
 ### Forgot Password
+
 `POST /auth/forgot-password` -- Request: `{ "email": "..." }` -- Response 200
 
 ### Reset Password
+
 `POST /auth/reset-password` -- Request: `{ "email", "token", "password", "password_confirmation" }`
 
 ### Verify Email
+
 `GET /auth/verify-email/{id}/{hash}?expires=...&signature=...` (Signed URL)
 
 ### Resend Verification
+
 `POST /auth/email/verification-notification` (Auth: Bearer)
 
 ### Social Redirect
+
 `GET /auth/social/{provider}/redirect` -- Returns `{ "data": { "url": "..." } }`
 
 ### Social Callback
+
 `GET /auth/social/{provider}/callback` -- Returns token
 
 ### List Devices
+
 `GET /auth/devices` (Auth: Bearer)
 
 ### Delete Device
+
 `DELETE /auth/devices/{device}` (Auth: Bearer)
 
 ### Logout Other Devices
+
 `POST /auth/devices/logout-others` (Auth: Bearer)
 
 ---

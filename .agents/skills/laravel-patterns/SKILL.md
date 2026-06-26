@@ -43,38 +43,55 @@ Use a conventional Laravel layout with clear layer boundaries (HTTP, services/ac
 modules/
 ├── {Module}/
 │   ├── Actions/         # Single-purpose use cases
+
 │   ├── Controllers/     # V1/, V2/ for API versioning
+
 │   ├── Database/
 │   │   ├── factories/
 │   │   ├── migrations/
 │   │   └── seeders/
 │   ├── Events/
 │   ├── Filters/         # Query/filter objects
+
 │   ├── Jobs/
 │   ├── Models/
 │   ├── Payloads/        # DTOs with PHP 8.4 property hooks
+
 │   ├── Providers/       # Service providers
+
 │   ├── Repositories/
 │   ├── Requests/        # Form request validation
+
 │   ├── Resources/       # API resources
+
 │   ├── Routes/          # V1.php, V2.php
+
 │   └── Tests/           # Feature tests
+
 ├── Auth/
 ├── Role/
 └── User/
 app/
 ├── Http/
 │   ├── Controllers/     # Base controller
+
 │   ├── Middleware/      # force.json, etc.
+
 │   └── Responses/       # SuccessResponse, ProblemResponse
+
 └── Providers/           # AppServiceProvider
+
 config/
 database/
 ├── factories/           # Shared factories
+
 ├── migrations/          # Shared migrations
+
 └── seeders/             # Shared seeders (RoleSeeder)
+
 routes/
 ├── api.php              # Module route loader
+
 └── console.php
 ```
 

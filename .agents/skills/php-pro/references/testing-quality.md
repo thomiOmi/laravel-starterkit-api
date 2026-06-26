@@ -256,7 +256,9 @@ test('guest cannot access protected routes', function () {
 ## PHPStan Configuration
 
 ```neon
+
 # phpstan.neon
+
 parameters:
     level: 9
     paths:
@@ -272,6 +274,7 @@ parameters:
 
     ignoreErrors:
         # Ignore specific Laravel magic
+
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
 
     type_coverage:

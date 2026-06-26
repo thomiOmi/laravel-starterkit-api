@@ -36,7 +36,9 @@ final readonly class UserService
 ## Service Configuration (services.yaml)
 
 ```yaml
+
 # config/services.yaml
+
 services:
     _defaults:
         autowire: true
@@ -53,16 +55,19 @@ services:
             - '../src/Kernel.php'
 
     # Interface binding
+
     App\Repository\UserRepositoryInterface:
         class: App\Repository\DoctrineUserRepository
 
     # Service with specific configuration
+
     App\Service\PaymentService:
         arguments:
             $apiKey: '%env(PAYMENT_API_KEY)%'
             $timeout: 30
 
     # Tagged services
+
     App\EventSubscriber\:
         resource: '../src/EventSubscriber/'
         tags: ['kernel.event_subscriber']

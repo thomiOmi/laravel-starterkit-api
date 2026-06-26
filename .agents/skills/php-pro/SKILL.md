@@ -40,6 +40,7 @@ Load detailed guidance based on context:
 ## Constraints
 
 ### MUST DO
+
 - Declare strict types (`declare(strict_types=1)`)
 - Use type hints for all properties, parameters, returns
 - Follow PSR-12 coding standard (enforced by Pint)
@@ -50,6 +51,7 @@ Load detailed guidance based on context:
 - Use dependency injection over global state
 
 ### MUST NOT DO
+
 - Skip type declarations (no mixed types)
 - Store passwords in plain text (use bcrypt/argon2)
 - Write SQL queries vulnerable to injection

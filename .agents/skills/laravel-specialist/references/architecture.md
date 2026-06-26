@@ -39,6 +39,7 @@ modules/{Module}/
 ## Key Patterns
 
 ### Single-Action Controller
+
 ```php
 final readonly class ShowController
 {
@@ -55,6 +56,7 @@ final readonly class ShowController
 ```
 
 ### Action
+
 ```php
 final readonly class SomeAction
 {
@@ -70,6 +72,7 @@ final readonly class SomeAction
 ```
 
 ### Read-Only Repository
+
 ```php
 final readonly class UserRepository
 {
