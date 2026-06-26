@@ -6,8 +6,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Payloads\V1\RegisterPayload;
+use Modules\Role\Models\Role;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    Role::create(['name' => 'user', 'guard_name' => 'web']);
+});
 
 it('creates a new user', function () {
     $action = app(RegisterAction::class);
