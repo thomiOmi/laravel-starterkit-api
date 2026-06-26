@@ -34,20 +34,14 @@ class DeviceResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        /** @var User $user */
-        $user = $request->user();
-
-        /** @var PersonalAccessToken $userCurrentToken */
-        $userCurrentToken = $user->currentAccessToken();
-
         return [
-            'id' => $this->resource->id,
+            'id' => $this->resource->getKey(),
             'name' => $this->resource->name,
             'ip_address' => $this->resource->ip_address,
             'user_agent' => $this->resource->user_agent,
             'last_used_at' => $this->formatDate($this->resource->last_used_at),
             'created_at' => $this->formatDate($this->resource->created_at),
-            'is_current' => (string) $userCurrentToken->id === (string) $this->resource->id,
+            'is_current' => (string) $this->resource->getKey() === (string) $request->user()->currentAccessToken()?->getKey(),
         ];
     }
 }

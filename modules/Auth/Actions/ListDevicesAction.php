@@ -17,7 +17,7 @@ final readonly class ListDevicesAction
     {
         /** @var Collection<int, PersonalAccessToken> */
         return $user->tokens()
-            ->select(['id', 'tokenable_id', 'tokenable_type', 'name', 'ip_address', 'user_agent', 'last_used_at', 'created_at'])
+            ->select(['id', 'tokenable_id', 'tokenable_type', 'name', 'abilities', 'expires_at', 'ip_address', 'user_agent', 'last_used_at', 'created_at'])
             ->orderBy('last_used_at', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
