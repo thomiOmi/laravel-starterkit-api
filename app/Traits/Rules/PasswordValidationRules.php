@@ -16,7 +16,7 @@ trait PasswordValidationRules
      */
     protected function passwordRules(bool $required = true): array
     {
-        return [$required ? 'required' : 'nullable', 'string', Password::defaults() ?? Password::min(8), 'confirmed'];
+        return [$required ? 'required' : 'nullable', 'string', 'max:255', Password::defaults() ?? Password::min(8), 'confirmed'];
     }
 
     /**
@@ -26,6 +26,6 @@ trait PasswordValidationRules
      */
     protected function currentPasswordRules(): array
     {
-        return ['required', 'string', 'current_password'];
+        return ['required', 'string', 'max:255', 'current_password'];
     }
 }
