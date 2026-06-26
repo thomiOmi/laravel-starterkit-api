@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
+use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Actions\CreateUserAction;
 use Modules\User\Payloads\V1\UserPayload;
+
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+});
 
 describe('CreateUserAction', function () {
     it('creates a user', function () {

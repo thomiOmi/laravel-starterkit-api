@@ -57,6 +57,7 @@ test('models should not be used in controllers')
         'Modules\Role\Controllers\V1\PermissionShowController',
         'Modules\Role\Controllers\V1\PermissionIndexController',
         'Modules\Role\Controllers\V1\PermissionUpdateController',
+        'Modules\User\Controllers\V1\AssignRolesController',
     ]);
 
 test('actions should not use request directly')
