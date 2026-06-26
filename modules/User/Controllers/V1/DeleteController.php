@@ -28,7 +28,7 @@ final readonly class DeleteController
         /** @var Authenticatable&User $currentUser */
         $currentUser = $request->user();
 
-        if ($currentUser->id === $user) {
+        if ((string) $currentUser->getKey() === $user) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: SymfonyResponse::HTTP_FORBIDDEN,

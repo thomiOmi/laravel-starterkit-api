@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Role\Models\Role;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\Helpers\WithAdminUser;
@@ -93,5 +94,20 @@ describe('User CRUD Operations V1', function () {
     it('prevents deleting own account', function () {
         $this->adminDelete('/api/v1/users/'.$this->admin->id)
             ->assertStatus(Response::HTTP_FORBIDDEN);
+    });
+
+    it('assigns roles to a user', function () {
+        $user = User::factory()->create();
+        Role::create(['name' => 'editor', 'guard_name' => 'web']);
+
+        $payload = [
+            'roles' => ['editor'],
+        ];
+
+        $this->adminPut("/api/v1/users/{$user->id}/roles", $payload)
+            ->assertSuccessful()
+            ->assertJsonPath('data.roles.0.name', 'editor');
+
+        expect($user->fresh()->hasRole('editor'))->toBeTrue();
     });
 });
