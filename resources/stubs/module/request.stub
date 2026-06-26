@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Requests\{{Version}};
 
-use Dedoc\Scramble\Attributes\BodyParameter;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\{{Module}}\Payloads\{{Version}}\{{Action}}{{Module}}Payload;
@@ -12,7 +11,6 @@ use Modules\{{Module}}\Payloads\{{Version}}\{{Action}}{{Module}}Payload;
 /**
  * {{Action}} {{Module}} Request
  */
-#[BodyParameter(name: 'name', description: 'The name of the {{label}}.', required: true, example: 'Example Name')]
 final class {{Action}}{{Module}}Request extends FormRequest
 {
     /**

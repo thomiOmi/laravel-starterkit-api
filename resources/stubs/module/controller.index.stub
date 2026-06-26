@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use Illuminate\Http\JsonResponse;
-use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
 use Modules\{{Module}}\Actions\List{{pluralModule}}Action;
 use Modules\{{Module}}\Filters\{{Module}}Filter;
@@ -26,9 +25,6 @@ final readonly class IndexController
     /**
      * Display a paginated listing of the {{lowerResource}}s.
      */
-    #[QueryParameter(name: 'page', description: 'The page number for pagination.', type: 'integer', required: false, default: 1, example: 1)]
-    #[QueryParameter(name: 'per_page', description: 'Number of items per page.', type: 'integer', required: false, default: 10, example: 10)]
-    #[QueryParameter(name: 'search', description: 'Search keyword to filter {{lowerResource}}s.', type: 'string', required: false, example: 'test')]
     public function __invoke(Request $request, {{Module}}Filter $filter): JsonResponse
     {
         ${{lowerResource}}s = $this->list{{pluralModule}}->handle($filter, $request->integer('per_page', 10));

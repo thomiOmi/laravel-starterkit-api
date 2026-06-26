@@ -30,7 +30,6 @@
 Use PHP 8.4 attributes over docblock properties:
 - `#[Fillable([...])]` on models for mass assignment
 - `#[Hidden([...])]` on models for hidden fields
-- Scramble: `#[Group]`, `#[Endpoint]`, `#[Response]` on controllers
 
 ## Rate Limiting
 Three tiers in `config/rate-limiting.php`:

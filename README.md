@@ -12,7 +12,7 @@ Opinionated Laravel 13 starter kit for building scalable APIs. Modular architect
 | Social Auth | Laravel Socialite (Google, GitHub) |
 | Feature Flags | Laravel Pennant |
 | Testing | Pest 4 |
-| API Docs | Scramble (OpenAPI) |
+| API Docs | - |
 | Static Analysis | PHPStan level max |
 | Code Style | Laravel Pint |
 
