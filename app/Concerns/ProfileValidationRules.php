@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Traits\Rules;
+namespace App\Concerns;
 
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;

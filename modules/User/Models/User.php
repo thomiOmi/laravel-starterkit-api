@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\User\Models;
 
+use App\Concerns\HasDefaultBehavior;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
-use App\Traits\Models\HasDefaultBehavior;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Models;
 
-use App\Traits\Models\HasDefaultBehavior;
+use App\Concerns\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Role\Models;
 
-use App\Traits\Models\HasDefaultBehavior;
+use App\Concerns\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Modules\Role\Database\Factories\PermissionFactory;
