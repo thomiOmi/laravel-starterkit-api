@@ -37,7 +37,7 @@ final readonly class ResetPasswordAction
 
         if (! is_string($status)) {
             throw ValidationException::withMessages([
-                'email' => [__('passwords.reset')],
+                'email' => [__('passwords.token')],
             ]);
         }
 
