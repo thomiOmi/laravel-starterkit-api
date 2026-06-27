@@ -24,6 +24,17 @@ class UserFilter extends BaseFilter
         'created_at',
     ];
 
+    protected array $allowedFields = [
+        'id',
+        'name',
+        'email',
+        'avatar',
+        'email_verified_at',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
     /**
      * @param  Builder<User>  $builder
      * @return Builder<User>

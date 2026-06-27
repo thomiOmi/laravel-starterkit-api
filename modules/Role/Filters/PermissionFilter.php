@@ -23,6 +23,14 @@ class PermissionFilter extends BaseFilter
         'created_at',
     ];
 
+    protected array $allowedFields = [
+        'id',
+        'name',
+        'guard_name',
+        'created_at',
+        'updated_at',
+    ];
+
     /**
      * @param  Builder<Permission>  $builder
      * @return Builder<Permission>

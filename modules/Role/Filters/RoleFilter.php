@@ -20,6 +20,15 @@ class RoleFilter extends BaseFilter
         'created_at',
     ];
 
+    protected array $allowedFields = [
+        'id',
+        'name',
+        'description',
+        'guard_name',
+        'created_at',
+        'updated_at',
+    ];
+
     /**
      * @param  Builder<Role>  $builder
      * @return Builder<Role>

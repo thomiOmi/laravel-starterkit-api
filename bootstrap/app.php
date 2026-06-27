@@ -14,7 +14,6 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
@@ -61,10 +60,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToGroup('api', ForceJsonResponse::class);
 
         $middleware->trustHosts(at: function (): array {
-            return [
-                (string) parse_url(config()->string('app.url'), PHP_URL_HOST) ?: 'localhost',
-                'localhost',
-            ];
+            /** @var array<int, string> $hosts */
+            $hosts = config()->array('app.trusted_hosts');
+
+            return $hosts;
         });
 
         $middleware->statefulApi();

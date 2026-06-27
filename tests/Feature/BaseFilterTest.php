@@ -259,3 +259,154 @@ it('combines search with sort parameter', function () {
     expect($data['search_called'])->toBeTrue();
     expect($data['sql'])->toContain('order by');
 });
+
+it('selects only allowed fields via sparse fieldset', function () {
+    $request = Request::create('/test', 'GET', ['fields' => ['users' => 'name,email']]);
+
+    $filter = new class($request) extends BaseFilter
+    {
+        protected array $allowedFields = ['id', 'name', 'email', 'created_at'];
+
+        public function search(Builder $builder, string $value): Builder
+        {
+            return $builder;
+        }
+    };
+
+    $builder = $filter->apply(User::query());
+
+    $sql = $builder->toSql();
+
+    expect($sql)->toContain('"name"');
+    expect($sql)->toContain('"email"');
+    expect($sql)->toContain('"id"');
+    expect($sql)->not->toContain('"created_at"');
+});
+
+it('always includes the primary key in sparse fieldset', function () {
+    $request = Request::create('/test', 'GET', ['fields' => ['users' => 'name']]);
+
+    $filter = new class($request) extends BaseFilter
+    {
+        protected array $allowedFields = ['id', 'name', 'email'];
+
+        public function search(Builder $builder, string $value): Builder
+        {
+            return $builder;
+        }
+    };
+
+    $builder = $filter->apply(User::query());
+
+    $sql = $builder->toSql();
+
+    expect($sql)->toContain('"id"');
+    expect($sql)->toContain('"name"');
+});
+
+it('ignores fields not in allowedFields list', function () {
+    $request = Request::create('/test', 'GET', ['fields' => ['users' => 'id,password,secret']]);
+
+    $filter = new class($request) extends BaseFilter
+    {
+        protected array $allowedFields = ['id', 'name', 'email'];
+
+        public function search(Builder $builder, string $value): Builder
+        {
+            return $builder;
+        }
+    };
+
+    $builder = $filter->apply(User::query());
+
+    $sql = $builder->toSql();
+
+    expect($sql)->toContain('"id"');
+    expect($sql)->not->toContain('password');
+    expect($sql)->not->toContain('secret');
+});
+
+it('passes through all fields when allowedFields is empty', function () {
+    $request = Request::create('/test', 'GET', ['fields' => ['users' => 'name,email']]);
+
+    $filter = new class($request) extends BaseFilter
+    {
+        protected array $allowedFields = [];
+
+        public function search(Builder $builder, string $value): Builder
+        {
+            return $builder;
+        }
+    };
+
+    $builder = $filter->apply(User::query());
+
+    $sql = $builder->toSql();
+
+    expect($sql)->toContain('"name"');
+    expect($sql)->toContain('"email"');
+    expect($sql)->toContain('"id"');
+});
+
+it('uses fieldsKey when specified instead of table name', function () {
+    $request = Request::create('/test', 'GET', ['fields' => ['custom' => 'id,name']]);
+
+    $filter = new class($request) extends BaseFilter
+    {
+        protected array $allowedFields = ['id', 'name'];
+
+        protected ?string $fieldsKey = 'custom';
+
+        public function search(Builder $builder, string $value): Builder
+        {
+            return $builder;
+        }
+    };
+
+    $builder = $filter->apply(User::query());
+
+    $sql = $builder->toSql();
+
+    expect($sql)->toContain('"id"');
+    expect($sql)->toContain('"name"');
+});
+
+it('ignores sparse fieldset when fields parameter is missing', function () {
+    $request = Request::create('/test', 'GET');
+
+    $filter = new class($request) extends BaseFilter
+    {
+        protected array $allowedFields = ['id', 'name', 'email'];
+
+        public function search(Builder $builder, string $value): Builder
+        {
+            return $builder;
+        }
+    };
+
+    $builder = $filter->apply(User::query());
+
+    $sql = $builder->toSql();
+
+    expect($sql)->toContain('select *');
+});
+
+it('ignores sparse fieldset when fields value is empty', function () {
+    $request = Request::create('/test', 'GET', ['fields' => ['users' => '']]);
+
+    $filter = new class($request) extends BaseFilter
+    {
+        protected array $allowedFields = ['id', 'name', 'email'];
+
+        public function search(Builder $builder, string $value): Builder
+        {
+            return $builder;
+        }
+    };
+
+    $builder = $filter->apply(User::query());
+
+    $sql = $builder->toSql();
+
+    expect($sql)->toContain('select *');
+});

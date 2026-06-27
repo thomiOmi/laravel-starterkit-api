@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Role\Models;
 
 use App\Traits\Models\HasDefaultBehavior;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -21,16 +22,15 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Permission> $permissions
  */
+#[Fillable([
+    'name',
+    'guard_name',
+    'description',
+])]
 class Role extends SpatieRole
 {
     public const string SUPER_ADMIN = 'super-admin';
 
     /** @use HasFactory<RoleFactory> */
     use HasDefaultBehavior, HasFactory;
-
-    protected $fillable = [
-        'name',
-        'guard_name',
-        'description',
-    ];
 }
