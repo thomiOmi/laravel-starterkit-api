@@ -14,9 +14,15 @@ trait PasswordValidationRules
      *
      * @return array<int, Password|ValidationRule|string>
      */
-    protected function passwordRules(bool $required = true): array
+    protected function passwordRules(bool $required = true, bool $confirmed = true): array
     {
-        return [$required ? 'required' : 'nullable', 'string', Password::defaults() ?? Password::min(8), 'confirmed'];
+        $rules = [$required ? 'required' : 'nullable', 'string', Password::defaults() ?? Password::min(8)];
+
+        if ($confirmed) {
+            $rules[] = 'confirmed';
+        }
+
+        return $rules;
     }
 
     /**
