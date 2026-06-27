@@ -14,6 +14,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
@@ -58,6 +59,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SetLocaleMiddleware::class);
         $middleware->prependToGroup('api', TraceIdMiddleware::class);
         $middleware->prependToGroup('api', ForceJsonResponse::class);
+
+        $middleware->trustHosts(at: fn (): array => [
+            preg_replace('#^https?://#', '', Config::string('app.url')) ?? Config::string('app.url'),
+            'localhost',
+        ]);
 
         $middleware->statefulApi();
         // $middleware->throttleApi(); // We will define custom throttle in routes
