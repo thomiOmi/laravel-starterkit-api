@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Resources\Concerns;
+namespace App\Concerns;
 
 use Illuminate\Support\Carbon;
 

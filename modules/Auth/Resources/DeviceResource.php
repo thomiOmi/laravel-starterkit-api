@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Resources;
 
-use App\Http\Resources\Concerns\FormatDates;
+use App\Concerns\FormatDates;
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
