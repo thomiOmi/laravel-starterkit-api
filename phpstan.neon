@@ -1,8 +1,5 @@
 includes:
-    - vendor/larastan/larastan/extension.neon
-    - vendor/nesbot/carbon/extension.neon
-    - vendor/pestphp/pest/extension.neon
-    - phar://phpstan.phar/conf/bleedingEdge.neon
+	- phar://phpstan.phar/conf/bleedingEdge.neon
 
 parameters:
     paths:
@@ -14,7 +11,6 @@ parameters:
         - modules
 
     excludePaths:
-        - tests
         - modules/*/Tests/*
 
     level: max
