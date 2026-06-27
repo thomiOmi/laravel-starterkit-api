@@ -56,6 +56,11 @@ return [
 
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
 
+    'trusted_hosts' => explode(',', (string) env('TRUSTED_HOSTS', (string) str(implode(',', [
+        'localhost',
+        str_replace(['http://', 'https://'], '', (string) env('APP_URL', 'http://localhost')),
+    ])))),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
