@@ -4,22 +4,26 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Requests\V1;
 
+use App\Traits\Rules\ProfileValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Unique;
 
 final class ForgotPasswordRequest extends FormRequest
 {
+    use ProfileValidationRules;
+
     public function authorize(): bool
     {
         return true;
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, string|Unique>>
      */
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
+            'email' => $this->emailRules(unique: false),
         ];
     }
 }
