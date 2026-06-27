@@ -6,6 +6,7 @@ namespace Modules\Auth\Requests\V1;
 
 use App\Traits\Rules\ProfileValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Unique;
 
 final class ForgotPasswordRequest extends FormRequest
 {
@@ -17,7 +18,7 @@ final class ForgotPasswordRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, string|Unique>>
      */
     public function rules(): array
     {
