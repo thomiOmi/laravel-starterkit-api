@@ -19,6 +19,7 @@
         "laravel-patterns",
         "laravel-security",
         "laravel-specialist",
+        "laravel-verification",
         "php-pro"
     ]
 }

@@ -32,7 +32,8 @@
 ## Code Quality Rules
 
 - After writing PHP code, run: `./vendor/bin/pint --dirty --format agent`
-- Then run: `./vendor/bin/phpstan analyse --memory-limit=512M`
+- Then run: `vendor/bin/phpstan analyse --memory-limit=512M` (or `PAO_FORCE=true vendor/bin/phpstan analyse --memory-limit=512M` for JSON output when run from AI agent)
+- Run tests: `php artisan test --compact` (or `PAO_FORCE=true vendor/bin/pest --compact` for JSON output when run from AI agent)
 - Fix all errors in code (do NOT modify `phpstan.neon`)
 - Do NOT use `@phpstan-ignore` comments — fix the root cause instead
 - All datetime fields in API responses **MUST** use `Y-m-d H:i:s` format
@@ -46,3 +47,12 @@
 - **Location**: Guidelines in `.ai/guidelines/`, Skills in `.ai/skills/`.
 - **Activation**: Guidelines are loaded upfront; Skills are activated on-demand via triggers.
 - **Update**: Run `php artisan boost:install -n` to sync/re-apply all guidelines and skills.
+
+## File Ownership Rules
+
+| File/Dir | Managed by | Edit via |
+|---|---|---|
+| `AGENTS.md` | Laravel Boost (auto-generated) | **DO NOT** edit directly — edit `.ai/guidelines/` or `.ai/skills/` instead |
+| `.ai/guidelines/` | You (survives `boost:install`) | Edit directly — source files for AGENTS.md guidelines section |
+| `.ai/skills/` | You (survives `boost:install`) | Edit directly — Boost-managed agent skills |
+| `.agents/` | AI agent's skill/rules system | **DO NOT** edit directly — let the AI agent manage it |
