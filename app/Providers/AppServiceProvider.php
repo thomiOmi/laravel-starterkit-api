@@ -12,6 +12,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -42,8 +43,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiting();
 
         $this->defineFeatures();
-        Gate::before(function ($user, $ability) {
-            /** @var User $user */
+        Gate::before(function (User $user, $ability) {
             return $user->hasRole('super-admin') ? true : null;
         });
 
@@ -87,18 +87,15 @@ class AppServiceProvider extends ServiceProvider
     protected function configureRateLimiting(): void
     {
         RateLimiter::for('api', function (Request $request) {
-            /** @var int $limit */
-            $limit = config('rate-limiting.api.limit');
+            $limit = config()->integer('rate-limiting.api.limit');
 
             return Limit::perMinute($limit)
                 ->by($request->user()?->id ?: $request->ip());
         });
 
         RateLimiter::for('auth', function (Request $request) {
-            /** @var int $perEmail */
-            $perEmail = config('rate-limiting.auth.limit_per_email');
-            /** @var int $perIp */
-            $perIp = config('rate-limiting.auth.limit_per_ip');
+            $perEmail = config()->integer('rate-limiting.auth.limit_per_email');
+            $perIp = config()->integer('rate-limiting.auth.limit_per_ip');
 
             return [
                 Limit::perMinute($perEmail)
@@ -109,8 +106,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('authenticated', function (Request $request) {
-            /** @var int $limit */
-            $limit = config('rate-limiting.authenticated.limit');
+            $limit = config()->integer('rate-limiting.authenticated.limit');
 
             return Limit::perMinute($limit)
                 ->by($request->user()?->id ?: $request->ip());
@@ -120,20 +116,22 @@ class AppServiceProvider extends ServiceProvider
     protected function configurePasswordReset(): void
     {
         ResetPassword::createUrlUsing(function (mixed $user, string $token): string {
-            /** @var User $user */
-            /** @var string $frontendUrl */
-            $frontendUrl = config('app.frontend_url', 'http://localhost:5173');
+            $frontendUrl = config()->string('app.frontend_url', 'http://localhost:5173');
 
-            return $frontendUrl.'/reset-password?token='.$token.'&email='.$user->getEmailForPasswordReset();
+            $url = $frontendUrl.'/reset-password?token='.$token;
+
+            if ($user instanceof User) {
+                $url .= '&email='.$user->getEmailForPasswordReset();
+            }
+
+            return $url;
         });
     }
 
     protected function configureEmailVerification(): void
     {
-        VerifyEmail::createUrlUsing(function (object $notifiable): string {
-            /** @var User $notifiable */
-            $expireConfig = config('auth.verification.expire', 60);
-            $expire = is_numeric($expireConfig) ? (int) $expireConfig : 60;
+        VerifyEmail::createUrlUsing(function (User $notifiable): string {
+            $expire = config()->integer('auth.verification.expire', 60);
 
             $signedRouteUrl = URL::temporarySignedRoute(
                 'api.v1.auth.verification.verify',
@@ -144,14 +142,27 @@ class AppServiceProvider extends ServiceProvider
                 ],
             );
 
+            $params = [
+                'id' => $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification()),
+            ];
+
             $query = parse_url($signedRouteUrl, PHP_URL_QUERY);
+            if ($query !== null && $query !== false) {
+                parse_str($query, $existing);
+                $params = array_merge($params, $existing);
+            }
 
-            $frontendUrlConfig = config('app.frontend_url');
-            $frontendUrl = is_string($frontendUrlConfig) ? $frontendUrlConfig : 'http://localhost:5173';
+            $frontendUrl = config()->string('app.frontend_url', 'http://localhost:5173');
 
-            return $query !== null && $query !== false
-                ? $frontendUrl.'/verify-email?'.$query
-                : $frontendUrl.'/verify-email';
+            return $frontendUrl.'/verify-email?'.http_build_query($params);
+        });
+
+        VerifyEmail::toMailUsing(function (mixed $notifiable, string $url): MailMessage {
+            return (new MailMessage)
+                ->subject('Verify Email Address')
+                ->line('Click the button below to verify your email address.')
+                ->action('Verify Email Address', $url);
         });
     }
 }

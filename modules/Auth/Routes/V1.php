@@ -17,16 +17,16 @@ use Modules\Auth\Controllers\V1\SocialCallbackController;
 use Modules\Auth\Controllers\V1\SocialRedirectController;
 use Modules\Auth\Controllers\V1\VerifyEmailController;
 
-Route::prefix('auth')->middleware(['force.json'])->group(function () {
+Route::prefix('auth')->group(function () {
     // Public routes — strict throttling
     Route::post('register', RegisterController::class)->middleware('throttle:auth')->name('register');
     Route::post('login', LoginController::class)->middleware('throttle:auth')->name('login');
     Route::post('forgot-password', ForgotPasswordController::class)->middleware('throttle:auth')->name('password.forgot');
     Route::post('reset-password', ResetPasswordController::class)->middleware('throttle:auth')->name('password.reset');
 
-    // Email verification — signed URL, safe to use api throttle
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:api'])
+    // Email verification — signed URL with auth, safe to use api throttle
+    Route::get('email/verify/{id}/{hash}', VerifyEmailController::class)
+        ->middleware(['auth:sanctum', 'signed', 'throttle:api'])
         ->name('verification.verify');
 
     // Social login — redirect and callback

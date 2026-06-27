@@ -300,7 +300,7 @@ use Modules\User\Controllers\V1\CreateController;
 use Modules\User\Controllers\V1\UpdateController;
 use Modules\User\Controllers\V1\DeleteController;
 
-Route::prefix('users')->middleware(['force.json', 'auth:sanctum'])->group(function () {
+Route::prefix('users')->middleware(['auth:sanctum'])->group(function () {
     Route::get('/', IndexController::class)->middleware('permission:users.read');
     Route::post('/', CreateController::class)->middleware('permission:users.create');
     Route::put('/{user}', UpdateController::class)->middleware('permission:users.update');

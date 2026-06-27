@@ -42,26 +42,27 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'plan.feature' => PlanFeatureMiddleware::class,
-            'force.json' => ForceJsonResponse::class,
             'sunset' => Sunset::class,
             'trace.id' => TraceIdMiddleware::class,
         ]);
 
         $middleware->priority([
-            AuthenticatesRequests::class,
+            ForceJsonResponse::class,
             Authenticate::class,
+            AuthenticatesRequests::class,
             EnsureFrontendRequestsAreStateful::class,
         ]);
 
+        $middleware->redirectGuestsTo(null);
+
         $middleware->append(SetLocaleMiddleware::class);
         $middleware->prependToGroup('api', TraceIdMiddleware::class);
+        $middleware->prependToGroup('api', ForceJsonResponse::class);
 
         $middleware->statefulApi();
         // $middleware->throttleApi(); // We will define custom throttle in routes
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(fn (Request $request) => $request->is('api/*'));
-
         $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 title: __('auth.validation_failed'),

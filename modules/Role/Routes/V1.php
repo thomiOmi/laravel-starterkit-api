@@ -17,7 +17,7 @@ use Modules\Role\Controllers\V1\ShowController as RoleShowController;
 use Modules\Role\Controllers\V1\UpdateController as RoleUpdateController;
 
 // Role routes
-Route::prefix('roles')->middleware(['force.json', 'auth:sanctum', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('roles')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
     Route::get('/', RoleIndexController::class)->name('index');
     Route::post('/', RoleCreateController::class)->name('create');
 
@@ -30,7 +30,7 @@ Route::prefix('roles')->middleware(['force.json', 'auth:sanctum', 'verified', 't
 });
 
 // Permission routes
-Route::prefix('permissions')->middleware(['force.json', 'auth:sanctum', 'verified', 'throttle:api'])->name('permissions.')->group(function () {
+Route::prefix('permissions')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->name('permissions.')->group(function () {
     Route::get('/', PermissionIndexController::class)->name('index');
     Route::post('/', PermissionCreateController::class)->name('create');
     Route::get('/{permission}', PermissionShowController::class)->name('show');

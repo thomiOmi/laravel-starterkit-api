@@ -288,7 +288,7 @@ class MakeModule extends Command
 use Illuminate\Support\Facades\Route;
 {$useBlock}
 
-Route::prefix('{$slug}')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->name('{$slug}.')->group(function () {
+Route::prefix('{$slug}')->middleware(['auth:sanctum', 'throttle:api'])->name('{$slug}.')->group(function () {
 {$routeBlock}
 });
 PHP;

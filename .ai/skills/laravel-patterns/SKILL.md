@@ -65,7 +65,7 @@ modules/
 app/
 ├── Http/
 │   ├── Controllers/     # Base controller
-│   ├── Middleware/      # force.json, etc.
+│   ├── Middleware/      # ForceJsonResponse, etc.
 │   └── Responses/       # SuccessResponse, ProblemResponse
 └── Providers/           # AppServiceProvider
 config/
@@ -139,7 +139,7 @@ use Modules\User\Controllers\V1\ShowController;
 use Modules\User\Controllers\V1\UpdateController;
 use Modules\User\Controllers\V1\DeleteController;
 
-Route::prefix('users')->middleware(['force.json', 'auth:sanctum', 'throttle:api'])->group(function () {
+Route::prefix('users')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/', IndexController::class)->name('users.index');
     Route::post('/', CreateController::class)->name('users.create');
     Route::get('/{user}', ShowController::class)->name('users.show');
@@ -177,7 +177,7 @@ use Modules\Cms\Controllers\V1\ConversationController;
 use Modules\Cms\Controllers\V1\MessageController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['force.json', 'auth:sanctum'])->prefix('conversations')->group(function () {
+Route::middleware(['auth:sanctum'])->prefix('conversations')->group(function () {
     Route::post('/', [ConversationController::class, 'store'])->name('conversations.store');
 
     Route::scopeBindings()->group(function () {

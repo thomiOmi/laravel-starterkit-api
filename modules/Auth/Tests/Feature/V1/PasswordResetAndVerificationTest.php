@@ -106,6 +106,7 @@ describe('Reset Password', function () {
 describe('Email Verification', function () {
     it('verifies email with valid signed URL and hash', function () {
         $user = User::factory()->unverified()->create();
+        $token = $user->createToken('test')->plainTextToken;
 
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -116,7 +117,8 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->getJson($signedUrl);
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson($signedUrl);
 
         $response->assertSuccessful()
             ->assertJsonPath('data.verified', true);
@@ -126,6 +128,7 @@ describe('Email Verification', function () {
 
     it('returns success for already verified email', function () {
         $user = User::factory()->create();
+        $token = $user->createToken('test')->plainTextToken;
 
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -136,7 +139,8 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->getJson($signedUrl);
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson($signedUrl);
 
         $response->assertSuccessful()
             ->assertJsonPath('data.verified', true);
@@ -144,6 +148,7 @@ describe('Email Verification', function () {
 
     it('rejects invalid hash', function () {
         $user = User::factory()->unverified()->create();
+        $token = $user->createToken('test')->plainTextToken;
 
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -154,28 +159,35 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->getJson($signedUrl);
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson($signedUrl);
 
-        $response->assertStatus(Response::HTTP_NOT_FOUND);
+        $response->assertStatus(Response::HTTP_FORBIDDEN);
     });
 
-    it('rejects non-existent user', function () {
+    it('rejects another user\'s verification link', function () {
+        $user = User::factory()->unverified()->create();
+        $other = User::factory()->unverified()->create();
+        $token = $other->createToken('test')->plainTextToken;
+
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
             now()->addMinutes(60),
             [
-                'id' => 'non-existent-id',
-                'hash' => sha1('test@example.com'),
+                'id' => $user->getKey(),
+                'hash' => sha1($user->getEmailForVerification()),
             ],
         );
 
-        $response = $this->getJson($signedUrl);
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson($signedUrl);
 
-        $response->assertStatus(Response::HTTP_NOT_FOUND);
+        $response->assertStatus(Response::HTTP_FORBIDDEN);
     });
 
     it('rejects expired signed URL', function () {
         $user = User::factory()->unverified()->create();
+        $token = $user->createToken('test')->plainTextToken;
 
         $expiredUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -186,9 +198,27 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->getJson($expiredUrl);
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson($expiredUrl);
 
         $response->assertStatus(Response::HTTP_FORBIDDEN);
+    });
+
+    it('rejects unauthenticated request', function () {
+        $user = User::factory()->unverified()->create();
+
+        $signedUrl = URL::temporarySignedRoute(
+            'api.v1.auth.verification.verify',
+            now()->addMinutes(60),
+            [
+                'id' => $user->getKey(),
+                'hash' => sha1($user->getEmailForVerification()),
+            ],
+        );
+
+        $response = $this->getJson($signedUrl);
+
+        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
     });
 });
 

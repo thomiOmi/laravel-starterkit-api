@@ -32,8 +32,6 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-Swagger UI: `/docs/api`
-
 ## Architecture
 
 ```
@@ -95,7 +93,7 @@ modules/
 ## Testing
 
 ```bash
-# Full suite (157+ tests)
+# Full suite
 php artisan test --compact
 
 # Single module
@@ -108,7 +106,7 @@ php artisan test --compact --filter=SocialLoginTest
 ## Code Quality
 
 ```bash
-./vendor/bin/pint --format agent
+./vendor/bin/pint
 ./vendor/bin/phpstan analyse --memory-limit=512M
 ```
 

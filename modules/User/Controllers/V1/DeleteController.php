@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\User\Actions\DeleteUserAction;
 use Modules\User\Models\User;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 final readonly class DeleteController
 {
@@ -32,7 +32,7 @@ final readonly class DeleteController
         if ((is_string($id) || is_int($id) ? (string) $id : '') === $user) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: SymfonyResponse::HTTP_FORBIDDEN,
+                status: Response::HTTP_FORBIDDEN,
                 detail: __('general.self_delete_forbidden'),
             );
         }
@@ -40,18 +40,18 @@ final readonly class DeleteController
         if (! $currentUser->can('user.delete')) {
             return new ProblemResponse(
                 title: 'Forbidden',
-                status: SymfonyResponse::HTTP_FORBIDDEN,
+                status: Response::HTTP_FORBIDDEN,
                 detail: __('general.forbidden'),
             );
         }
 
         if ($this->deleteUser->handle($user)) {
-            return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }
 
         return new ProblemResponse(
             title: 'Forbidden',
-            status: SymfonyResponse::HTTP_FORBIDDEN,
+            status: Response::HTTP_FORBIDDEN,
             detail: __('general.delete_error', ['resource' => 'User']),
         );
     }
