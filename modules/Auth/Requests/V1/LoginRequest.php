@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Requests\V1;
 
 use App\Traits\Rules\PasswordValidationRules;
+use App\Traits\Rules\ProfileValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
@@ -12,7 +13,7 @@ use Modules\Auth\Payloads\V1\LoginPayload;
 
 final class LoginRequest extends FormRequest
 {
-    use \App\Traits\Rules\ProfileValidationRules, PasswordValidationRules;
+    use PasswordValidationRules, ProfileValidationRules;
 
     public function authorize(): bool
     {
