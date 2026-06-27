@@ -39,7 +39,7 @@ final class UserRequest extends FormRequest
         $userId = $this->route('user');
 
         // Check if the user is updating their own profile or has permission
-        return $authenticatedUser->id === $userId || $authenticatedUser->can('user.edit');
+        return (string) $authenticatedUser->getKey() === $userId || $authenticatedUser->can('user.edit');
     }
 
     /**
