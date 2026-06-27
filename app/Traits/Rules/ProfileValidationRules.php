@@ -13,13 +13,15 @@ trait ProfileValidationRules
     /**
      * Get the validation rules used to validate user profiles.
      *
+     * @param  string|null  $userId  The user ID to ignore for unique validation.
+     * @param  bool  $unique  Whether the email should be unique.
      * @return array<string, array<int, string|Unique>>
      */
-    protected function profileRules(?string $userId = null): array
+    protected function profileRules(?string $userId = null, bool $unique = true): array
     {
         return [
             'name' => $this->nameRules(),
-            'email' => $this->emailRules($userId),
+            'email' => $this->emailRules($userId, $unique),
         ];
     }
 
@@ -36,18 +38,20 @@ trait ProfileValidationRules
     /**
      * Get the validation rules used to validate user emails.
      *
+     * @param  string|null  $userId  The user ID to ignore for unique validation.
+     * @param  bool  $unique  Whether the email should be unique.
      * @return array<int, string|Unique>
      */
-    protected function emailRules(?string $userId = null): array
+    protected function emailRules(?string $userId = null, bool $unique = true): array
     {
-        return [
-            'required',
-            'string',
-            'email',
-            'max:255',
-            $userId === null
+        $rules = ['required', 'string', 'email', 'max:255'];
+
+        if ($unique) {
+            $rules[] = $userId === null
                 ? Rule::unique(User::class)
-                : Rule::unique(User::class)->ignore($userId),
-        ];
+                : Rule::unique(User::class)->ignore($userId);
+        }
+
+        return $rules;
     }
 }

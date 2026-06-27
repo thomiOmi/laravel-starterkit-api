@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\Password;
 
 final class ResetPasswordRequest extends FormRequest
 {
-    use PasswordValidationRules;
+    use \App\Traits\Rules\ProfileValidationRules, PasswordValidationRules;
 
     public function authorize(): bool
     {
@@ -25,7 +25,7 @@ final class ResetPasswordRequest extends FormRequest
     {
         return [
             'token' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
+            'email' => $this->emailRules(unique: false),
             'password' => $this->passwordRules(),
         ];
     }
