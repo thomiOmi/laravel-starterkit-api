@@ -59,7 +59,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToGroup('api', TraceIdMiddleware::class);
         $middleware->prependToGroup('api', ForceJsonResponse::class);
 
-        $middleware->trustHosts(at: fn () => config()->array('app.trusted_hosts'));
+        $middleware->trustHosts(at: function (): array {
+            /** @var array<int, string> $hosts */
+            $hosts = config()->array('app.trusted_hosts');
+
+            return $hosts;
+        });
 
         $middleware->statefulApi();
         // $middleware->throttleApi(); // We will define custom throttle in routes

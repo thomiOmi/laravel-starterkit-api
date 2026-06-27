@@ -59,7 +59,7 @@ return [
     'trusted_hosts' => array_values(array_unique(array_map('trim', explode(',', (string) env('TRUSTED_HOSTS', implode(',', [
         'localhost',
         '127.0.0.1',
-        parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost',
+        parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost',
     ])))))),
 
     /*
