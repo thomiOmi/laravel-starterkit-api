@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Resources;
 
+use App\Http\Resources\Concerns\FormatDates;
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Carbon;
 use Modules\User\Models\User;
 
 /**
@@ -17,14 +17,7 @@ use Modules\User\Models\User;
  */
 class DeviceResource extends JsonResource
 {
-    protected function formatDate(\DateTimeInterface|string|null $date): ?string
-    {
-        if (is_string($date)) {
-            $date = Carbon::parse($date);
-        }
-
-        return $date?->format('Y-m-d H:i:s');
-    }
+    use FormatDates;
 
     /**
      * Transform the resource into an array.
