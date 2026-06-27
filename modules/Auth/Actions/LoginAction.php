@@ -26,11 +26,12 @@ final readonly class LoginAction
      * @param  LoginPayload  $payload  The login payload.
      * @param  string|null  $ip  The IP address of the client.
      * @param  string|null  $userAgent  The user agent of the client.
-     * @return array{user: User, access_token: string, token_type: string}
+     * @param  bool  $stateful  Whether to use session-based auth.
+     * @return array{user: User, access_token: null, token_type: null}|array{user: User, access_token: string, token_type: string}
      *
      * @throws ValidationException
      */
-    public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null): array
+    public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null, bool $stateful = false): array
     {
         if (! $this->auth->guard()->attempt(['email' => $payload->email, 'password' => $payload->password])) {
             throw ValidationException::withMessages([
@@ -43,6 +44,16 @@ final readonly class LoginAction
         $user = $this->auth->guard()->user();
 
         event(new Login('web', $user, false));
+
+        if ($stateful) {
+            $this->auth->guard('web')->login($user);
+
+            return [
+                'user' => $user,
+                'access_token' => null,
+                'token_type' => null,
+            ];
+        }
 
         $abilities = $user->hasRole(['admin', 'super-admin'])
             ? ['*']

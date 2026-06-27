@@ -6,6 +6,7 @@ namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Modules\User\Models\User;
 
 /**
@@ -13,12 +14,22 @@ use Modules\User\Models\User;
  */
 final readonly class LogoutAction
 {
+    public function __construct(
+        private AuthFactory $auth,
+    ) {}
+
     /**
      * Execute the logout action.
      */
-    public function handle(User $user): void
+    public function handle(User $user, bool $stateful = false): void
     {
         event(new Logout('web', $user));
+
+        if ($stateful) {
+            $this->auth->guard('web')->logout();
+
+            return;
+        }
 
         /** @var PersonalAccessToken $currentToken */
         $currentToken = $user->currentAccessToken();
