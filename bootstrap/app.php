@@ -61,7 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToGroup('api', ForceJsonResponse::class);
 
         $middleware->trustHosts(at: fn (): array => [
-            preg_replace('#^https?://#', '', Config::string('app.url')) ?? Config::string('app.url'),
+            preg_replace('#^https?://#', '', config()->string('app.url')) ?? config()->string('app.url'),
             'localhost',
         ]);
 
