@@ -26,8 +26,9 @@ final readonly class ShowController
     {
         /** @var Authenticatable&User $currentUser */
         $currentUser = $request->user();
+        $id = $currentUser->getKey();
 
-        if ((string) $currentUser->getKey() !== $user && ! $currentUser->can('user.view')) {
+        if ((is_string($id) || is_int($id) ? (string) $id : '') !== $user && ! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
