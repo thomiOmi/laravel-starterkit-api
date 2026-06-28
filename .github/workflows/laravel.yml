@@ -31,7 +31,7 @@ jobs:
     # Docs: https://docs.github.com/en/actions/using-containerized-services
     services:
       mysql:
-        image: mysql:latest
+        image: mysql:8.4
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: false
           MYSQL_ROOT_PASSWORD: password
@@ -47,7 +47,7 @@ jobs:
           --health-retries=3
 
       redis:
-        image: redis
+        image: redis:8.6
         ports:
           # Maps port 6379 on service container to the host
           - 6379:6379
