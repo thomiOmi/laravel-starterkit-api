@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\User\Repositories;
 
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Support\Facades\Cache;
 use Modules\User\Filters\UserFilter;
 use Modules\User\Models\User;
 
@@ -22,6 +23,8 @@ final readonly class UserRepository
 
     public function findById(string $id): ?User
     {
-        return User::with(['roles.permissions:id,name', 'permissions:id,name'])->find($id);
+        return Cache::remember("user_{$id}", 60, function () use ($id): ?User {
+            return User::with(['roles.permissions:id,name', 'permissions:id,name'])->find($id);
+        });
     }
 }
