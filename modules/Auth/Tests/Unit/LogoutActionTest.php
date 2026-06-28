@@ -16,7 +16,7 @@ it('deletes current access token on logout', function () {
     $user->withAccessToken($token->accessToken);
     $action = app(LogoutAction::class);
 
-    $action->handle($user, stateful: false);
+    $action->handle($user);
 
     expect($user->tokens()->find($tokenId))->toBeNull();
 });
@@ -29,19 +29,7 @@ it('does not remove other tokens when logging out', function () {
     $user->withAccessToken($token2->accessToken);
     $action = app(LogoutAction::class);
 
-    $action->handle($user, stateful: false);
+    $action->handle($user);
 
     expect($user->tokens()->count())->toBe(1);
-});
-
-it('logs out web guard when stateful', function () {
-    $user = User::factory()->create();
-    auth()->guard('web')->loginUsingId($user->id);
-
-    expect(auth()->guard('web')->check())->toBeTrue();
-
-    $action = app(LogoutAction::class);
-    $action->handle($user, stateful: true);
-
-    expect(auth()->guard('web')->check())->toBeFalse();
 });

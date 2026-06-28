@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
@@ -73,8 +72,6 @@ final readonly class SocialCallbackAction
 
             return $user;
         });
-
-        event(new Login('web', $user, false));
 
         $token = $user->createToken(
             $provider.'-social-login',
