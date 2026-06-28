@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Str;
+use Modules\Role\Models\Permission;
+use Modules\Role\Models\Role;
+use Modules\User\Models\User;
 
 return [
 
@@ -125,6 +128,10 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    'serializable_classes' => [
+        Permission::class,
+        Role::class,
+        User::class,
+    ],
 
 ];
