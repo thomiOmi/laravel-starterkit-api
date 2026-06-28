@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Role\Database\Factories\RoleFactory;
 use Modules\Role\Models\Permission;
 use Modules\Role\Models\Role;
-
-uses(RefreshDatabase::class);
 
 describe('RoleFactory', function () {
     it('creates a role with factory', function () {

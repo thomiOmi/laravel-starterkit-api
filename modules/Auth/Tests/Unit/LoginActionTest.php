@@ -2,13 +2,10 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\Payloads\V1\LoginPayload;
 use Modules\User\Models\User;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $password = config('auth.default_password');

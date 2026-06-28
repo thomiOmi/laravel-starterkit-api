@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Actions\LogoutOtherDevicesAction;
 use Modules\User\Models\User;
-
-uses(RefreshDatabase::class);
 
 it('deletes all other devices', function () {
     $password = config('auth.default_password');

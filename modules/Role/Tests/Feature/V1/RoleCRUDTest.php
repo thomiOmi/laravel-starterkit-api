@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Testing\Fluent\AssertableJson;
+use Laravel\Sanctum\Sanctum;
 use Modules\Role\Models\Role;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,11 +16,30 @@ beforeEach(function () {
 });
 
 describe('Role CRUD Operations V1', function () {
+    it('lists paginated roles', function () {
+        $this->adminGet('/api/v1/roles')
+            ->assertJson(fn (AssertableJson $json) => $json->has('data')
+                ->has('meta', fn (AssertableJson $meta) => $meta->whereType('current_page', 'integer')
+                    ->whereType('last_page', 'integer')
+                    ->whereType('per_page', 'integer')
+                    ->where('total', fn (int $total) => $total >= 5)
+                    ->etc()
+                )
+                ->etc()
+            );
+    });
+
+    it('paginates roles with custom page size', function () {
+        $this->adminGet('/api/v1/roles?page[size]=2')
+            ->assertJsonPath('meta.per_page', 2);
+    });
+
     it('denies access to unauthorized users', function () {
         $user = User::factory()->create();
 
-        $this->actingAs($user)
-            ->getJson('/api/v1/roles')
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/v1/roles')
             ->assertStatus(Response::HTTP_FORBIDDEN);
     });
 
@@ -30,14 +51,14 @@ describe('Role CRUD Operations V1', function () {
 
         $this->adminPost('/api/v1/roles', $payload)
             ->assertCreated()
-            ->assertJsonStructure([
-                'status',
-                'title',
-                'detail',
-                'data' => ['id', 'name', 'description', 'created_at', 'updated_at'],
-            ])
-            ->assertJsonPath('data.name', 'editor')
-            ->assertJsonPath('data.description', 'Can edit content');
+            ->assertJson(fn (AssertableJson $json) => $json->whereType('status', 'integer')
+                ->where('data.name', 'editor')
+                ->where('data.description', 'Can edit content')
+                ->whereType('data.id', 'string')
+                ->whereType('data.created_at', 'string')
+                ->whereType('data.updated_at', 'string')
+                ->etc()
+            );
     });
 
     it('creates a role with permissions', function () {
@@ -60,8 +81,9 @@ describe('Role CRUD Operations V1', function () {
     });
 
     it('returns 404 for non-existent role', function () {
-        $this->actingAs($this->admin)
-            ->getJson('/api/v1/roles/non-existent-id')
+        Sanctum::actingAs($this->admin);
+
+        $this->getJson('/api/v1/roles/non-existent-id')
             ->assertNotFound();
     });
 
@@ -107,10 +129,10 @@ describe('Role CRUD Operations V1', function () {
 
     it('validates unique role name', function () {
         Role::create(['name' => 'editor', 'guard_name' => 'web']);
-        $payload = ['name' => 'editor'];
 
-        $this->actingAs($this->admin)
-            ->postJson('/api/v1/roles', $payload)
+        Sanctum::actingAs($this->admin);
+
+        $this->postJson('/api/v1/roles', ['name' => 'editor'])
             ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
     });
 });

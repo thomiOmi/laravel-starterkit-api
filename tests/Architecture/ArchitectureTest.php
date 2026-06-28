@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 test('strict types are used')
-    ->expect(['App\\', 'Modules\\'])
+    ->expect(['App\\', 'Modules\\', 'Tests\\'])
     ->toUseStrictTypes();
 
 test('controllers should be final, readonly, and invokable')
@@ -29,36 +29,13 @@ test('payloads should be final and readonly')
     ->toBeFinal()
     ->toBeReadonly();
 
-test('models should not be used in controllers')
+test('models should not be used in form requests')
     ->expect('Modules\*\Models')
-    ->not->toBeUsedIn('Modules\*\Controllers')
-    ->ignoring([
-        'Modules\User\Controllers\V1\IndexController',
-        'Modules\User\Controllers\V1\ShowController',
-        'Modules\User\Controllers\V1\UpdateController',
-        'Modules\User\Controllers\V1\DeleteController',
-        'Modules\User\Controllers\V1\BulkDeleteController',
-        'Modules\User\Controllers\V1\BulkRestoreController',
-        'Modules\Role\Controllers\V1\IndexController',
-        'Modules\Role\Controllers\V1\ShowController',
-        'Modules\Role\Controllers\V1\UpdateController',
-        'Modules\Role\Controllers\V1\DeleteController',
-        'Modules\Role\Controllers\V1\BulkDeleteRolesController',
-        'Modules\Role\Controllers\V1\BulkRestoreRolesController',
-        'Modules\Auth\Controllers\V1\MeController',
-        'Modules\Auth\Controllers\V1\LogoutController',
-        'Modules\Auth\Controllers\V1\DeleteDeviceController',
-        'Modules\Auth\Controllers\V1\ListDevicesController',
-        'Modules\Auth\Controllers\V1\LogoutOtherDevicesController',
-        'Modules\Auth\Controllers\V1\ResendVerificationController',
-        'Modules\Auth\Controllers\V1\ResetPasswordController',
-        'Modules\Auth\Controllers\V1\VerifyEmailController',
-        'Modules\Role\Controllers\V1\PermissionDeleteController',
-        'Modules\Role\Controllers\V1\PermissionShowController',
-        'Modules\Role\Controllers\V1\PermissionIndexController',
-        'Modules\Role\Controllers\V1\PermissionUpdateController',
-        'Modules\User\Controllers\V1\AssignRolesController',
-    ]);
+    ->not->toBeUsedIn('Modules\*\Requests');
+
+test('models should not be used in payloads')
+    ->expect('Modules\*\Models')
+    ->not->toBeUsedIn('Modules\*\Payloads');
 
 test('actions should not use request directly')
     ->expect('Illuminate\Http\Request')

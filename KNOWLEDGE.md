@@ -6,19 +6,6 @@
 
 ---
 
-## Preferences
-
-<!-- Personal working preferences applied across all projects.
-     Things you want the agent to do without being asked every time.
-
-     Format:
-     ### [Preference name] — [YYYY-MM-DD]
-     **Rule:** [What to always do or never do]
-     **Context:** [When this applies — all projects, or specific conditions]
--->
-
----
-
 ## Decisions
 
 ### Sanctum Bearer Token over JWT — 2026-06-29
@@ -46,7 +33,8 @@
 
 | Issue | Context | Added |
 |-------|---------|-------|
-|  |  |  |
+| Module Unit tests (Auth\Unit) fail with `no such table: users` | Migration ordering — module tests may run before global migrations. Pre-existing, outside current session scope. | 2026-06-29 |
+| AuthTest `avatar` MissingAttributeException | Pre-existing issue with the User model `$appends` / `$with` config. | 2026-06-29 |
 
 ---
 
@@ -64,3 +52,5 @@
 <!-- Track when significant entries were added or changed.
      Format: - [YYYY-MM-DD]: [What changed]
 -->
+- 2026-06-29: Added testing improvements — 9-item plan covering Sanctum::actingAs, Notification::assertSentTo, AssertableJson, Event::fake, travelTo. Removed DeviceManagementTest Sanctum::actingAs (reverted to original Bearer header approach due to token count issues).
+- 2026-06-29: Fixed `MissingAttributeException` for `avatar`/`deleted_at` — added all nullable columns (`provider`, `provider_id`, `avatar`, `deleted_at`) to UserFactory default definition. Fixed PermissionCRUDTest: `assertSoftDeleted` for soft-delete model, 403 expectation for non-existent permission delete (controller returns 403 when handle returns false).

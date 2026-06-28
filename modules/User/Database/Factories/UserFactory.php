@@ -37,6 +37,10 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make($defaultPassword),
             'remember_token' => Str::random(10),
+            'provider' => null,
+            'provider_id' => null,
+            'avatar' => null,
+            'deleted_at' => null,
         ];
     }
 

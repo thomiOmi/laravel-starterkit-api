@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Actions\DeleteDeviceAction;
 use Modules\User\Models\User;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
-uses(RefreshDatabase::class);
 
 it('deletes a specific device', function () {
     $user = User::factory()->create();

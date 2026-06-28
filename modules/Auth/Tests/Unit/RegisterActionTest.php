@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Payloads\V1\RegisterPayload;
-
-uses(RefreshDatabase::class);
 
 it('creates a new user', function () {
     $action = app(RegisterAction::class);

@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Actions\ListDevicesAction;
 use Modules\User\Models\User;
-
-uses(RefreshDatabase::class);
 
 it('returns all tokens for user', function () {
     $user = User::factory()->create();
@@ -32,6 +29,8 @@ it('returns empty collection when user has no tokens', function () {
 });
 
 it('orders by last_used_at descending', function () {
+    $this->travelTo(now()->startOfDay());
+
     $user = User::factory()->create();
     $token1 = $user->createToken('old-device');
     $token1->accessToken->forceFill(['last_used_at' => now()->subDay()])->save();

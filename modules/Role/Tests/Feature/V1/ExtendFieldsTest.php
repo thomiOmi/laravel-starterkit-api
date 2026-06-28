@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Laravel\Sanctum\Sanctum;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 
@@ -12,17 +13,14 @@ beforeEach(function () {
 test('role has description field', function () {
     $admin = User::factory()->create();
     $admin->assignRole('super-admin');
+    Sanctum::actingAs($admin);
 
-    $payload = [
+    $this->postJson('/api/v1/roles', [
         'name' => 'manager',
         'description' => 'Manager of the system',
         'permissions' => ['user.view'],
-    ];
-
-    $response = $this->actingAs($admin)
-        ->postJson('/api/v1/roles', $payload);
-
-    $response->assertStatus(201)
+    ])
+        ->assertStatus(201)
         ->assertJsonPath('data.description', 'Manager of the system');
 
     $this->assertDatabaseHas('roles', [

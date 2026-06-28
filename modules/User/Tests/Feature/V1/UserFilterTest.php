@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Laravel\Sanctum\Sanctum;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 use Tests\Helpers\WithAdminUser;
@@ -23,7 +24,9 @@ describe('UserFilter search', function () {
         User::factory()->create(['name' => 'Budi Santoso']);
         User::factory()->create(['name' => 'Joko Widodo']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?search=Budi')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data');
@@ -33,7 +36,9 @@ describe('UserFilter search', function () {
         User::factory()->create(['email' => 'budi@test.com']);
         User::factory()->create(['email' => 'joko@test.com']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?search=budi@test.com')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data');
@@ -44,7 +49,9 @@ describe('UserFilter search', function () {
         User::factory()->create(['name' => 'Budi Luhur', 'email' => 'budi.luhur@test.com']);
         User::factory()->create(['name' => 'Ahmad Santoso', 'email' => 'ahmad@test.com']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?search=Budi%20Santoso')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data')
@@ -55,7 +62,9 @@ describe('UserFilter search', function () {
         User::factory()->create(['name' => 'Budi Santoso', 'email' => 'budi@test.com']);
         User::factory()->create(['name' => 'Santoso Budi', 'email' => 'santoso@test.com']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?search=Budi')
             ->assertSuccessful()
             ->assertJsonCount(2, 'data');
@@ -64,7 +73,9 @@ describe('UserFilter search', function () {
     it('returns empty results for non-matching search', function () {
         User::factory()->create(['name' => 'Budi Santoso']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?search=zzzzzzz')
             ->assertSuccessful()
             ->assertJsonCount(0, 'data');
@@ -78,7 +89,9 @@ describe('UserFilter role filter', function () {
         $adminUser->assignRole('super-admin');
         $editorUser->assignRole('admin');
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?filter[role]=admin')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data')
@@ -86,7 +99,9 @@ describe('UserFilter role filter', function () {
     });
 
     it('filters users by super-admin role', function () {
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?filter[role]=super-admin')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data')
@@ -94,7 +109,9 @@ describe('UserFilter role filter', function () {
     });
 
     it('returns empty for non-existent role', function () {
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?filter[role]=nonexistent')
             ->assertSuccessful()
             ->assertJsonCount(0, 'data');
@@ -105,7 +122,9 @@ describe('UserFilter status filter', function () {
     it('filters verified users', function () {
         User::factory()->create(['name' => 'Verified User']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?filter[status]=verified')
             ->assertSuccessful()
             ->assertJsonCount(2, 'data');
@@ -114,7 +133,9 @@ describe('UserFilter status filter', function () {
     it('filters unverified users', function () {
         User::factory()->unverified()->create(['name' => 'Unverified User']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?filter[status]=unverified')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data')
@@ -124,7 +145,9 @@ describe('UserFilter status filter', function () {
     it('returns all users for unknown status value', function () {
         User::factory()->count(3)->create();
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?filter[status]=unknown')
             ->assertSuccessful()
             ->assertJsonCount(4, 'data');
@@ -137,7 +160,9 @@ describe('UserFilter sort', function () {
         User::factory()->create(['name' => 'Alpha']);
         User::factory()->create(['name' => 'Bravo']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?sort=name')
             ->assertSuccessful()
             ->assertJsonPath('data.0.name', 'Admin User')
@@ -151,7 +176,9 @@ describe('UserFilter sort', function () {
         User::factory()->create(['name' => 'Charlie']);
         User::factory()->create(['name' => 'Bravo']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?sort=-name')
             ->assertSuccessful()
             ->assertJsonPath('data.0.name', 'Charlie')
@@ -164,7 +191,9 @@ describe('UserFilter sort', function () {
         User::factory()->create(['name' => 'Alpha', 'email' => 'z@test.com']);
         User::factory()->create(['name' => 'Alpha', 'email' => 'a@test.com']);
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?sort=name,-email')
             ->assertSuccessful()
             ->assertJsonPath('data.0.name', 'Admin User')
@@ -179,7 +208,9 @@ describe('UserFilter combinations', function () {
         $user->assignRole('admin');
         User::factory()->create(['name' => 'Target User'])->assignRole('super-admin');
 
-        $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $this
             ->getJson('/api/v1/users?search=Target&filter[role]=admin')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data')
@@ -187,10 +218,12 @@ describe('UserFilter combinations', function () {
     });
 
     it('combines search with sort', function () {
-        $a = User::factory()->create(['name' => 'Alpha User']);
-        $b = User::factory()->create(['name' => 'Beta User']);
+        User::factory()->create(['name' => 'Alpha User']);
+        User::factory()->create(['name' => 'Beta User']);
 
-        $response = $this->actingAs($this->admin)
+        Sanctum::actingAs($this->admin);
+
+        $response = $this
             ->getJson('/api/v1/users?search=User&sort=-name')
             ->assertSuccessful();
 

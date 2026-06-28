@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Auth\Actions\LogoutAction;
 use Modules\User\Models\User;
-
-uses(RefreshDatabase::class);
 
 it('deletes current access token on logout', function () {
     $user = User::factory()->create();

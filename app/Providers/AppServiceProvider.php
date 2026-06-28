@@ -43,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureRateLimiting();
 
         $this->defineFeatures();
+
         Gate::before(function (User $user, $ability) {
             return $user->hasRole('super-admin') ? true : null;
         });

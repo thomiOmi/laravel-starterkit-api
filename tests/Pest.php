@@ -14,10 +14,15 @@ use Tests\TestCase;
 |
 */
 
-uses(TestCase::class, RefreshDatabase::class)
-    ->in('Feature', '../modules/*/Tests');
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->in('../modules/*/Tests/Feature', 'Feature');
 
-uses()
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->in('../modules/*/Tests/Unit', 'Unit');
+
+pest()->extend(TestCase::class)
     ->in('Architecture');
 
 /*

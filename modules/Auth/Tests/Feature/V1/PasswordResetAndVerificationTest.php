@@ -2,11 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Notifications\ResetPassword as ResetPasswordNotification;
+use App\Notifications\VerifyEmail as VerifyEmailNotification;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
+use Laravel\Sanctum\Sanctum;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 
@@ -20,12 +25,13 @@ describe('Forgot Password', function () {
 
         $user = User::factory()->create();
 
-        $response = $this->postJson('/api/v1/auth/forgot-password', [
+        $this->postJson('/api/v1/auth/forgot-password', [
             'email' => $user->email,
-        ]);
-
-        $response->assertSuccessful()
+        ])
+            ->assertSuccessful()
             ->assertJsonPath('detail', __('passwords.sent'));
+
+        Notification::assertSentTo($user, ResetPasswordNotification::class);
     });
 
     it('returns validation error for invalid email', function () {
@@ -48,20 +54,23 @@ describe('Forgot Password', function () {
 
 describe('Reset Password', function () {
     it('resets password with valid token', function () {
+        Event::fake([PasswordReset::class]);
+
         $user = User::factory()->create();
         $token = Password::broker()->createToken($user);
 
-        $response = $this->postJson('/api/v1/auth/reset-password', [
+        $this->postJson('/api/v1/auth/reset-password', [
             'email' => $user->email,
             'token' => $token,
             'password' => 'new-password-123',
             'password_confirmation' => 'new-password-123',
-        ]);
-
-        $response->assertSuccessful()
+        ])
+            ->assertSuccessful()
             ->assertJsonPath('detail', __('passwords.reset'));
 
         $this->assertTrue(Hash::check('new-password-123', $user->fresh()->password));
+
+        Event::assertDispatched(PasswordReset::class, fn ($event) => $event->user->is($user));
     });
 
     it('returns error for invalid token', function () {
@@ -106,7 +115,7 @@ describe('Reset Password', function () {
 describe('Email Verification', function () {
     it('verifies email with valid signed URL and hash', function () {
         $user = User::factory()->unverified()->create();
-        $token = $user->createToken('test')->plainTextToken;
+        Sanctum::actingAs($user);
 
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -117,10 +126,8 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->getJson($signedUrl);
-
-        $response->assertSuccessful()
+        $this->getJson($signedUrl)
+            ->assertSuccessful()
             ->assertJsonPath('data.verified', true);
 
         $this->assertNotNull($user->fresh()->email_verified_at);
@@ -128,7 +135,7 @@ describe('Email Verification', function () {
 
     it('returns success for already verified email', function () {
         $user = User::factory()->create();
-        $token = $user->createToken('test')->plainTextToken;
+        Sanctum::actingAs($user);
 
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -139,16 +146,14 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->getJson($signedUrl);
-
-        $response->assertSuccessful()
+        $this->getJson($signedUrl)
+            ->assertSuccessful()
             ->assertJsonPath('data.verified', true);
     });
 
     it('rejects invalid hash', function () {
         $user = User::factory()->unverified()->create();
-        $token = $user->createToken('test')->plainTextToken;
+        Sanctum::actingAs($user);
 
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -159,16 +164,14 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->getJson($signedUrl);
-
-        $response->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->getJson($signedUrl)
+            ->assertStatus(Response::HTTP_FORBIDDEN);
     });
 
     it('rejects another user\'s verification link', function () {
         $user = User::factory()->unverified()->create();
         $other = User::factory()->unverified()->create();
-        $token = $other->createToken('test')->plainTextToken;
+        Sanctum::actingAs($other);
 
         $signedUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -179,15 +182,15 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->getJson($signedUrl);
-
-        $response->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->getJson($signedUrl)
+            ->assertStatus(Response::HTTP_FORBIDDEN);
     });
 
     it('rejects expired signed URL', function () {
+        $this->travelTo(now()->startOfDay());
+
         $user = User::factory()->unverified()->create();
-        $token = $user->createToken('test')->plainTextToken;
+        Sanctum::actingAs($user);
 
         $expiredUrl = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
@@ -198,10 +201,8 @@ describe('Email Verification', function () {
             ],
         );
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->getJson($expiredUrl);
-
-        $response->assertStatus(Response::HTTP_FORBIDDEN);
+        $this->getJson($expiredUrl)
+            ->assertStatus(Response::HTTP_FORBIDDEN);
     });
 
     it('rejects unauthenticated request', function () {
@@ -227,23 +228,21 @@ describe('Resend Verification Notification', function () {
         Notification::fake();
 
         $user = User::factory()->unverified()->create();
-        $token = $user->createToken('test')->plainTextToken;
+        Sanctum::actingAs($user, ['users:write']);
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/v1/auth/email/verification-notification');
-
-        $response->assertSuccessful()
+        $this->postJson('/api/v1/auth/email/verification-notification')
+            ->assertSuccessful()
             ->assertJsonPath('detail', __('auth.verification_link_sent'));
+
+        Notification::assertSentTo($user, VerifyEmailNotification::class);
     });
 
     it('returns success for already verified user', function () {
         $user = User::factory()->create();
-        $token = $user->createToken('test')->plainTextToken;
+        Sanctum::actingAs($user, ['users:write']);
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/v1/auth/email/verification-notification');
-
-        $response->assertSuccessful()
+        $this->postJson('/api/v1/auth/email/verification-notification')
+            ->assertSuccessful()
             ->assertJsonPath('detail', __('auth.verified'));
     });
 

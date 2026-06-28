@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\Role\Database\Factories\PermissionFactory;
 use Modules\Role\Models\Permission;
 use Modules\Role\Models\Role;
-
-uses(RefreshDatabase::class);
 
 describe('PermissionFactory', function () {
     it('creates a permission with factory', function () {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Helpers;
 
 use Illuminate\Testing\TestResponse;
+use Laravel\Sanctum\Sanctum;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
 
@@ -21,21 +22,29 @@ trait WithAdminUser
 
     protected function adminGet(string $uri): TestResponse
     {
-        return $this->actingAs($this->admin)->getJson($uri)->assertSuccessful();
+        Sanctum::actingAs($this->admin);
+
+        return $this->getJson($uri)->assertSuccessful();
     }
 
     protected function adminPost(string $uri, array $data = []): TestResponse
     {
-        return $this->actingAs($this->admin)->postJson($uri, $data);
+        Sanctum::actingAs($this->admin);
+
+        return $this->postJson($uri, $data);
     }
 
     protected function adminPut(string $uri, array $data = []): TestResponse
     {
-        return $this->actingAs($this->admin)->putJson($uri, $data);
+        Sanctum::actingAs($this->admin);
+
+        return $this->putJson($uri, $data);
     }
 
     protected function adminDelete(string $uri): TestResponse
     {
-        return $this->actingAs($this->admin)->deleteJson($uri);
+        Sanctum::actingAs($this->admin);
+
+        return $this->deleteJson($uri);
     }
 }
