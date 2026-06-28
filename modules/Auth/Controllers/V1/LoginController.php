@@ -18,14 +18,22 @@ final readonly class LoginController
 
     public function __invoke(LoginRequest $request): SuccessResponse
     {
+        $payload = $request->payload();
+
         $isFrontend = EnsureFrontendRequestsAreStateful::fromFrontend($request);
 
+        $isStateful = $isFrontend && $payload->deviceName === null;
+
         $result = $this->loginAction->handle(
-            payload: $request->payload(),
+            payload: $payload,
             ip: $request->ip(),
             userAgent: $request->userAgent(),
-            stateful: $isFrontend,
+            stateful: $isStateful,
         );
+
+        if ($isStateful) {
+            $request->session()->regenerate();
+        }
 
         $data = [
             'user' => new UserResource($result['user']),

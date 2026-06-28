@@ -37,7 +37,7 @@ final readonly class RegisterAction
         }
 
         $token = $user->createToken(
-            'register_token',
+            $payload->deviceName ?? $userAgent ?? 'register_token',
             ['users:read', 'users:write', 'auth:manage'],
         );
 

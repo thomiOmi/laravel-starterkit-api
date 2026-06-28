@@ -49,6 +49,9 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable;
 
+    /** @var string|array<int, string> */
+    protected $guard_name = ['web', 'sanctum'];
+
     /**
      * Send the email verification notification.
      */

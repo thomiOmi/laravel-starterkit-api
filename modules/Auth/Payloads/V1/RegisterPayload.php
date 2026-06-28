@@ -12,6 +12,7 @@ final readonly class RegisterPayload
         public string $name,
         public string $email,
         public string $password,
+        public ?string $deviceName = null,
     ) {}
 
     public static function fromRequest(RegisterRequest $request): self
@@ -20,6 +21,7 @@ final readonly class RegisterPayload
             name: trim($request->string('name')->toString()),
             email: strtolower(trim($request->string('email')->toString())),
             password: $request->string('password')->toString(),
+            deviceName: trim($request->string('device_name')->toString()) ?: null,
         );
     }
 }

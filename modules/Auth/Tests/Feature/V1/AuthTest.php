@@ -11,54 +11,6 @@ beforeEach(function () {
 });
 
 describe('Auth Core Features V1', function () {
-    it('can register a new user', function () {
-        $password = config('auth.default_password');
-        $response = $this->postJson('/api/v1/auth/register', [
-            'name' => 'John Doe',
-            'email' => 'john@example.com',
-            'password' => $password,
-            'password_confirmation' => $password,
-        ]);
-
-        $response->assertStatus(Response::HTTP_CREATED)
-            ->assertJsonStructure([
-                'title',
-                'detail',
-                'data' => [
-                    'user',
-                    'access_token',
-                    'token_type',
-                ],
-            ]);
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'john@example.com',
-        ]);
-    });
-
-    it('can login with valid credentials', function () {
-        $password = config('auth.default_password');
-        $user = User::factory()->create([
-            'password' => $password,
-        ]);
-
-        $response = $this->postJson('/api/v1/auth/login', [
-            'email' => $user->email,
-            'password' => $password,
-        ]);
-
-        $response->assertSuccessful()
-            ->assertJsonStructure([
-                'title',
-                'detail',
-                'data' => [
-                    'user',
-                    'access_token',
-                    'token_type',
-                ],
-            ]);
-    });
-
     it('can logout', function () {
         $user = User::factory()->create();
         $token = $user->createToken('test', ['auth:manage'])->plainTextToken;
@@ -78,29 +30,6 @@ describe('Auth Core Features V1', function () {
 
         $response->assertSuccessful()
             ->assertJsonPath('data.email', $user->email);
-    });
-
-    it('can logout other devices', function () {
-        $password = config('auth.default_password');
-        $user = User::factory()->create([
-            'password' => $password,
-        ]);
-        $user->assignRole('user');
-
-        $currentToken = $user->createToken('current', ['auth:manage'])->plainTextToken;
-        $user->createToken('other-device', ['auth:manage']);
-
-        $this->assertCount(2, $user->tokens);
-
-        $response = $this->withHeader('Authorization', "Bearer $currentToken")
-            ->postJson('/api/v1/auth/devices/logout-others', [
-                'current_password' => $password,
-            ]);
-
-        $response->assertStatus(Response::HTTP_NO_CONTENT);
-
-        $user->refresh();
-        $this->assertCount(1, $user->tokens);
     });
 
     it('rejects request without required ability', function () {

@@ -124,3 +124,42 @@ describe('stateful (session-based) auth', function () {
         expect(auth()->guard('web')->check())->toBeTrue();
     });
 });
+
+describe('device_name override', function () {
+    it('returns token even with stateful referer when device_name is provided', function () {
+        $password = 'Password123!';
+        $user = User::factory()->create(['password' => Hash::make($password)]);
+
+        $response = $this->withoutMiddleware(VerifyCsrfToken::class)
+            ->withHeader('Referer', 'http://localhost:3000')
+            ->postJson('/api/v1/auth/login', [
+                'email' => $user->email,
+                'password' => $password,
+                'device_name' => 'Postman',
+            ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'status',
+            'title',
+            'detail',
+            'data' => ['user', 'access_token', 'token_type'],
+        ]);
+        expect($response->json('data.access_token'))->toBeString();
+    });
+
+    it('does not establish session when device_name overrides stateful', function () {
+        $password = 'Password123!';
+        $user = User::factory()->create(['password' => Hash::make($password)]);
+
+        $this->withoutMiddleware(VerifyCsrfToken::class)
+            ->withHeader('Referer', 'http://localhost:3000')
+            ->postJson('/api/v1/auth/login', [
+                'email' => $user->email,
+                'password' => $password,
+                'device_name' => 'Postman',
+            ]);
+
+        expect(auth()->guard('web')->check())->toBeFalse();
+    });
+});

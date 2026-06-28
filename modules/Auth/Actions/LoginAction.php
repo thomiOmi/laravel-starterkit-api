@@ -7,6 +7,7 @@ namespace Modules\Auth\Actions;
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Payloads\V1\LoginPayload;
 use Modules\User\Models\User;
@@ -18,6 +19,7 @@ final readonly class LoginAction
 {
     public function __construct(
         private AuthFactory $auth,
+        private Hasher $hasher,
     ) {}
 
     /**
@@ -33,20 +35,18 @@ final readonly class LoginAction
      */
     public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null, bool $stateful = false): array
     {
-        if (! $this->auth->guard()->attempt(['email' => $payload->email, 'password' => $payload->password])) {
-            throw ValidationException::withMessages([
-                'email' => [__('auth.failed')],
-                'password' => [__('auth.failed')],
-            ]);
-        }
-
-        /** @var User $user */
-        $user = $this->auth->guard()->user();
-
-        event(new Login('web', $user, false));
-
         if ($stateful) {
-            $this->auth->guard('web')->login($user);
+            if (! $this->auth->guard('web')->attempt(['email' => $payload->email, 'password' => $payload->password])) {
+                throw ValidationException::withMessages([
+                    'email' => [__('auth.failed')],
+                    'password' => [__('auth.failed')],
+                ]);
+            }
+
+            /** @var User $user */
+            $user = $this->auth->guard('web')->user();
+
+            event(new Login('web', $user, false));
 
             return [
                 'user' => $user,
@@ -54,6 +54,18 @@ final readonly class LoginAction
                 'token_type' => null,
             ];
         }
+
+        /** @var User|null $user */
+        $user = User::where('email', $payload->email)->first();
+
+        if (! $user || ! is_string($user->password) || ! $this->hasher->check($payload->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'email' => [__('auth.failed')],
+                'password' => [__('auth.failed')],
+            ]);
+        }
+
+        event(new Login('web', $user, false));
 
         $abilities = $user->hasRole(['admin', 'super-admin'])
             ? ['*']

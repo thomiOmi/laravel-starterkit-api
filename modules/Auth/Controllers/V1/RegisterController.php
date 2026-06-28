@@ -20,16 +20,24 @@ final readonly class RegisterController
 
     public function __invoke(RegisterRequest $request): SuccessResponse
     {
+        $payload = $request->payload();
+
         $isFrontend = EnsureFrontendRequestsAreStateful::fromFrontend($request);
 
+        $isStateful = $isFrontend && $payload->deviceName === null;
+
         $result = $this->registerAction->handle(
-            $request->payload(),
+            $payload,
             ip: $request->ip(),
             userAgent: $request->userAgent(),
-            stateful: $isFrontend,
+            stateful: $isStateful,
         );
 
         event(new Registered($result['user']));
+
+        if ($isStateful) {
+            $request->session()->regenerate();
+        }
 
         $data = [
             'user' => new UserResource($result['user']),

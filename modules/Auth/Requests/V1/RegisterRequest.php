@@ -29,6 +29,7 @@ final class RegisterRequest extends FormRequest
         return [
             ...$this->profileRules(),
             'password' => $this->passwordRules(),
+            'device_name' => ['nullable', 'string', 'max:255'],
         ];
     }
 
