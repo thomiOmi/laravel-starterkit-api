@@ -22,6 +22,7 @@ jobs:
       DB_DATABASE: laravel
       DB_USERNAME: root
       DB_PASSWORD: password
+      RATE_LIMIT_AUTH_PER_IP: 60
       BROADCAST_CONNECTION: log
       CACHE_STORE: redis
       QUEUE_CONNECTION: redis

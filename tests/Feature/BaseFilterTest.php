@@ -277,10 +277,10 @@ it('selects only allowed fields via sparse fieldset', function () {
 
     $sql = $builder->toSql();
 
-    expect($sql)->toContain('"name"');
-    expect($sql)->toContain('"email"');
-    expect($sql)->toContain('"id"');
-    expect($sql)->not->toContain('"created_at"');
+    expect($sql)->toContain('`name`');
+    expect($sql)->toContain('`email`');
+    expect($sql)->toContain('`id`');
+    expect($sql)->not->toContain('`created_at`');
 });
 
 it('always includes the primary key in sparse fieldset', function () {
@@ -300,8 +300,8 @@ it('always includes the primary key in sparse fieldset', function () {
 
     $sql = $builder->toSql();
 
-    expect($sql)->toContain('"id"');
-    expect($sql)->toContain('"name"');
+    expect($sql)->toContain('`id`');
+    expect($sql)->toContain('`name`');
 });
 
 it('ignores fields not in allowedFields list', function () {
@@ -321,7 +321,7 @@ it('ignores fields not in allowedFields list', function () {
 
     $sql = $builder->toSql();
 
-    expect($sql)->toContain('"id"');
+    expect($sql)->toContain('`id`');
     expect($sql)->not->toContain('password');
     expect($sql)->not->toContain('secret');
 });
@@ -343,9 +343,9 @@ it('passes through all fields when allowedFields is empty', function () {
 
     $sql = $builder->toSql();
 
-    expect($sql)->toContain('"name"');
-    expect($sql)->toContain('"email"');
-    expect($sql)->toContain('"id"');
+    expect($sql)->toContain('`name`');
+    expect($sql)->toContain('`email`');
+    expect($sql)->toContain('`id`');
 });
 
 it('uses fieldsKey when specified instead of table name', function () {
@@ -367,8 +367,8 @@ it('uses fieldsKey when specified instead of table name', function () {
 
     $sql = $builder->toSql();
 
-    expect($sql)->toContain('"id"');
-    expect($sql)->toContain('"name"');
+    expect($sql)->toContain('`id`');
+    expect($sql)->toContain('`name`');
 });
 
 it('ignores sparse fieldset when fields parameter is missing', function () {
