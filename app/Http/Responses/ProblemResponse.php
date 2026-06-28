@@ -92,7 +92,8 @@ final class ProblemResponse extends JsonResponse
         $path = config('errors.problem_type_path', 'problems');
         $path = is_string($path) ? $path : 'problems';
 
-        $slug = config("errors.types.{$key}");
+        $fallbackSlug = config('errors.types.default', 'general-error');
+        $slug = config('errors.types.'.$key, $fallbackSlug);
 
         if (! is_string($slug) || $slug === '') {
             $slug = $key;
