@@ -48,9 +48,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->priority([
             ForceJsonResponse::class,
+            EnsureFrontendRequestsAreStateful::class,
             Authenticate::class,
             AuthenticatesRequests::class,
-            EnsureFrontendRequestsAreStateful::class,
         ]);
 
         $middleware->redirectGuestsTo(null);
