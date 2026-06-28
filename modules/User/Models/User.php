@@ -41,9 +41,6 @@ use Spatie\Permission\Traits\HasRoles;
 #[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
-/**
- * @implements MustVerifyEmail
- */
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */

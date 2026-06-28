@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
@@ -29,7 +30,10 @@ describe('UserFilter search', function () {
         $this
             ->getJson('/api/v1/users?search=Budi')
             ->assertSuccessful()
-            ->assertJsonCount(1, 'data');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->count('data', 1)
+                ->etc()
+            );
     });
 
     it('finds users by email with single keyword', function () {
@@ -41,7 +45,10 @@ describe('UserFilter search', function () {
         $this
             ->getJson('/api/v1/users?search=budi@test.com')
             ->assertSuccessful()
-            ->assertJsonCount(1, 'data');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->count('data', 1)
+                ->etc()
+            );
     });
 
     it('requires all tokens to match with multi-keyword search', function () {
@@ -165,10 +172,20 @@ describe('UserFilter sort', function () {
         $this
             ->getJson('/api/v1/users?sort=name')
             ->assertSuccessful()
-            ->assertJsonPath('data.0.name', 'Admin User')
-            ->assertJsonPath('data.1.name', 'Alpha')
-            ->assertJsonPath('data.2.name', 'Bravo')
-            ->assertJsonPath('data.3.name', 'Charlie');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('data.0.name', 'Admin User')
+                ->where('data.1.name', 'Alpha')
+                ->where('data.2.name', 'Bravo')
+                ->where('data.3.name', 'Charlie')
+                ->has('meta', fn (AssertableJson $meta) => $meta
+                    ->whereType('current_page', 'integer')
+                    ->whereType('last_page', 'integer')
+                    ->whereType('per_page', 'integer')
+                    ->whereType('total', 'integer')
+                    ->etc()
+                )
+                ->etc()
+            );
     });
 
     it('sorts by name descending', function () {
@@ -181,10 +198,20 @@ describe('UserFilter sort', function () {
         $this
             ->getJson('/api/v1/users?sort=-name')
             ->assertSuccessful()
-            ->assertJsonPath('data.0.name', 'Charlie')
-            ->assertJsonPath('data.1.name', 'Bravo')
-            ->assertJsonPath('data.2.name', 'Alpha')
-            ->assertJsonPath('data.3.name', 'Admin User');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('data.0.name', 'Charlie')
+                ->where('data.1.name', 'Bravo')
+                ->where('data.2.name', 'Alpha')
+                ->where('data.3.name', 'Admin User')
+                ->has('meta', fn (AssertableJson $meta) => $meta
+                    ->whereType('current_page', 'integer')
+                    ->whereType('last_page', 'integer')
+                    ->whereType('per_page', 'integer')
+                    ->whereType('total', 'integer')
+                    ->etc()
+                )
+                ->etc()
+            );
     });
 
     it('sorts by multiple columns', function () {
@@ -196,9 +223,19 @@ describe('UserFilter sort', function () {
         $this
             ->getJson('/api/v1/users?sort=name,-email')
             ->assertSuccessful()
-            ->assertJsonPath('data.0.name', 'Admin User')
-            ->assertJsonPath('data.1.email', 'z@test.com')
-            ->assertJsonPath('data.2.email', 'a@test.com');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('data.0.name', 'Admin User')
+                ->where('data.1.email', 'z@test.com')
+                ->where('data.2.email', 'a@test.com')
+                ->has('meta', fn (AssertableJson $meta) => $meta
+                    ->whereType('current_page', 'integer')
+                    ->whereType('last_page', 'integer')
+                    ->whereType('per_page', 'integer')
+                    ->whereType('total', 'integer')
+                    ->etc()
+                )
+                ->etc()
+            );
     });
 });
 

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\Role\Models\Role;
 use Tests\Helpers\WithAdminUser;
 
@@ -16,12 +17,18 @@ describe('RoleFilter search', function () {
         Role::create(['name' => 'developer', 'guard_name' => 'web']);
 
         $this->adminGet('/api/v1/roles?search=developer')
-            ->assertJsonCount(1, 'data');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->count('data', 1)
+                ->etc()
+            );
     });
 
     it('returns empty results for non-matching search', function () {
         $this->adminGet('/api/v1/roles?search=zzzzzzz')
-            ->assertJsonCount(0, 'data');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->count('data', 0)
+                ->etc()
+            );
     });
 });
 
@@ -41,6 +48,17 @@ describe('RoleFilter sort', function () {
     });
 
     it('applies default sort when no sort parameter', function () {
-        $this->adminGet('/api/v1/roles');
+        $this->adminGet('/api/v1/roles')
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->has('data')
+                ->has('meta', fn (AssertableJson $meta) => $meta
+                    ->whereType('current_page', 'integer')
+                    ->whereType('last_page', 'integer')
+                    ->whereType('per_page', 'integer')
+                    ->whereType('total', 'integer')
+                    ->etc()
+                )
+                ->etc()
+            );
     });
 });

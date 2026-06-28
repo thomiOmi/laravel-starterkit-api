@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
@@ -29,7 +30,10 @@ describe('Forgot Password', function () {
             'email' => $user->email,
         ])
             ->assertSuccessful()
-            ->assertJsonPath('detail', __('passwords.sent'));
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('detail', __('passwords.sent'))
+                ->etc()
+            );
 
         Notification::assertSentTo($user, ResetPasswordNotification::class);
     });
@@ -48,7 +52,10 @@ describe('Forgot Password', function () {
         ]);
 
         $response->assertSuccessful()
-            ->assertJsonPath('detail', __('passwords.sent'));
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('detail', __('passwords.sent'))
+                ->etc()
+            );
     });
 });
 
@@ -66,7 +73,10 @@ describe('Reset Password', function () {
             'password_confirmation' => 'new-password-123',
         ])
             ->assertSuccessful()
-            ->assertJsonPath('detail', __('passwords.reset'));
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('detail', __('passwords.reset'))
+                ->etc()
+            );
 
         $this->assertTrue(Hash::check('new-password-123', $user->fresh()->password));
 
@@ -128,7 +138,10 @@ describe('Email Verification', function () {
 
         $this->getJson($signedUrl)
             ->assertSuccessful()
-            ->assertJsonPath('data.verified', true);
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('data.verified', true)
+                ->etc()
+            );
 
         $this->assertNotNull($user->fresh()->email_verified_at);
     });
@@ -148,7 +161,10 @@ describe('Email Verification', function () {
 
         $this->getJson($signedUrl)
             ->assertSuccessful()
-            ->assertJsonPath('data.verified', true);
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('data.verified', true)
+                ->etc()
+            );
     });
 
     it('rejects invalid hash', function () {
@@ -232,7 +248,10 @@ describe('Resend Verification Notification', function () {
 
         $this->postJson('/api/v1/auth/email/verification-notification')
             ->assertSuccessful()
-            ->assertJsonPath('detail', __('auth.verification_link_sent'));
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('detail', __('auth.verification_link_sent'))
+                ->etc()
+            );
 
         Notification::assertSentTo($user, VerifyEmailNotification::class);
     });
@@ -243,7 +262,10 @@ describe('Resend Verification Notification', function () {
 
         $this->postJson('/api/v1/auth/email/verification-notification')
             ->assertSuccessful()
-            ->assertJsonPath('detail', __('auth.verified'));
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('detail', __('auth.verified'))
+                ->etc()
+            );
     });
 
     it('requires authentication', function () {

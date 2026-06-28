@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
 use Modules\Role\Database\Seeders\RoleSeeder;
 use Modules\User\Models\User;
@@ -21,7 +22,12 @@ test('role has description field', function () {
         'permissions' => ['user.view'],
     ])
         ->assertStatus(201)
-        ->assertJsonPath('data.description', 'Manager of the system');
+        ->assertJson(fn (AssertableJson $json) => $json
+            ->where('data.description', 'Manager of the system')
+            ->whereType('data.id', 'string')
+            ->whereType('data.name', 'string')
+            ->etc()
+        );
 
     $this->assertDatabaseHas('roles', [
         'name' => 'manager',

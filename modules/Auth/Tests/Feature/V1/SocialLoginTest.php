@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as SocialUser;
@@ -16,24 +16,18 @@ beforeEach(function () {
 
 describe('Social Redirect', function () {
     it('returns redirect URL for valid provider', function () {
-        $this->withoutExceptionHandling();
-
-        $providerMock = Mockery::mock('Laravel\Socialite\Contracts\Provider');
-        $providerMock->shouldReceive('stateless')->andReturnSelf();
-        $providerMock->shouldReceive('redirect')
-            ->andReturn(new RedirectResponse('https://accounts.google.com/o/oauth2/auth'));
-
-        Socialite::shouldReceive('driver')
-            ->with('google')
-            ->andReturn($providerMock);
+        Socialite::fake('google');
 
         $response = $this->getJson('/api/v1/auth/social/google/redirect');
 
         $response->assertSuccessful()
-            ->assertJsonStructure(['data' => ['url']]);
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->has('data.url')
+                ->etc()
+            );
     });
 
-    it('returns 422 for invalid provider', function () {
+    it('returns 400 for invalid provider', function () {
         $response = $this->getJson('/api/v1/auth/social/twitter/redirect');
 
         $response->assertStatus(Response::HTTP_BAD_REQUEST);
@@ -42,28 +36,23 @@ describe('Social Redirect', function () {
 
 describe('Social Callback', function () {
     it('creates a new user and returns token', function () {
-        $socialUser = new SocialUser;
-        $socialUser->id = 'google-123';
-        $socialUser->name = 'John Doe';
-        $socialUser->email = 'john@example.com';
-        $socialUser->avatar = 'https://example.com/avatar.jpg';
-        $socialUser->token = 'mock-token';
-        $socialUser->refreshToken = 'mock-refresh';
-        $socialUser->expiresIn = 3600;
-
-        $providerMock = Mockery::mock('Laravel\Socialite\Contracts\Provider');
-        $providerMock->shouldReceive('stateless')->andReturnSelf();
-        $providerMock->shouldReceive('user')->andReturn($socialUser);
-
-        Socialite::shouldReceive('driver')
-            ->with('google')
-            ->andReturn($providerMock);
+        Socialite::fake('google', SocialUser::fake([
+            'id' => 'google-123',
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'avatar' => 'https://example.com/avatar.jpg',
+        ]));
 
         $response = $this->getJson('/api/v1/auth/social/google/callback');
 
         $response->assertSuccessful()
             ->assertJsonPath('detail', __('auth.social_login_success'))
-            ->assertJsonStructure(['data' => ['user', 'access_token', 'token_type']]);
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->has('data.user')
+                ->has('data.access_token')
+                ->where('data.token_type', 'Bearer')
+                ->etc()
+            );
 
         $this->assertDatabaseHas('users', [
             'email' => 'john@example.com',
@@ -74,73 +63,59 @@ describe('Social Callback', function () {
     });
 
     it('logs in existing linked user', function () {
-        $user = User::factory()->create([
+        User::factory()->create([
             'provider' => 'google',
             'provider_id' => 'existing-123',
         ]);
 
-        $socialUser = new SocialUser;
-        $socialUser->id = 'existing-123';
-        $socialUser->name = 'Existing User';
-        $socialUser->email = $user->email;
-        $socialUser->token = 'mock-token';
-
-        $providerMock = Mockery::mock('Laravel\Socialite\Contracts\Provider');
-        $providerMock->shouldReceive('stateless')->andReturnSelf();
-        $providerMock->shouldReceive('user')->andReturn($socialUser);
-
-        Socialite::shouldReceive('driver')
-            ->with('google')
-            ->andReturn($providerMock);
+        Socialite::fake('google', SocialUser::fake([
+            'id' => 'existing-123',
+            'name' => 'Existing User',
+            'email' => 'existing@example.com',
+        ]));
 
         $response = $this->getJson('/api/v1/auth/social/google/callback');
 
         $response->assertSuccessful()
             ->assertJsonPath('detail', __('auth.social_login_success'))
-            ->assertJsonStructure(['data' => ['user', 'access_token', 'token_type']]);
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->has('data.user')
+                ->has('data.access_token')
+                ->where('data.token_type', 'Bearer')
+                ->etc()
+            );
     });
 
     it('links provider to existing email user', function () {
-        $user = User::factory()->create([
+        User::factory()->create([
             'email' => 'existing@example.com',
             'provider' => null,
             'provider_id' => null,
         ]);
 
-        $socialUser = new SocialUser;
-        $socialUser->id = 'new-link-123';
-        $socialUser->name = 'Linked User';
-        $socialUser->email = 'existing@example.com';
-        $socialUser->avatar = 'https://example.com/linked-avatar.jpg';
-        $socialUser->token = 'mock-token';
-
-        $providerMock = Mockery::mock('Laravel\Socialite\Contracts\Provider');
-        $providerMock->shouldReceive('stateless')->andReturnSelf();
-        $providerMock->shouldReceive('user')->andReturn($socialUser);
-
-        Socialite::shouldReceive('driver')
-            ->with('google')
-            ->andReturn($providerMock);
+        Socialite::fake('google', SocialUser::fake([
+            'id' => 'new-link-123',
+            'name' => 'Linked User',
+            'email' => 'existing@example.com',
+            'avatar' => 'https://example.com/linked-avatar.jpg',
+        ]));
 
         $response = $this->getJson('/api/v1/auth/social/google/callback');
 
         $response->assertSuccessful();
 
-        $user->refresh();
-        expect($user->provider)->toBe('google');
-        expect($user->provider_id)->toBe('new-link-123');
-        expect($user->avatar)->toBe('https://example.com/linked-avatar.jpg');
+        $this->assertDatabaseHas('users', [
+            'email' => 'existing@example.com',
+            'provider' => 'google',
+            'provider_id' => 'new-link-123',
+            'avatar' => 'https://example.com/linked-avatar.jpg',
+        ]);
     });
 
     it('returns 400 for denied authorization', function () {
-        $providerMock = Mockery::mock('Laravel\Socialite\Contracts\Provider');
-        $providerMock->shouldReceive('stateless')->andReturnSelf();
-        $providerMock->shouldReceive('user')
-            ->andThrow(new InvalidStateException);
-
-        Socialite::shouldReceive('driver')
-            ->with('google')
-            ->andReturn($providerMock);
+        Socialite::fake('google', function () {
+            throw new InvalidStateException;
+        });
 
         $response = $this->getJson('/api/v1/auth/social/google/callback');
 

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Testing\Fluent\AssertableJson;
 use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,7 +18,17 @@ describe('Device List', function () {
         $this->withHeader('Authorization', "Bearer {$this->token}")
             ->getJson('/api/v1/auth/devices')
             ->assertSuccessful()
-            ->assertJsonCount(2, 'data');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->has('data', 2)
+                ->has('data.0', fn (AssertableJson $device) => $device
+                    ->whereType('id', 'integer')
+                    ->whereType('name', 'string')
+                    ->whereType('is_current', 'boolean')
+                    ->whereType('last_used_at', 'string')
+                    ->etc()
+                )
+                ->etc()
+            );
     });
 
     it('requires authentication', function () {
@@ -38,7 +49,10 @@ describe('Device List', function () {
         $this->withHeader('Authorization', "Bearer {$this->token}")
             ->getJson('/api/v1/auth/devices')
             ->assertSuccessful()
-            ->assertJsonCount(1, 'data');
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->count('data', 1)
+                ->etc()
+            );
     });
 });
 
