@@ -180,8 +180,4 @@ return Application::configure(basePath: dirname(__DIR__))
             return $payload;
         });
     })
-    ->withEvents(discover: [
-        __DIR__.'/../app/Events',
-        __DIR__.'/../modules/**/Events',
-    ])
     ->create();
