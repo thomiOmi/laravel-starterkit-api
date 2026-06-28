@@ -6,7 +6,6 @@ namespace Modules\User\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\AssignRolesToUserAction;
 use Modules\User\Models\User;
 use Modules\User\Requests\V1\AssignRolesRequest;
@@ -21,17 +20,6 @@ final readonly class AssignRolesController
 
     public function __invoke(string $user, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
-        $currentUser = $formRequest->user();
-
-        if (! $currentUser->can('user.edit')) {
-            return new ProblemResponse(
-                title: 'Forbidden',
-                status: Response::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
-            );
-        }
-
         $userModel = User::find($user);
 
         if (! $userModel) {
