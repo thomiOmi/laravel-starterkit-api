@@ -10,7 +10,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\ShowPermissionAction;
 use Modules\Role\Resources\PermissionResource;
-use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class PermissionShowController
@@ -26,8 +25,16 @@ final readonly class PermissionShowController
      */
     public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
         $currentUser = $request->user();
+
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
 
         if (! $currentUser->can('permission.view')) {
             return new ProblemResponse(

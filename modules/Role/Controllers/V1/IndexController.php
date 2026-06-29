@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Modules\Role\Actions\ListRolesAction;
 use Modules\Role\Filters\RoleFilter;
 use Modules\Role\Resources\RoleResource;
-use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class IndexController
@@ -25,8 +24,16 @@ final readonly class IndexController
      */
     public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
         $currentUser = $request->user();
+
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
 
         if (! $currentUser->can('role.view')) {
             return new ProblemResponse(

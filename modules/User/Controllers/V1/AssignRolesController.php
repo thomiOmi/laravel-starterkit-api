@@ -6,6 +6,7 @@ namespace Modules\User\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\AssignRolesToUserAction;
 use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\V1\AssignRolesRequest;
@@ -21,6 +22,17 @@ final readonly class AssignRolesController
 
     public function __invoke(string $id, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
+        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        $currentUser = $formRequest->user();
+
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
+
         $userModel = $this->repository->findById($id);
 
         if (! $userModel) {
