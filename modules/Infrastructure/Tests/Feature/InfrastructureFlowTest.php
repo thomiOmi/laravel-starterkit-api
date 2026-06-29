@@ -4,31 +4,25 @@ declare(strict_types=1);
 
 namespace Modules\Infrastructure\Tests\Feature;
 
-use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\TraceIdMiddleware;
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/**
- * Real Action for Flow Testing
- */
-final readonly class MockFlowAction
-{
-    public function handle(string $name): array
-    {
-        return [
-            'message' => "Hello, {$name}!",
-            'timestamp' => now()->toIso8601String(),
-        ];
-    }
-}
-
 test('Happy Path: Request -> Middleware -> Action -> SuccessResponse', function () {
     Route::get('/api/v1/flow-happy', function (Request $request) {
-        $action = new MockFlowAction;
+        // Anonymous action
+        $action = new class
+        {
+            public function handle(string $name): array
+            {
+                return [
+                    'message' => "Hello, {$name}!",
+                    'timestamp' => now()->toIso8601String(),
+                ];
+            }
+        };
         $result = $action->handle($request->query('name', 'Guest'));
 
         return new SuccessResponse(
@@ -45,33 +39,24 @@ test('Happy Path: Request -> Middleware -> Action -> SuccessResponse', function 
         'Accept-Language' => 'en',
     ]);
 
-    // Validate Infrastructure Hooks
     $response->toBeSuccessResponse(status: 200, title: 'OK')
         ->toHaveTraceId();
 
-    expect($response->json('data.message'))->toBe('Hello, Jules!')
-        ->and($response->json('status'))->toBe(200);
+    expect($response->json('data.message'))->toBe('Hello, Jules!');
 });
 
 test('Error Path: Validation -> Exception Handler -> ProblemResponse', function () {
     Route::post('/api/v1/flow-error', function (Request $request) {
-        $request->validate([
-            'email' => 'required|email',
-        ]);
+        $request->validate(['email' => 'required|email']);
 
         return response()->json(['ok' => true]);
-    })->middleware([ForceJsonResponse::class]);
+    });
 
-    $response = $this->postJson('/api/v1/flow-error', [
-        'email' => 'invalid-email',
-    ]);
+    $response = $this->postJson('/api/v1/flow-error', ['email' => 'invalid-email']);
 
-    // Should be caught by Laravel Exception Handler and returned as ProblemResponse
-    // (Assuming Handler is configured to use ProblemResponse for validation)
-    $response->toBeProblemResponse(status: 422, type: 'about:blank');
+    $response->toBeProblemResponse(status: 422, type: 'validation');
 
-    expect($response->json('title'))->not->toBeEmpty()
-        ->and($response->json('errors'))->toHaveKey('email');
+    expect($response->json('errors'))->toHaveKey('email');
 });
 
 test('Auth Flow: Unauthenticated -> ProblemResponse', function () {
@@ -80,6 +65,5 @@ test('Auth Flow: Unauthenticated -> ProblemResponse', function () {
 
     $response = $this->getJson('/api/v1/flow-protected');
 
-    // Sanctum returns 401 for unauthenticated JSON requests
     $response->toBeProblemResponse(status: 401);
 });

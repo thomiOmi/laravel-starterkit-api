@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Modules\User\Models\User;
+use Pest\Expectation;
 use Tests\TestCase;
 
 /*
@@ -41,12 +42,12 @@ pest()->extend(TestCase::class)
 */
 
 expect()->extend('toBeOne', function () {
-    /** @var \Pest\Expectation<mixed> $this */
+    /** @var Expectation<mixed> $this */
     return $this->toBe(1);
 });
 
 expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $type = null) {
-    /** @var \Pest\Expectation<mixed> $this */
+    /** @var Expectation<mixed> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
@@ -67,7 +68,7 @@ expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $ty
 });
 
 expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $title = null) {
-    /** @var \Pest\Expectation<mixed> $this */
+    /** @var Expectation<mixed> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
@@ -87,7 +88,7 @@ expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $ti
 });
 
 expect()->extend('toBePaginated', function () {
-    /** @var \Pest\Expectation<mixed> $this */
+    /** @var Expectation<mixed> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
@@ -101,7 +102,7 @@ expect()->extend('toBePaginated', function () {
 });
 
 expect()->extend('toHaveTraceId', function () {
-    /** @var \Pest\Expectation<mixed> $this */
+    /** @var Expectation<mixed> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
@@ -112,12 +113,12 @@ expect()->extend('toHaveTraceId', function () {
 });
 
 expect()->extend('toHaveSunsetHeader', function (string $date) {
-    /** @var \Pest\Expectation<mixed> $this */
+    /** @var Expectation<mixed> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
     $response->assertHeader('Sunset');
-    expect($response->headers->get('Sunset'))->toBe((new \DateTimeImmutable($date))->format(\DateTimeInterface::RFC7231));
+    expect($response->headers->get('Sunset'))->toBe((new DateTimeImmutable($date))->format(DateTimeInterface::RFC7231));
 
     return $this;
 });
@@ -136,9 +137,7 @@ expect()->extend('toHaveSunsetHeader', function (string $date) {
 /**
  * Authenticate the given user with Sanctum.
  *
- * @param  \Modules\User\Models\User|null  $user
  * @param  array<int, string>  $abilities
- * @return \Modules\User\Models\User
  */
 function loginAsUser(?User $user = null, array $abilities = ['*']): User
 {
