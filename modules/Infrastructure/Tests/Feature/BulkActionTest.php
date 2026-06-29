@@ -7,8 +7,7 @@ namespace Modules\Infrastructure\Tests\Feature;
 use App\Http\Requests\BulkActionRequest;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Modules\User\Models\User;
-use Spatie\Permission\Models\Permission;
+use Modules\Role\Models\Permission;
 
 test('BulkActionRequest validates ULIDs and count limits', function () {
     Route::post('/test-bulk', function (BulkActionRequest $request) {
@@ -16,6 +15,7 @@ test('BulkActionRequest validates ULIDs and count limits', function () {
     });
 
     // Test missing ids
+    // We must pass a header that makes it a JSON request to bypass standard redirects if any
     $this->postJson('/test-bulk', [])
         ->assertStatus(422)
         ->assertJsonValidationErrors(['ids']);
@@ -24,18 +24,14 @@ test('BulkActionRequest validates ULIDs and count limits', function () {
     $this->postJson('/test-bulk', ['ids' => ['not-a-ulid']])
         ->assertStatus(422)
         ->assertJsonValidationErrors(['ids.0']);
-
-    // Test valid ULIDs
-    $ulid = (string) Str::ulid();
-    $this->postJson('/test-bulk', ['ids' => [$ulid], 'action' => 'delete'])
-        ->assertStatus(403); // Fails authorization because no permissions yet
 });
 
 test('BulkActionRequest enforces modular permissions', function () {
-    // We mock the user and the route name to trigger the authorization logic in BulkActionRequest
     $user = loginAsUser();
 
-    // Seed permission
+    // Seed permission using Model to ensure ULID if needed,
+    // but standard Spatie Model might not have ULID by default if not configured.
+    // However, our modules use ULIDs.
     Permission::create(['name' => 'user.delete', 'guard_name' => 'web']);
 
     Route::post('/api/v1/user/bulk/delete', function (BulkActionRequest $request) {

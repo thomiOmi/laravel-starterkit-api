@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Tests\Feature\Shared;
+
 use Modules\Role\Models\Permission;
 use Modules\Role\Models\Role;
 use Modules\User\Models\User;
@@ -17,17 +19,17 @@ beforeEach(function () {
 describe('List', function () {
     it('users', function () {
         $this->adminGet('/api/v1/users')
-            ->assertJsonStructure(['status', 'title', 'detail', 'data']);
+            ->toBeSuccessResponse();
     });
 
     it('roles', function () {
         $this->adminGet('/api/v1/roles')
-            ->assertJsonStructure(['status', 'title', 'detail', 'data']);
+            ->toBeSuccessResponse();
     });
 
     it('permissions', function () {
         $this->adminGet('/api/v1/permissions')
-            ->assertJsonStructure(['status', 'title', 'detail', 'data']);
+            ->toBeSuccessResponse();
     });
 });
 
@@ -44,7 +46,7 @@ describe('Create', function () {
         $this->adminPost('/api/v1/users', $payload)
             ->assertStatus(Response::HTTP_CREATED);
 
-        $this->assertDatabaseHas('users', ['email' => 'newuser@example.com']);
+        expect(User::where('email', 'newuser@example.com')->exists())->toBeTrue();
     });
 
     it('a role', function () {
@@ -56,7 +58,7 @@ describe('Create', function () {
         $this->adminPost('/api/v1/roles', $payload)
             ->assertStatus(Response::HTTP_CREATED);
 
-        $this->assertDatabaseHas('roles', ['name' => 'manager']);
+        expect(Role::where('name', 'manager')->exists())->toBeTrue();
     });
 
     it('a permission', function () {
@@ -68,7 +70,7 @@ describe('Create', function () {
         $this->adminPost('/api/v1/permissions', $payload)
             ->assertStatus(Response::HTTP_CREATED);
 
-        $this->assertDatabaseHas('permissions', ['name' => 'post.create']);
+        expect(Permission::where('name', 'post.create')->exists())->toBeTrue();
     });
 });
 
@@ -79,7 +81,7 @@ describe('Update', function () {
 
         $this->adminPut("/api/v1/users/{$user->id}", $payload);
 
-        $this->assertDatabaseHas('users', ['id' => $user->id, 'name' => 'Updated Name']);
+        expect($user->fresh()->name)->toBe('Updated Name');
     });
 
     it('a role', function () {
@@ -88,7 +90,7 @@ describe('Update', function () {
 
         $this->adminPut("/api/v1/roles/{$role->id}", $payload);
 
-        $this->assertDatabaseHas('roles', ['id' => $role->id, 'name' => 'new-role-name']);
+        expect($role->fresh()->name)->toBe('new-role-name');
     });
 
     it('a permission', function () {
@@ -97,7 +99,7 @@ describe('Update', function () {
 
         $this->adminPut("/api/v1/permissions/{$permission->id}", $payload);
 
-        $this->assertDatabaseHas('permissions', ['id' => $permission->id, 'name' => 'post.update']);
+        expect($permission->fresh()->name)->toBe('post.update');
     });
 });
 
@@ -108,7 +110,7 @@ describe('Delete', function () {
         $this->adminDelete("/api/v1/users/{$user->id}")
             ->assertStatus(Response::HTTP_NO_CONTENT);
 
-        $this->assertSoftDeleted('users', ['id' => $user->id]);
+        expect($user->fresh()->deleted_at)->not->toBeNull();
     });
 
     it('a role', function () {
@@ -117,7 +119,7 @@ describe('Delete', function () {
         $this->adminDelete("/api/v1/roles/{$role->id}")
             ->assertStatus(Response::HTTP_NO_CONTENT);
 
-        $this->assertSoftDeleted('roles', ['id' => $role->id]);
+        expect($role->fresh()->deleted_at)->not->toBeNull();
     });
 
     it('a permission', function () {
@@ -126,6 +128,6 @@ describe('Delete', function () {
         $this->adminDelete("/api/v1/permissions/{$permission->id}")
             ->assertStatus(Response::HTTP_NO_CONTENT);
 
-        $this->assertSoftDeleted('permissions', ['id' => $permission->id]);
+        expect($permission->fresh()->deleted_at)->not->toBeNull();
     });
 });

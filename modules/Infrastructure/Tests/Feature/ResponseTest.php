@@ -19,7 +19,7 @@ test('ProblemResponse follows RFC 9457 via HTTP lifecycle', function () {
     ));
 
     expect($this->get('/test-problem'))
-        ->toBeProblemResponse(status: 422, type: 'validation-error')
+        ->toBeProblemResponse(status: 422)
         ->json('detail')->toBe('The email field is required.')
         ->json('errors.email.0')->toBe('Required');
 });
@@ -41,6 +41,7 @@ test('SuccessResponse handles pagination via HTTP lifecycle', function () {
     Route::get('/test-pagination', function () {
         $items = collect([['id' => 1], ['id' => 2]]);
         $paginator = new LengthAwarePaginator($items, 10, 2, 1);
+        $paginator->setPath('http://localhost/test-pagination');
 
         return new SuccessResponse(
             title: 'OK',

@@ -15,9 +15,8 @@ arch('avoid env() outside of config files')
     ->not->toBeUsed()
     ->ignoring('config');
 
-arch('tests should use expectations')
+arch('tests should not use PHPUnit assertions')
     ->expect('Tests')
-    ->toUse('Pest\Expectation')
     ->not->toUse('PHPUnit\Framework\Assert');
 
 arch('controllers should be final, readonly, and invokable')

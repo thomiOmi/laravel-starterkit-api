@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Helpers;
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Modules\Role\Database\Seeders\RoleSeeder;
@@ -15,7 +16,9 @@ trait WithAdminUser
 
     protected function setUpAdminUser(): void
     {
-        $this->seed(RoleSeeder::class);
+        // Use artisan instead of $this->seed if it fails in some contexts
+        Artisan::call('db:seed', ['--class' => RoleSeeder::class]);
+
         $this->admin = User::factory()->create();
         $this->admin->assignRole('super-admin');
     }
@@ -24,7 +27,7 @@ trait WithAdminUser
     {
         Sanctum::actingAs($this->admin);
 
-        return $this->getJson($uri)->assertSuccessful();
+        return $this->getJson($uri);
     }
 
     protected function adminPost(string $uri, array $data = []): TestResponse

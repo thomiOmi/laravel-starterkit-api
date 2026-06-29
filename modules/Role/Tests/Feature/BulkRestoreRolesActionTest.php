@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Cache;
+use Mockery;
+
 namespace Modules\Role\Tests\Feature;
 
 use Illuminate\Support\Facades\Cache;
