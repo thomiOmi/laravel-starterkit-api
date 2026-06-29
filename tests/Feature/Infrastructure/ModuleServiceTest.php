@@ -6,14 +6,13 @@ namespace Tests\Feature\Infrastructure;
 
 use Mockery;
 
-test('ModuleService follows abstract contract and supports mocking', function () {
+test('ModuleService supports mocking via anonymous implementation', function () {
     $mockRepository = Mockery::mock('UserRepository');
     $mockRepository->shouldReceive('findById')
         ->once()
         ->with('ulid-123')
         ->andReturn(['id' => 'ulid-123', 'name' => 'John Doe']);
 
-    // Use anonymous class for service
     $service = new class($mockRepository)
     {
         public function __construct(protected mixed $repository) {}

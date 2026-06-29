@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Route;
 
 test('Happy Path: Request -> Middleware -> Action -> SuccessResponse', function () {
     Route::get('/api/v1/flow-happy', function (Request $request) {
-        // Anonymous action
         $action = new class
         {
             public function handle(string $name): array

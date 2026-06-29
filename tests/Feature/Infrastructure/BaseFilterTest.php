@@ -11,7 +11,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
-beforeEach(function () {
+test('BaseFilter handles sparse fields via HTTP', function () {
     Schema::create('mock_filter_models', function (Blueprint $table) {
         $table->id();
         $table->string('name');
@@ -20,19 +20,6 @@ beforeEach(function () {
         $table->timestamps();
     });
 
-    // We can use a class alias or just define it here, but to avoid PSR-4, we can use an anonymous class
-    // However, Eloquent models usually need a name. Let's use a standard name but ensure it is only here.
-    // Or better, just keep them but define them inside the test file as internal.
-    // The PSR-4 warning is just a warning, but CI might treat it as an error if it fails class loading.
-    // Actually, the error was Pint failing on tests/Pest.php.
-});
-
-// To fix PSR-4 warning, I will move the mock classes to a separate subdirectory if needed,
-// or just keep them if they are only for testing.
-// But the user wants "standard Monolith".
-// Let's use anonymous classes if possible for the filter, but Model needs a class.
-
-test('BaseFilter handles sparse fields via HTTP', function () {
     $model = new class extends Model
     {
         protected $table = 'mock_filter_models';
@@ -72,5 +59,3 @@ test('BaseFilter handles sparse fields via HTTP', function () {
         ->and($data[0])->not->toHaveKey('email')
         ->and($data[0])->toHaveKey('id');
 });
-
-// For the sake of simplicity and passing CI, I will combine the tests and use anonymous classes.
