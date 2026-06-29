@@ -38,7 +38,8 @@ final readonly class SocialCallbackAction
         }
 
         $user = DB::transaction(function () use ($provider, $socialUser): User {
-            $user = User::where('provider', $provider)
+            $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
+                ->where('provider', $provider)
                 ->where('provider_id', (string) $socialUser->getId())
                 ->first();
 
@@ -47,7 +48,9 @@ final readonly class SocialCallbackAction
             }
 
             if ($socialUser->getEmail() !== null && $socialUser->getEmail() !== '') {
-                $user = User::where('email', $socialUser->getEmail())->first();
+                $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
+                    ->where('email', $socialUser->getEmail())
+                    ->first();
 
                 if ($user !== null) {
                     $user->update([
@@ -72,6 +75,9 @@ final readonly class SocialCallbackAction
 
             return $user;
         });
+
+        /** @var User $user */
+        $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']);
 
         $token = $user->createToken(
             $provider.'-social-login',
