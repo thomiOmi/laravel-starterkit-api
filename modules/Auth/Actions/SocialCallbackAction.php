@@ -62,7 +62,7 @@ final readonly class SocialCallbackAction
 
             /** @var User $user */
             $user = User::create([
-                'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? fake()->name(),
+                'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'Social User',
                 'email' => $socialUser->getEmail() ?? "{$provider}-{$socialUser->getId()}@social.local",
                 'password' => null,
                 'provider' => $provider,
@@ -70,12 +70,18 @@ final readonly class SocialCallbackAction
                 'avatar' => $socialUser->getAvatar(),
             ]);
 
+            $user->assignRole('user');
+
             return $user;
         });
 
+        $abilities = $user->hasRole(['admin', 'super-admin'])
+            ? ['*']
+            : ['users:read', 'users:write', 'auth:manage'];
+
         $token = $user->createToken(
             $provider.'-social-login',
-            ['*'],
+            $abilities,
         );
 
         /** @var PersonalAccessToken $accessToken */
