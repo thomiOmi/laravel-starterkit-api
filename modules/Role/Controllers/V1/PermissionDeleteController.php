@@ -21,14 +21,14 @@ final readonly class PermissionDeleteController
     /**
      * Remove the specified permission.
      *
-     * @param  string  $permission  The permission ID.
+     * @param  string  $id  The permission ID.
      */
-    public function __invoke(Request $request, string $permission): JsonResponse|ProblemResponse
+    public function __invoke(Request $request, string $id): JsonResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $user */
-        $user = $request->user();
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
 
-        if (! $user->can('permission.delete')) {
+        if (! $currentUser->can('permission.delete')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: SymfonyResponse::HTTP_FORBIDDEN,
@@ -36,7 +36,7 @@ final readonly class PermissionDeleteController
             );
         }
 
-        if ($this->deletePermission->handle($permission)) {
+        if ($this->deletePermission->handle($id)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 

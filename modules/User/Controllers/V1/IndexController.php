@@ -25,7 +25,7 @@ final readonly class IndexController
      */
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if (! $currentUser->can('user.view')) {

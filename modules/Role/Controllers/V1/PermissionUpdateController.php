@@ -21,11 +21,11 @@ final readonly class PermissionUpdateController
      * Update the specified permission.
      *
      * @param  PermissionRequest  $request  The validated permission update request.
-     * @param  string  $permission  The permission ID.
+     * @param  string  $id  The permission ID.
      */
-    public function __invoke(PermissionRequest $request, string $permission): SuccessResponse|ProblemResponse
+    public function __invoke(PermissionRequest $request, string $id): SuccessResponse|ProblemResponse
     {
-        $permission = $this->updatePermission->handle($permission, $request->payload());
+        $permission = $this->updatePermission->handle($id, $request->payload());
 
         if (! $permission) {
             return new ProblemResponse(

@@ -7,7 +7,7 @@ namespace Modules\User\Controllers\V1;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Modules\User\Actions\AssignRolesToUserAction;
-use Modules\User\Models\User;
+use Modules\User\Repositories\UserRepository;
 use Modules\User\Requests\V1\AssignRolesRequest;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,11 +16,12 @@ final readonly class AssignRolesController
 {
     public function __construct(
         private AssignRolesToUserAction $assignRoles,
+        private UserRepository $repository,
     ) {}
 
-    public function __invoke(string $user, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
+    public function __invoke(string $id, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
-        $userModel = User::find($user);
+        $userModel = $this->repository->findById($id);
 
         if (! $userModel) {
             return new ProblemResponse(

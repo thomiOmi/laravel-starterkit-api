@@ -25,10 +25,10 @@ final readonly class IndexController
      */
     public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $user */
-        $user = $request->user();
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
 
-        if (! $user->can('role.view')) {
+        if (! $currentUser->can('role.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,

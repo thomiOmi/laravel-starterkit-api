@@ -21,11 +21,11 @@ final readonly class UpdateController
      * Update the specified user in storage.
      *
      * @param  UserRequest  $request  The validated user update request.
-     * @param  string  $user  The user ID.
+     * @param  string  $id  The user ID.
      */
-    public function __invoke(UserRequest $request, string $user): SuccessResponse|ProblemResponse
+    public function __invoke(UserRequest $request, string $id): SuccessResponse|ProblemResponse
     {
-        $user = $this->updateUser->handle($user, $request->payload());
+        $user = $this->updateUser->handle($id, $request->payload());
 
         if (! $user) {
             return new ProblemResponse(

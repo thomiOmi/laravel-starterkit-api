@@ -21,15 +21,15 @@ final readonly class DeleteController
     /**
      * Remove the specified user from storage.
      *
-     * @param  string  $user  The user ID.
+     * @param  string  $id  The user ID.
      */
-    public function __invoke(Request $request, string $user): JsonResponse|ProblemResponse
+    public function __invoke(Request $request, string $id): JsonResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
-        $id = $currentUser->getKey();
+        $currentUserId = $currentUser->getKey();
 
-        if ((is_string($id) || is_int($id) ? (string) $id : '') === $user) {
+        if ((is_string($currentUserId) || is_int($currentUserId) ? (string) $currentUserId : '') === $id) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -45,7 +45,7 @@ final readonly class DeleteController
             );
         }
 
-        if ($this->deleteUser->handle($user)) {
+        if ($this->deleteUser->handle($id)) {
             return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }
 

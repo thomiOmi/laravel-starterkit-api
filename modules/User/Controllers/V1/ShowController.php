@@ -21,14 +21,16 @@ final readonly class ShowController
 
     /**
      * Display the specified user.
+     *
+     * @param  string  $id  The user ID.
      */
-    public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
-        $id = $currentUser->getKey();
+        $currentUserId = $currentUser->getKey();
 
-        if ((is_string($id) || is_int($id) ? (string) $id : '') !== $user && ! $currentUser->can('user.view')) {
+        if ((is_string($currentUserId) || is_int($currentUserId) ? (string) $currentUserId : '') !== $id && ! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -36,7 +38,7 @@ final readonly class ShowController
             );
         }
 
-        $user = $this->showUser->handle($user);
+        $user = $this->showUser->handle($id);
 
         if (! $user) {
             return new ProblemResponse(

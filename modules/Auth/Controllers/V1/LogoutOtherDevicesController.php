@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\LogoutOtherDevicesAction;
 use Modules\Auth\Requests\V1\LogoutOtherDevicesRequest;
@@ -18,11 +19,11 @@ final readonly class LogoutOtherDevicesController
 
     public function __invoke(LogoutOtherDevicesRequest $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
 
         $this->logoutOtherDevices->handle(
-            $user,
+            $currentUser,
             $request->string('current_password')->toString(),
         );
 
