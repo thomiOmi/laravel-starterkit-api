@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Role\Actions\DeleteRoleAction;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class DeleteController
@@ -24,7 +25,7 @@ final readonly class DeleteController
      */
     public function __invoke(Request $request, string $id): JsonResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if ($currentUser === null) {

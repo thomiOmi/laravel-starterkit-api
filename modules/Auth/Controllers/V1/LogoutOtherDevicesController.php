@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\LogoutOtherDevicesAction;
 use Modules\Auth\Requests\V1\LogoutOtherDevicesRequest;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class LogoutOtherDevicesController
@@ -19,7 +20,7 @@ final readonly class LogoutOtherDevicesController
 
     public function __invoke(LogoutOtherDevicesRequest $request): JsonResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if ($currentUser === null) {

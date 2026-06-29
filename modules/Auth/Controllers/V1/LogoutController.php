@@ -9,6 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\LogoutAction;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class LogoutController
@@ -19,7 +20,7 @@ final readonly class LogoutController
 
     public function __invoke(Request $request): JsonResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if ($currentUser === null) {

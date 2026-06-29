@@ -10,6 +10,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\Role\Actions\UpdateRoleAction;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class UpdateController
@@ -26,7 +27,7 @@ final readonly class UpdateController
      */
     public function __invoke(RoleRequest $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if ($currentUser === null) {

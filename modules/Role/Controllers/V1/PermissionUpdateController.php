@@ -10,6 +10,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\Role\Actions\UpdatePermissionAction;
 use Modules\Role\Requests\V1\PermissionRequest;
 use Modules\Role\Resources\PermissionResource;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class PermissionUpdateController
@@ -26,7 +27,7 @@ final readonly class PermissionUpdateController
      */
     public function __invoke(PermissionRequest $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if ($currentUser === null) {

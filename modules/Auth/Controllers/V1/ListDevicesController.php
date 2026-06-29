@@ -10,6 +10,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\ListDevicesAction;
 use Modules\Auth\Resources\DeviceResource;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class ListDevicesController
@@ -20,7 +21,7 @@ final readonly class ListDevicesController
 
     public function __invoke(Request $request): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if ($currentUser === null) {

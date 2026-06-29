@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\User\Actions\UpdateUserAction;
+use Modules\User\Models\User;
 use Modules\User\Requests\V1\UserRequest;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,7 +27,7 @@ final readonly class UpdateController
      */
     public function __invoke(UserRequest $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&\Modules\User\Models\User)|null $currentUser */
+        /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
 
         if ($currentUser === null) {
