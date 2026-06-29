@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Cache;
-use Mockery;
-
 namespace Modules\User\Tests\Feature;
 
 use Illuminate\Support\Facades\Cache;
+use Mockery;
 use Modules\User\Actions\BulkRestoreUsersAction;
 use Modules\User\Models\User;
 

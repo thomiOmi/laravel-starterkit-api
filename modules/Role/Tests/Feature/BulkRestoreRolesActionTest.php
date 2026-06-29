@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Cache;
-use Mockery;
-
 namespace Modules\Role\Tests\Feature;
 
 use Illuminate\Support\Facades\Cache;
+use Mockery;
 use Modules\Role\Actions\BulkRestoreRolesAction;
 use Modules\Role\Database\Factories\RoleFactory;
 use Modules\Role\Models\Role;

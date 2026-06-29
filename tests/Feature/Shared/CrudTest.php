@@ -18,18 +18,18 @@ beforeEach(function () {
 
 describe('List', function () {
     it('users', function () {
-        $this->adminGet('/api/v1/users')
-            ->toBeSuccessResponse();
+        $response = $this->adminGet('/api/v1/users');
+        expect($response)->toBeSuccessResponse();
     });
 
     it('roles', function () {
-        $this->adminGet('/api/v1/roles')
-            ->toBeSuccessResponse();
+        $response = $this->adminGet('/api/v1/roles');
+        expect($response)->toBeSuccessResponse();
     });
 
     it('permissions', function () {
-        $this->adminGet('/api/v1/permissions')
-            ->toBeSuccessResponse();
+        $response = $this->adminGet('/api/v1/permissions');
+        expect($response)->toBeSuccessResponse();
     });
 });
 
@@ -43,8 +43,8 @@ describe('Create', function () {
             'password_confirmation' => $password,
         ];
 
-        $this->adminPost('/api/v1/users', $payload)
-            ->assertStatus(Response::HTTP_CREATED);
+        $response = $this->adminPost('/api/v1/users', $payload);
+        expect($response->status())->toBe(Response::HTTP_CREATED);
 
         expect(User::where('email', 'newuser@example.com')->exists())->toBeTrue();
     });
@@ -55,8 +55,8 @@ describe('Create', function () {
             'permissions' => ['user.view'],
         ];
 
-        $this->adminPost('/api/v1/roles', $payload)
-            ->assertStatus(Response::HTTP_CREATED);
+        $response = $this->adminPost('/api/v1/roles', $payload);
+        expect($response->status())->toBe(Response::HTTP_CREATED);
 
         expect(Role::where('name', 'manager')->exists())->toBeTrue();
     });
@@ -67,8 +67,8 @@ describe('Create', function () {
             'guard_name' => 'web',
         ];
 
-        $this->adminPost('/api/v1/permissions', $payload)
-            ->assertStatus(Response::HTTP_CREATED);
+        $response = $this->adminPost('/api/v1/permissions', $payload);
+        expect($response->status())->toBe(Response::HTTP_CREATED);
 
         expect(Permission::where('name', 'post.create')->exists())->toBeTrue();
     });
@@ -107,8 +107,8 @@ describe('Delete', function () {
     it('a user', function () {
         $user = User::factory()->create();
 
-        $this->adminDelete("/api/v1/users/{$user->id}")
-            ->assertStatus(Response::HTTP_NO_CONTENT);
+        $response = $this->adminDelete("/api/v1/users/{$user->id}");
+        expect($response->status())->toBe(Response::HTTP_NO_CONTENT);
 
         expect($user->fresh()->deleted_at)->not->toBeNull();
     });
@@ -116,8 +116,8 @@ describe('Delete', function () {
     it('a role', function () {
         $role = Role::create(['name' => 'to-delete', 'guard_name' => 'web']);
 
-        $this->adminDelete("/api/v1/roles/{$role->id}")
-            ->assertStatus(Response::HTTP_NO_CONTENT);
+        $response = $this->adminDelete("/api/v1/roles/{$role->id}");
+        expect($response->status())->toBe(Response::HTTP_NO_CONTENT);
 
         expect($role->fresh()->deleted_at)->not->toBeNull();
     });
@@ -125,8 +125,8 @@ describe('Delete', function () {
     it('a permission', function () {
         $permission = Permission::create(['name' => 'post.delete', 'guard_name' => 'web']);
 
-        $this->adminDelete("/api/v1/permissions/{$permission->id}")
-            ->assertStatus(Response::HTTP_NO_CONTENT);
+        $response = $this->adminDelete("/api/v1/permissions/{$permission->id}");
+        expect($response->status())->toBe(Response::HTTP_NO_CONTENT);
 
         expect($permission->fresh()->deleted_at)->not->toBeNull();
     });
