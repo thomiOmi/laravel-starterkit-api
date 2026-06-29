@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Infrastructure\Tests\Feature;
+namespace Tests\Feature\Infrastructure;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
