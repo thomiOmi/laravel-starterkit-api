@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Auth\Tests\Unit;
+
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Modules\Auth\Actions\ResetPasswordAction;
+use Modules\User\Models\User;
+
+/**
+ * Unit test for ResetPasswordAction.
+ */
+describe('ResetPasswordAction', function () {
+    it('successfully resets user password', function () {
+        $user = User::factory()->create();
+        $token = Password::createToken($user);
+        $action = app(ResetPasswordAction::class);
+
+        $status = $action->handle([
+            'email' => $user->email,
+            'password' => 'new-secure-password',
+            'password_confirmation' => 'new-secure-password',
+            'token' => $token,
+        ]);
+
+        expect($status)->toBe(Password::PASSWORD_RESET);
+        expect(Hash::check('new-secure-password', $user->fresh()->password))->toBeTrue();
+    });
+});

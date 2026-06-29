@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\User\Tests\Unit;
+
+use Modules\User\Actions\UpdateUserAction;
+use Modules\User\Models\User;
+use Modules\User\Payloads\V1\UserPayload;
+
+/**
+ * Unit test for UpdateUserAction.
+ */
+describe('UpdateUserAction', function () {
+    it('successfully updates a user model', function () {
+        $user = User::factory()->create(['name' => 'Old Name']);
+        $payload = new UserPayload(name: 'Updated Name', email: $user->email);
+
+        $action = app(UpdateUserAction::class);
+        $result = $action->handle((string) $user->id, $payload);
+
+        expect($result)->toBeInstanceOf(User::class)
+            ->name->toBe('Updated Name');
+    });
+
+    it('returns null when user is not found', function () {
+        $payload = new UserPayload(name: 'Ghost', email: 'ghost@test.com');
+        $action = app(UpdateUserAction::class);
+
+        $result = $action->handle('non-existent-id', $payload);
+
+        expect($result)->toBeNull();
+    });
+});
