@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Role\Tests\Feature;
 
 use Modules\Role\Models\Permission;
+use Tests\TestCase;
 
 beforeEach(function () {
     $this->admin = loginAsUser();
@@ -17,6 +18,8 @@ beforeEach(function () {
 
 describe('Permission Listing & Filtering', function () {
     it('can list all permissions with pagination', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $response = $this->getJson('/api/v1/permissions');
 
         $response->toBeSuccessResponse()
@@ -24,6 +27,8 @@ describe('Permission Listing & Filtering', function () {
     })->group('v1');
 
     it('can filter permissions by search term', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         Permission::create(['name' => 'post.create', 'guard_name' => 'web']);
 
         $response = $this->getJson('/api/v1/permissions?search=post');
@@ -34,6 +39,8 @@ describe('Permission Listing & Filtering', function () {
 
 describe('Permission Lifecycle', function () {
     it('creates a new permission', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $payload = [
             'name' => 'comment.delete',
             'guard_name' => 'web',
@@ -46,6 +53,8 @@ describe('Permission Lifecycle', function () {
     })->group('v1');
 
     it('shows permission details', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $perm = Permission::create(['name' => 'user.block', 'guard_name' => 'web']);
 
         $response = $this->getJson("/api/v1/permissions/{$perm->id}");
@@ -56,6 +65,8 @@ describe('Permission Lifecycle', function () {
     })->group('v1');
 
     it('updates an existing permission', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $perm = Permission::create(['name' => 'old.perm', 'guard_name' => 'web']);
 
         $response = $this->putJson("/api/v1/permissions/{$perm->id}", [
@@ -67,6 +78,8 @@ describe('Permission Lifecycle', function () {
     })->group('v1');
 
     it('deletes a permission', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $perm = Permission::create(['name' => 'to.delete', 'guard_name' => 'web']);
 
         $response = $this->deleteJson("/api/v1/permissions/{$perm->id}");

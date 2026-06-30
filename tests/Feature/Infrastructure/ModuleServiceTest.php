@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Infrastructure;
 
 use Mockery;
+use Tests\TestCase;
 
 test('ModuleService supports mocking via anonymous implementation', function () {
+    /** @var TestCase $this */
+    /** @var TestCase $this */
     $mockRepository = Mockery::mock('UserRepository');
     $mockRepository->shouldReceive('findById')
         ->once()

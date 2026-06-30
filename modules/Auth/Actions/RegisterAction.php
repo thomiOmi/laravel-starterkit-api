@@ -37,7 +37,7 @@ final readonly class RegisterAction
         ])->save();
 
         return [
-            'user' => $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']),
+            'user' => $user,
             'access_token' => $token->plainTextToken,
             'token_type' => 'Bearer',
         ];

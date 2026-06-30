@@ -37,7 +37,7 @@ expect()->extend('toBeOne', function () {
 });
 
 expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $type = null) {
-    /** @var Expectation<mixed> $this */
+    /** @var Expectation<TestResponse> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
@@ -51,14 +51,16 @@ expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $ty
         ]);
 
     if ($type !== null) {
-        expect($response->json('type'))->toContain($type);
+        /** @var string $typeUrl */
+        $typeUrl = (string) $response->json('type');
+        expect($typeUrl)->toContain($type);
     }
 
     return $this;
 });
 
 expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $title = null) {
-    /** @var Expectation<mixed> $this */
+    /** @var Expectation<TestResponse> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
@@ -78,7 +80,7 @@ expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $ti
 });
 
 expect()->extend('toBePaginated', function () {
-    /** @var Expectation<mixed> $this */
+    /** @var Expectation<TestResponse> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
@@ -92,23 +94,25 @@ expect()->extend('toBePaginated', function () {
 });
 
 expect()->extend('toHaveTraceId', function () {
-    /** @var Expectation<mixed> $this */
+    /** @var Expectation<TestResponse> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
     $response->assertHeader('X-Trace-ID');
-    expect($response->headers->get('X-Trace-ID'))->not->toBeEmpty();
+    $traceId = $response->headers->get('X-Trace-ID');
+    expect($traceId)->not->toBeEmpty();
 
     return $this;
 });
 
 expect()->extend('toHaveSunsetHeader', function (string $date) {
-    /** @var Expectation<mixed> $this */
+    /** @var Expectation<TestResponse> $this */
     /** @var TestResponse $response */
     $response = $this->value;
 
     $response->assertHeader('Sunset');
-    expect($response->headers->get('Sunset'))->toBe((new DateTimeImmutable($date))->format(DateTimeInterface::RFC7231));
+    $sunsetHeader = $response->headers->get('Sunset');
+    expect($sunsetHeader)->toBe((new DateTimeImmutable($date))->format(DateTimeInterface::RFC7231));
 
     return $this;
 });
@@ -122,6 +126,8 @@ expect()->extend('toHaveSunsetHeader', function (string $date) {
 /**
  * Authenticate the given user with Sanctum.
  * By default creates a verified user.
+ *
+ * @param  array<int, string>  $abilities
  */
 function loginAsUser(?User $user = null, array $abilities = ['*']): User
 {
@@ -135,6 +141,8 @@ function loginAsUser(?User $user = null, array $abilities = ['*']): User
 
 /**
  * Authenticate an unverified user with Sanctum.
+ *
+ * @param  array<int, string>  $abilities
  */
 function loginAsUnverifiedUser(?User $user = null, array $abilities = ['*']): User
 {

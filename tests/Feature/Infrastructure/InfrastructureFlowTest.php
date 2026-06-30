@@ -9,8 +9,11 @@ use App\Http\Middleware\TraceIdMiddleware;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
 
 test('Happy Path: Request -> Middleware -> Action -> SuccessResponse', function () {
+    /** @var TestCase $this */
+    /** @var TestCase $this */
     Route::get('/api/v1/flow-happy', function (Request $request) {
         $action = new class
         {
@@ -45,6 +48,8 @@ test('Happy Path: Request -> Middleware -> Action -> SuccessResponse', function 
 });
 
 test('Error Path: Validation -> Exception Handler -> ProblemResponse', function () {
+    /** @var TestCase $this */
+    /** @var TestCase $this */
     Route::post('/api/v1/flow-error', function (Request $request) {
         $request->validate(['email' => 'required|email']);
 
@@ -59,6 +64,8 @@ test('Error Path: Validation -> Exception Handler -> ProblemResponse', function 
 });
 
 test('Auth Flow: Unauthenticated -> ProblemResponse', function () {
+    /** @var TestCase $this */
+    /** @var TestCase $this */
     Route::get('/api/v1/flow-protected', fn () => response()->json(['ok' => true]))
         ->middleware('auth:sanctum');
 

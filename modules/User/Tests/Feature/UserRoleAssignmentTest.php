@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Notification;
 use Modules\User\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 beforeEach(function () {
     Event::fake();
@@ -19,6 +20,8 @@ beforeEach(function () {
 
 describe('User Role Management (SOP)', function () {
     it('allows admin to assign roles to user and verifies database sync', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $admin = loginAsUser();
         $admin->givePermissionTo('user.edit');
 
@@ -39,6 +42,8 @@ describe('User Role Management (SOP)', function () {
     })->group('v1');
 
     it('prevents privilege escalation by unauthorized users', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         loginAsUser(); // Regular user
         $user = User::factory()->create();
         Role::create(['name' => 'admin', 'guard_name' => 'web']);

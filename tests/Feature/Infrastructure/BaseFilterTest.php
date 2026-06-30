@@ -10,8 +10,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Tests\TestCase;
 
 test('BaseFilter handles sparse fields via HTTP', function () {
+    /** @var TestCase $this */
+    /** @var TestCase $this */
     Schema::create('mock_filter_models', function (Blueprint $table) {
         $table->id();
         $table->string('name');

@@ -9,8 +9,10 @@ use App\Http\Middleware\Sunset;
 use App\Http\Middleware\TraceIdMiddleware;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
 
 test('TraceIdMiddleware adds ULID to response and context via HTTP', function () {
+    /** @var TestCase $this */
     Route::get('/test-trace', fn () => response()->json(['ok' => true]))
         ->middleware(TraceIdMiddleware::class);
 
@@ -18,11 +20,12 @@ test('TraceIdMiddleware adds ULID to response and context via HTTP', function ()
 
     expect($response)->toHaveTraceId();
 
-    $traceId = $response->header('X-Trace-ID');
+    $traceId = $response->headers->get('X-Trace-ID');
     expect(Context::get('trace_id'))->toBe($traceId);
 });
 
 test('SunsetMiddleware adds RFC 7231 header via HTTP', function () {
+    /** @var TestCase $this */
     $date = '2025-12-31';
     Route::get('/test-sunset', fn () => response()->json(['ok' => true]))
         ->middleware(Sunset::class.':'.$date);
@@ -33,6 +36,7 @@ test('SunsetMiddleware adds RFC 7231 header via HTTP', function () {
 });
 
 test('SetLocaleMiddleware handles Accept-Language via HTTP', function () {
+    /** @var TestCase $this */
     Route::get('/test-locale', fn () => response()->json(['locale' => app()->getLocale()]))
         ->middleware(SetLocaleMiddleware::class);
 

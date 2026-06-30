@@ -8,8 +8,12 @@ use App\Http\Requests\BulkActionRequest;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Modules\Role\Models\Permission;
+use Modules\User\Models\User;
+use Tests\TestCase;
 
 test('BulkActionRequest validates ULIDs and count limits', function () {
+    /** @var TestCase $this */
+    /** @var TestCase $this */
     Route::post('/test-bulk', function (BulkActionRequest $request) {
         return response()->json(['valid' => true]);
     });
@@ -24,8 +28,9 @@ test('BulkActionRequest validates ULIDs and count limits', function () {
 });
 
 test('BulkActionRequest enforces modular permissions', function () {
-    $user = loginAsUser();
-
+    /** @var TestCase $this */
+    /** @var TestCase $this */
+    $user = loginAsUser(); /** @var User $user */
     Permission::create(['name' => 'user.delete', 'guard_name' => 'web']);
 
     Route::post('/api/v1/user/bulk/delete', function (BulkActionRequest $request) {

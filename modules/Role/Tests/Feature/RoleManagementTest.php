@@ -6,6 +6,7 @@ namespace Modules\Role\Tests\Feature;
 
 use Modules\Role\Models\Permission;
 use Modules\Role\Models\Role;
+use Tests\TestCase;
 
 beforeEach(function () {
     $this->admin = loginAsUser();
@@ -19,6 +20,8 @@ beforeEach(function () {
 
 describe('Role Listing & Filtering', function () {
     it('can list all roles with pagination', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         Role::create(['name' => 'manager', 'guard_name' => 'web']);
 
         $response = $this->getJson('/api/v1/roles');
@@ -30,6 +33,8 @@ describe('Role Listing & Filtering', function () {
     })->group('v1');
 
     it('can filter roles by search term', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         Role::create(['name' => 'editor', 'guard_name' => 'web']);
         Role::create(['name' => 'viewer', 'guard_name' => 'web']);
 
@@ -42,6 +47,8 @@ describe('Role Listing & Filtering', function () {
 
 describe('Role Lifecycle', function () {
     it('creates a new role with permissions', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $perm = Permission::create(['name' => 'post.view', 'guard_name' => 'web']);
 
         $payload = [
@@ -59,6 +66,8 @@ describe('Role Lifecycle', function () {
     })->group('v1');
 
     it('shows role details', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $role = Role::create(['name' => 'support', 'guard_name' => 'web']);
 
         $response = $this->getJson("/api/v1/roles/{$role->id}");
@@ -69,6 +78,8 @@ describe('Role Lifecycle', function () {
     })->group('v1');
 
     it('updates an existing role', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $role = Role::create(['name' => 'old-name', 'guard_name' => 'web']);
 
         $response = $this->putJson("/api/v1/roles/{$role->id}", [
@@ -80,6 +91,8 @@ describe('Role Lifecycle', function () {
     })->group('v1');
 
     it('soft deletes a role', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $role = Role::create(['name' => 'to-be-deleted', 'guard_name' => 'web']);
 
         $response = $this->deleteJson("/api/v1/roles/{$role->id}");

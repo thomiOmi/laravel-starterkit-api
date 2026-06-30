@@ -6,6 +6,7 @@ namespace Modules\Role\Tests\Feature;
 
 use Modules\Role\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Tests\TestCase;
 
 beforeEach(function () {
     $this->admin = loginAsUser();
@@ -16,6 +17,8 @@ beforeEach(function () {
 
 describe('Role Bulk Operations', function () {
     it('can bulk delete roles', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $roles = [
             Role::create(['name' => 'r1', 'guard_name' => 'web']),
             Role::create(['name' => 'r2', 'guard_name' => 'web']),
@@ -31,6 +34,8 @@ describe('Role Bulk Operations', function () {
     })->group('v1');
 
     it('can bulk restore roles', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $roles = [
             Role::create(['name' => 'r1', 'guard_name' => 'web']),
             Role::create(['name' => 'r2', 'guard_name' => 'web']),

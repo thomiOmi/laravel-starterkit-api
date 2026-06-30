@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Notification;
 use Modules\User\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 beforeEach(function () {
     Event::fake();
@@ -20,6 +21,8 @@ beforeEach(function () {
 
 describe('Middleware Guarding (Verified Email)', function () {
     it('denies access to user listing if email is not verified', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $user = User::factory()->create(['email_verified_at' => null]);
         $user->assignRole('admin'); // Even an admin must be verified
 
@@ -29,6 +32,8 @@ describe('Middleware Guarding (Verified Email)', function () {
     })->group('v1');
 
     it('denies access to create user if email is not verified', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $user = User::factory()->create(['email_verified_at' => null]);
 
         $this->actingAs($user)
@@ -39,6 +44,8 @@ describe('Middleware Guarding (Verified Email)', function () {
 
 describe('User Registration & Initial State', function () {
     it('assigns default role and unverified state on registration', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $password = config('auth.default_password');
         $payload = [
             'name' => 'New Customer',
@@ -57,6 +64,8 @@ describe('User Registration & Initial State', function () {
 
 describe('User CRUD & IDOR Protection', function () {
     it('denies access if User A updates User B profile', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $userA = loginAsUser(); // Logged in and verified by helper
         $userB = User::factory()->create(['name' => 'Safe']);
 
@@ -65,6 +74,8 @@ describe('User CRUD & IDOR Protection', function () {
     })->group('v1');
 
     it('prevents self-deletion', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $admin = loginAsUser();
         Permission::create(['name' => 'user.delete', 'guard_name' => 'web']);
         $admin->givePermissionTo('user.delete');

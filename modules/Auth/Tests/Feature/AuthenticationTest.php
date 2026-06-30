@@ -8,6 +8,7 @@ use App\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
 use Modules\User\Models\User;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 beforeEach(function () {
     Notification::fake();
@@ -16,6 +17,8 @@ beforeEach(function () {
 
 describe('Authentication Core (Registration Guarding)', function () {
     it('registers a new user as unverified by default', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $password = config('auth.default_password');
         $payload = [
             'name' => 'Unverified User',
@@ -37,6 +40,8 @@ describe('Authentication Core (Registration Guarding)', function () {
     })->group('v1');
 
     it('logs in a user but remains restricted if unverified', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $password = 'secret';
         $user = User::factory()->create(['password' => $password, 'email_verified_at' => null]);
 
@@ -56,6 +61,8 @@ describe('Authentication Core (Registration Guarding)', function () {
 
 describe('Profile & Session', function () {
     it('gets the current user profile', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $user = loginAsUser();
 
         $this->getJson('/api/v1/auth/me')
@@ -64,6 +71,8 @@ describe('Profile & Session', function () {
     })->group('v1');
 
     it('logs out successfully', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $user = loginAsUser();
         $this->postJson('/api/v1/auth/logout')->toBeSuccessResponse();
     })->group('v1');

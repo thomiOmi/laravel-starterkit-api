@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Modules\User\Models\User;
 use Spatie\Permission\Models\Permission;
+use Tests\TestCase;
 
 beforeEach(function () {
     Event::fake();
@@ -19,6 +20,8 @@ beforeEach(function () {
 
 describe('User Bulk Operations (SOP)', function () {
     it('allows authorized admin to bulk delete users', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $admin = loginAsUser();
         $admin->givePermissionTo('user.delete');
         $users = User::factory()->count(2)->create();
@@ -33,6 +36,8 @@ describe('User Bulk Operations (SOP)', function () {
     })->group('v1');
 
     it('denies bulk delete for regular users without permission', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         loginAsUser(); // No permissions
         $users = User::factory()->count(2)->create();
 
@@ -41,6 +46,8 @@ describe('User Bulk Operations (SOP)', function () {
     })->group('v1');
 
     it('allows authorized admin to bulk restore users', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $admin = loginAsUser();
         $admin->givePermissionTo('user.edit');
         $users = User::factory()->count(2)->create();

@@ -10,6 +10,7 @@ use Mockery;
 use Modules\User\Models\User;
 use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Tests\TestCase;
 
 beforeEach(function () {
     Role::create(['name' => 'user', 'guard_name' => 'web']);
@@ -17,6 +18,8 @@ beforeEach(function () {
 
 describe('Social Authentication (SOP Registration)', function () {
     it('redirects to the provider authorization page', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         Socialite::shouldReceive('driver')->with('google')->andReturn(
             Mockery::mock('Laravel\Socialite\Two\AbstractProvider')
                 ->shouldReceive('redirect')->andReturn(new RedirectResponse('https://google.com/auth'))
@@ -28,6 +31,8 @@ describe('Social Authentication (SOP Registration)', function () {
     })->group('v1');
 
     it('creates a new user via provider callback with correct linkage', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $mockSocialUser = (new SocialiteUser)->map([
             'id' => 'social-123',
             'nickname' => 'johndoe',

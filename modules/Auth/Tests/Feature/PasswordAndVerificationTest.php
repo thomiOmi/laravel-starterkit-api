@@ -9,9 +9,12 @@ use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Modules\User\Models\User;
+use Tests\TestCase;
 
 describe('Password Management', function () {
     it('requests a password reset link', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         Notification::fake();
         $user = User::factory()->create();
 
@@ -24,6 +27,8 @@ describe('Password Management', function () {
 
 describe('Email Verification Lifecycle (SOP)', function () {
     it('completes the full verification lifecycle', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         Notification::fake();
         // 1. Registration state
         $user = User::factory()->create(['email_verified_at' => null]);
@@ -65,6 +70,8 @@ describe('Email Verification Lifecycle (SOP)', function () {
     })->group('v1');
 
     it('denies verification if User ID is manipulated in the URL', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $userA = User::factory()->create(['email_verified_at' => null]);
         $userB = User::factory()->create(['email_verified_at' => null]);
 
@@ -83,6 +90,8 @@ describe('Email Verification Lifecycle (SOP)', function () {
     })->group('v1');
 
     it('denies verification if the signed link is expired', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $user = User::factory()->create(['email_verified_at' => null]);
 
         $url = URL::temporarySignedRoute(

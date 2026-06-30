@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Tests\Feature;
 
+use Tests\TestCase;
+
 describe('Device Management', function () {
     it('lists active devices', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $user = loginAsUser();
 
         $this->getJson('/api/v1/auth/devices')
@@ -14,6 +18,8 @@ describe('Device Management', function () {
     })->group('v1');
 
     it('logs out from another device', function () {
+        /** @var TestCase $this */
+        /** @var TestCase $this */
         $user = loginAsUser();
         $token = $user->createToken('other');
         $id = (string) $token->accessToken->id;

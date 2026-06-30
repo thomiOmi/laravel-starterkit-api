@@ -8,8 +8,10 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Route;
+use Tests\TestCase;
 
 test('ProblemResponse follows RFC 9457 via HTTP lifecycle', function () {
+    /** @var TestCase $this */
     Route::get('/test-problem', fn () => new ProblemResponse(
         title: 'Validation Failed',
         status: 422,
@@ -25,6 +27,7 @@ test('ProblemResponse follows RFC 9457 via HTTP lifecycle', function () {
 });
 
 test('SuccessResponse follows standardized schema via HTTP lifecycle', function () {
+    /** @var TestCase $this */
     Route::get('/test-success', fn () => new SuccessResponse(
         title: 'OK',
         detail: 'Operation successful.',
@@ -38,6 +41,7 @@ test('SuccessResponse follows standardized schema via HTTP lifecycle', function 
 });
 
 test('SuccessResponse handles pagination via HTTP lifecycle', function () {
+    /** @var TestCase $this */
     Route::get('/test-pagination', function () {
         $items = collect([['id' => 1], ['id' => 2]]);
         $paginator = new LengthAwarePaginator($items, 10, 2, 1);
