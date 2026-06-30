@@ -96,7 +96,7 @@ final readonly class SocialCallbackAction
         ])->save();
 
         return [
-            'user' => $user,
+            'user' => $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']),
             'access_token' => $token->plainTextToken,
             'token_type' => 'Bearer',
         ];
