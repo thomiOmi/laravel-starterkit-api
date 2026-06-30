@@ -24,7 +24,9 @@ final readonly class LoginAction
     public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
         /** @var User|null $user */
-        $user = User::where('email', $payload->email)->first();
+        $user = User::where('email', $payload->email)
+            ->with(['roles.permissions:id,name', 'permissions:id,name'])
+            ->first();
 
         if (! $user || ! is_string($user->password) || ! $this->hasher->check($payload->password, $user->password)) {
             throw ValidationException::withMessages([
