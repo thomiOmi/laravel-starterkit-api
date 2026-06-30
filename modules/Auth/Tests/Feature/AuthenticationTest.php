@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Tests\Feature;
 
+use App\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
 use Modules\User\Models\User;
 use Spatie\Permission\Models\Role;
@@ -32,7 +33,7 @@ describe('Authentication Core (Registration Guarding)', function () {
             ->and($user->hasVerifiedEmail())->toBeFalse();
 
         // Check verification notification was sent
-        Notification::assertSentTo($user, \App\Notifications\VerifyEmail::class);
+        Notification::assertSentTo($user, VerifyEmail::class);
     })->group('v1');
 
     it('logs in a user but remains restricted if unverified', function () {

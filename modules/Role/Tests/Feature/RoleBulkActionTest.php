@@ -18,7 +18,7 @@ describe('Role Bulk Operations', function () {
     it('can bulk delete roles', function () {
         $roles = [
             Role::create(['name' => 'r1', 'guard_name' => 'web']),
-            Role::create(['name' => 'r2', 'guard_name' => 'web'])
+            Role::create(['name' => 'r2', 'guard_name' => 'web']),
         ];
         $ids = collect($roles)->pluck('id')->toArray();
 
@@ -33,7 +33,7 @@ describe('Role Bulk Operations', function () {
     it('can bulk restore roles', function () {
         $roles = [
             Role::create(['name' => 'r1', 'guard_name' => 'web']),
-            Role::create(['name' => 'r2', 'guard_name' => 'web'])
+            Role::create(['name' => 'r2', 'guard_name' => 'web']),
         ];
         $ids = collect($roles)->pluck('id')->toArray();
         Role::whereIn('id', $ids)->delete();

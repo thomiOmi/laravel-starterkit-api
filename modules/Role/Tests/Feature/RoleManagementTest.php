@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Role\Tests\Feature;
 
-use Modules\Role\Models\Role;
 use Modules\Role\Models\Permission;
+use Modules\Role\Models\Role;
 
 beforeEach(function () {
     $this->admin = loginAsUser();
@@ -47,7 +47,7 @@ describe('Role Lifecycle', function () {
         $payload = [
             'name' => 'author',
             'guard_name' => 'web',
-            'permissions' => [$perm->name]
+            'permissions' => [$perm->name],
         ];
 
         $response = $this->postJson('/api/v1/roles', $payload);
@@ -72,7 +72,7 @@ describe('Role Lifecycle', function () {
         $role = Role::create(['name' => 'old-name', 'guard_name' => 'web']);
 
         $response = $this->putJson("/api/v1/roles/{$role->id}", [
-            'name' => 'new-name'
+            'name' => 'new-name',
         ]);
 
         $response->toBeSuccessResponse();

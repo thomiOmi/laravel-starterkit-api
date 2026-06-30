@@ -36,7 +36,7 @@ describe('Permission Lifecycle', function () {
     it('creates a new permission', function () {
         $payload = [
             'name' => 'comment.delete',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ];
 
         $response = $this->postJson('/api/v1/permissions', $payload);
@@ -59,7 +59,7 @@ describe('Permission Lifecycle', function () {
         $perm = Permission::create(['name' => 'old.perm', 'guard_name' => 'web']);
 
         $response = $this->putJson("/api/v1/permissions/{$perm->id}", [
-            'name' => 'new.perm'
+            'name' => 'new.perm',
         ]);
 
         $response->toBeSuccessResponse();

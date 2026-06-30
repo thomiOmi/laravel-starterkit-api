@@ -36,6 +36,7 @@ describe('Email Verification Lifecycle (SOP)', function () {
 
         Notification::assertSentTo($user, VerifyEmail::class, function ($notification, $channels) use ($user) {
             $url = $notification->toMail($user)->actionUrl;
+
             return str_contains($url, "/api/v1/auth/email/verify/{$user->id}");
         });
 
