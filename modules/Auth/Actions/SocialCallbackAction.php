@@ -62,7 +62,7 @@ final readonly class SocialCallbackAction
 
             /** @var User $user */
             $user = User::create([
-                'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? fake()->name(),
+                'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'Social User',
                 'email' => $socialUser->getEmail() ?? "{$provider}-{$socialUser->getId()}@social.local",
                 'password' => null,
                 'provider' => $provider,
