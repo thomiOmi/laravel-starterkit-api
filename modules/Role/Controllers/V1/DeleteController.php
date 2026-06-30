@@ -21,14 +21,22 @@ final readonly class DeleteController
     /**
      * Remove the specified role from storage.
      *
-     * @param  string  $role  The role ID.
+     * @param  string  $id  The role ID.
      */
-    public function __invoke(Request $request, string $role): JsonResponse|ProblemResponse
+    public function __invoke(Request $request, string $id): JsonResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $user */
-        $user = $request->user();
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
 
-        if (! $user->can('role.delete')) {
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: SymfonyResponse::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
+
+        if (! $currentUser->can('role.delete')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: SymfonyResponse::HTTP_FORBIDDEN,
@@ -36,7 +44,7 @@ final readonly class DeleteController
             );
         }
 
-        if ($this->deleteRole->handle($role)) {
+        if ($this->deleteRole->handle($id)) {
             return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
         }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\DeleteDeviceAction;
@@ -16,12 +18,20 @@ final readonly class DeleteDeviceController
         private DeleteDeviceAction $deleteDevice
     ) {}
 
-    public function __invoke(Request $request, string $device): JsonResponse
+    public function __invoke(Request $request, string $device): JsonResponse|ProblemResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
 
-        $this->deleteDevice->handle($user, $device);
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: SymfonyResponse::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
+
+        $this->deleteDevice->handle($currentUser, $device);
 
         return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
     }

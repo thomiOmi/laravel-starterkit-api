@@ -21,13 +21,23 @@ final readonly class PermissionShowController
 
     /**
      * Display the specified permission.
+     *
+     * @param  string  $id  The permission ID.
      */
-    public function __invoke(Request $request, string $permission): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $user */
-        $user = $request->user();
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
 
-        if (! $user->can('permission.view')) {
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
+
+        if (! $currentUser->can('permission.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -35,7 +45,7 @@ final readonly class PermissionShowController
             );
         }
 
-        $permission = $this->showPermission->handle($permission);
+        $permission = $this->showPermission->handle($id);
 
         if ($permission === null) {
             return new ProblemResponse(
