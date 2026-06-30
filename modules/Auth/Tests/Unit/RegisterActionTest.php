@@ -5,6 +5,11 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Hash;
 use Modules\Auth\Actions\RegisterAction;
 use Modules\Auth\Payloads\V1\RegisterPayload;
+use Modules\Role\Database\Seeders\RoleSeeder;
+
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+});
 
 it('creates a new user', function () {
     $action = app(RegisterAction::class);
