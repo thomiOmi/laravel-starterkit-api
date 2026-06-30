@@ -6,9 +6,11 @@ namespace Modules\Role\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\Role\Actions\UpdateRoleAction;
 use Modules\Role\Requests\V1\RoleRequest;
 use Modules\Role\Resources\RoleResource;
+use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class UpdateController
@@ -21,11 +23,22 @@ final readonly class UpdateController
      * Update the specified role in storage.
      *
      * @param  RoleRequest  $request  The validated role update request.
-     * @param  string  $role  The role ID.
+     * @param  string  $id  The role ID.
      */
-    public function __invoke(RoleRequest $request, string $role): SuccessResponse|ProblemResponse
+    public function __invoke(RoleRequest $request, string $id): SuccessResponse|ProblemResponse
     {
-        $role = $this->updateRole->handle($role, $request->payload());
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
+
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
+
+        $role = $this->updateRole->handle($id, $request->payload());
 
         if (! $role) {
             return new ProblemResponse(

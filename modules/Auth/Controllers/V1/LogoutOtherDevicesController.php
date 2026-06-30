@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Controllers\V1;
 
+use App\Http\Responses\ProblemResponse;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\LogoutOtherDevicesAction;
 use Modules\Auth\Requests\V1\LogoutOtherDevicesRequest;
@@ -16,13 +18,21 @@ final readonly class LogoutOtherDevicesController
         private LogoutOtherDevicesAction $logoutOtherDevices
     ) {}
 
-    public function __invoke(LogoutOtherDevicesRequest $request): JsonResponse
+    public function __invoke(LogoutOtherDevicesRequest $request): JsonResponse|ProblemResponse
     {
-        /** @var User $user */
-        $user = $request->user();
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
+
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: SymfonyResponse::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
 
         $this->logoutOtherDevices->handle(
-            $user,
+            $currentUser,
             $request->string('current_password')->toString(),
         );
 

@@ -21,6 +21,8 @@ final readonly class RegisterAction
             'password' => $payload->password,
         ]);
 
+        $user->assignRole('user');
+
         $token = $user->createToken(
             $payload->deviceName ?? $userAgent ?? 'register_token',
             ['users:read', 'users:write', 'auth:manage'],
@@ -35,7 +37,7 @@ final readonly class RegisterAction
         ])->save();
 
         return [
-            'user' => $user,
+            'user' => $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']),
             'access_token' => $token->plainTextToken,
             'token_type' => 'Bearer',
         ];

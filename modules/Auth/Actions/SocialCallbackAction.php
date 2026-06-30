@@ -38,7 +38,8 @@ final readonly class SocialCallbackAction
         }
 
         $user = DB::transaction(function () use ($provider, $socialUser): User {
-            $user = User::where('provider', $provider)
+            $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
+                ->where('provider', $provider)
                 ->where('provider_id', (string) $socialUser->getId())
                 ->first();
 
@@ -47,7 +48,9 @@ final readonly class SocialCallbackAction
             }
 
             if ($socialUser->getEmail() !== null && $socialUser->getEmail() !== '') {
-                $user = User::where('email', $socialUser->getEmail())->first();
+                $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
+                    ->where('email', $socialUser->getEmail())
+                    ->first();
 
                 if ($user !== null) {
                     $user->update([
@@ -62,7 +65,7 @@ final readonly class SocialCallbackAction
 
             /** @var User $user */
             $user = User::create([
-                'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? fake()->name(),
+                'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'Social User',
                 'email' => $socialUser->getEmail() ?? "{$provider}-{$socialUser->getId()}@social.local",
                 'password' => null,
                 'provider' => $provider,
@@ -70,12 +73,18 @@ final readonly class SocialCallbackAction
                 'avatar' => $socialUser->getAvatar(),
             ]);
 
+            $user->assignRole('user');
+
             return $user;
         });
 
+        $abilities = $user->hasRole(['admin', 'super-admin'])
+            ? ['*']
+            : ['users:read', 'users:write', 'auth:manage'];
+
         $token = $user->createToken(
             $provider.'-social-login',
-            ['*'],
+            $abilities,
         );
 
         /** @var PersonalAccessToken $accessToken */
@@ -87,7 +96,7 @@ final readonly class SocialCallbackAction
         ])->save();
 
         return [
-            'user' => $user,
+            'user' => $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']),
             'access_token' => $token->plainTextToken,
             'token_type' => 'Bearer',
         ];
