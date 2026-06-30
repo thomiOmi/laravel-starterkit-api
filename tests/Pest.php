@@ -121,11 +121,25 @@ expect()->extend('toHaveSunsetHeader', function (string $date) {
 
 /**
  * Authenticate the given user with Sanctum.
+ * By default creates a verified user.
  */
 function loginAsUser(?User $user = null, array $abilities = ['*']): User
 {
     /** @var User $authenticatedUser */
-    $authenticatedUser = $user ?? User::factory()->create();
+    $authenticatedUser = $user ?? User::factory()->create(['email_verified_at' => now()]);
+
+    Sanctum::actingAs($authenticatedUser, $abilities);
+
+    return $authenticatedUser;
+}
+
+/**
+ * Authenticate an unverified user with Sanctum.
+ */
+function loginAsUnverifiedUser(?User $user = null, array $abilities = ['*']): User
+{
+    /** @var User $authenticatedUser */
+    $authenticatedUser = $user ?? User::factory()->create(['email_verified_at' => null]);
 
     Sanctum::actingAs($authenticatedUser, $abilities);
 
