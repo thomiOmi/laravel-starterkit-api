@@ -15,38 +15,44 @@ beforeEach(function () {
     Role::create(['name' => 'user', 'guard_name' => 'web']);
 });
 
-describe('Social Authentication', function () {
-    it('redirects to provider', function () {
-        Socialite::shouldReceive('driver')->with('github')->andReturn(
+describe('Social Authentication (SOP Registration)', function () {
+    it('redirects to the provider authorization page', function () {
+        Socialite::shouldReceive('driver')->with('google')->andReturn(
             Mockery::mock('Laravel\Socialite\Two\AbstractProvider')
-                ->shouldReceive('redirect')->andReturn(new RedirectResponse('https://github.com/auth'))
+                ->shouldReceive('redirect')->andReturn(new RedirectResponse('https://google.com/auth'))
                 ->getMock()
         );
 
-        $this->getJson('/api/v1/auth/social/github/redirect')
-            ->assertRedirect('https://github.com/auth');
+        $this->getJson('/api/v1/auth/social/google/redirect')
+            ->assertRedirect('https://google.com/auth');
     })->group('v1');
 
-    it('authenticates via callback', function () {
-        $mockUser = (new SocialiteUser)->map([
-            'id' => '123',
-            'nickname' => 'jules',
-            'name' => 'Jules',
-            'email' => 'jules@social.com',
-            'avatar' => 'https://example.com/avatar.jpg',
+    it('creates a new user via provider callback with correct linkage', function () {
+        $mockSocialUser = (new SocialiteUser)->map([
+            'id' => 'social-123',
+            'nickname' => 'johndoe',
+            'name' => 'John Doe',
+            'email' => 'john@social.com',
+            'avatar' => 'https://social.com/avatar.jpg',
         ]);
 
-        Socialite::shouldReceive('driver')->with('github')->andReturn(
+        Socialite::shouldReceive('driver')->with('google')->andReturn(
             Mockery::mock('Laravel\Socialite\Two\AbstractProvider')
                 ->shouldReceive('stateless')->andReturnSelf()
-                ->shouldReceive('user')->andReturn($mockUser)
+                ->shouldReceive('user')->andReturn($mockSocialUser)
                 ->getMock()
         );
 
-        $this->getJson('/api/v1/auth/social/github/callback')
-            ->toBeSuccessResponse()
-            ->assertJsonPath('data.user.email', 'jules@social.com');
+        $response = $this->getJson('/api/v1/auth/social/google/callback');
 
-        expect(User::where('provider_id', '123')->exists())->toBeTrue();
+        $response->toBeSuccessResponse()
+            ->assertJsonMissing(['password']) // SOP: No leakage
+            ->assertJsonPath('data.user.email', 'john@social.com');
+
+        $user = User::where('email', 'john@social.com')->first();
+        expect($user->provider)->toBe('google')
+            ->and($user->provider_id)->toBe('social-123')
+            ->and($user->avatar)->toBe('https://social.com/avatar.jpg')
+            ->and($user->password)->toBeNull();
     })->group('v1');
 });

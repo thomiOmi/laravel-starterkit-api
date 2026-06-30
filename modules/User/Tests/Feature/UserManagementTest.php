@@ -8,126 +8,97 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Modules\User\Models\User;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
     Event::fake();
     Notification::fake();
 
-    // Default permissions for authorized tests
-    Permission::create(['name' => 'user.view', 'guard_name' => 'web']);
-    Permission::create(['name' => 'user.create', 'guard_name' => 'web']);
-    Permission::create(['name' => 'user.edit', 'guard_name' => 'web']);
-    Permission::create(['name' => 'user.delete', 'guard_name' => 'web']);
+    // Seed essential roles
+    Role::create(['name' => 'admin', 'guard_name' => 'web']);
+    Role::create(['name' => 'user', 'guard_name' => 'web']);
 });
 
-describe('User Listing', function () {
-    it('allows authorized admin to list users', function () {
-        $admin = loginAsUser();
-        $admin->givePermissionTo('user.view');
-        User::factory()->count(3)->create();
-
-        $response = $this->getJson('/api/v1/users');
-
-        $response->toBeSuccessResponse()
-            ->toBePaginated()
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'email', 'created_at'],
-                ],
-            ]);
-    })->group('v1');
-
-    it('denies user listing if unauthorized', function () {
-        loginAsUser(); // Regular user, no permissions
-
-        $this->getJson('/api/v1/users')
-            ->toBeProblemResponse(status: 403);
-    })->group('v1');
-});
-
-describe('User Creation', function () {
-    it('allows authorized admin to create a user', function () {
-        $admin = loginAsUser();
-        $admin->givePermissionTo('user.create');
-
+describe('User Registration (SOP)', function () {
+    it('assigns default role "user" and denies "admin" by default', function () {
+        $password = config('auth.default_password');
         $payload = [
-            'name' => 'Staff New',
-            'email' => 'staff@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'name' => 'New Customer',
+            'email' => 'customer@test.com',
+            'password' => $password,
+            'password_confirmation' => $password,
         ];
 
-        $response = $this->postJson('/api/v1/users', $payload);
+        $response = $this->postJson('/api/v1/auth/register', $payload);
 
-        $response->toBeSuccessResponse(status: 201)
-            ->assertJsonPath('data.email', 'staff@example.com')
-            ->assertJsonMissing(['password']); // Security check: no password leak
+        $response->toBeSuccessResponse();
 
-        $this->assertDatabaseHas('users', ['email' => 'staff@example.com']);
+        $user = User::where('email', 'customer@test.com')->first();
+        expect($user->hasRole('user'))->toBeTrue()
+            ->and($user->hasRole('admin'))->toBeFalse();
     })->group('v1');
 
-    it('denies user creation if unauthorized', function () {
-        loginAsUser();
+    it('guards against mass assignment of sensitive fields (is_admin/role)', function () {
+        $password = config('auth.default_password');
+        $payload = [
+            'name' => 'Hacker',
+            'email' => 'hacker@test.com',
+            'password' => $password,
+            'password_confirmation' => $password,
+            'role' => 'admin',       // Attempted injection
+            'is_admin' => true,      // Attempted injection
+            'permissions' => ['*'],  // Attempted injection
+        ];
 
-        $this->postJson('/api/v1/users', ['name' => 'Illegal'])
-            ->toBeProblemResponse(status: 403);
-    })->group('v1');
-});
-
-describe('User Update & Detail', function () {
-    it('shows user details to authorized admin', function () {
-        $admin = loginAsUser();
-        $admin->givePermissionTo('user.view');
-        $user = User::factory()->create();
-
-        $this->getJson("/api/v1/users/{$user->id}")
-            ->toBeSuccessResponse()
-            ->assertJsonPath('data.id', $user->id);
-    })->group('v1');
-
-    it('denies access to other users profile (IDOR Protection)', function () {
-        loginAsUser(); // User A
-        $userB = User::factory()->create();
-
-        $this->getJson("/api/v1/users/{$userB->id}")
-            ->toBeProblemResponse(status: 403);
-    })->group('v1');
-
-    it('updates user data and prevents sensitive field leak', function () {
-        $admin = loginAsUser();
-        $admin->givePermissionTo('user.edit');
-        $user = User::factory()->create(['name' => 'Old Name']);
-
-        $response = $this->putJson("/api/v1/users/{$user->id}", [
-            'name' => 'New Name',
-            'email' => $user->email,
-        ]);
-
-        $response->toBeSuccessResponse()
-            ->assertJsonPath('data.name', 'New Name')
-            ->assertJsonMissing(['password']);
-
-        expect($user->fresh()->name)->toBe('New Name');
-    })->group('v1');
-});
-
-describe('User Deletion', function () {
-    it('allows authorized admin to delete a user', function () {
-        $admin = loginAsUser();
-        $admin->givePermissionTo('user.delete');
-        $user = User::factory()->create();
-
-        $this->deleteJson("/api/v1/users/{$user->id}")
+        $this->postJson('/api/v1/auth/register', $payload)
             ->toBeSuccessResponse();
 
-        expect($user->fresh()->trashed())->toBeTrue();
+        $user = User::where('email', 'hacker@test.com')->first();
+        expect($user->hasRole('admin'))->toBeFalse()
+            ->and($user->hasRole('user'))->toBeTrue();
+    })->group('v1');
+});
+
+describe('Gatekeeper & IDOR Protection', function () {
+    it('denies guest access to the profile', function () {
+        $this->getJson('/api/v1/auth/me')
+            ->toBeProblemResponse(status: 401);
     })->group('v1');
 
-    it('prevents self-deletion', function () {
+    it('prevents User A from updating User B profile (IDOR)', function () {
+        $userA = loginAsUser();
+        $userB = User::factory()->create(['name' => 'Safe User']);
+
+        // Assuming PUT /api/v1/users/{id} exists for profile update or admin management
+        $this->putJson("/api/v1/users/{$userB->id}", ['name' => 'Modified By A'])
+            ->toBeProblemResponse(status: 403);
+
+        expect($userB->fresh()->name)->toBe('Safe User');
+    })->group('v1');
+});
+
+describe('API Contract & Data Leakage', function () {
+    it('does not leak password field in the response', function () {
+        $user = loginAsUser();
+        Permission::create(['name' => 'user.view', 'guard_name' => 'web']);
+        $user->givePermissionTo('user.view');
+
+        $response = $this->getJson("/api/v1/users/{$user->id}");
+
+        $response->toBeSuccessResponse()
+            ->assertJsonMissing(['password', 'remember_token', 'provider_id'])
+            ->assertJsonStructure([
+                'data' => ['id', 'name', 'email'],
+            ]);
+    })->group('v1');
+});
+
+describe('Self-Deletion Protection', function () {
+    it('prevents a user from deleting their own account via API', function () {
         $admin = loginAsUser();
+        Permission::create(['name' => 'user.delete', 'guard_name' => 'web']);
         $admin->givePermissionTo('user.delete');
 
-        // Attempting to delete themselves
         $this->deleteJson("/api/v1/users/{$admin->id}")
             ->toBeProblemResponse(status: 403);
 

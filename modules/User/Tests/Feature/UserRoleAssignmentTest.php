@@ -17,19 +17,17 @@ beforeEach(function () {
     Permission::create(['name' => 'user.edit', 'guard_name' => 'web']);
 });
 
-describe('User Role Assignment', function () {
-    it('allows authorized admin to assign roles to a user', function () {
+describe('User Role Management (SOP)', function () {
+    it('allows admin to assign roles to user and verifies database sync', function () {
         $admin = loginAsUser();
         $admin->givePermissionTo('user.edit');
 
         $user = User::factory()->create();
         $role = Role::create(['name' => 'editor', 'guard_name' => 'web']);
 
-        $response = $this->putJson("/api/v1/users/{$user->id}/roles", [
+        $this->putJson("/api/v1/users/{$user->id}/roles", [
             'roles' => ['editor'],
-        ]);
-
-        $response->toBeSuccessResponse();
+        ])->toBeSuccessResponse();
 
         $this->assertDatabaseHas('model_has_roles', [
             'role_id' => $role->id,
@@ -40,7 +38,7 @@ describe('User Role Assignment', function () {
         expect($user->fresh()->hasRole('editor'))->toBeTrue();
     })->group('v1');
 
-    it('denies role assignment for unauthorized users (Privilege Escalation Protection)', function () {
+    it('prevents privilege escalation by unauthorized users', function () {
         loginAsUser(); // Regular user
         $user = User::factory()->create();
         Role::create(['name' => 'admin', 'guard_name' => 'web']);
