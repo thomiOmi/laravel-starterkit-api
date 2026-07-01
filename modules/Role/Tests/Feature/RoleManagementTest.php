@@ -10,10 +10,10 @@ use Modules\Role\Models\Role;
 beforeEach(function () {
     $this->admin = loginAsUser();
     // Ensure admin has required permissions
-    Permission::create(['name' => 'role.view', 'guard_name' => 'web']);
-    Permission::create(['name' => 'role.create', 'guard_name' => 'web']);
-    Permission::create(['name' => 'role.edit', 'guard_name' => 'web']);
-    Permission::create(['name' => 'role.delete', 'guard_name' => 'web']);
+    Permission::create(['name' => 'role.view', 'guard_name' => 'sanctum']);
+    Permission::create(['name' => 'role.create', 'guard_name' => 'sanctum']);
+    Permission::create(['name' => 'role.edit', 'guard_name' => 'sanctum']);
+    Permission::create(['name' => 'role.delete', 'guard_name' => 'sanctum']);
     $this->admin->givePermissionTo(['role.view', 'role.create', 'role.edit', 'role.delete']);
 });
 
@@ -23,7 +23,7 @@ describe('Role Listing & Filtering', function () {
 
         $response = $this->getJson('/api/v1/roles');
 
-        $response->toBeSuccessResponse()
+        expect($response)->toBeSuccessResponse()
             ->toBePaginated();
 
         expect(collect($response->json('data'))->pluck('name'))->toContain('manager');
@@ -42,17 +42,16 @@ describe('Role Listing & Filtering', function () {
 
 describe('Role Lifecycle', function () {
     it('creates a new role with permissions', function () {
-        $perm = Permission::create(['name' => 'post.view', 'guard_name' => 'web']);
+        $perm = Permission::create(['name' => 'post.view', 'guard_name' => 'sanctum']);
 
         $payload = [
             'name' => 'author',
-            'guard_name' => 'web',
             'permissions' => [$perm->name],
         ];
 
         $response = $this->postJson('/api/v1/roles', $payload);
 
-        $response->toBeSuccessResponse(status: 201);
+        expect($response)->toBeSuccessResponse(status: 201);
 
         expect(Role::where('name', 'author')->exists())->toBeTrue()
             ->and(Role::findByName('author')->hasPermissionTo('post.view'))->toBeTrue();
@@ -63,7 +62,7 @@ describe('Role Lifecycle', function () {
 
         $response = $this->getJson("/api/v1/roles/{$role->id}");
 
-        $response->toBeSuccessResponse()
+        expect($response)->toBeSuccessResponse()
             ->assertJsonPath('data.id', $role->id)
             ->assertJsonPath('data.name', 'support');
     })->group('v1');
@@ -75,7 +74,7 @@ describe('Role Lifecycle', function () {
             'name' => 'new-name',
         ]);
 
-        $response->toBeSuccessResponse();
+        expect($response)->toBeSuccessResponse();
         expect($role->fresh()->name)->toBe('new-name');
     })->group('v1');
 
@@ -84,7 +83,7 @@ describe('Role Lifecycle', function () {
 
         $response = $this->deleteJson("/api/v1/roles/{$role->id}");
 
-        $response->toBeSuccessResponse();
+        expect($response)->toBeSuccessResponse(status: 204);
         expect($role->fresh()->trashed())->toBeTrue();
     })->group('v1');
 });

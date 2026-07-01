@@ -7,24 +7,27 @@ namespace Modules\Auth\Tests\Feature;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery;
+use Modules\Role\Models\Role;
 use Modules\User\Models\User;
-use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 beforeEach(function () {
     Role::create(['name' => 'user', 'guard_name' => 'web']);
+
 });
 
 describe('Social Authentication (SOP Registration)', function () {
     it('redirects to the provider authorization page', function () {
         Socialite::shouldReceive('driver')->with('google')->andReturn(
             Mockery::mock('Laravel\Socialite\Two\AbstractProvider')
+                ->shouldReceive('stateless')->andReturnSelf()
                 ->shouldReceive('redirect')->andReturn(new RedirectResponse('https://google.com/auth'))
                 ->getMock()
         );
 
-        $this->getJson('/api/v1/auth/social/google/redirect')
-            ->assertRedirect('https://google.com/auth');
+        expect($this->getJson('/api/v1/auth/social/google/redirect'))
+            ->toBeSuccessResponse()
+            ->assertJsonPath('data.url', 'https://google.com/auth');
     })->group('v1');
 
     it('creates a new user via provider callback with correct linkage', function () {
@@ -45,7 +48,7 @@ describe('Social Authentication (SOP Registration)', function () {
 
         $response = $this->getJson('/api/v1/auth/social/google/callback');
 
-        $response->toBeSuccessResponse()
+        expect($response)->toBeSuccessResponse()
             ->assertJsonMissing(['password']) // SOP: No leakage
             ->assertJsonPath('data.user.email', 'john@social.com');
 

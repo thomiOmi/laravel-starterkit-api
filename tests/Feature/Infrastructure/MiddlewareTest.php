@@ -18,7 +18,7 @@ test('TraceIdMiddleware adds ULID to response and context via HTTP', function ()
 
     expect($response)->toHaveTraceId();
 
-    $traceId = $response->header('X-Trace-ID');
+    $traceId = $response->headers->get('X-Trace-ID');
     expect(Context::get('trace_id'))->toBe($traceId);
 });
 

@@ -38,7 +38,7 @@ test('Happy Path: Request -> Middleware -> Action -> SuccessResponse', function 
         'Accept-Language' => 'en',
     ]);
 
-    $response->toBeSuccessResponse(status: 200, title: 'OK')
+    expect($response)->toBeSuccessResponse(status: 200, title: 'OK')
         ->toHaveTraceId();
 
     expect($response->json('data.message'))->toBe('Hello, Jules!');
@@ -53,7 +53,7 @@ test('Error Path: Validation -> Exception Handler -> ProblemResponse', function 
 
     $response = $this->postJson('/api/v1/flow-error', ['email' => 'invalid-email']);
 
-    $response->toBeProblemResponse(status: 422, type: 'validation');
+    expect($response)->toBeProblemResponse(status: 422, type: 'validation');
 
     expect($response->json('errors'))->toHaveKey('email');
 });
@@ -64,5 +64,5 @@ test('Auth Flow: Unauthenticated -> ProblemResponse', function () {
 
     $response = $this->getJson('/api/v1/flow-protected');
 
-    $response->toBeProblemResponse(status: 401);
+    expect($response)->toBeProblemResponse(status: 401);
 });

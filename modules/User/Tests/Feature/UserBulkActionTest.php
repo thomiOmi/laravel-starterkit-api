@@ -6,15 +6,18 @@ namespace Modules\User\Tests\Feature;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Modules\Role\Models\Permission;
 use Modules\User\Models\User;
-use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
     Event::fake();
     Notification::fake();
 
-    Permission::create(['name' => 'user.edit', 'guard_name' => 'web']);
-    Permission::create(['name' => 'user.delete', 'guard_name' => 'web']);
+    Permission::create(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+    Permission::create(['name' => 'user.delete', 'guard_name' => 'sanctum']);
+
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
 
 describe('User Bulk Operations (SOP)', function () {
@@ -24,7 +27,7 @@ describe('User Bulk Operations (SOP)', function () {
         $users = User::factory()->count(2)->create();
         $ids = $users->pluck('id')->toArray();
 
-        $this->postJson('/api/v1/users/bulk/delete', ['ids' => $ids])
+        expect($this->postJson('/api/v1/users/bulk/delete', ['ids' => $ids]))
             ->toBeSuccessResponse();
 
         foreach ($users as $user) {
@@ -36,7 +39,7 @@ describe('User Bulk Operations (SOP)', function () {
         loginAsUser(); // No permissions
         $users = User::factory()->count(2)->create();
 
-        $this->postJson('/api/v1/users/bulk/delete', ['ids' => $users->pluck('id')->toArray()])
+        expect($this->postJson('/api/v1/users/bulk/delete', ['ids' => $users->pluck('id')->toArray()]))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
 
@@ -48,7 +51,7 @@ describe('User Bulk Operations (SOP)', function () {
 
         User::whereIn('id', $ids)->delete();
 
-        $this->postJson('/api/v1/users/bulk/restore', ['ids' => $ids])
+        expect($this->postJson('/api/v1/users/bulk/restore', ['ids' => $ids]))
             ->toBeSuccessResponse();
 
         foreach ($users as $user) {

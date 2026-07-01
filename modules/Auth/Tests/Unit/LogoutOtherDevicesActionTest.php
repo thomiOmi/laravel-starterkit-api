@@ -19,6 +19,8 @@ describe('LogoutOtherDevicesAction', function () {
 
         expect($user->tokens()->count())->toBe(3);
 
+        $user->withAccessToken($currentToken);
+
         $action = app(LogoutOtherDevicesAction::class);
         $action->handle($user, (string) $currentToken->id);
 

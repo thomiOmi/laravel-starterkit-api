@@ -4,22 +4,28 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Tests\Feature;
 
+use Modules\User\Models\User;
+
 describe('Device Management', function () {
     it('lists active devices', function () {
-        $user = loginAsUser();
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $token = $user->createToken('current');
 
-        $this->getJson('/api/v1/auth/devices')
+        expect($this->withToken($token->plainTextToken)
+            ->getJson('/api/v1/auth/devices'))
             ->toBeSuccessResponse()
             ->assertJsonPath('data.0.is_current', true);
     })->group('v1');
 
     it('logs out from another device', function () {
-        $user = loginAsUser();
-        $token = $user->createToken('other');
-        $id = (string) $token->accessToken->id;
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $token = $user->createToken('current');
+        $otherToken = $user->createToken('other');
+        $id = (string) $otherToken->accessToken->id;
 
-        $this->deleteJson("/api/v1/auth/devices/{$id}")
-            ->toBeSuccessResponse();
+        expect($this->withToken($token->plainTextToken)
+            ->deleteJson("/api/v1/auth/devices/{$id}"))
+            ->assertStatus(204);
 
         expect($user->tokens()->where('id', $id)->exists())->toBeFalse();
     })->group('v1');

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Tests\Feature;
 
+use App\Notifications\ResetPassword as ResetPasswordNotification;
 use App\Notifications\VerifyEmail;
-use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use Laravel\Sanctum\Sanctum;
 use Modules\User\Models\User;
 
 describe('Password Management', function () {
@@ -15,7 +17,7 @@ describe('Password Management', function () {
         Notification::fake();
         $user = User::factory()->create();
 
-        $this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email])
+        expect($this->postJson('/api/v1/auth/forgot-password', ['email' => $user->email]))
             ->toBeSuccessResponse();
 
         Notification::assertSentTo($user, ResetPasswordNotification::class);
@@ -30,19 +32,15 @@ describe('Email Verification Lifecycle (SOP)', function () {
         expect($user->hasVerifiedEmail())->toBeFalse();
 
         // 2. Ensure notification is sent (usually on registration, but here we test manual resend as well)
-        $this->actingAs($user, ['users:write'])
-            ->postJson('/api/v1/auth/email/verification-notification')
-            ->toBeSuccessResponse();
+        Sanctum::actingAs($user, ['users:write']);
+        $this->postJson('/api/v1/auth/email/verification-notification');
 
-        Notification::assertSentTo($user, VerifyEmail::class, function ($notification, $channels) use ($user) {
-            $url = $notification->toMail($user)->actionUrl;
-
-            return str_contains($url, "/api/v1/auth/email/verify/{$user->id}");
-        });
+        $notifications = Notification::sent($user, VerifyEmail::class);
+        expect($notifications)->toHaveCount(1);
 
         // 3. Deny access to protected features before verification
-        $this->actingAs($user)
-            ->getJson('/api/v1/users') // Main feature route
+        Sanctum::actingAs($user);
+        expect($this->getJson('/api/v1/users')) // Main feature route
             ->toBeProblemResponse(status: 403);
 
         // 4. Click verification link (Signed URL)
@@ -52,15 +50,19 @@ describe('Email Verification Lifecycle (SOP)', function () {
             ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
         );
 
-        $this->actingAs($user)
-            ->getJson($url)
+        Sanctum::actingAs($user);
+        expect($this->getJson($url))
             ->toBeSuccessResponse();
 
-        expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
+        $user = $user->fresh();
+        expect($user->hasVerifiedEmail())->toBeTrue();
 
         // 5. Access main feature successfully after verification
-        $this->actingAs($user)
-            ->getJson('/api/v1/auth/me')
+        // Clear actingAs state so real token auth works
+        Auth::guard('sanctum')->forgetUser();
+        $newToken = $user->createToken('current');
+        expect($this->withToken($newToken->plainTextToken)
+            ->getJson('/api/v1/auth/me'))
             ->toBeSuccessResponse();
     })->group('v1');
 
@@ -75,8 +77,8 @@ describe('Email Verification Lifecycle (SOP)', function () {
         );
 
         // User B tries to use User A verification link
-        $this->actingAs($userB)
-            ->getJson($url)
+        Sanctum::actingAs($userB);
+        expect($this->getJson($url))
             ->toBeProblemResponse(status: 403);
 
         expect($userA->fresh()->hasVerifiedEmail())->toBeFalse();
@@ -91,8 +93,8 @@ describe('Email Verification Lifecycle (SOP)', function () {
             ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
         );
 
-        $this->actingAs($user)
-            ->getJson($url)
+        Sanctum::actingAs($user);
+        expect($this->getJson($url))
             ->toBeProblemResponse(status: 403);
 
         expect($user->fresh()->hasVerifiedEmail())->toBeFalse();

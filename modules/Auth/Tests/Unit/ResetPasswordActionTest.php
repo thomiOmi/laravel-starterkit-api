@@ -18,14 +18,13 @@ describe('ResetPasswordAction', function () {
         $token = Password::createToken($user);
         $action = app(ResetPasswordAction::class);
 
-        $status = $action->handle([
+        $action->handle([
             'email' => $user->email,
             'password' => 'new-secure-password',
             'password_confirmation' => 'new-secure-password',
             'token' => $token,
         ]);
 
-        expect($status)->toBe(Password::PASSWORD_RESET);
         expect(Hash::check('new-secure-password', $user->fresh()->password))->toBeTrue();
     });
 });

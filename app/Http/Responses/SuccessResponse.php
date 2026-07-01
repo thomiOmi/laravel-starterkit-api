@@ -49,12 +49,12 @@ class SuccessResponse extends JsonResponse
         }
 
         if ($inner instanceof LengthAwarePaginator) {
-            $payload['links'] = array_filter([
+            $payload['links'] = [
                 'first' => $inner->url(1),
                 'last' => $inner->url($inner->lastPage()),
                 'prev' => $inner->previousPageUrl(),
                 'next' => $inner->nextPageUrl(),
-            ]);
+            ];
 
             $payload['meta'] = array_filter([
                 'current_page' => $inner->currentPage(),
@@ -66,11 +66,11 @@ class SuccessResponse extends JsonResponse
                 'total' => $inner->total(),
             ], fn (mixed $value): bool => ! is_null($value));
         } elseif ($inner instanceof Paginator) {
-            $payload['links'] = array_filter([
+            $payload['links'] = [
                 'first' => $inner->url(1),
                 'prev' => $inner->previousPageUrl(),
                 'next' => $inner->nextPageUrl(),
-            ]);
+            ];
 
             $payload['meta'] = array_filter([
                 'current_page' => $inner->currentPage(),
@@ -82,10 +82,10 @@ class SuccessResponse extends JsonResponse
         } elseif ($inner instanceof CursorPaginator) {
             $paginated = $inner->toArray();
 
-            $payload['links'] = array_filter([
+            $payload['links'] = [
                 'prev' => $paginated['prev_page_url'] ?? null,
                 'next' => $paginated['next_page_url'] ?? null,
-            ]);
+            ];
 
             $payload['meta'] = array_filter([
                 'path' => $inner->path(),

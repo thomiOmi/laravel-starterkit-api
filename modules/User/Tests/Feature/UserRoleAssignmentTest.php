@@ -6,15 +6,17 @@ namespace Modules\User\Tests\Feature;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Modules\Role\Models\Permission;
+use Modules\Role\Models\Role;
 use Modules\User\Models\User;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
     Event::fake();
     Notification::fake();
 
-    Permission::create(['name' => 'user.edit', 'guard_name' => 'web']);
+    Permission::create(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
 
 describe('User Role Management (SOP)', function () {
@@ -23,11 +25,11 @@ describe('User Role Management (SOP)', function () {
         $admin->givePermissionTo('user.edit');
 
         $user = User::factory()->create();
-        $role = Role::create(['name' => 'editor', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'editor', 'guard_name' => 'sanctum']);
 
-        $this->putJson("/api/v1/users/{$user->id}/roles", [
+        expect($this->putJson("/api/v1/users/{$user->id}/roles", [
             'roles' => ['editor'],
-        ])->toBeSuccessResponse();
+        ]))->toBeSuccessResponse();
 
         $this->assertDatabaseHas('model_has_roles', [
             'role_id' => $role->id,
@@ -43,7 +45,7 @@ describe('User Role Management (SOP)', function () {
         $user = User::factory()->create();
         Role::create(['name' => 'admin', 'guard_name' => 'web']);
 
-        $this->putJson("/api/v1/users/{$user->id}/roles", ['roles' => ['admin']])
+        expect($this->putJson("/api/v1/users/{$user->id}/roles", ['roles' => ['admin']]))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
 });

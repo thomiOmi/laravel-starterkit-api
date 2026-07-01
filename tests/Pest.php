@@ -7,6 +7,7 @@ use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Modules\User\Models\User;
 use Pest\Expectation;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 /*
@@ -20,10 +21,21 @@ pest()->extend(TestCase::class)
     ->in('Feature', '../modules/*/Tests/Feature');
 
 pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Unit', '../modules/*/Tests/Unit');
 
 pest()->extend(TestCase::class)
     ->in('Architecture');
+
+/*
+|--------------------------------------------------------------------------
+| Global Hooks
+|--------------------------------------------------------------------------
+*/
+
+beforeEach(function (): void {
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -62,16 +74,19 @@ expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $ti
     /** @var TestResponse $response */
     $response = $this->value;
 
-    $response->assertStatus($status)
-        ->assertJsonStructure([
+    $response->assertStatus($status);
+
+    if ($status >= 200 && $status < 300 && $status !== 204 && $status !== 205) {
+        $response->assertJsonStructure([
             'status',
             'title',
             'detail',
             'data',
         ]);
 
-    if ($title !== null) {
-        expect($response->json('title'))->toBe($title);
+        if ($title !== null) {
+            expect($response->json('title'))->toBe($title);
+        }
     }
 
     return $this;

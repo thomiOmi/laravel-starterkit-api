@@ -6,14 +6,16 @@ namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use Modules\Role\Models\Permission;
 use Modules\Role\Models\Role;
 use Modules\User\Models\User;
-use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
     Notification::fake();
-    Role::create(['name' => 'user', 'guard_name' => 'web']);
-    Role::create(['name' => 'editor', 'guard_name' => 'web']);
+    foreach (['web', 'sanctum'] as $guard) {
+        Role::create(['name' => 'user', 'guard_name' => $guard]);
+        Role::create(['name' => 'editor', 'guard_name' => $guard]);
+    }
 });
 
 test('Complete System Flow: Register -> Verify -> Login -> Assign Role', function () {
@@ -27,7 +29,7 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
     ];
 
     $response = $this->postJson('/api/v1/auth/register', $registerPayload);
-    $response->toBeSuccessResponse();
+    expect($response)->toBeSuccessResponse(status: 201);
 
     $user = User::where('email', 'integration@test.com')->first();
     expect($user->email_verified_at)->toBeNull();
@@ -40,8 +42,8 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
     );
 
     // Verify while logged in as the new user (Sanctum)
-    $this->actingAs($user)
-        ->getJson($verificationUrl)
+    expect($this->actingAs($user)
+        ->getJson($verificationUrl))
         ->toBeSuccessResponse();
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
@@ -52,18 +54,18 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
         'password' => $password,
     ]);
 
-    $loginResponse->toBeSuccessResponse()
+    expect($loginResponse)->toBeSuccessResponse()
         ->assertJsonStructure(['data' => ['access_token']]);
 
     // 4. Assign Role (By Admin)
     $admin = loginAsUser(); // Helper creates verified admin by default if role is assigned
-    Permission::create(['name' => 'user.edit', 'guard_name' => 'web']);
+    Permission::create(['name' => 'user.edit', 'guard_name' => 'sanctum']);
     $admin->givePermissionTo('user.edit');
 
-    $this->actingAs($admin)
+    expect($this->actingAs($admin)
         ->putJson("/api/v1/users/{$user->id}/roles", [
             'roles' => ['editor'],
-        ])->toBeSuccessResponse();
+        ]))->toBeSuccessResponse();
 
     expect($user->fresh()->hasRole('editor'))->toBeTrue();
 })->group('v1', 'integration');

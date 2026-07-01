@@ -6,9 +6,10 @@ namespace Modules\User\Tests\Feature;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Modules\Role\Models\Permission;
+use Modules\Role\Models\Role;
 use Modules\User\Models\User;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
     Event::fake();
@@ -23,16 +24,16 @@ describe('Middleware Guarding (Verified Email)', function () {
         $user = User::factory()->create(['email_verified_at' => null]);
         $user->assignRole('admin'); // Even an admin must be verified
 
-        $this->actingAs($user)
-            ->getJson('/api/v1/users')
+        expect($this->actingAs($user)
+            ->getJson('/api/v1/users'))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
 
     it('denies access to create user if email is not verified', function () {
         $user = User::factory()->create(['email_verified_at' => null]);
 
-        $this->actingAs($user)
-            ->postJson('/api/v1/users', ['name' => 'Test'])
+        expect($this->actingAs($user)
+            ->postJson('/api/v1/users', ['name' => 'Test']))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
 });
@@ -47,7 +48,7 @@ describe('User Registration & Initial State', function () {
             'password_confirmation' => $password,
         ];
 
-        $this->postJson('/api/v1/auth/register', $payload)->toBeSuccessResponse();
+        expect($this->postJson('/api/v1/auth/register', $payload))->toBeSuccessResponse(status: 201);
 
         $user = User::where('email', 'customer@test.com')->first();
         expect($user->email_verified_at)->toBeNull()
@@ -60,16 +61,17 @@ describe('User CRUD & IDOR Protection', function () {
         $userA = loginAsUser(); // Logged in and verified by helper
         $userB = User::factory()->create(['name' => 'Safe']);
 
-        $this->putJson("/api/v1/users/{$userB->id}", ['name' => 'Hacked'])
+        expect($this->putJson("/api/v1/users/{$userB->id}", ['name' => 'Hacked']))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
 
     it('prevents self-deletion', function () {
         $admin = loginAsUser();
-        Permission::create(['name' => 'user.delete', 'guard_name' => 'web']);
+        Permission::create(['name' => 'user.delete', 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.delete');
 
-        $this->deleteJson("/api/v1/users/{$admin->id}")
+        expect($this->deleteJson("/api/v1/users/{$admin->id}"))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
 });

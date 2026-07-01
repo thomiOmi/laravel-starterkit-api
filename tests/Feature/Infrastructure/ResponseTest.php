@@ -18,10 +18,10 @@ test('ProblemResponse follows RFC 9457 via HTTP lifecycle', function () {
         errors: ['email' => ['Required']]
     ));
 
-    expect($this->get('/test-problem'))
-        ->toBeProblemResponse(status: 422)
-        ->json('detail')->toBe('The email field is required.')
-        ->json('errors.email.0')->toBe('Required');
+    $response = $this->get('/test-problem');
+    expect($response)->toBeProblemResponse(status: 422);
+    expect($response->json('detail'))->toBe('The email field is required.');
+    expect($response->json('errors.email.0'))->toBe('Required');
 });
 
 test('SuccessResponse follows standardized schema via HTTP lifecycle', function () {
@@ -31,10 +31,10 @@ test('SuccessResponse follows standardized schema via HTTP lifecycle', function 
         data: ['id' => '123']
     ));
 
-    expect($this->get('/test-success'))
-        ->toBeSuccessResponse(status: 200, title: 'OK')
-        ->json('detail')->toBe('Operation successful.')
-        ->json('data.id')->toBe('123');
+    $response = $this->get('/test-success');
+    expect($response)->toBeSuccessResponse(status: 200, title: 'OK');
+    expect($response->json('detail'))->toBe('Operation successful.');
+    expect($response->json('data.id'))->toBe('123');
 });
 
 test('SuccessResponse handles pagination via HTTP lifecycle', function () {

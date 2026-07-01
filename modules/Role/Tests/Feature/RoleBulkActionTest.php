@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Role\Tests\Feature;
 
+use Modules\Role\Models\Permission;
 use Modules\Role\Models\Role;
-use Spatie\Permission\Models\Permission;
 
 beforeEach(function () {
     $this->admin = loginAsUser();
-    Permission::create(['name' => 'role.edit', 'guard_name' => 'web']);
-    Permission::create(['name' => 'role.delete', 'guard_name' => 'web']);
+    Permission::create(['name' => 'role.edit', 'guard_name' => 'sanctum']);
+    Permission::create(['name' => 'role.delete', 'guard_name' => 'sanctum']);
     $this->admin->givePermissionTo(['role.edit', 'role.delete']);
 });
 
@@ -22,7 +22,7 @@ describe('Role Bulk Operations', function () {
         ];
         $ids = collect($roles)->pluck('id')->toArray();
 
-        $this->postJson('/api/v1/roles/bulk/delete', ['ids' => $ids])
+        expect($this->postJson('/api/v1/roles/bulk/delete', ['ids' => $ids]))
             ->toBeSuccessResponse();
 
         foreach ($roles as $role) {
@@ -38,7 +38,7 @@ describe('Role Bulk Operations', function () {
         $ids = collect($roles)->pluck('id')->toArray();
         Role::whereIn('id', $ids)->delete();
 
-        $this->postJson('/api/v1/roles/bulk/restore', ['ids' => $ids])
+        expect($this->postJson('/api/v1/roles/bulk/restore', ['ids' => $ids]))
             ->toBeSuccessResponse();
 
         foreach ($roles as $role) {
