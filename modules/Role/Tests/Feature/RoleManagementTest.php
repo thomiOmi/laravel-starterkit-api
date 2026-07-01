@@ -10,10 +10,10 @@ use Modules\Role\Models\Role;
 beforeEach(function () {
     $this->admin = loginAsUser();
     // Ensure admin has required permissions
-    Permission::create(['name' => 'role.view', 'guard_name' => 'sanctum']);
-    Permission::create(['name' => 'role.create', 'guard_name' => 'sanctum']);
-    Permission::create(['name' => 'role.edit', 'guard_name' => 'sanctum']);
-    Permission::create(['name' => 'role.delete', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'role.view', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'role.create', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'role.edit', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'role.delete', 'guard_name' => 'sanctum']);
     $this->admin->givePermissionTo(['role.view', 'role.create', 'role.edit', 'role.delete']);
 });
 
@@ -42,7 +42,7 @@ describe('Role Listing & Filtering', function () {
 
 describe('Role Lifecycle', function () {
     it('creates a new role with permissions', function () {
-        $perm = Permission::create(['name' => 'post.view', 'guard_name' => 'sanctum']);
+        $perm = Permission::firstOrCreate(['name' => 'post.view', 'guard_name' => 'sanctum']);
 
         $payload = [
             'name' => 'author',

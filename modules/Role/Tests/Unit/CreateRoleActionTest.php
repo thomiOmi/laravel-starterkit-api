@@ -14,7 +14,7 @@ use Modules\Role\Payloads\V1\RolePayload;
  */
 describe('CreateRoleAction', function () {
     it('creates a role and syncs permissions', function () {
-        $permission = Permission::create(['name' => 'test.perm', 'guard_name' => 'web']);
+        $permission = Permission::firstOrCreate(['name' => 'test.perm', 'guard_name' => 'web']);
         $action = app(CreateRoleAction::class);
 
         $role = $action->handle(new RolePayload(

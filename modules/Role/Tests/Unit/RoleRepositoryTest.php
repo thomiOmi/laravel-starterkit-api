@@ -16,7 +16,7 @@ use Modules\Role\Repositories\RoleRepository;
 describe('RoleRepository', function () {
     it('paginates and eager loads permissions', function () {
         $role = RoleFactory::new()->create(['guard_name' => 'web']);
-        $permission = Permission::create(['name' => 'test.view', 'guard_name' => 'web']);
+        $permission = Permission::firstOrCreate(['name' => 'test.view', 'guard_name' => 'web']);
         $role->givePermissionTo($permission);
 
         $repo = app(RoleRepository::class);

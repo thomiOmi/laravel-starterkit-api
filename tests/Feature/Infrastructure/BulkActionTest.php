@@ -16,7 +16,7 @@ test('BulkActionRequest validates ULIDs and count limits', function () {
     })->name('api.v1.user.bulk.delete');
 
     $user = loginAsUser();
-    Permission::create(['name' => 'user.delete', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
     $user->givePermissionTo('user.delete');
 
     $this->postJson('/test-bulk', [])
@@ -31,7 +31,7 @@ test('BulkActionRequest validates ULIDs and count limits', function () {
 test('BulkActionRequest enforces modular permissions', function () {
     $user = loginAsUser();
 
-    Permission::create(['name' => 'user.delete', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     Route::post('/api/v1/user/bulk/delete', function (BulkActionRequest $request) {

@@ -9,8 +9,8 @@ use Modules\Role\Models\Role;
 
 beforeEach(function () {
     $this->admin = loginAsUser();
-    Permission::create(['name' => 'role.edit', 'guard_name' => 'sanctum']);
-    Permission::create(['name' => 'role.delete', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'role.edit', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'role.delete', 'guard_name' => 'sanctum']);
     $this->admin->givePermissionTo(['role.edit', 'role.delete']);
 });
 

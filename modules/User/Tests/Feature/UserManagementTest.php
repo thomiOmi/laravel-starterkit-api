@@ -67,7 +67,7 @@ describe('User CRUD & IDOR Protection', function () {
 
     it('prevents self-deletion', function () {
         $admin = loginAsUser();
-        Permission::create(['name' => 'user.delete', 'guard_name' => 'sanctum']);
+        Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.delete');
 

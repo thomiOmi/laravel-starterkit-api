@@ -15,7 +15,7 @@ beforeEach(function () {
     Event::fake();
     Notification::fake();
 
-    Permission::create(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
 

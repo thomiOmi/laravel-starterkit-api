@@ -58,7 +58,7 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
 
     // Assign Role (By Admin)
     $admin = loginAsUser(); // Helper creates verified admin by default if role is assigned
-    Permission::create(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
     $admin->givePermissionTo('user.edit');
 
     expect($this->actingAs($admin)
