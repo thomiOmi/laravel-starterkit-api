@@ -21,6 +21,8 @@ final readonly class RegisterAction
             'password' => $payload->password,
         ]);
 
+        $user->assignRole('user');
+
         $token = $user->createToken(
             $payload->deviceName ?? $userAgent ?? 'register_token',
             ['users:read', 'users:write', 'auth:manage'],

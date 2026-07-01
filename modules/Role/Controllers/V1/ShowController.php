@@ -21,13 +21,23 @@ final readonly class ShowController
 
     /**
      * Display the specified role.
+     *
+     * @param  string  $id  The role ID.
      */
-    public function __invoke(Request $request, string $role): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var Authenticatable&User $user */
-        $user = $request->user();
+        /** @var (Authenticatable&User)|null $currentUser */
+        $currentUser = $request->user();
 
-        if (! $user->can('role.view')) {
+        if ($currentUser === null) {
+            return new ProblemResponse(
+                title: 'Unauthenticated',
+                status: Response::HTTP_UNAUTHORIZED,
+                detail: __('auth.unauthenticated'),
+            );
+        }
+
+        if (! $currentUser->can('role.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -35,7 +45,7 @@ final readonly class ShowController
             );
         }
 
-        $role = $this->showRole->handle($role);
+        $role = $this->showRole->handle($id);
 
         if ($role === null) {
             return new ProblemResponse(

@@ -27,7 +27,9 @@ it('authenticates user with valid credentials', function () {
 
     expect($result)
         ->toHaveKeys(['user', 'access_token', 'token_type'])
-        ->and($result['token_type'])->toBe('Bearer');
+        ->and($result['token_type'])->toBe('Bearer')
+        ->and($result['user']->relationLoaded('roles'))->toBeTrue()
+        ->and($result['user']->relationLoaded('permissions'))->toBeTrue();
 });
 
 it('throws validation exception for invalid credentials', function () {
