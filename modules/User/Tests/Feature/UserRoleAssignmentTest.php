@@ -19,7 +19,7 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
 
-describe('User Role Management (SOP)', function () {
+describe('User Role Management', function () {
     it('allows admin to assign roles to user and verifies database sync', function () {
         $admin = loginAsUser();
         $admin->givePermissionTo('user.edit');

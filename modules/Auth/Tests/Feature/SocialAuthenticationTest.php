@@ -16,7 +16,7 @@ beforeEach(function () {
 
 });
 
-describe('Social Authentication (SOP Registration)', function () {
+describe('Social Authentication', function () {
     it('redirects to the provider authorization page', function () {
         Socialite::shouldReceive('driver')->with('google')->andReturn(
             Mockery::mock('Laravel\Socialite\Two\AbstractProvider')
@@ -49,7 +49,7 @@ describe('Social Authentication (SOP Registration)', function () {
         $response = $this->getJson('/api/v1/auth/social/google/callback');
 
         expect($response)->toBeSuccessResponse()
-            ->assertJsonMissing(['password']) // SOP: No leakage
+            ->assertJsonMissing(['password'])
             ->assertJsonPath('data.user.email', 'john@social.com');
 
         $user = User::where('email', 'john@social.com')->first();

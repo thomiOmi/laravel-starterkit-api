@@ -20,7 +20,7 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
 
-describe('User Bulk Operations (SOP)', function () {
+describe('User Bulk Operations', function () {
     it('allows authorized admin to bulk delete users', function () {
         $admin = loginAsUser();
         $admin->givePermissionTo('user.delete');

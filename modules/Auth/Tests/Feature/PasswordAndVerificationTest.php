@@ -24,7 +24,7 @@ describe('Password Management', function () {
     })->group('v1');
 });
 
-describe('Email Verification Lifecycle (SOP)', function () {
+describe('Email Verification Lifecycle', function () {
     it('completes the full verification lifecycle', function () {
         Notification::fake();
         // 1. Registration state
