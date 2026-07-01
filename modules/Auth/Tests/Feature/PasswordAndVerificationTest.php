@@ -27,23 +27,23 @@ describe('Password Management', function () {
 describe('Email Verification Lifecycle', function () {
     it('completes the full verification lifecycle', function () {
         Notification::fake();
-        // 1. Registration state
+        // Registration state
         $user = User::factory()->create(['email_verified_at' => null]);
         expect($user->hasVerifiedEmail())->toBeFalse();
 
-        // 2. Ensure notification is sent (usually on registration, but here we test manual resend as well)
+        // Ensure notification is sent (usually on registration, but here we test manual resend as well)
         Sanctum::actingAs($user, ['users:write']);
         $this->postJson('/api/v1/auth/email/verification-notification');
 
         $notifications = Notification::sent($user, VerifyEmail::class);
         expect($notifications)->toHaveCount(1);
 
-        // 3. Deny access to protected features before verification
+        // Deny access to protected features before verification
         Sanctum::actingAs($user);
         expect($this->getJson('/api/v1/users')) // Main feature route
             ->toBeProblemResponse(status: 403);
 
-        // 4. Click verification link (Signed URL)
+        // Click verification link (Signed URL)
         $url = URL::temporarySignedRoute(
             'api.v1.auth.verification.verify',
             now()->addMinutes(60),
@@ -57,7 +57,7 @@ describe('Email Verification Lifecycle', function () {
         $user = $user->fresh();
         expect($user->hasVerifiedEmail())->toBeTrue();
 
-        // 5. Access main feature successfully after verification
+        // Access main feature successfully after verification
         // Clear actingAs state so real token auth works
         Auth::guard('sanctum')->forgetUser();
         $newToken = $user->createToken('current');

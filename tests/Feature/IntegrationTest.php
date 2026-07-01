@@ -19,7 +19,7 @@ beforeEach(function () {
 });
 
 test('Complete System Flow: Register -> Verify -> Login -> Assign Role', function () {
-    // 1. Register
+    // Register
     $password = 'password123';
     $registerPayload = [
         'name' => 'Integration User',
@@ -34,7 +34,7 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
     $user = User::where('email', 'integration@test.com')->first();
     expect($user->email_verified_at)->toBeNull();
 
-    // 2. Verify Email
+    // Verify Email
     $verificationUrl = URL::temporarySignedRoute(
         'api.v1.auth.verification.verify',
         now()->addMinutes(60),
@@ -48,7 +48,6 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
 
-    // 3. Login
     $loginResponse = $this->postJson('/api/v1/auth/login', [
         'email' => 'integration@test.com',
         'password' => $password,
@@ -57,7 +56,7 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
     expect($loginResponse)->toBeSuccessResponse()
         ->assertJsonStructure(['data' => ['access_token']]);
 
-    // 4. Assign Role (By Admin)
+    // Assign Role (By Admin)
     $admin = loginAsUser(); // Helper creates verified admin by default if role is assigned
     Permission::create(['name' => 'user.edit', 'guard_name' => 'sanctum']);
     $admin->givePermissionTo('user.edit');
