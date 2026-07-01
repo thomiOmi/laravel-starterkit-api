@@ -2,7 +2,7 @@ name: Auto-Fix CI Failures
 
 on:
   workflow_run:
-    workflows: ["Laravel"]
+    workflows: ["Testing Laravel"]
     types: [completed]
 
 concurrency:
