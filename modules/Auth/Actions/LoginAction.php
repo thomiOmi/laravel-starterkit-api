@@ -25,6 +25,17 @@ final readonly class LoginAction
     {
         /** @var User|null $user */
         $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
+            ->select([
+                'id',
+                'name',
+                'email',
+                'avatar',
+                'password',
+                'email_verified_at',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+            ])
             ->where('email', $payload->email)
             ->first();
 
