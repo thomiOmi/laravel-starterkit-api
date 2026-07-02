@@ -8,8 +8,8 @@ use App\Http\Responses\ProblemResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\IAM\Models\User;
 use Modules\User\Actions\DeleteUserAction;
-use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class DeleteController

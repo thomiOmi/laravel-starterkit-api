@@ -11,7 +11,7 @@ use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\InvalidStateException;
 use Laravel\Socialite\Two\User as SocialUser;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class SocialCallbackAction
 {

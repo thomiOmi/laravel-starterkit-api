@@ -6,7 +6,7 @@ namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
 use Modules\Auth\Payloads\V1\RegisterPayload;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class RegisterAction
 {

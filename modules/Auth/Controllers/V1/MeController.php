@@ -9,7 +9,7 @@ use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\GetAuthenticatedUserAction;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 

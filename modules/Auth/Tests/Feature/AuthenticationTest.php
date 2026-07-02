@@ -6,8 +6,8 @@ namespace Modules\Auth\Tests\Feature;
 
 use App\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
+use Modules\IAM\Models\User;
 use Modules\Role\Models\Role;
-use Modules\User\Models\User;
 
 beforeEach(function () {
     Notification::fake();

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Tests\Unit;
 
 use Modules\Auth\Actions\LogoutOtherDevicesAction;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 /**
  * Unit test for LogoutOtherDevicesAction.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 use Pest\Expectation;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;

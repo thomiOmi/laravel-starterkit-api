@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Laravel\Sanctum\Sanctum;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 describe('Password Management', function () {
     it('requests a password reset link', function () {

@@ -6,7 +6,7 @@ namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Database\Eloquent\Collection;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class ListDevicesAction
 {

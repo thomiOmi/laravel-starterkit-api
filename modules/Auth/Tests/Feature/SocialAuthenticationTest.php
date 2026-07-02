@@ -7,8 +7,8 @@ namespace Modules\Auth\Tests\Feature;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Mockery;
+use Modules\IAM\Models\User;
 use Modules\Role\Models\Role;
-use Modules\User\Models\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 beforeEach(function () {

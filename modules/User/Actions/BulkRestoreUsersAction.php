@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\User\Actions;
 
 use Illuminate\Support\Facades\Cache;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class BulkRestoreUsersAction
 {

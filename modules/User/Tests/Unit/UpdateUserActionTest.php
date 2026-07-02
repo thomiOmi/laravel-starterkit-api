@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\User\Tests\Unit;
 
+use Modules\IAM\Models\User;
 use Modules\User\Actions\UpdateUserAction;
-use Modules\User\Models\User;
 use Modules\User\Payloads\V1\UserPayload;
 
 /**

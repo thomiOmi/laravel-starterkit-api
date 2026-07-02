@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Actions;
 
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class ResendVerificationAction
 {

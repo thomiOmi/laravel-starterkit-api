@@ -9,7 +9,7 @@ use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\ResendVerificationAction;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class ResendVerificationController

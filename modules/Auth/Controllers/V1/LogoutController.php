@@ -9,7 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\LogoutAction;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class LogoutController

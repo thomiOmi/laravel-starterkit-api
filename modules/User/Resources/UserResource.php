@@ -7,7 +7,7 @@ namespace Modules\User\Resources;
 use App\Concerns\FormatDates;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 /**
  * @property-read User $resource

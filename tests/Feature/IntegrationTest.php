@@ -6,9 +6,9 @@ namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
-use Modules\Role\Models\Permission;
-use Modules\Role\Models\Role;
-use Modules\User\Models\User;
+use Modules\IAM\Models\Permission;
+use Modules\IAM\Models\Role;
+use Modules\IAM\Models\User;
 
 beforeEach(function () {
     Notification::fake();

@@ -8,7 +8,7 @@ use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Payloads\V1\LoginPayload;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class LoginAction
 {

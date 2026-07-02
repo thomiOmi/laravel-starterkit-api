@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final readonly class DeleteDeviceAction

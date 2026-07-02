@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
+use Illuminate\Support\Facades\Config;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
-use Modules\User\Models\User;
 
 trait ProfileValidationRules
 {
@@ -47,9 +47,11 @@ trait ProfileValidationRules
         $rules = ['required', 'string', 'email', 'max:255'];
 
         if ($unique) {
+            $model = Config::string('auth.providers.users.model');
+
             $rules[] = $userId === null
-                ? Rule::unique(User::class)
-                : Rule::unique(User::class)->ignore($userId);
+                ? Rule::unique($model)
+                : Rule::unique($model)->ignore($userId);
         }
 
         return $rules;

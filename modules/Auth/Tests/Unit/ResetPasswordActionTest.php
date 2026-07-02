@@ -7,7 +7,7 @@ namespace Modules\Auth\Tests\Unit;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Modules\Auth\Actions\ResetPasswordAction;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 /**
  * Unit test for ResetPasswordAction.

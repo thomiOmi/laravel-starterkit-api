@@ -6,7 +6,7 @@ namespace Modules\User\Filters;
 
 use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 /**
  * @extends BaseFilter<User>

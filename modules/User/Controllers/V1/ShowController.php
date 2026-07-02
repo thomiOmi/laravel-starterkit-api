@@ -8,8 +8,8 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Modules\IAM\Models\User;
 use Modules\User\Actions\ShowUserAction;
-use Modules\User\Models\User;
 use Modules\User\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Tests\Unit;
 
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 use Modules\User\Repositories\UserRepository;
 
 /**

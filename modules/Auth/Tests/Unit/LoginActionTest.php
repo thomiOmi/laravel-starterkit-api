@@ -7,8 +7,8 @@ namespace Modules\Auth\Tests\Unit;
 use Illuminate\Validation\ValidationException;
 use Modules\Auth\Actions\LoginAction;
 use Modules\Auth\Payloads\V1\LoginPayload;
+use Modules\IAM\Models\User;
 use Modules\Role\Models\Role;
-use Modules\User\Models\User;
 
 /**
  * Unit test for LoginAction focus on Abilities and Eager Loading.

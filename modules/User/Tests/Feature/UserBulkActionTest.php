@@ -6,8 +6,8 @@ namespace Modules\User\Tests\Feature;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
+use Modules\IAM\Models\User;
 use Modules\Role\Models\Permission;
-use Modules\User\Models\User;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {

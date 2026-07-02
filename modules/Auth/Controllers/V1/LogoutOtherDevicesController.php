@@ -9,7 +9,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Modules\Auth\Actions\LogoutOtherDevicesAction;
 use Modules\Auth\Requests\V1\LogoutOtherDevicesRequest;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class LogoutOtherDevicesController

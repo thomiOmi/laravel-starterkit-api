@@ -1,6 +1,6 @@
 <?php
 
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 return [
 

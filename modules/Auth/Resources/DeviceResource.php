@@ -8,7 +8,7 @@ use App\Concerns\FormatDates;
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 /**
  * @property-read PersonalAccessToken $resource

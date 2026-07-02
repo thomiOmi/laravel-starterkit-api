@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Auth\Tests\Feature;
 
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 describe('Device Management', function () {
     it('lists active devices', function () {

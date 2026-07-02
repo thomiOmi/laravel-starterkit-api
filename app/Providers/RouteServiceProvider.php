@@ -44,6 +44,11 @@ class RouteServiceProvider extends ServiceProvider
             }
             $moduleName = basename($modulePathString);
 
+            // IAM registers its own routes via IAMServiceProvider
+            if (strtolower($moduleName) === 'iam') {
+                continue;
+            }
+
             /** @var array<int, string> $supportedVersions */
             foreach ($supportedVersions as $version) {
                 $routeFile = "{$modulePathString}/Routes/{$version}.php";

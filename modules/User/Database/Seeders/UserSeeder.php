@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\User\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\User\Database\Factories\UserFactory;
+use Modules\IAM\Database\Factories\UserFactory;
 
 class UserSeeder extends Seeder
 {

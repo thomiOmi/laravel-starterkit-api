@@ -6,8 +6,8 @@ namespace Modules\User\Repositories;
 
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
+use Modules\IAM\Models\User;
 use Modules\User\Filters\UserFilter;
-use Modules\User\Models\User;
 
 final readonly class UserRepository
 {

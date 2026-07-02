@@ -10,7 +10,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\Auth\Actions\ListDevicesAction;
 use Modules\Auth\Resources\DeviceResource;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class ListDevicesController

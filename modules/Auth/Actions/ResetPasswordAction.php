@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class ResetPasswordAction
 {

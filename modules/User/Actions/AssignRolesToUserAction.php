@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\User\Actions;
 
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class AssignRolesToUserAction
 {

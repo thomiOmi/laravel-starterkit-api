@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\Identity;
 use App\Models\Sanctum\PersonalAccessToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -22,7 +23,6 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Pennant\Feature;
 use Laravel\Sanctum\Sanctum;
-use Modules\User\Models\User;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,7 +44,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->defineFeatures();
 
-        Gate::before(function (User $user, $ability) {
+        Gate::before(function (Identity $user, $ability) {
             return $user->hasRole('super-admin') ? true : null;
         });
 
@@ -80,7 +80,7 @@ class AppServiceProvider extends ServiceProvider
 
     protected function defineFeatures(): void
     {
-        Feature::define('beta-feature', function (User $user) {
+        Feature::define('beta-feature', function (Identity $user) {
             return $user->hasRole('admin');
         });
     }
@@ -121,7 +121,7 @@ class AppServiceProvider extends ServiceProvider
 
             $url = $frontendUrl.'/reset-password?token='.$token;
 
-            if ($user instanceof User) {
+            if ($user instanceof Identity) {
                 $url .= '&email='.$user->getEmailForPasswordReset();
             }
 
@@ -131,20 +131,20 @@ class AppServiceProvider extends ServiceProvider
 
     protected function configureEmailVerification(): void
     {
-        VerifyEmail::createUrlUsing(function (User $notifiable): string {
+        VerifyEmail::createUrlUsing(function (Identity $notifiable): string {
             $expire = config()->integer('auth.verification.expire', 60);
 
             $signedRouteUrl = URL::temporarySignedRoute(
                 'api.v1.auth.verification.verify',
                 now()->addMinutes($expire),
                 [
-                    'id' => $notifiable->getKey(),
+                    'id' => $notifiable->getAuthIdentifier(),
                     'hash' => sha1($notifiable->getEmailForVerification()),
                 ],
             );
 
             $params = [
-                'id' => $notifiable->getKey(),
+                'id' => $notifiable->getAuthIdentifier(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
             ];
 

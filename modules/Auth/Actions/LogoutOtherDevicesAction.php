@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Auth\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
-use Modules\User\Models\User;
+use Modules\IAM\Models\User;
 
 final readonly class LogoutOtherDevicesAction
 {

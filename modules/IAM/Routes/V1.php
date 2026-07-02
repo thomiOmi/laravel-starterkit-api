@@ -1,0 +1,100 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+use Modules\IAM\Controllers\V1\DeleteDeviceController;
+use Modules\IAM\Controllers\V1\ForgotPasswordController;
+use Modules\IAM\Controllers\V1\ListDevicesController;
+use Modules\IAM\Controllers\V1\LoginController;
+use Modules\IAM\Controllers\V1\LogoutController;
+use Modules\IAM\Controllers\V1\LogoutOtherDevicesController;
+use Modules\IAM\Controllers\V1\MeController;
+use Modules\IAM\Controllers\V1\PermissionCreateController;
+use Modules\IAM\Controllers\V1\PermissionDeleteController;
+use Modules\IAM\Controllers\V1\PermissionIndexController;
+use Modules\IAM\Controllers\V1\PermissionShowController;
+use Modules\IAM\Controllers\V1\PermissionUpdateController;
+use Modules\IAM\Controllers\V1\RegisterController;
+use Modules\IAM\Controllers\V1\ResendVerificationController;
+use Modules\IAM\Controllers\V1\ResetPasswordController;
+use Modules\IAM\Controllers\V1\RoleBulkDeleteController;
+use Modules\IAM\Controllers\V1\RoleBulkRestoreController;
+use Modules\IAM\Controllers\V1\RoleCreateController;
+use Modules\IAM\Controllers\V1\RoleDeleteController;
+use Modules\IAM\Controllers\V1\RoleIndexController;
+use Modules\IAM\Controllers\V1\RoleShowController;
+use Modules\IAM\Controllers\V1\RoleUpdateController;
+use Modules\IAM\Controllers\V1\SocialCallbackController;
+use Modules\IAM\Controllers\V1\SocialRedirectController;
+use Modules\IAM\Controllers\V1\UserAssignRolesController;
+use Modules\IAM\Controllers\V1\UserBulkDeleteController;
+use Modules\IAM\Controllers\V1\UserBulkRestoreController;
+use Modules\IAM\Controllers\V1\UserCreateController;
+use Modules\IAM\Controllers\V1\UserDeleteController;
+use Modules\IAM\Controllers\V1\UserIndexController;
+use Modules\IAM\Controllers\V1\UserShowController;
+use Modules\IAM\Controllers\V1\UserUpdateController;
+use Modules\IAM\Controllers\V1\VerifyEmailController;
+
+Route::prefix('auth')->group(function () {
+    Route::post('register', RegisterController::class)->middleware('throttle:auth')->name('register');
+    Route::post('login', LoginController::class)->middleware('throttle:auth')->name('login');
+    Route::post('forgot-password', ForgotPasswordController::class)->middleware('throttle:auth')->name('password.forgot');
+    Route::post('reset-password', ResetPasswordController::class)->middleware('throttle:auth')->name('password.reset');
+
+    Route::get('email/verify/{id}/{hash}', VerifyEmailController::class)
+        ->middleware(['auth:sanctum', 'signed', 'throttle:api'])
+        ->name('verification.verify');
+
+    Route::get('social/{provider}/redirect', SocialRedirectController::class)->middleware('throttle:api')->name('social.redirect');
+    Route::get('social/{provider}/callback', SocialCallbackController::class)->middleware('throttle:api')->name('social.callback');
+
+    Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function () {
+        Route::post('email/verification-notification', ResendVerificationController::class)
+            ->middleware('ability:users:write')
+            ->name('verification.send');
+
+        Route::middleware('verified')->group(function () {
+            Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');
+            Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
+
+            Route::get('devices', ListDevicesController::class)->middleware('ability:auth:manage')->name('devices.index');
+            Route::delete('devices/{device}', DeleteDeviceController::class)->middleware('ability:auth:manage')->name('devices.delete');
+            Route::post('devices/logout-others', LogoutOtherDevicesController::class)->middleware('ability:auth:manage')->name('devices.logout-others');
+        });
+    });
+});
+
+Route::prefix('users')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
+    Route::get('/', UserIndexController::class)->name('index');
+    Route::post('/', UserCreateController::class)->name('create');
+
+    Route::post('/bulk/delete', UserBulkDeleteController::class)->name('bulk.delete');
+    Route::post('/bulk/restore', UserBulkRestoreController::class)->name('bulk.restore');
+
+    Route::get('/{user}', UserShowController::class)->name('show');
+    Route::put('/{user}', UserUpdateController::class)->name('update');
+    Route::put('/{user}/roles', UserAssignRolesController::class)->name('roles.assign');
+    Route::delete('/{user}', UserDeleteController::class)->name('delete');
+});
+
+Route::prefix('roles')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
+    Route::get('/', RoleIndexController::class)->name('index');
+    Route::post('/', RoleCreateController::class)->name('create');
+
+    Route::post('/bulk/delete', RoleBulkDeleteController::class)->name('bulk.delete');
+    Route::post('/bulk/restore', RoleBulkRestoreController::class)->name('bulk.restore');
+
+    Route::get('/{role}', RoleShowController::class)->name('show');
+    Route::put('/{role}', RoleUpdateController::class)->name('update');
+    Route::delete('/{role}', RoleDeleteController::class)->name('delete');
+});
+
+Route::prefix('permissions')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->name('permissions.')->group(function () {
+    Route::get('/', PermissionIndexController::class)->name('index');
+    Route::post('/', PermissionCreateController::class)->name('create');
+    Route::get('/{permission}', PermissionShowController::class)->name('show');
+    Route::put('/{permission}', PermissionUpdateController::class)->name('update');
+    Route::delete('/{permission}', PermissionDeleteController::class)->name('delete');
+});

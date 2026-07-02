@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\User\Actions;
 
 use Illuminate\Contracts\Pagination\Paginator;
+use Modules\IAM\Models\User;
 use Modules\User\Filters\UserFilter;
-use Modules\User\Models\User;
 use Modules\User\Repositories\UserRepository;
 
 /**
