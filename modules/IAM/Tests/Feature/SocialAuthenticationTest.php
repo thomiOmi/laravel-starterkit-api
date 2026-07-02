@@ -6,44 +6,32 @@ namespace Modules\IAM\Tests\Feature;
 
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
-use Mockery;
 use Modules\IAM\Models\Role;
 use Modules\IAM\Models\User;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 
 beforeEach(function () {
     Role::create(['name' => 'user', 'guard_name' => 'web']);
-
 });
 
 describe('Social Authentication', function () {
     it('redirects to the provider authorization page', function () {
-        Socialite::shouldReceive('driver')->with('google')->andReturn(
-            Mockery::mock('Laravel\Socialite\Two\AbstractProvider')
-                ->shouldReceive('stateless')->andReturnSelf()
-                ->shouldReceive('redirect')->andReturn(new RedirectResponse('https://google.com/auth'))
-                ->getMock()
-        );
+        Socialite::fake('google');
 
         expect($this->getJson('/api/v1/auth/social/google/redirect'))
             ->toBeSuccessResponse()
-            ->assertJsonPath('data.url', 'https://google.com/auth');
+            ->assertJsonPath('data.url', 'https://socialite.fake/google/authorize');
     })->group('v1');
 
     it('creates a new user via provider callback with correct linkage', function () {
-        $mockSocialUser = (new SocialiteUser)->map([
-            'id' => 'social-123',
-            'nickname' => 'johndoe',
-            'name' => 'John Doe',
-            'email' => 'john@social.com',
-            'avatar' => 'https://social.com/avatar.jpg',
-        ]);
-
-        Socialite::shouldReceive('driver')->with('google')->andReturn(
-            Mockery::mock('Laravel\Socialite\Two\AbstractProvider')
-                ->shouldReceive('stateless')->andReturnSelf()
-                ->shouldReceive('user')->andReturn($mockSocialUser)
-                ->getMock()
+        Socialite::fake(
+            'google',
+            SocialiteUser::fake([
+                'id' => 'social-123',
+                'nickname' => 'johndoe',
+                'name' => 'John Doe',
+                'email' => 'john@social.com',
+                'avatar' => 'https://social.com/avatar.jpg',
+            ]),
         );
 
         $response = $this->getJson('/api/v1/auth/social/google/callback');
