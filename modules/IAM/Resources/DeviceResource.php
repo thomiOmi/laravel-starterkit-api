@@ -20,10 +20,7 @@ class DeviceResource extends JsonResource
     use FormatDates;
 
     /**
-     * Transform the resource into an array.
-     *
-     * @param  Request  $request  The incoming request.
-     * @return array<string, mixed> The transformed resource array.
+     * @return array{id: string, name: string, ip_address: ?string, user_agent: ?string, last_used_at: ?string, created_at: string, is_current: bool}
      */
     public function toArray(Request $request): array
     {

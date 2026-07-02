@@ -12,14 +12,14 @@ use Illuminate\Pagination\Paginator;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * @template TData = mixed
+ * @template T of mixed
  */
 class SuccessResponse extends JsonResponse
 {
     /**
      * @param  string  $title  A short, human-readable summary of the response type.
      * @param  string  $detail  A human-readable explanation of this specific response.
-     * @param  TData  $data  The response payload data.
+     * @param  T  $data  The response payload data.
      * @param  int  $status  The HTTP status code for the response.
      * @param  array<string, mixed>  $extra  Additional top-level fields to merge into the response.
      */

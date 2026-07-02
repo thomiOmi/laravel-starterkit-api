@@ -19,10 +19,7 @@ class UserResource extends JsonResource
     use FormatDates;
 
     /**
-     * Transform the resource into an array.
-     *
-     * @param  Request  $request  The incoming HTTP request.
-     * @return array<string, mixed> The transformed resource array.
+     * @return array{id: string, name: string, email: string, avatar: ?string, roles: ?string[], permissions: ?string[], email_verified_at: ?string, created_at: string, updated_at: string, deleted_at: ?string}
      */
     public function toArray(Request $request): array
     {

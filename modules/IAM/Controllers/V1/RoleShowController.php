@@ -24,6 +24,9 @@ final readonly class RoleShowController
      *
      * @param  string  $id  The role ID.
      */
+    /**
+     * @response SuccessResponse<RoleResource>
+     */
     public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */

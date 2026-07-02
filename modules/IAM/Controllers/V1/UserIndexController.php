@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListUsersAction;
 use Modules\IAM\Filters\UserFilter;
 use Modules\IAM\Models\User;
@@ -22,6 +23,8 @@ final readonly class UserIndexController
 
     /**
      * Display a paginated listing of the users.
+     *
+     * @response SuccessResponse<AnonymousResourceCollection>
      */
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {

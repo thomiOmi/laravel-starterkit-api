@@ -21,6 +21,8 @@ final readonly class MeController
 
     /**
      * Get the authenticated user profile.
+     *
+     * @response SuccessResponse<UserResource>
      */
     public function __invoke(Request $request): SuccessResponse|ProblemResponse
     {

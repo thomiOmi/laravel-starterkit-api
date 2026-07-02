@@ -24,6 +24,9 @@ final readonly class PermissionShowController
      *
      * @param  string  $id  The permission ID.
      */
+    /**
+     * @response SuccessResponse<PermissionResource>
+     */
     public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */

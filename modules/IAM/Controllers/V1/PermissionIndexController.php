@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListPermissionsAction;
 use Modules\IAM\Filters\PermissionFilter;
 use Modules\IAM\Models\User;
@@ -22,6 +23,8 @@ final readonly class PermissionIndexController
 
     /**
      * Display a paginated listing of permissions.
+     *
+     * @response SuccessResponse<AnonymousResourceCollection>
      */
     public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {

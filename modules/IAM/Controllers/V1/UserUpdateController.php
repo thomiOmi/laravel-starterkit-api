@@ -24,6 +24,8 @@ final readonly class UserUpdateController
      *
      * @param  UserRequest  $request  The validated user update request.
      * @param  string  $id  The user ID.
+     *
+     * @response SuccessResponse<UserResource>
      */
     public function __invoke(UserRequest $request, string $id): SuccessResponse|ProblemResponse
     {

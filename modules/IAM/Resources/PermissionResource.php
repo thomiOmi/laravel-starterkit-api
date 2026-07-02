@@ -19,7 +19,7 @@ class PermissionResource extends JsonResource
     use FormatDates;
 
     /**
-     * @return array<string, mixed>
+     * @return array{id: string, name: string, guard_name: string, created_at: string, updated_at: string}
      */
     public function toArray(Request $request): array
     {

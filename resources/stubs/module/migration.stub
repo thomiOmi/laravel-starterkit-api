@@ -14,10 +14,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('{{tableName}}', function (Blueprint $table) {
-            $table->ulid('id')->primary();
+            {{idColumn}}
             $table->string('name');
             $table->timestamps();
-            $table->softDeletes();
+            {{softDeletesColumn}}
         });
     }
 

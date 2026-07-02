@@ -20,6 +20,7 @@ final readonly class RoleCreateController
      * Store a newly created role in storage.
      *
      * @param  RoleRequest  $request  The validated role creation request.
+     * @return SuccessResponse<RoleResource>
      */
     public function __invoke(RoleRequest $request): SuccessResponse
     {

@@ -23,7 +23,8 @@ return [
     | Aturan saat MakeModule.php dijalankan.
     */
     'module' => [
-        'base_path' => 'app/Modules',
+        'base_path' => base_path('modules'),
+        'namespace' => 'Modules',
         'enforce_action_pattern' => true,
     ],
 

@@ -19,10 +19,7 @@ class RoleResource extends JsonResource
     use FormatDates;
 
     /**
-     * Transform the resource into an array.
-     *
-     * @param  Request  $request  The incoming request.
-     * @return array<string, mixed> The transformed resource array.
+     * @return array{id: string, name: string, description: ?string, permissions: ?string[], created_at: string, updated_at: string}
      */
     public function toArray(Request $request): array
     {

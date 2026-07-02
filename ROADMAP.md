@@ -11,8 +11,8 @@
 | Phase | Title | Focus Area | Status |
 | :--- | :--- | :--- | :--- |
 | **01** | **Constitution** | Define Architecture Standards | [x] |
-| **02** | **Core Refactor** | Generator & Trait Alignment | [ ] |
-| **03** | **Enforcement** | Architecture Testing (ArchTest) | [ ] |
+| **02** | **Core Refactor** | Generator & Trait Alignment | [x] |
+| **03** | **Enforcement** | Architecture Testing (ArchTest) | [x] |
 | **04** | **Documentation** | API Contract Automation | [ ] |
 | **05** | **Observability** | Real-time Monitoring | [ ] |
 | **06** | **Ecosystem** | Modular Packaging (Extras) | [ ] |
@@ -30,21 +30,22 @@
 
 ### Phase 02: Core Refactor
 *Goal: Align system generators with the Constitution.*
-- [ ] Refactor `HasDefaultBehavior.php` to read from `architecture.php`.
-- [ ] Update `MakeModule.php` command to inject configs based on `architecture.php`.
-- [ ] Update stubs to respect architectural flags.
+- [x] Refactor `HasDefaultBehavior.php` to read from `architecture.php`.
+- [x] Update `MakeModule.php` command to inject configs based on `architecture.php`.
+- [x] Update stubs to respect architectural flags.
 
 ### Phase 03: Enforcement
 *Goal: Automated architecture guarding.*
-- [ ] Install `pestphp/pest-plugin-arch`.
-- [ ] Write `ArchTest` to prevent cross-module coupling.
-- [ ] Write `ArchTest` to enforce Controller/Repository layering.
+- [x] Install `pestphp/pest-plugin-arch` (built-in Pest 4).
+- [x] Write `ArchTest` to prevent cross-module coupling (module isolation).
+- [x] Write `ArchTest` to enforce Controller/Repository layering (via existing controller/action/payload/payloads rules).
+- [x] All `ArchTest` patterns use `config('architecture.module.base_path')` as the single source of truth for module location.
 
-### Phase 04: Documentation
-*Goal: "Write once, document forever".*
-- [ ] Integrate `dedoc/scramble`.
-- [ ] Configure automatic route/schema scanning.
-- [ ] Ensure `MakeModule` output is Scramble-compatible.
+### Phase 04: Documentation & Type Discovery
+*Goal: Automated API documentation with 0-boilerplate.*
+- [ ] Install & Configure `dedoc/scramble`.
+- [ ] Investigate & Fix missing schema detection (Deep-dive into Reflection/Type detection).
+- [ ] Implement "Auto-discovery helpers" (Transformers/Extenders) to minimize manual attributes.
 
 ### Phase 05: Observability
 *Goal: Production-ready health monitoring.*

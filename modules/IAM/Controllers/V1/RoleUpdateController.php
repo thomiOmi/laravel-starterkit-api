@@ -25,6 +25,9 @@ final readonly class RoleUpdateController
      * @param  RoleRequest  $request  The validated role update request.
      * @param  string  $id  The role ID.
      */
+    /**
+     * @response SuccessResponse<RoleResource>
+     */
     public function __invoke(RoleRequest $request, string $id): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */

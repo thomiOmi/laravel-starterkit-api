@@ -16,8 +16,7 @@ use Modules\{{Module}}\Database\Factories\{{Module}}Factory;
  * @property string $id The unique identifier (ULID).
  * @property Carbon|null $created_at The timestamp when created.
  * @property Carbon|null $updated_at The timestamp when updated.
- * @property Carbon|null $deleted_at The timestamp when soft deleted.
- */
+{{softDeletesPhpdoc}} */
 #[Fillable([
     // Fillable attributes here
 ])]

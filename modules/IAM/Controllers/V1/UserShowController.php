@@ -23,6 +23,8 @@ final readonly class UserShowController
      * Display the specified user.
      *
      * @param  string  $id  The user ID.
+     *
+     * @response SuccessResponse<UserResource>
      */
     public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {

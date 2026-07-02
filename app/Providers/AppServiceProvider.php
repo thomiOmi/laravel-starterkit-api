@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\Identity;
+use App\Documentation\ProblemResponseExtension;
+use App\Documentation\SuccessResponseExtension;
 use App\Models\Sanctum\PersonalAccessToken;
 use Carbon\CarbonImmutable;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -50,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureEmailVerification();
         $this->configurePasswordReset();
+        $this->configureDocumentation();
     }
 
     /**
@@ -127,6 +131,16 @@ class AppServiceProvider extends ServiceProvider
 
             return $url;
         });
+    }
+
+    protected function configureDocumentation(): void
+    {
+        if (! app()->environment('local', 'testing')) {
+            return;
+        }
+
+        Scramble::registerExtension(SuccessResponseExtension::class);
+        Scramble::registerExtension(ProblemResponseExtension::class);
     }
 
     protected function configureEmailVerification(): void

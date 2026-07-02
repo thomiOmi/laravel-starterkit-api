@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListDevicesAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Resources\DeviceResource;
@@ -19,6 +20,9 @@ final readonly class ListDevicesController
         private ListDevicesAction $listDevices
     ) {}
 
+    /**
+     * @response SuccessResponse<AnonymousResourceCollection>
+     */
     public function __invoke(Request $request): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */

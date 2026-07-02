@@ -25,6 +25,9 @@ final readonly class PermissionUpdateController
      * @param  PermissionRequest  $request  The validated permission update request.
      * @param  string  $id  The permission ID.
      */
+    /**
+     * @response SuccessResponse<PermissionResource>
+     */
     public function __invoke(PermissionRequest $request, string $id): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */

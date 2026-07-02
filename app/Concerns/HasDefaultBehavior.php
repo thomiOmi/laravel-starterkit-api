@@ -6,22 +6,57 @@ namespace App\Concerns;
 
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 /**
- * Trait providing default behaviors for models, including ULIDs and Soft Deletes.
+ * Trait providing default behaviors for models, driven by `config/architecture.php`.
+ *
+ * - ID strategy: ulid (default), uuid, or integer
+ * - Soft deletes: respects `architecture.model.use_soft_deletes`
+ * - Date serialization: Y-m-d H:i:s
  */
 trait HasDefaultBehavior
 {
     use HasUlids, SoftDeletes;
 
     /**
-     * Initialize the trait.
-     * Sets default properties for models using ULIDs.
+     * Initialize the trait based on architecture config.
      */
     public function initializeHasDefaultBehavior(): void
     {
-        $this->keyType = 'string';
-        $this->incrementing = false;
+        $idStrategy = config('architecture.model.default_id', 'ulid');
+
+        if ($idStrategy === 'integer') {
+            $this->keyType = 'int';
+            $this->incrementing = true;
+        } else {
+            $this->keyType = 'string';
+            $this->incrementing = false;
+        }
+    }
+
+    /**
+     * Override SoftDeletes initialization to respect config.
+     */
+    public function initializeSoftDeletes(): void
+    {
+        if (! config('architecture.model.use_soft_deletes', true)) {
+            return;
+        }
+
+        $this->mergeCasts([$this->getDeletedAtColumn() => 'datetime']);
+    }
+
+    /**
+     * Override SoftDeletes boot to respect config.
+     */
+    public static function bootSoftDeletes(): void
+    {
+        if (! config('architecture.model.use_soft_deletes', true)) {
+            return;
+        }
+
+        static::addGlobalScope(new SoftDeletingScope);
     }
 
     /**

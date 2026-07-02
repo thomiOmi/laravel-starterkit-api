@@ -32,7 +32,9 @@ class MakeModule extends Command
 
         $name = Str::studly($name);
         $version = strtoupper((string) $this->option('api-version'));
-        $modulePath = base_path("modules/{$name}");
+        $basePathConfig = config('architecture.module.base_path');
+        $basePath = is_string($basePathConfig) ? $basePathConfig : base_path('modules');
+        $modulePath = "{$basePath}/{$name}";
 
         if (File::exists($modulePath) && ! $this->option('force')) {
             if (! $this->confirm("Module {$name} already exists. Do you want to overwrite it?", false)) {
@@ -149,7 +151,9 @@ class MakeModule extends Command
             'routesContent' => $this->getRoutesContent($name, $version, $options),
         ]));
 
-        $this->createFileFromStub($path."/Models/{$name}.php", 'model', $replacements);
+        $this->createFileFromStub($path."/Models/{$name}.php", 'model', array_merge($replacements, [
+            'softDeletesPhpdoc' => $this->getSoftDeletesPhpdoc(),
+        ]));
 
         // Repository
         if ($options['repository']) {
@@ -211,7 +215,10 @@ class MakeModule extends Command
             }
 
             $fileName = date('Y_m_d_His')."_create_{$tableName}_table.php";
-            $this->createFileFromStub("{$migrationPath}/{$fileName}", 'migration', $replacements);
+            $this->createFileFromStub("{$migrationPath}/{$fileName}", 'migration', array_merge($replacements, [
+                'idColumn' => $this->getMigrationIdColumn(),
+                'softDeletesColumn' => $this->getSoftDeletesColumn(),
+            ]));
         }
 
         if ($options['factory']) {
@@ -292,6 +299,42 @@ Route::prefix('{$slug}')->middleware(['auth:sanctum', 'throttle:api'])->name('{$
 {$routeBlock}
 });
 PHP;
+    }
+
+    /**
+     * Get the migration ID column definition based on architecture config.
+     */
+    protected function getMigrationIdColumn(): string
+    {
+        return match (config('architecture.model.default_id', 'ulid')) {
+            'uuid' => '$table->uuid(\'id\')->primary();',
+            'integer' => '$table->id();',
+            default => '$table->ulid(\'id\')->primary();',
+        };
+    }
+
+    /**
+     * Get the soft deletes migration column based on architecture config.
+     */
+    protected function getSoftDeletesColumn(): string
+    {
+        if (! config('architecture.model.use_soft_deletes', true)) {
+            return '';
+        }
+
+        return '$table->softDeletes();';
+    }
+
+    /**
+     * Get the soft deletes PHPDoc line for generated models.
+     */
+    protected function getSoftDeletesPhpdoc(): string
+    {
+        if (! config('architecture.model.use_soft_deletes', true)) {
+            return '';
+        }
+
+        return " * @property Carbon|null \$deleted_at The timestamp when soft deleted.\n";
     }
 
     /**

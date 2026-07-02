@@ -19,6 +19,9 @@ final readonly class UserAssignRolesController
         private AssignRolesToUserAction $assignRoles,
     ) {}
 
+    /**
+     * @response SuccessResponse<UserResource>
+     */
     public function __invoke(string $id, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */

@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListRolesAction;
 use Modules\IAM\Filters\RoleFilter;
 use Modules\IAM\Models\User;
@@ -22,6 +23,9 @@ final readonly class RoleIndexController
 
     /**
      * Display a paginated listing of the roles.
+     */
+    /**
+     * @response SuccessResponse<AnonymousResourceCollection>
      */
     public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {

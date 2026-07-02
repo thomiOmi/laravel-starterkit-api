@@ -19,6 +19,9 @@ final readonly class PermissionCreateController
     /**
      * Store a newly created permission.
      */
+    /**
+     * @return SuccessResponse<PermissionResource>
+     */
     public function __invoke(PermissionRequest $request): SuccessResponse
     {
         $permission = $this->createPermission->handle($request->payload());
