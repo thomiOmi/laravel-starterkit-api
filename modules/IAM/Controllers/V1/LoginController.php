@@ -15,6 +15,9 @@ final readonly class LoginController
         private LoginAction $loginAction
     ) {}
 
+    /**
+     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     */
     public function __invoke(LoginRequest $request): SuccessResponse
     {
         $result = $this->loginAction->handle(

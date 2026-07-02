@@ -28,8 +28,18 @@ class UserResource extends JsonResource
             'name' => $this->resource->name,
             'email' => $this->resource->email,
             'avatar' => $this->resource->avatar,
-            'roles' => $this->whenLoaded('roles', fn () => $this->resource->roles->pluck('name')->all()),
-            'permissions' => $this->when($this->relationLoaded('roles') || $this->relationLoaded('permissions'), fn () => $this->resource->getAllPermissions()->pluck('name')->all()),
+            'roles' => $this->whenLoaded('roles', function (): array {
+                /** @var array<int, string> $names */
+                $names = $this->resource->roles->pluck('name')->all();
+
+                return $names;
+            }),
+            'permissions' => $this->when($this->relationLoaded('roles') || $this->relationLoaded('permissions'), function (): array {
+                /** @var array<int, string> $names */
+                $names = $this->resource->getAllPermissions()->pluck('name')->all();
+
+                return $names;
+            }),
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
             'created_at' => (string) $this->formatDate($this->resource->created_at),
             'updated_at' => (string) $this->formatDate($this->resource->updated_at),

@@ -24,7 +24,7 @@ final readonly class UserIndexController
     /**
      * Display a paginated listing of the users.
      *
-     * @response SuccessResponse<AnonymousResourceCollection>
+     * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
     public function __invoke(Request $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {

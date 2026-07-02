@@ -16,6 +16,8 @@ final readonly class RoleBulkDeleteController
 
     /**
      * Perform bulk delete on roles.
+     *
+     * @return SuccessResponse<array{count: int}>
      */
     public function __invoke(BulkActionRequest $request): SuccessResponse
     {

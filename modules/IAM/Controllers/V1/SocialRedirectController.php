@@ -13,6 +13,9 @@ final readonly class SocialRedirectController
         private SocialRedirectAction $socialRedirect
     ) {}
 
+    /**
+     * @return SuccessResponse<array{url: string}>
+     */
     public function __invoke(string $provider): SuccessResponse
     {
         $url = $this->socialRedirect->handle($provider);

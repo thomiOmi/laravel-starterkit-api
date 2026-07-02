@@ -9,6 +9,9 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
 final readonly class VerifyEmailController
 {
+    /**
+     * @return SuccessResponse<null>
+     */
     public function __invoke(EmailVerificationRequest $request): SuccessResponse
     {
         $request->fulfill();

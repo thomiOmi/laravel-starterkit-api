@@ -25,7 +25,7 @@ final readonly class RoleIndexController
      * Display a paginated listing of the roles.
      */
     /**
-     * @response SuccessResponse<AnonymousResourceCollection>
+     * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
     public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {

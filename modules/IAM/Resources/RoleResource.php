@@ -27,8 +27,11 @@ class RoleResource extends JsonResource
             'id' => (string) $this->resource->id,
             'name' => $this->resource->name,
             'description' => is_string($this->resource->description) ? $this->resource->description : null,
-            'permissions' => $this->whenLoaded('permissions', function () {
-                return $this->resource->permissions->pluck('name')->all();
+            'permissions' => $this->whenLoaded('permissions', function (): array {
+                /** @var array<int, string> $names */
+                $names = $this->resource->permissions->pluck('name')->all();
+
+                return $names;
             }),
             'created_at' => (string) $this->formatDate($this->resource->created_at),
             'updated_at' => (string) $this->formatDate($this->resource->updated_at),

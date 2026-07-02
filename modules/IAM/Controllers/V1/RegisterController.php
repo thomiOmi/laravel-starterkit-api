@@ -17,6 +17,9 @@ final readonly class RegisterController
         private RegisterAction $registerAction
     ) {}
 
+    /**
+     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     */
     public function __invoke(RegisterRequest $request): SuccessResponse
     {
         $result = $this->registerAction->handle(

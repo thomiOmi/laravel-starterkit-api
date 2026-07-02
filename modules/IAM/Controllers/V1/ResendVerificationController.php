@@ -18,6 +18,9 @@ final readonly class ResendVerificationController
         private ResendVerificationAction $resendVerificationAction
     ) {}
 
+    /**
+     * @return SuccessResponse<null>
+     */
     public function __invoke(Request $request): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */
