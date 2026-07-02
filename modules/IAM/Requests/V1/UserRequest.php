@@ -51,6 +51,7 @@ final class UserRequest extends FormRequest
     public function rules(): array
     {
         $userId = $this->route('user');
+        $userId = is_string($userId) ? $userId : null;
 
         return [
             ...$this->profileRules($userId),

@@ -24,14 +24,14 @@ class RoleResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'description' => $this->description,
+            'id' => (string) $this->resource->id,
+            'name' => $this->resource->name,
+            'description' => is_string($this->resource->description) ? $this->resource->description : null,
             'permissions' => $this->whenLoaded('permissions', function () {
-                return $this->resource->permissions->pluck('name');
+                return $this->resource->permissions->pluck('name')->all();
             }),
-            'created_at' => $this->formatDate($this->created_at),
-            'updated_at' => $this->formatDate($this->updated_at),
+            'created_at' => (string) $this->formatDate($this->resource->created_at),
+            'updated_at' => (string) $this->formatDate($this->resource->updated_at),
         ];
     }
 }

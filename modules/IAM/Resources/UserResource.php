@@ -24,15 +24,15 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->resource->id,
+            'id' => (string) $this->resource->id,
             'name' => $this->resource->name,
             'email' => $this->resource->email,
             'avatar' => $this->resource->avatar,
-            'roles' => $this->whenLoaded('roles', fn () => $this->resource->roles->pluck('name')),
-            'permissions' => $this->when($this->relationLoaded('roles') || $this->relationLoaded('permissions'), fn () => $this->resource->getAllPermissions()->pluck('name')),
+            'roles' => $this->whenLoaded('roles', fn () => $this->resource->roles->pluck('name')->all()),
+            'permissions' => $this->when($this->relationLoaded('roles') || $this->relationLoaded('permissions'), fn () => $this->resource->getAllPermissions()->pluck('name')->all()),
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
-            'created_at' => $this->formatDate($this->resource->created_at),
-            'updated_at' => $this->formatDate($this->resource->updated_at),
+            'created_at' => (string) $this->formatDate($this->resource->created_at),
+            'updated_at' => (string) $this->formatDate($this->resource->updated_at),
             'deleted_at' => $this->formatDate($this->resource->deleted_at),
         ];
     }
