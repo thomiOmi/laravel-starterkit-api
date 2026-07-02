@@ -66,7 +66,7 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::prefix('users')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
     Route::get('/', UserIndexController::class)->name('index');
     Route::post('/', UserCreateController::class)->name('create');
 
@@ -79,7 +79,7 @@ Route::prefix('users')->middleware(['auth:sanctum', 'verified', 'throttle:api'])
     Route::delete('/{user}', UserDeleteController::class)->name('delete');
 });
 
-Route::prefix('roles')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
     Route::get('/', RoleIndexController::class)->name('index');
     Route::post('/', RoleCreateController::class)->name('create');
 

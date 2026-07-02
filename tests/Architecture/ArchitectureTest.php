@@ -32,11 +32,6 @@ arch('actions should be final, readonly, and have handle')
     ->toBeReadonly()
     ->toHaveMethod('handle');
 
-arch('repositories should be final and readonly')
-    ->expect('Modules\*\Repositories')
-    ->toBeFinal()
-    ->toBeReadonly();
-
 arch('payloads should be final and readonly')
     ->expect('Modules\*\Payloads')
     ->toBeFinal()

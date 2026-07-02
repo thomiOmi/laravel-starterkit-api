@@ -36,7 +36,7 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
 
     // Verify Email
     $verificationUrl = URL::temporarySignedRoute(
-        'api.v1.auth.verification.verify',
+        'api.v1.verification.verify',
         now()->addMinutes(60),
         ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
     );

@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Role\Database\Seeders\RoleSeeder;
-use Modules\User\Database\Seeders\UserSeeder;
+use Modules\IAM\Database\Seeders\RoleSeeder;
+use Modules\IAM\Database\Seeders\UserSeeder;
 
 class DatabaseSeeder extends Seeder
 {

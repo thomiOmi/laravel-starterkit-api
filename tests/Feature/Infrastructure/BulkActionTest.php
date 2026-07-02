@@ -7,7 +7,7 @@ namespace Tests\Feature\Infrastructure;
 use App\Http\Requests\BulkActionRequest;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-use Modules\Role\Models\Permission;
+use Modules\IAM\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 
 test('BulkActionRequest validates ULIDs and count limits', function () {

@@ -1,9 +1,9 @@
 <?php
 
 use Illuminate\Support\Str;
-use Modules\Role\Models\Permission;
-use Modules\Role\Models\Role;
-use Modules\User\Models\User;
+use Modules\IAM\Models\Permission;
+use Modules\IAM\Models\Role;
+use Modules\IAM\Models\User;
 
 return [
 
