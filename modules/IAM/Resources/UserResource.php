@@ -19,7 +19,7 @@ class UserResource extends JsonResource
     use FormatDates;
 
     /**
-     * @return array{id: string, name: string, email: string, avatar: ?string, roles: ?string[], permissions: ?string[], email_verified_at: ?string, created_at: string, updated_at: string, deleted_at: ?string}
+     * @return array{id: string, name: string, email: string, avatar: string|null, roles: string[]|null, permissions: string[]|null, email_verified_at: string|null, created_at: string, updated_at: string, deleted_at: string|null}
      */
     public function toArray(Request $request): array
     {
@@ -27,19 +27,13 @@ class UserResource extends JsonResource
             'id' => (string) $this->resource->id,
             'name' => $this->resource->name,
             'email' => $this->resource->email,
-            'avatar' => $this->resource->avatar,
-            'roles' => $this->whenLoaded('roles', function (): array {
-                /** @var array<int, string> $names */
-                $names = $this->resource->roles->pluck('name')->all();
-
-                return $names;
-            }),
-            'permissions' => $this->when($this->relationLoaded('roles') || $this->relationLoaded('permissions'), function (): array {
-                /** @var array<int, string> $names */
-                $names = $this->resource->getAllPermissions()->pluck('name')->all();
-
-                return $names;
-            }),
+            'avatar' => is_string($this->resource->avatar) ? $this->resource->avatar : null,
+            'roles' => $this->resource->relationLoaded('roles')
+                ? $this->resource->roles->pluck('name')->all()
+                : null,
+            'permissions' => ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
+                ? $this->resource->getAllPermissions()->pluck('name')->all()
+                : null,
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
             'created_at' => (string) $this->formatDate($this->resource->created_at),
             'updated_at' => (string) $this->formatDate($this->resource->updated_at),
