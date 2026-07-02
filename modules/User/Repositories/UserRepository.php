@@ -16,15 +16,33 @@ final readonly class UserRepository
      */
     public function paginate(UserFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
-        return $filter->apply(User::query())
-            ->with(['roles.permissions:id,name', 'permissions:id,name'])
-            ->paginate($pageSize, ['*'], 'page', $page);
+        $query = $filter->apply(User::query());
+
+        return $query->with(['roles.permissions:id,name', 'permissions:id,name'])
+            ->paginate($pageSize, $query->getQuery()->columns ?? ['*'], 'page', $page);
     }
 
     public function findById(string $id): ?User
     {
-        return Cache::remember("user_{$id}", 60, function () use ($id): ?User {
-            return User::with(['roles.permissions:id,name', 'permissions:id,name'])->find($id);
+        /** @var User|null $user */
+        $user = Cache::remember("user_{$id}", 60, function () use ($id): ?User {
+            /** @var User|null $user */
+            $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
+                ->select([
+                    'id',
+                    'name',
+                    'email',
+                    'avatar',
+                    'email_verified_at',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                ])
+                ->find($id);
+
+            return $user;
         });
+
+        return $user;
     }
 }

@@ -36,8 +36,22 @@ final readonly class RegisterAction
             'user_agent' => $userAgent,
         ])->save();
 
+        /** @var User $hydratedUser */
+        $hydratedUser = $user->fresh(['roles.permissions:id,name', 'permissions:id,name'])
+            ?->select([
+                'id',
+                'name',
+                'email',
+                'avatar',
+                'email_verified_at',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+            ])
+            ->first() ?? $user;
+
         return [
-            'user' => $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']),
+            'user' => $hydratedUser,
             'access_token' => $token->plainTextToken,
             'token_type' => 'Bearer',
         ];
