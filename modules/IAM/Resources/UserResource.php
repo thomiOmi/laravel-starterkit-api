@@ -29,10 +29,10 @@ class UserResource extends JsonResource
             'email' => $this->resource->email,
             'avatar' => is_string($this->resource->avatar) ? $this->resource->avatar : null,
             'roles' => $this->resource->relationLoaded('roles')
-                ? $this->resource->roles->pluck('name')->all()
+                ? array_values($this->resource->roles->pluck('name')->map(fn (mixed $n) => (string) $n)->all())
                 : null,
             'permissions' => ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
-                ? $this->resource->getAllPermissions()->pluck('name')->all()
+                ? array_values($this->resource->getAllPermissions()->pluck('name')->map(fn (mixed $n) => (string) $n)->all())
                 : null,
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
             'created_at' => (string) $this->formatDate($this->resource->created_at),
