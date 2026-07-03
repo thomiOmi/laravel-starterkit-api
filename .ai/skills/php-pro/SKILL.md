@@ -21,7 +21,7 @@ Senior PHP developer with deep expertise in PHP 8.4+, Laravel, and modern PHP pa
 
 1. **Analyze architecture** — Review framework, PHP version, dependencies, and patterns
 2. **Design models** — Create typed domain models, value objects, DTOs
-3. **Implement** — Write strict-typed code with PSR compliance, DI, repositories
+3. **Implement** — Write strict-typed code with PSR compliance, DI, actions/services
 4. **Secure** — Add validation, authentication, XSS/SQL injection protection
 5. **Verify** — Run `vendor/bin/phpstan analyse --memory-limit=512M`; fix all errors before proceeding. Run `vendor/bin/pest`; enforce 80%+ coverage. Only deliver when both pass clean.
 
@@ -34,7 +34,7 @@ Load detailed guidance based on context:
 | Modern PHP | `references/modern-php-features.md` | Readonly, enums, attributes, fibers, types |
 | PHP Standards | `references/php-standards.md` | PSR rules, code style, naming conventions |
 | Property Hooks | `references/property-hooks.md` | PHP 8.4 property hooks, Payload DTO pattern |
-| Laravel | `references/laravel-patterns.md` | Services, repositories, resources, jobs |
+| Laravel | `references/laravel-patterns.md` | Services, actions, resources, jobs |
 | Testing | `references/testing-quality.md` | PHPStan, Pest, mocking |
 
 ## Constraints
@@ -58,12 +58,13 @@ Load detailed guidance based on context:
 - Deploy without running tests and static analysis
 - Use var_dump in production code
 - Use PHPUnit — this project uses Pest
+- Use Repositories (Eloquent models are used directly in actions)
 
 ## Code Patterns
 
-Every complete implementation delivers: a typed entity/DTO, a service class, and a test. Use these as the baseline structure.
+Every complete implementation delivers: a typed entity/DTO, an action class, and a test. Use these as the baseline structure.
 
-### Readonly DTO / Value Object
+### Readonly Payload DTO
 
 ```php
 <?php
@@ -79,41 +80,27 @@ final readonly class CreateUserPayload
         public string $email,
         public string $password,
     ) {}
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            name: $data['name'],
-            email: $data['email'],
-            password: $data['password'],
-        );
-    }
 }
 ```
 
-### Typed Service with Constructor DI
+### Typed Action with Constructor DI
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\User\Services;
+namespace Modules\User\Actions;
 
 use Modules\User\Models\User;
 use Modules\User\Payloads\CreateUserPayload;
-use Modules\User\Repositories\UserRepositoryInterface;
 use Illuminate\Support\Facades\Hash;
 
-final class UserService
+final readonly class CreateUserAction
 {
-    public function __construct(
-        private readonly UserRepositoryInterface $users,
-    ) {}
-
-    public function create(CreateUserPayload $payload): User
+    public function handle(CreateUserPayload $payload): User
     {
-        return $this->users->create([
+        return User::create([
             'name'     => $payload->name,
             'email'    => $payload->email,
             'password' => Hash::make($payload->password),
@@ -131,14 +118,12 @@ declare(strict_types=1);
 
 use Modules\User\Payloads\CreateUserPayload;
 use Modules\User\Models\User;
-use Modules\User\Repositories\UserRepositoryInterface;
-use Modules\User\Services\UserService;
+use Modules\User\Actions\CreateUserAction;
 
 uses(Tests\RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->users = Mockery::mock(UserRepositoryInterface::class);
-    $this->service = new UserService($this->users);
+    $this->action = new CreateUserAction();
 });
 
 it('creates a user with hashed password', function (): void {
@@ -148,42 +133,11 @@ it('creates a user with hashed password', function (): void {
         password: 'secret',
     );
 
-    $this->users
-        ->shouldReceive('create')
-        ->once()
-        ->with(Mockery::on(fn (array $data): bool => !empty($data['password'])))
-        ->andReturn(new User(['name' => 'Alice', 'email' => 'alice@example.com']));
-
-    $result = $this->service->create($payload);
+    $result = $this->action->handle($payload);
 
     expect($result->name)->toBe('Alice');
+    expect(Hash::check('secret', $result->password))->toBeTrue();
 });
-```
-
-### Enum (PHP 8.1+)
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace Modules\User\Enums;
-
-enum UserStatus: string
-{
-    case Active   = 'active';
-    case Inactive = 'inactive';
-    case Banned   = 'banned';
-
-    public function label(): string
-    {
-        return match($this) {
-            self::Active   => 'Active',
-            self::Inactive => 'Inactive',
-            self::Banned   => 'Banned',
-        };
-    }
-}
 ```
 
 ### PHP 8.4 Property Hooks
@@ -219,13 +173,11 @@ final class CreateUserPayload extends Payload
 }
 ```
 
-See `assets/payload.stub` for the template used to generate new Payload classes.
-
 ## Output Templates
 
 When implementing a feature, deliver in this order:
 1. Domain models (entities, value objects, enums)
-2. Service/repository classes
+2. Action classes (using Eloquent directly)
 3. Controller/API endpoints
 4. Test files (Pest)
 5. Brief explanation of architecture decisions
@@ -233,5 +185,3 @@ When implementing a feature, deliver in this order:
 ## Knowledge Reference
 
 PHP 8.4+, Laravel 13, Composer, PHPStan, Pest, Eloquent ORM, PSR standards, Redis, MySQL/PostgreSQL, REST APIs
-
-[Documentation](https://jeffallan.github.io/claude-skills/skills/language/php-pro/)
