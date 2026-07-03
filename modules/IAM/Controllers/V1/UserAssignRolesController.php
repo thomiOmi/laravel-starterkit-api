@@ -20,7 +20,7 @@ final readonly class UserAssignRolesController
     ) {}
 
     /**
-     * @response SuccessResponse<UserResource>
+     * @return SuccessResponse<UserResource>|ProblemResponse
      */
     public function __invoke(string $id, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {

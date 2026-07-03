@@ -15,6 +15,9 @@ final readonly class SocialCallbackController
         private SocialCallbackAction $socialCallback
     ) {}
 
+    /**
+     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     */
     public function __invoke(string $provider, Request $request): SuccessResponse
     {
         $result = $this->socialCallback->handle(

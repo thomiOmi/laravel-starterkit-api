@@ -19,19 +19,24 @@ class RoleResource extends JsonResource
     use FormatDates;
 
     /**
-     * @return array{id: string, name: string, description: ?string, permissions: ?string[], created_at: string, updated_at: string}
+     * @return array{id: string, name: string, description: string|null, permissions: string[]|null, created_at: string, updated_at: string}
      */
     public function toArray(Request $request): array
     {
+        /** @var list<string>|null $permissions */
+        $permissions = $this->resource->relationLoaded('permissions')
+            ? $this->resource->permissions->pluck('name')->map(function (mixed $val): string {
+                return is_string($val) || is_int($val) ? (string) $val : '';
+            })->values()->all()
+            : null;
+
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'description' => $this->description,
-            'permissions' => $this->whenLoaded('permissions', function () {
-                return $this->resource->permissions->pluck('name');
-            }),
-            'created_at' => $this->formatDate($this->created_at),
-            'updated_at' => $this->formatDate($this->updated_at),
+            'id' => (string) $this->resource->id,
+            'name' => $this->resource->name,
+            'description' => is_string($this->resource->description) ? $this->resource->description : null,
+            'permissions' => $permissions,
+            'created_at' => (string) $this->formatDate($this->resource->created_at),
+            'updated_at' => (string) $this->formatDate($this->resource->updated_at),
         ];
     }
 }

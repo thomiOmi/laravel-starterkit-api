@@ -24,7 +24,7 @@ final readonly class PermissionIndexController
     /**
      * Display a paginated listing of permissions.
      *
-     * @response SuccessResponse<AnonymousResourceCollection>
+     * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
     public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {

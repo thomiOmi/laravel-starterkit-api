@@ -14,6 +14,9 @@ final readonly class ForgotPasswordController
         private ForgotPasswordAction $forgotPasswordAction
     ) {}
 
+    /**
+     * @return SuccessResponse<null>
+     */
     public function __invoke(ForgotPasswordRequest $request): SuccessResponse
     {
         $this->forgotPasswordAction->handle($request->string('email')->toString());

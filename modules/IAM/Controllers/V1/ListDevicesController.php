@@ -21,7 +21,7 @@ final readonly class ListDevicesController
     ) {}
 
     /**
-     * @response SuccessResponse<AnonymousResourceCollection>
+     * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
     public function __invoke(Request $request): SuccessResponse|ProblemResponse
     {

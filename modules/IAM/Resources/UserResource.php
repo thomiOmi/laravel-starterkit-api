@@ -19,20 +19,34 @@ class UserResource extends JsonResource
     use FormatDates;
 
     /**
-     * @return array{id: string, name: string, email: string, avatar: ?string, roles: ?string[], permissions: ?string[], email_verified_at: ?string, created_at: string, updated_at: string, deleted_at: ?string}
+     * @return array{id: string, name: string, email: string, avatar: string|null, roles: string[]|null, permissions: string[]|null, email_verified_at: string|null, created_at: string, updated_at: string, deleted_at: string|null}
      */
     public function toArray(Request $request): array
     {
+        /** @var list<string>|null $roles */
+        $roles = $this->resource->relationLoaded('roles')
+            ? $this->resource->roles->pluck('name')->map(function (mixed $val): string {
+                return is_string($val) || is_int($val) ? (string) $val : '';
+            })->values()->all()
+            : null;
+
+        /** @var list<string>|null $permissions */
+        $permissions = ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
+            ? $this->resource->getAllPermissions()->pluck('name')->map(function (mixed $val): string {
+                return is_string($val) || is_int($val) ? (string) $val : '';
+            })->values()->all()
+            : null;
+
         return [
-            'id' => $this->resource->id,
+            'id' => (string) $this->resource->id,
             'name' => $this->resource->name,
             'email' => $this->resource->email,
-            'avatar' => $this->resource->avatar,
-            'roles' => $this->whenLoaded('roles', fn () => $this->resource->roles->pluck('name')),
-            'permissions' => $this->when($this->relationLoaded('roles') || $this->relationLoaded('permissions'), fn () => $this->resource->getAllPermissions()->pluck('name')),
+            'avatar' => is_string($this->resource->avatar) ? $this->resource->avatar : null,
+            'roles' => $roles,
+            'permissions' => $permissions,
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
-            'created_at' => $this->formatDate($this->resource->created_at),
-            'updated_at' => $this->formatDate($this->resource->updated_at),
+            'created_at' => (string) $this->formatDate($this->resource->created_at),
+            'updated_at' => (string) $this->formatDate($this->resource->updated_at),
             'deleted_at' => $this->formatDate($this->resource->deleted_at),
         ];
     }

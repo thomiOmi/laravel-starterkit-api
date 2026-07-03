@@ -14,6 +14,9 @@ final readonly class ResetPasswordController
         private ResetPasswordAction $resetPasswordAction
     ) {}
 
+    /**
+     * @return SuccessResponse<null>
+     */
     public function __invoke(ResetPasswordRequest $request): SuccessResponse
     {
         $this->resetPasswordAction->handle([

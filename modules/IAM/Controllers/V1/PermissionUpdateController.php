@@ -26,7 +26,7 @@ final readonly class PermissionUpdateController
      * @param  string  $id  The permission ID.
      */
     /**
-     * @response SuccessResponse<PermissionResource>
+     * @return SuccessResponse<PermissionResource>|ProblemResponse
      */
     public function __invoke(PermissionRequest $request, string $id): SuccessResponse|ProblemResponse
     {

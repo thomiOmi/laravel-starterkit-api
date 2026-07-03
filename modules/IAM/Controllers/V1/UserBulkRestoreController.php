@@ -16,6 +16,8 @@ final readonly class UserBulkRestoreController
 
     /**
      * Perform bulk restore on users.
+     *
+     * @return SuccessResponse<array{count: int}>
      */
     public function __invoke(BulkActionRequest $request): SuccessResponse
     {

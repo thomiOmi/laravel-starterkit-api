@@ -16,6 +16,8 @@ final readonly class UserBulkDeleteController
 
     /**
      * Perform bulk delete on users.
+     *
+     * @return SuccessResponse<array{count: int}>
      */
     public function __invoke(BulkActionRequest $request): SuccessResponse
     {
