@@ -23,14 +23,14 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        /** @var array<int, string>|null $roles */
+        /** @var list<string>|null $roles */
         $roles = $this->resource->relationLoaded('roles')
-            ? array_values(array_map('strval', $this->resource->roles->pluck('name')->all()))
+            ? array_values(array_map(fn (mixed $val) => (string) $val, $this->resource->roles->pluck('name')->all()))
             : null;
 
-        /** @var array<int, string>|null $permissions */
+        /** @var list<string>|null $permissions */
         $permissions = ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
-            ? array_values(array_map('strval', $this->resource->getAllPermissions()->pluck('name')->all()))
+            ? array_values(array_map(fn (mixed $val) => (string) $val, $this->resource->getAllPermissions()->pluck('name')->all()))
             : null;
 
         return [

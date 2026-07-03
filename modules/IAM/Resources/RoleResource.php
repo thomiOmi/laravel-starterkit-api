@@ -23,9 +23,9 @@ class RoleResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        /** @var array<int, string>|null $permissions */
+        /** @var list<string>|null $permissions */
         $permissions = $this->resource->relationLoaded('permissions')
-            ? array_values(array_map('strval', $this->resource->permissions->pluck('name')->all()))
+            ? array_values(array_map(fn (mixed $val) => (string) $val, $this->resource->permissions->pluck('name')->all()))
             : null;
 
         return [
