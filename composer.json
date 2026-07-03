@@ -29,7 +29,9 @@
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^4.6",
         "pestphp/pest-plugin-laravel": "^4.1",
-        "phpstan/extension-installer": "^1.4"
+        "pestphp/pest-plugin-type-coverage": "^4.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan-mockery": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -78,7 +80,17 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "phpstan": [
+            "./vendor/bin/phpstan"
+        ],
+        "pint": [
+            "./vendor/bin/pint"
         ]
+    },
+    "scripts-descriptions": {
+        "phpstan": "Run PHPStan static analysis against your application.",
+        "pint": "Run Pint code style fixer against your application."
     },
     "extra": {
         "laravel": {
