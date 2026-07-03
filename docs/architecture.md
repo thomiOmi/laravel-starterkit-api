@@ -3,7 +3,7 @@
 ## Data Flow
 
 ```
-Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / Eloquent (write) -> Response
+Request -> Middleware -> Controller (__invoke) -> Action -> Eloquent -> Response
 ```
 
 ## Layers
@@ -13,9 +13,6 @@ Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / 
 
 ### Actions
 `final readonly` classes in `Modules/{Module}/Actions/`. Each action encapsulates a single business operation with a `handle()` method. Injectable via constructor.
-
-### Repositories
-Read-only data access in `Modules/{Module}/Repositories/`. Provides `findById()` and `paginate()` methods with optional caching. Writes (create, update, delete) use Eloquent models directly inside actions.
 
 ### Models
 Eloquent models in `Modules/{Module}/Models/`. Uses `HasDefaultBehavior` trait which applies ULID primary keys, soft deletes, and consistent `Y-m-d H:i:s` date serialization.
@@ -35,7 +32,6 @@ modules/{Module}/
   Models/            -- Eloquent models with HasDefaultBehavior
   Payloads/V1/       -- Typed DTOs for action input
   Providers/         -- Service provider (auto-registered by ModuleServiceProvider)
-  Repositories/      -- Read-only data access (findById, paginate)
   Requests/V1/       -- Form request validation
   Resources/         -- API resource transformers
   Routes/            -- Route files (V1.php loaded by RouteServiceProvider)
@@ -46,9 +42,7 @@ modules/{Module}/
 
 ```
 modules/
-  Auth/    -- Authentication, devices, social login
-  Role/    -- Roles & permissions CRUD, Spatie integration
-  User/    -- User CRUD, bulk actions
+  IAM/    -- Identity and Access Management (Auth, User, Role, Permission)
 ```
 
 ## Response Types

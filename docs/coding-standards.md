@@ -8,15 +8,15 @@
 
 ## Naming
 - Classes: `PascalCase` (e.g. `CreateUserAction`)
-- Methods/variables: `camelCase` (e.g. `findById`)
+- Methods/variables: `camelCase` (e.g. `isRegistered`)
 - Database tables: `snake_case` plural (e.g. `users`)
 - Route names: `api.v1.{module}.{resource}.{action}` (e.g. `api.v1.auth.register`)
 
 ## Architecture
 - Controllers: `final readonly __invoke` -- no business logic
 - Actions: `final readonly` with `handle()` method -- single responsibility
-- Repositories: read-only (findById, paginate). Writes use Eloquent in actions
 - Models in `Modules/{Module}/Models/`. Use `HasDefaultBehavior` (ULID, soft deletes, date format)
+- No repositories: Use Eloquent directly within actions
 
 ## API
 - All responses: `JsonResponse` or `ResourceCollection::additional()->response()`
