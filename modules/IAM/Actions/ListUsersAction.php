@@ -10,9 +10,20 @@ use Modules\IAM\Models\User;
 
 final readonly class ListUsersAction
 {
-    /** @return Paginator<int, User> */
+    /**
+     * Handle the action to list users with filtering and pagination.
+     *
+     * @param  UserFilter  $filter  The filter to apply to the user query.
+     * @param  int  $pageSize  The number of users per page.
+     * @param  int|null  $page  The current page number.
+     * @return Paginator<int, User> A paginator instance containing the users.
+     */
     public function handle(UserFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
-        return $filter->apply(User::query())->paginate($pageSize, ['*'], 'page', $page);
+        $builder = $filter->apply(
+            User::with(['roles.permissions:id,name', 'permissions:id,name'])
+        );
+
+        return $builder->paginate($pageSize, $builder->getQuery()->columns ?? ['*'], 'page', $page);
     }
 }
