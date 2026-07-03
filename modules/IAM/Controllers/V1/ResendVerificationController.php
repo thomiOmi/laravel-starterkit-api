@@ -36,6 +36,9 @@ final readonly class ResendVerificationController
 
         $message = $this->resendVerificationAction->handle($currentUser);
 
-        return new SuccessResponse('OK', $message);
+        return new SuccessResponse(
+            title: 'OK',
+            detail: $message,
+        );
     }
 }

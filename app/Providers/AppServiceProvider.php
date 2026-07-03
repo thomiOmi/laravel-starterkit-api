@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\Identity;
-use App\Documentation\ProblemResponseExtension;
-use App\Documentation\SuccessResponseExtension;
 use App\Models\Sanctum\PersonalAccessToken;
 use Carbon\CarbonImmutable;
-use Dedoc\Scramble\Scramble;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -47,13 +44,13 @@ class AppServiceProvider extends ServiceProvider
 
         $this->defineFeatures();
 
-        Gate::before(function (Identity $user, $ability) {
+        Gate::before(function (Identity $user, string $ability) {
             return $user->hasRole('super-admin') ? true : null;
         });
 
         $this->configureEmailVerification();
         $this->configurePasswordReset();
-        $this->configureDocumentation();
+        $this->configureScramble();
     }
 
     /**
@@ -133,16 +130,6 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    protected function configureDocumentation(): void
-    {
-        if (! app()->environment('local', 'testing')) {
-            return;
-        }
-
-        Scramble::registerExtension(SuccessResponseExtension::class);
-        Scramble::registerExtension(ProblemResponseExtension::class);
-    }
-
     protected function configureEmailVerification(): void
     {
         VerifyEmail::createUrlUsing(function (Identity $notifiable): string {
@@ -180,4 +167,6 @@ class AppServiceProvider extends ServiceProvider
                 ->action('Verify Email Address', $url);
         });
     }
+
+    protected function configureScramble(): void {}
 }

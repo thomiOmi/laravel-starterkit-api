@@ -27,10 +27,10 @@ final readonly class UserCreateController
         $user = $this->createUser->handle($request->payload());
 
         return new SuccessResponse(
-            'Created',
-            __('general.created', ['resource' => 'User']),
-            new UserResource($user),
-            Response::HTTP_CREATED,
+            data: new UserResource($user),
+            title: 'Created',
+            detail: __('general.created', ['resource' => 'User']),
+            status: Response::HTTP_CREATED,
         );
     }
 }

@@ -39,9 +39,9 @@ final readonly class ListDevicesController
         $devices = $this->listDevices->handle($currentUser);
 
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'Devices']),
-            DeviceResource::collection($devices),
+            data: DeviceResource::collection($devices),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'Devices']),
         );
     }
 }

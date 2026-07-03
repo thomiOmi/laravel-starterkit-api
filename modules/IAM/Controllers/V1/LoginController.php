@@ -27,13 +27,13 @@ final readonly class LoginController
         );
 
         return new SuccessResponse(
-            'OK',
-            __('auth.login_success'),
-            [
+            data: [
                 'user' => new UserResource($result['user']),
                 'access_token' => $result['access_token'],
                 'token_type' => $result['token_type'],
             ],
+            title: 'OK',
+            detail: __('auth.login_success'),
         );
     }
 }

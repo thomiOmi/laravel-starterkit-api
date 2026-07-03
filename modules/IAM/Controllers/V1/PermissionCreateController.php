@@ -26,10 +26,10 @@ final readonly class PermissionCreateController
         $permission = $this->createPermission->handle($request->payload());
 
         return new SuccessResponse(
-            'Created',
-            __('general.created', ['resource' => 'Permission']),
-            new PermissionResource($permission),
-            Response::HTTP_CREATED,
+            data: new PermissionResource($permission),
+            title: 'Created',
+            detail: __('general.created', ['resource' => 'Permission']),
+            status: Response::HTTP_CREATED,
         );
     }
 }

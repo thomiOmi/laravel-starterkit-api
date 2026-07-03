@@ -27,9 +27,9 @@ final readonly class UserBulkRestoreController
         $count = $this->bulkRestoreUsers->handle($validated['ids']);
 
         return new SuccessResponse(
-            'OK',
-            __('general.restored', ['resource' => 'Users']),
-            ['count' => $count],
+            data: ['count' => $count],
+            title: 'OK',
+            detail: __('general.restored', ['resource' => 'Users']),
         );
     }
 }

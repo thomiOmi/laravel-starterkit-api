@@ -59,9 +59,9 @@ final readonly class UserShowController
         }
 
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'User']),
-            new UserResource($user),
+            data: new UserResource($user),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'User']),
         );
     }
 }

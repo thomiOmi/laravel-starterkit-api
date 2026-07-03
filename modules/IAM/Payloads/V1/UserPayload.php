@@ -50,6 +50,6 @@ final readonly class UserPayload
             'name' => $this->name,
             'email' => $this->email,
             'password' => $this->password,
-        ], fn ($value) => $value !== null);
+        ], fn (mixed $value) => $value !== null);
     }
 }

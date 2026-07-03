@@ -54,9 +54,9 @@ final readonly class UserIndexController
         );
 
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'Users']),
-            UserResource::collection($users),
+            data: UserResource::collection($users),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'Users']),
         );
     }
 }

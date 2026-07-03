@@ -27,8 +27,8 @@ final readonly class ResetPasswordController
         ]);
 
         return new SuccessResponse(
-            'OK',
-            __('passwords.reset'),
+            title: 'OK',
+            detail: __('passwords.reset'),
         );
     }
 }

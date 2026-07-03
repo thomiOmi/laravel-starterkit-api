@@ -55,9 +55,9 @@ final readonly class RoleIndexController
         );
 
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'Roles']),
-            RoleResource::collection($roles),
+            data: RoleResource::collection($roles),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'Roles']),
         );
     }
 }

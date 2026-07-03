@@ -75,7 +75,7 @@ class RoleSeeder extends Seeder
         // Assign 'user' role to all other users that don't have a role
         User::whereDoesntHave('roles')
             ->with('roles')
-            ->chunkById(100, function ($users) {
+            ->chunkById(100, function (\Illuminate\Support\Collection $users) {
                 foreach ($users as $user) {
                     $user->assignRole('user');
                 }

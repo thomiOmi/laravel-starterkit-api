@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\PlanFeatureMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
@@ -61,7 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->trustHosts(at: function (): array {
             /** @var array<int, string> $hosts */
-            $hosts = config()->array('app.trusted_hosts');
+            $hosts = config()->array('app.trusted_hosts', []);
 
             return $hosts;
         });
@@ -70,114 +72,91 @@ return Application::configure(basePath: dirname(__DIR__))
         // $middleware->throttleApi(); // We will define custom throttle in routes
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Validation Exception (422)
         $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
+                typeKey: 'validation',
                 title: __('auth.validation_failed'),
                 status: Response::HTTP_UNPROCESSABLE_ENTITY,
                 detail: 'The given data was invalid.',
-                typeKey: 'validation',
-                errors: $e->errors(),
-                instance: $request->url(),
+                extensions: [
+                    'errors' => $e->errors(),
+                ]
             );
         });
 
+        // Authentication Exception (401)
         $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
+                typeKey: 'unauthenticated',
                 title: __('auth.unauthenticated'),
                 status: Response::HTTP_UNAUTHORIZED,
                 detail: 'You must be authenticated to access this resource.',
-                typeKey: 'unauthenticated',
-                instance: $request->url(),
             );
         });
 
-        $exceptions->render(function (InvalidSignatureException $e, Request $request): ProblemResponse {
+        // Access Denied / Forbidden (403)
+        $exceptions->render(function (AccessDeniedHttpException|InvalidSignatureException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
-                title: 'Invalid Signature',
-                status: Response::HTTP_FORBIDDEN,
-                detail: 'The request signature is invalid or has expired.',
                 typeKey: 'forbidden',
-                instance: $request->url(),
-            );
-        });
-
-        $exceptions->render(function (AccessDeniedHttpException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
                 title: __('auth.forbidden'),
                 status: Response::HTTP_FORBIDDEN,
-                detail: 'You are not authorised to perform this action.',
-                typeKey: 'forbidden',
-                instance: $request->url(),
+                detail: $e instanceof InvalidSignatureException
+                    ? 'The request signature is invalid or has expired.'
+                    : 'You are not authorised to perform this action.'
             );
         });
 
+        // Not Found Exception (404)
         $exceptions->render(function (NotFoundHttpException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
+                typeKey: 'not_found',
                 title: __('auth.not_found'),
                 status: Response::HTTP_NOT_FOUND,
                 detail: $e->getMessage() ?: 'The requested URL does not exist.',
-                typeKey: 'not_found',
-                instance: $request->url(),
             );
         });
 
+        // Too Many Requests Exception (429)
         $exceptions->render(function (TooManyRequestsHttpException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
+                typeKey: 'rate_limited',
                 title: __('auth.too_many_requests'),
                 status: Response::HTTP_TOO_MANY_REQUESTS,
                 detail: 'You have exceeded the request rate limit. Please try again later.',
-                typeKey: 'rate_limited',
-                instance: $request->url(),
             );
         });
 
+        // Invalid Argument Exception (400)
         $exceptions->render(function (InvalidArgumentException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
+                typeKey: 'bad_request',
                 title: 'Bad Request',
                 status: Response::HTTP_BAD_REQUEST,
                 detail: $e->getMessage(),
-                typeKey: 'bad_request',
-                instance: $request->url(),
             );
         });
 
+        // Generic HTTP Exceptions
         $exceptions->render(function (HttpExceptionInterface $e, Request $request): ProblemResponse {
             return new ProblemResponse(
+                typeKey: 'default',
                 title: $e->getMessage() ?: 'HTTP Error',
                 status: $e->getStatusCode(),
                 detail: $e->getMessage() ?: 'An HTTP error occurred.',
-                typeKey: 'about:blank',
-                instance: $request->url(),
             );
         });
 
+        // Fatal / Internal Server Errors (500)
         $exceptions->render(function (Throwable $e, Request $request): ProblemResponse {
-            $detail = 'An internal server error occurred.';
+            $detail = config()->boolean('app.debug') ? $e->getMessage() : 'An internal server error occurred.';
 
-            if (config('app.debug', false)) {
-                $detail = $e->getMessage();
-            }
-
-            $payload = new ProblemResponse(
+            return new ProblemResponse(
+                typeKey: 'internal_error',
                 title: 'Internal Server Error',
                 status: Response::HTTP_INTERNAL_SERVER_ERROR,
                 detail: $detail,
-                typeKey: 'internal_error',
-                instance: $request->url(),
             );
-
-            if (config('app.debug', false)) {
-                $payload->setData(array_merge(
-                    (array) $payload->getData(true),
-                    [
-                        'file' => $e->getFile(),
-                        'line' => $e->getLine(),
-                        'trace' => $e->getTrace(),
-                    ],
-                ));
-            }
-
-            return $payload;
         });
     })
     ->create();

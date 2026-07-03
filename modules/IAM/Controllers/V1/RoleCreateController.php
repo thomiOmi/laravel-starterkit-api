@@ -27,10 +27,10 @@ final readonly class RoleCreateController
         $role = $this->createRole->handle($request->payload());
 
         return new SuccessResponse(
-            'Created',
-            __('general.created', ['resource' => 'Role']),
-            new RoleResource($role),
-            Response::HTTP_CREATED,
+            data: new RoleResource($role),
+            title: 'Created',
+            detail: __('general.created', ['resource' => 'Role']),
+            status: Response::HTTP_CREATED,
         );
     }
 }

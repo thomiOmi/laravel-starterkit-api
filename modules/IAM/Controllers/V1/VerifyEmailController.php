@@ -17,9 +17,9 @@ final readonly class VerifyEmailController
         $request->fulfill();
 
         return new SuccessResponse(
-            'OK',
-            __('auth.verified'),
-            ['verified' => true],
+            data: ['verified' => true],
+            title: 'OK',
+            detail: __('auth.verified'),
         );
     }
 }

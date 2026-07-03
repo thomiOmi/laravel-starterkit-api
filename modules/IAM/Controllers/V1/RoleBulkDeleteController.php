@@ -27,9 +27,9 @@ final readonly class RoleBulkDeleteController
         $count = $this->bulkDeleteRoles->handle($validated['ids']);
 
         return new SuccessResponse(
-            'OK',
-            __('general.deleted', ['resource' => 'Roles']),
-            ['count' => $count],
+            data: ['count' => $count],
+            title: 'OK',
+            detail: __('general.deleted', ['resource' => 'Roles']),
         );
     }
 }

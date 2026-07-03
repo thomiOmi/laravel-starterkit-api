@@ -27,9 +27,9 @@ final readonly class RoleBulkRestoreController
         $count = $this->bulkRestoreRoles->handle($validated['ids']);
 
         return new SuccessResponse(
-            'OK',
-            __('general.restored', ['resource' => 'Roles']),
-            ['count' => $count],
+            data: ['count' => $count],
+            title: 'OK',
+            detail: __('general.restored', ['resource' => 'Roles']),
         );
     }
 }

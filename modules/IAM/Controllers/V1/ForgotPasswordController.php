@@ -22,8 +22,8 @@ final readonly class ForgotPasswordController
         $this->forgotPasswordAction->handle($request->string('email')->toString());
 
         return new SuccessResponse(
-            'OK',
-            __('passwords.sent'),
+            title: 'OK',
+            detail: __('passwords.sent'),
         );
     }
 }

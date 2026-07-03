@@ -25,9 +25,9 @@ test('Happy Path: Request -> Middleware -> Action -> SuccessResponse', function 
         $result = $action->handle($request->query('name', 'Guest'));
 
         return new SuccessResponse(
+            data: $result,
             title: 'OK',
             detail: 'Flow executed successfully.',
-            data: $result
         );
     })->middleware([
         TraceIdMiddleware::class,

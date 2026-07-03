@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": ">=8.4.1",
+        "dedoc/scramble": "^0.13.30",
         "laravel/framework": "^13.6.0",
         "laravel/pennant": "^1.23.0",
         "laravel/sanctum": "^4.0",
@@ -18,7 +19,6 @@
         "spatie/laravel-permission": "^8.0"
     },
     "require-dev": {
-        "dedoc/scramble": "^0.13.30",
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.9",
         "laravel/boost": "^2.2",

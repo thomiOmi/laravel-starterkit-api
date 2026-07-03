@@ -54,9 +54,9 @@ final readonly class PermissionIndexController
         );
 
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'Permissions']),
-            PermissionResource::collection($permissions),
+            data: PermissionResource::collection($permissions),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'Permissions']),
         );
     }
 }

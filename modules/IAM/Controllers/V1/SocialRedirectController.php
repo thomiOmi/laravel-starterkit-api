@@ -21,9 +21,9 @@ final readonly class SocialRedirectController
         $url = $this->socialRedirect->handle($provider);
 
         return new SuccessResponse(
-            'OK',
-            __('auth.social_login_success'),
-            ['url' => $url],
+            data: ['url' => $url],
+            title: 'OK',
+            detail: __('auth.social_login_success'),
         );
     }
 }

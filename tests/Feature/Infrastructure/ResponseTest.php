@@ -15,7 +15,7 @@ test('ProblemResponse follows RFC 9457 via HTTP lifecycle', function () {
         status: 422,
         detail: 'The email field is required.',
         typeKey: 'validation-error',
-        errors: ['email' => ['Required']]
+        extensions: ['errors' => ['email' => ['Required']]]
     ));
 
     $response = $this->get('/test-problem');
@@ -28,7 +28,7 @@ test('SuccessResponse follows standardized schema via HTTP lifecycle', function 
     Route::get('/test-success', fn () => new SuccessResponse(
         title: 'OK',
         detail: 'Operation successful.',
-        data: ['id' => '123']
+        data: ['id' => '123'],
     ));
 
     $response = $this->get('/test-success');
@@ -46,7 +46,7 @@ test('SuccessResponse handles pagination via HTTP lifecycle', function () {
         return new SuccessResponse(
             title: 'OK',
             detail: 'List retrieved.',
-            data: $paginator
+            data: $paginator,
         );
     });
 

@@ -43,51 +43,53 @@ Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / 
 - **Repositories** are read-only (query/find). Writes use Eloquent directly in actions.
 - **Modules** are self-contained in `modules/{Module}/` with their own routes, controllers, actions, models, and tests.
 
-## Modules
+## Structure
 
 ```
 modules/
-  Auth/
-    Actions/             -- Login, Register, SocialCallback, etc.
-    Controllers/V1/      -- 13 invokable controllers
-    Payloads/V1/         -- LoginPayload, RegisterPayload
-    Providers/
-    Requests/V1/         -- Form request validation
-    Resources/
-    Routes/              -- api/v1/auth/*
-    Tests/               -- Feature + Unit (11 files)
-  Role/
-    Actions/             -- CRUD + Bulk for roles & permissions
-    Controllers/V1/      -- 10 invokable controllers
-    Database/
-      Factories/
-      Migrations/
-      Seeders/
-    Filters/
-    Models/              -- Role, Permission (Spatie)
-    Payloads/V1/
-    Providers/
-    Repositories/
-    Requests/V1/
-    Resources/
-    Routes/              -- api/v1/roles/*, api/v1/permissions/*
-    Tests/               -- Feature + Unit (4 files)
-  User/
-    Actions/             -- CRUD + Bulk for users
-    Controllers/V1/      -- 6 invokable controllers
-    Database/
-      Factories/         -- UserFactory
-      Seeders/
-    Actions/             -- User actions
-    Filters/
-    Models/              -- User (MustVerifyEmail, HasRoles)
-    Payloads/V1/
-    Providers/
-    Repositories/
-    Requests/V1/
-    Resources/
-    Routes/              -- api/v1/users/*
-    Tests/               -- Feature + Unit (3 files)
+├── {Module}/
+│   ├── Actions/         # Single-purpose use cases
+│   ├── Controllers/     # V1/, V2/ for API versioning
+│   ├── Database/
+│   │   ├── factories/
+│   │   ├── migrations/
+│   │   └── seeders/
+│   ├── Events/
+│   ├── Filters/         # Query/filter objects
+│   ├── Jobs/
+│   ├── Models/
+│   ├── Payloads/        # DTOs with PHP 8.4 property hooks
+│   ├── Providers/       # Service providers
+│   ├── Repositories/
+│   ├── Requests/        # Form request validation
+│   ├── Resources/       # API resources
+│   ├── Routes/          # V1.php, V2.php
+│   └── Tests/           # Feature and unit tests
+└── ...
+app/                     # Shared application code
+├── Concerns/            # Traits and shared logic
+├── Contracts/           # Interfaces for DI
+├── Http/
+│   ├── Controllers/     # Base controller
+│   ├── Middleware/      # ForceJsonResponse, etc.
+│   └── Responses/       # SuccessResponse, ProblemResponse
+├── Providers/           # AppServiceProvider
+├── Models/              # Shared Eloquent models
+├── Notifications/       # Shared notifications
+├── Supports/            # Shared helpers and utilities
+└── ...
+config/
+database/
+├── factories/           # Shared factories
+├── migrations/          # Shared migrations
+└── seeders/             # Shared seeders
+routes/
+├── api.php              # Module route loader
+└── console.php
+tests/                   # Shared tests / global test helpers
+├── Architecture/        # Architecture tests (e.g., modular structure)
+├── Feature/
+└── Unit/
 ```
 
 ## Testing

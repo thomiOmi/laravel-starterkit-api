@@ -50,9 +50,9 @@ final readonly class UserUpdateController
         }
 
         return new SuccessResponse(
-            'OK',
-            __('general.updated', ['resource' => 'User']),
-            new UserResource($user),
+            data: new UserResource($user),
+            title: 'OK',
+            detail: __('general.updated', ['resource' => 'User']),
         );
     }
 }

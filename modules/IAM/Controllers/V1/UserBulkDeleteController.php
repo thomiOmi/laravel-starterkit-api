@@ -27,9 +27,9 @@ final readonly class UserBulkDeleteController
         $count = $this->bulkDeleteUsers->handle($validated['ids']);
 
         return new SuccessResponse(
-            'OK',
-            __('general.deleted', ['resource' => 'Users']),
-            ['count' => $count],
+            data: ['count' => $count],
+            title: 'OK',
+            detail: __('general.deleted', ['resource' => 'Users']),
         );
     }
 }

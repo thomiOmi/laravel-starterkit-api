@@ -31,14 +31,14 @@ final readonly class RegisterController
         event(new Registered($result['user']));
 
         return new SuccessResponse(
-            'Created',
-            __('auth.registered'),
-            [
+            data: [
                 'user' => new UserResource($result['user']),
                 'access_token' => $result['access_token'],
                 'token_type' => $result['token_type'],
             ],
-            Response::HTTP_CREATED,
+            title: 'Created',
+            detail: __('auth.registered'),
+            status: Response::HTTP_CREATED,
         );
     }
 }

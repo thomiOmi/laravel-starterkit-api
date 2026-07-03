@@ -59,9 +59,9 @@ final readonly class PermissionShowController
         }
 
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'Permission']),
-            new PermissionResource($permission),
+            data: new PermissionResource($permission),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'Permission']),
         );
     }
 }

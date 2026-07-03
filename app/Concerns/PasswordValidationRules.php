@@ -22,7 +22,7 @@ trait PasswordValidationRules
         $rules = [$required ? 'required' : 'nullable', 'string', 'max:255'];
 
         if ($validate) {
-            $rules[] = Password::defaults() ?? Password::min(8);
+            $rules[] = Password::defaults();
         }
 
         if ($confirmed) {

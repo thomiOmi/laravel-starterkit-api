@@ -52,9 +52,9 @@ final readonly class PermissionUpdateController
         }
 
         return new SuccessResponse(
-            'OK',
-            __('general.updated', ['resource' => 'Permission']),
-            new PermissionResource($permission),
+            data: new PermissionResource($permission),
+            title: 'OK',
+            detail: __('general.updated', ['resource' => 'Permission']),
         );
     }
 }

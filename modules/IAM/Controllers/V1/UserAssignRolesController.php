@@ -53,9 +53,9 @@ final readonly class UserAssignRolesController
         $userModel->load('roles');
 
         return new SuccessResponse(
-            'OK',
-            __('general.roles_assigned'),
-            new UserResource($userModel),
+            data: new UserResource($userModel),
+            title: 'OK',
+            detail: __('general.roles_assigned'),
         );
     }
 }

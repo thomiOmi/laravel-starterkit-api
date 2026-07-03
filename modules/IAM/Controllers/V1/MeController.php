@@ -40,9 +40,9 @@ final readonly class MeController
         $profile = $this->getAuthenticatedUser->handle($currentUser);
 
         return new SuccessResponse(
-            'OK',
-            __('general.retrieved', ['resource' => 'User profile']),
-            new UserResource($profile),
+            data: new UserResource($profile),
+            title: 'OK',
+            detail: __('general.retrieved', ['resource' => 'User profile']),
         );
     }
 }
