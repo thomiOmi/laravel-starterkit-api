@@ -25,7 +25,9 @@ class RoleResource extends JsonResource
     {
         /** @var list<string>|null $permissions */
         $permissions = $this->resource->relationLoaded('permissions')
-            ? array_values(array_map(fn (mixed $val) => (string) $val, $this->resource->permissions->pluck('name')->all()))
+            ? $this->resource->permissions->pluck('name')->map(function (mixed $val): string {
+                return is_string($val) || is_int($val) ? (string) $val : '';
+            })->values()->all()
             : null;
 
         return [
