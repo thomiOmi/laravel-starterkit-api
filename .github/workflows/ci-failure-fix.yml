@@ -18,8 +18,9 @@ jobs:
       github.event.workflow_run.actor.type != 'Bot'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       actions: read
+      pull-requests: write
 
     steps:
       - name: Invoke Jules to fix failure
