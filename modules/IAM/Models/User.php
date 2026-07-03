@@ -48,7 +48,7 @@ class User extends Authenticatable implements Identity, MustVerifyEmail
     use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable;
 
     /** @var string|array<int, string> */
-    protected $guard_name = ['web', 'sanctum'];
+    protected string|array $guard_name = ['web', 'sanctum'];
 
     /**
      * Send the email verification notification.
