@@ -4,9 +4,58 @@
 
 This project follows a Modular Monolith architecture. Modules are independent units of logic, data, and presentation.
 
+## Project Structure
+
+```
+modules/
+├── {Module}/
+│   ├── Actions/         # Single-purpose use cases
+│   ├── Controllers/     # V1/, V2/ for API versioning
+│   ├── Database/
+│   │   ├── factories/
+│   │   ├── migrations/
+│   │   └── seeders/
+│   ├── Events/
+│   ├── Filters/         # Query/filter objects
+│   ├── Jobs/
+│   ├── Models/
+│   ├── Payloads/        # DTOs with PHP 8.4 property hooks
+│   ├── Providers/       # Service providers
+│   ├── Repositories/    # Read-only data access (optional, avoid in IAM)
+│   ├── Requests/        # Form request validation
+│   ├── Resources/       # API resources
+│   ├── Routes/          # V1.php, V2.php
+│   └── Tests/           # Feature and unit tests
+└── ...
+app/                     # Shared application code
+├── Concerns/            # Traits and shared logic
+├── Contracts/           # Interfaces for DI
+├── Http/
+│   ├── Controllers/     # Base controller
+│   ├── Middleware/      # ForceJsonResponse, etc.
+│   └── Responses/       # SuccessResponse, ProblemResponse
+├── Providers/           # AppServiceProvider
+├── Models/              # Shared Eloquent models
+├── Notifications/       # Shared notifications
+├── Supports/            # Shared helpers and utilities
+└── ...
+config/
+database/
+├── factories/           # Shared factories
+├── migrations/          # Shared migrations
+└── seeders/             # Shared seeders
+routes/
+├── api.php              # Module route loader
+└── console.php
+tests/                   # Shared tests / global test helpers
+├── Architecture/        # Architecture tests (e.g., modular structure)
+├── Feature/
+└── Unit/
+```
+
 ### Data Flow
 
-Controllers -> Actions -> Eloquent
+Controllers -> Actions -> Eloquent (or Repositories if applicable)
 
 Keep controllers thin. Put orchestration and single-purpose logic in actions.
 
@@ -18,9 +67,9 @@ declare(strict_types=1);
 namespace Modules\Sales\Actions;
 
 use Modules\Sales\Models\Order;
-use Modules\Sales\Payloads\CreateOrderPayload;
+use Modules\Sales\Payloads\V1\CreateOrderPayload;
 
-final class CreateOrderAction
+final readonly class CreateOrderAction
 {
     public function handle(CreateOrderPayload $data): Order
     {
@@ -28,7 +77,7 @@ final class CreateOrderAction
     }
 }
 
-final class OrdersController extends Controller
+final readonly class OrdersController
 {
     public function __construct(private CreateOrderAction $createOrder) {}
 
@@ -48,7 +97,7 @@ final class OrdersController extends Controller
 
 ### Routing and Controllers (Single-Action Pattern)
 
-This project uses single-action controllers (`__invoke`) with explicit route definitions — not resource controllers.
+This project uses single-action controllers (`__invoke`) with explicit route definitions.
 
 ```php
 <?php
@@ -60,77 +109,20 @@ namespace Modules\User\Routes;
 use Illuminate\Support\Facades\Route;
 use Modules\User\Controllers\V1\IndexController;
 use Modules\User\Controllers\V1\CreateController;
-use Modules\User\Controllers\V1\ShowController;
-use Modules\User\Controllers\V1\UpdateController;
-use Modules\User\Controllers\V1\DeleteController;
 
 Route::prefix('users')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/', IndexController::class)->name('users.index');
     Route::post('/', CreateController::class)->name('users.create');
-    Route::get('/{user}', ShowController::class)->name('users.show');
-    Route::put('/{user}', UpdateController::class)->name('users.update');
-    Route::delete('/{user}', DeleteController::class)->name('users.delete');
 });
-```
-
-### Route Model Binding (Scoped)
-
-Use scoped bindings to prevent cross-tenant access.
-
-### Eloquent Model Patterns
-
-### Model Configuration
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace Modules\Cms\Models;
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-final class Project extends Model
-{
-    use HasFactory;
-
-    protected $fillable = ['name', 'owner_id', 'status'];
-
-    protected $casts = [
-        'status' => ProjectStatus::class,
-        'archived_at' => 'datetime',
-    ];
-
-    public function owner(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'owner_id');
-    }
-
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->whereNull('archived_at');
-    }
-}
-```
-
-### Eager Loading to Avoid N+1
-
-```php
-$orders = Order::query()
-    ->with(['customer', 'items.product'])
-    ->latest()
-    ->paginate(25);
 ```
 
 ### Form Requests and Validation
 
-Keep validation in form requests and transform inputs to DTOs.
+Keep validation in form requests and transform inputs to Payloads (DTOs).
 
 ### API Resources
 
-Keep API responses consistent with resources and pagination.
+Keep API responses consistent with resources and SuccessResponse.
 
 ```php
 <?php
@@ -139,7 +131,7 @@ declare(strict_types=1);
 
 use App\Http\Responses\SuccessResponse;
 
-$projects = Project::query()->active()->paginate(25);
+$projects = Project::query()->paginate(25);
 
 return new SuccessResponse(
     title: 'Projects Retrieved',
