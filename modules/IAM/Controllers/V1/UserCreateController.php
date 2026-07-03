@@ -20,7 +20,7 @@ final readonly class UserCreateController
      * Store a newly created user.
      *
      * @param  UserRequest  $request  The validated user creation request.
-     * @return SuccessResponse<UserResource>
+     * @return SuccessResponse<UserResource, 201>
      */
     public function __invoke(UserRequest $request): SuccessResponse
     {

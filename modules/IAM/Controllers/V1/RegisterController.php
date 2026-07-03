@@ -18,7 +18,7 @@ final readonly class RegisterController
     ) {}
 
     /**
-     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}, 201>
      */
     public function __invoke(RegisterRequest $request): SuccessResponse
     {

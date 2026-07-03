@@ -50,7 +50,6 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureEmailVerification();
         $this->configurePasswordReset();
-        $this->configureScramble();
     }
 
     /**
@@ -167,6 +166,4 @@ class AppServiceProvider extends ServiceProvider
                 ->action('Verify Email Address', $url);
         });
     }
-
-    protected function configureScramble(): void {}
 }

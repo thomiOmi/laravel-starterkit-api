@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
 use Modules\IAM\Models\User;
@@ -75,7 +76,7 @@ class RoleSeeder extends Seeder
         // Assign 'user' role to all other users that don't have a role
         User::whereDoesntHave('roles')
             ->with('roles')
-            ->chunkById(100, function (\Illuminate\Support\Collection $users) {
+            ->chunkById(100, function (Collection $users) {
                 foreach ($users as $user) {
                     $user->assignRole('user');
                 }
