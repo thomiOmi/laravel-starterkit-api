@@ -23,17 +23,23 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var array<int, string>|null $roles */
+        $roles = $this->resource->relationLoaded('roles')
+            ? array_values(array_map('strval', $this->resource->roles->pluck('name')->all()))
+            : null;
+
+        /** @var array<int, string>|null $permissions */
+        $permissions = ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
+            ? array_values(array_map('strval', $this->resource->getAllPermissions()->pluck('name')->all()))
+            : null;
+
         return [
             'id' => (string) $this->resource->id,
             'name' => $this->resource->name,
             'email' => $this->resource->email,
             'avatar' => is_string($this->resource->avatar) ? $this->resource->avatar : null,
-            'roles' => $this->resource->relationLoaded('roles')
-                ? array_values($this->resource->roles->pluck('name')->map(fn (mixed $n) => (string) $n)->all())
-                : null,
-            'permissions' => ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
-                ? array_values($this->resource->getAllPermissions()->pluck('name')->map(fn (mixed $n) => (string) $n)->all())
-                : null,
+            'roles' => $roles,
+            'permissions' => $permissions,
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
             'created_at' => (string) $this->formatDate($this->resource->created_at),
             'updated_at' => (string) $this->formatDate($this->resource->updated_at),

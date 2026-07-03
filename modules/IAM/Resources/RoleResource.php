@@ -23,13 +23,16 @@ class RoleResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        /** @var array<int, string>|null $permissions */
+        $permissions = $this->resource->relationLoaded('permissions')
+            ? array_values(array_map('strval', $this->resource->permissions->pluck('name')->all()))
+            : null;
+
         return [
             'id' => (string) $this->resource->id,
             'name' => $this->resource->name,
             'description' => is_string($this->resource->description) ? $this->resource->description : null,
-            'permissions' => $this->resource->relationLoaded('permissions')
-                ? array_values($this->resource->permissions->pluck('name')->map(fn (mixed $n) => (string) $n)->all())
-                : null,
+            'permissions' => $permissions,
             'created_at' => (string) $this->formatDate($this->resource->created_at),
             'updated_at' => (string) $this->formatDate($this->resource->updated_at),
         ];
