@@ -1,52 +1,58 @@
-# Coding Standards
+# Coding Standards Handbook (PHP 8.4 & Laravel 13)
 
-## PHP Requirements
-- PHP 8.4+
-- `declare(strict_types=1)` on every file
-- Use constructor property promotion, readonly classes, typed properties
-- No `mixed` types; use specific type hints
+We embrace the latest PHP features to write cleaner, safer code.
 
-## Naming
-- Classes: `PascalCase` (e.g. `CreateUserAction`)
-- Methods/variables: `camelCase` (e.g. `isRegistered`)
-- Database tables: `snake_case` plural (e.g. `users`)
-- Route names: `api.v1.{module}.{resource}.{action}` (e.g. `api.v1.auth.register`)
+## 1. Property Hooks (PHP 8.4)
 
-## Architecture
-- Controllers: `final readonly __invoke` -- no business logic
-- Actions: `final readonly` with `handle()` method -- single responsibility
-- Models in `Modules/{Module}/Models/`. Use `HasDefaultBehavior` (ULID, soft deletes, date format)
-- No repositories: Use Eloquent directly within actions
+Stop writing verbose `Attribute` classes. Use native Property Hooks.
 
-## API
-- All responses: `JsonResponse` or `ResourceCollection::additional()->response()`
-- All errors: `ProblemResponse` (RFC 9457) -- `{type, title, status, message, detail}`
-- Date format: `Y-m-d H:i:s`
-- Locale via `Accept-Language` header (en, id)
-- No `success` boolean in responses
-- No `JsonDataResponse` or `ApiResponser` trait
+### Before (L12 and below):
+```php
+protected function fullName(): Attribute
+{
+    return Attribute::make(
+        get: fn () => "{$this->first_name} {$this->last_name}",
+    );
+}
+```
 
-## Attributes
-Use PHP 8.4 attributes over docblock properties:
-- `#[Fillable([...])]` on models for mass assignment
-- `#[Hidden([...])]` on models for hidden fields
+### After (PHP 8.4):
+```php
+public string $fullName {
+    get => "{$this->first_name} {$this->last_name}";
+}
+```
 
-## Rate Limiting
-Three tiers in `config/rate-limiting.php`:
-- `auth`: 5/min per email + 10/min per IP
-- `authenticated`: 120/min
-- `api`: 60/min
+## 2. Final Classes
 
-## Testing
-- Pest 4 with `RefreshDatabase`
-- `beforeEach` seeds `RoleSeeder`
-- Feature tests for each CRUD + auth flow
-- Unit tests for action classes
-- Every change must have a corresponding test
+By default, every class is `final`. This prevents "Magic Inheritance" and makes the code easier to reason about.
 
-## Code Quality
-- Format: `./vendor/bin/pint --format agent`
-- Static analysis: `./vendor/bin/phpstan analyse --memory-limit=512M`
-- Do not use `@phpstan-ignore` comments
-- Do not modify `phpstan.neon`
-- No `dd()`, `dump()`, `console.log()` in committed code
+```php
+final readonly class RegisterUserAction
+{
+    // ...
+}
+```
+
+## 3. Action-Payload Pattern
+
+An Action should not depend on a `Request`. It should receive a **Payload**.
+
+### The Story: Creating a User
+1. **Controller** parses the `Request` into a `RegisterUserPayload`.
+2. **Action** receives the `RegisterUserPayload`.
+3. **Benefit:** You can now call the Action from a CLI Command or a Job using the same Payload object.
+
+## 4. Strict Typing
+
+Every property, parameter, and return value must have a native type hint.
+```php
+public function handle(UserPayload $payload): User
+```
+
+## 5. Formatting
+
+We use **Laravel Pint**. Before every commit, run:
+```bash
+./vendor/bin/pint --format agent
+```

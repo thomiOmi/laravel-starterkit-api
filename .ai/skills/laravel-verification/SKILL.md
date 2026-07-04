@@ -1,166 +1,44 @@
 ---
 name: laravel-verification
-description: "Verification loop for Laravel projects: env checks, linting, static analysis, tests with coverage, security scans, and deployment readiness."
+description: Proactive verification loop for Laravel 13 development. Uses MCP tools (database-schema, search-docs) and local tools (Pint, PHPStan, Pest) to ensure high-quality code delivery.
+license: MIT
 metadata:
-  origin: ECC
+  version: "2.0.0"
 ---
 
 # Laravel Verification Loop
 
-Run before PRs, after major changes, and pre-deploy.
+Systematic verification to ensure zero-regression and architectural compliance.
 
-## Reference Guide
+## Verification Checklist
 
-| Topic | Reference | Load When |
-|-------|-----------|-----------|
-| Quality Assurance | `references/quality-assurance.md` | Detailed QA checklist, Git workflow, deployment steps |
+### 1. Database Integrity
+- Run `php artisan migrate`.
+- **Tool:** Use `database-schema` to verify table columns and constraints match expectations.
 
-## When to Use
+### 2. Static Analysis & Linting
+- Run `./vendor/bin/pint --format agent`.
+- Run `./vendor/bin/phpstan analyse`.
+- **Constraint:** Fix all "mixed" type errors; no `@phpstan-ignore`.
 
-- Before opening a pull request for a Laravel project
-- After major refactors or dependency upgrades
-- Pre-deployment verification for staging or production
-- Running full lint -> test -> security -> deploy readiness pipeline
+### 3. Logic & Behavior
+- Run `php artisan test --compact`.
+- **Goal:** 100% pass rate.
 
-## How It Works
+### 4. Architectural Integrity
+- Verify no Model imports between `Modules/A` and `Modules/B`.
+- Confirm all new classes are `final`.
 
-- Run phases sequentially from environment checks through deployment readiness so each layer builds on the last.
-- Environment and Composer checks gate everything else; stop immediately if they fail.
-- Linting/static analysis should be clean before running full tests and coverage.
-- Security and migration reviews happen after tests so you verify behavior before data or release steps.
-- Build/deploy readiness and queue/scheduler checks are final gates; any failure blocks release.
+## MCP Integration Workflow
 
-## Phase 1: Environment Checks
+Whenever you finish a task, follow this loop:
+1. **Explore:** Use `database-schema` to confirm side effects.
+2. **Consult:** Use `search-docs` if using a new Laravel 13 feature.
+3. **Audit:** Use `read-log-entries` if any test fails with 500 error.
+4. **Fix:** Use `pint` and `phpstan` before reporting completion.
 
-```bash
-php -v
-composer --version
-php artisan --version
-```
-
-- Verify `.env` is present and required keys exist
-- Confirm `APP_DEBUG=false` for production environments
-- Confirm `APP_ENV` matches the target deployment (`production`, `staging`)
-
-## Phase 1.5: Composer and Autoload
-
-```bash
-composer validate
-composer dump-autoload -o
-```
-
-## Phase 2: Linting and Static Analysis
-
-```bash
-vendor/bin/pint --format agent
-vendor/bin/phpstan analyse --memory-limit=512M
-```
-
-## Phase 3: Tests and Coverage
-
-```bash
-php artisan test --compact
-```
-
-Coverage (CI):
-
-```bash
-XDEBUG_MODE=coverage php artisan test --compact --coverage
-```
-
-CI example (format -> static analysis -> tests):
-
-```bash
-vendor/bin/pint --format agent
-vendor/bin/phpstan analyse --memory-limit=512M
-XDEBUG_MODE=coverage php artisan test --compact --coverage
-```
-
-## Phase 4: Security and Dependency Checks
-
-```bash
-composer audit
-```
-
-## Phase 5: Database and Migrations
-
-```bash
-php artisan migrate --pretend
-php artisan migrate:status
-```
-
-- Review destructive migrations carefully
-- Ensure migration filenames follow `Y_m_d_His_*` (e.g., `2025_03_14_154210_create_orders_table.php`) and describe the change clearly
-- Ensure rollbacks are possible
-- Verify `down()` methods and avoid irreversible data loss without explicit backups
-
-## Phase 6: Build and Deployment Readiness
-
-```bash
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-```
-
-- Ensure cache warmups succeed in production configuration
-- Verify queue workers and scheduler are configured
-- Confirm `storage/` and `bootstrap/cache/` are writable in the target environment
-
-## Phase 7: Queue and Scheduler Checks
-
-```bash
-php artisan schedule:list
-php artisan queue:failed
-```
-
-Use `queue:monitor` to check backlog without processing jobs:
-
-```bash
-php artisan queue:monitor default --max=100
-```
-
-Active verification (staging only): dispatch a no-op job to a dedicated queue and run a single worker to process it (ensure a non-`sync` queue connection is configured).
-
-```bash
-php artisan tinker --execute="dispatch((new App\\Jobs\\QueueHealthcheck())->onQueue('healthcheck'))"
-php artisan queue:work --once --queue=healthcheck
-```
-
-Verify the job produced the expected side effect (log entry, healthcheck table row, or metric).
-
-Only run this on non-production environments where processing a test job is safe.
-
-## Examples
-
-Minimal flow:
-
-```bash
-php -v
-composer --version
-php artisan --version
-composer validate
-vendor/bin/pint --format agent
-vendor/bin/phpstan analyse --memory-limit=512M
-php artisan test --compact
-composer audit
-php artisan migrate --pretend
-php artisan config:cache
-php artisan queue:failed
-```
-
-CI-style pipeline:
-
-```bash
-composer validate
-composer dump-autoload -o
-vendor/bin/pint --format agent
-vendor/bin/phpstan analyse --memory-limit=512M
-XDEBUG_MODE=coverage php artisan test --compact --coverage
-composer audit
-php artisan migrate --pretend
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan schedule:list
-php artisan queue:failed
-```
+## Failure Handling
+If a verification step fails:
+- Read the specific error message.
+- Use `php artisan pail` or `read-log-entries` to get the trace.
+- Fix the root cause, then restart the loop from step 1.

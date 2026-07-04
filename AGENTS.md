@@ -79,64 +79,47 @@ Run `php artisan boost:install -n` to install Boost-provided guidelines and skil
 
 === .ai/general rules ===
 
-# Laravel Standard Coding Guidelines
+# Laravel 13 Standard Coding Guidelines
 
-## Tech Stack
+## Core Tech Stack
 
-| Layer | Tech |
-| --- | --- |
-| Framework | Laravel 13 + PHP 8.4 |
-| Database | MySQL |
-| Package manager | Composer 2.9+ |
-| Auth | Laravel Sanctum (token-based) |
-| Role/Permission | Spatie `laravel-permission` |
-| Social Auth | Laravel Socialite |
-| Feature Flags | Laravel Pennant |
+- **Framework:** Laravel 13 (Modular Monolith)
+- **Runtime:** PHP 8.4+
+- **Database:** MySQL 8.0+
+- **Testing:** Pest 4.0+
+- **Static Analysis:** PHPStan (Larastan 3.0)
+- **Formatting:** Laravel Pint
 
-## API Convention
+## Architectural Constraints (The Law)
 
-| Aspek | Detail |
-| --- | --- |
-| Base URL | `/api/v1/...` (lowercase) |
-| Auth | `Authorization: Bearer {token}` (Sanctum) |
-| Response | `JsonResponse` — `{status, message, data}` (NO `success` boolean) |
-| Error | `ProblemResponse` — RFC 9457 |
-| Date format | `Y-m-d H:i:s` |
-| Route names | `api.v1.{module}.{name}` |
+1. **Module Isolation:** `Modules/A` MUST NOT import anything from `Modules/B/Models`. Use `app/Contracts`.
+2. **Thin Controllers:** Controllers only handle HTTP. Logic goes to **Actions**.
+3. **Action Payloads:** Actions MUST receive a **Payload (DTO)** object, not a `Request` or `array`.
+4. **Final Classes:** All new classes MUST be `final` unless explicitly designed for inheritance.
+5. **Property Hooks:** Use PHP 8.4 **Property Hooks** for derived logic in Models and Payloads.
 
-## Testing Rules
+## API Standards
 
-- Pest feature tests with `RefreshDatabase` trait
-- `beforeEach` seeds `RoleSeeder`, creates admin user
-- Test each CRUD operation: list, create, view, update, delete, unauthorized access
+- **Errors:** All error responses MUST follow **RFC 9457 (ProblemResponse)**.
+- **Consistency:** Use `SuccessResponse` for 200/201 responses.
+- **Resources:** Always use `JsonResource` for data transformation.
+- **Headers:** Support `Idempotency-Key` and provide `X-RateLimit` headers.
 
-## Code Quality Rules
+## Development Workflow (Verification Loop)
 
-- After writing PHP code, run: `./vendor/bin/pint --dirty --format agent`
-- Then run: `vendor/bin/phpstan analyse --memory-limit=512M` (or `PAO_FORCE=true vendor/bin/phpstan analyse --memory-limit=512M` for JSON output when run from AI agent)
-- Run tests: `php artisan test --compact` (or `PAO_FORCE=true vendor/bin/pest --compact` for JSON output when run from AI agent)
-- Fix all errors in code (do NOT modify `phpstan.neon`)
-- Do NOT use `@phpstan-ignore` comments — fix the root cause instead
-- All datetime fields in API responses **MUST** use `Y-m-d H:i:s` format
-- Follow existing code conventions — check sibling files before creating new ones
-- Every change must have a corresponding test
+1. **Before Code:** Use `database-schema` to understand existing tables.
+2. **During Code:** Use `search-docs` for L13/PHP 8.4 syntax help.
+3. **After Code:**
+   - Run `./vendor/bin/pint --format agent`
+   - Run `./vendor/bin/phpstan analyse`
+   - Run `php artisan test --compact`
+   - Check `database-schema` if migrations were added.
 
-## Agentic Development (Laravel Boost & Agent Skills)
+## File Ownership
 
-- **Laravel Boost**: Accelerates development with framework-specific guidelines and MCP tools (`search-docs`, `database-schema`, etc.).
-- **Agent Skills**: Uses the [agentskills.io](https://agentskills.io) format for domain-specific expertise.
-- **Location**: Guidelines in `.ai/guidelines/`, Skills in `.ai/skills/`.
-- **Activation**: Guidelines are loaded upfront; Skills are activated on-demand via triggers.
-- **Update**: Run `php artisan boost:install -n` to sync/re-apply all guidelines and skills.
-
-## File Ownership Rules
-
-| File/Dir | Managed by | Edit via |
-|---|---|---|
-| `AGENTS.md` | Laravel Boost (auto-generated) | **DO NOT** edit directly — edit `.ai/guidelines/` or `.ai/skills/` instead |
-| `.ai/guidelines/` | You (survives `boost:install`) | Edit directly — source files for AGENTS.md guidelines section |
-| `.ai/skills/` | You (survives `boost:install`) | Edit directly — Boost-managed agent skills |
-| `.agents/` | AI agent's skill/rules system | **DO NOT** edit directly — let the AI agent manage it |
+- **AGENTS.md:** Managed by `php artisan boost:install`. **DO NOT EDIT.**
+- **.ai/guidelines/**: Edit these source files to update AGENTS.md rules.
+- **.ai/skills/**: Edit these to update agent domain expertise.
 
 === foundation rules ===
 

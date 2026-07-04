@@ -1,0 +1,16 @@
+{
+  "skill_name": "laravel-specialist",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a new Post model in the CMS module with a title and content. Use property hooks for a slug that is automatically generated from the title.",
+      "expected_output": "A final Post model with HasDefaultBehavior trait and a $slug property using a set hook.",
+      "assertions": [
+        "Class is final",
+        "Uses HasDefaultBehavior trait",
+        "Includes $slug property with set hook",
+        "Uses str()->slug() in the hook"
+      ]
+    }
+  ]
+}

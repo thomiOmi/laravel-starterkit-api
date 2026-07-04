@@ -1,141 +1,57 @@
-# Laravel Patterns Skill
+---
+name: laravel-patterns
+description: Industrial-grade Laravel patterns including RFC 9457 errors, Idempotency, Stream Responses, and Modular isolation. Use when designing API contracts, cross-module communication, or complex business logic.
+license: MIT
+metadata:
+  version: "2.0.0"
+---
 
-## Core Philosophy
+# Laravel Development Patterns (Industry Standard)
 
-This project follows a Modular Monolith architecture. Modules are independent units of logic, data, and presentation.
+Production-grade patterns for scalable Laravel 13 applications.
 
-## Project Structure
+## Key Patterns
 
-```
-modules/
-├── {Module}/
-│   ├── Actions/         # Single-purpose use cases
-│   ├── Controllers/     # V1/, V2/ for API versioning
-│   ├── Database/
-│   │   ├── factories/
-│   │   ├── migrations/
-│   │   └── seeders/
-│   ├── Events/
-│   ├── Filters/         # Query/filter objects
-│   ├── Jobs/
-│   ├── Models/
-│   ├── Payloads/        # DTOs with PHP 8.4 property hooks
-│   ├── Providers/       # Service providers
-│   ├── Repositories/    # Read-only data access (optional, avoid in IAM)
-│   ├── Requests/        # Form request validation
-│   ├── Resources/       # API resources
-│   ├── Routes/          # V1.php, V2.php
-│   └── Tests/           # Feature and unit tests
-└── ...
-app/                     # Shared application code
-├── Concerns/            # Traits and shared logic
-├── Contracts/           # Interfaces for DI
-├── Http/
-│   ├── Controllers/     # Base controller
-│   ├── Middleware/      # ForceJsonResponse, etc.
-│   └── Responses/       # SuccessResponse, ProblemResponse
-├── Providers/           # AppServiceProvider
-├── Models/              # Shared Eloquent models
-├── Notifications/       # Shared notifications
-├── Supports/            # Shared helpers and utilities
-└── ...
-config/
-database/
-├── factories/           # Shared factories
-├── migrations/          # Shared migrations
-└── seeders/             # Shared seeders
-routes/
-├── api.php              # Module route loader
-└── console.php
-tests/                   # Shared tests / global test helpers
-├── Architecture/        # Architecture tests (e.g., modular structure)
-├── Feature/
-└── Unit/
-```
-
-### Data Flow
-
-Controllers -> Actions -> Eloquent (or Repositories if applicable)
-
-Keep controllers thin. Put orchestration and single-purpose logic in actions.
-
+### 1. RFC 9457 Error Handling
+Always use `ProblemResponse` for 4xx and 5xx errors.
 ```php
-<?php
-
-declare(strict_types=1);
-
-namespace Modules\Sales\Actions;
-
-use Modules\Sales\Models\Order;
-use Modules\Sales\Payloads\V1\CreateOrderPayload;
-
-final readonly class CreateOrderAction
-{
-    public function handle(CreateOrderPayload $data): Order
-    {
-        return Order::create($data->toArray());
-    }
-}
-
-final readonly class OrdersController
-{
-    public function __construct(private CreateOrderAction $createOrder) {}
-
-    public function __invoke(StoreOrderRequest $request): SuccessResponse
-    {
-        $order = $this->createOrder->handle($request->toPayload());
-
-        return new SuccessResponse(
-            title: 'Order Created',
-            detail: 'The order has been created successfully.',
-            data: OrderResource::make($order),
-            status: 201,
-        );
-    }
-}
-```
-
-### Routing and Controllers (Single-Action Pattern)
-
-This project uses single-action controllers (`__invoke`) with explicit route definitions.
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace Modules\User\Routes;
-
-use Illuminate\Support\Facades\Route;
-use Modules\User\Controllers\V1\IndexController;
-use Modules\User\Controllers\V1\CreateController;
-
-Route::prefix('users')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
-    Route::get('/', IndexController::class)->name('users.index');
-    Route::post('/', CreateController::class)->name('users.create');
-});
-```
-
-### Form Requests and Validation
-
-Keep validation in form requests and transform inputs to Payloads (DTOs).
-
-### API Resources
-
-Keep API responses consistent with resources and SuccessResponse.
-
-```php
-<?php
-
-declare(strict_types=1);
-
-use App\Http\Responses\SuccessResponse;
-
-$projects = Project::query()->paginate(25);
-
-return new SuccessResponse(
-    title: 'Projects Retrieved',
-    detail: 'List of active projects.',
-    data: ProjectResource::collection($projects),
+return new ProblemResponse(
+    type: 'https://api.example.com/errors/insufficient-funds',
+    title: 'Insufficient Funds',
+    status: 402,
+    detail: 'Your account balance is too low to complete this transaction.'
 );
 ```
+
+### 2. Idempotency
+Use `Idempotency-Key` header for critical POST requests.
+```php
+// In Controller
+$key = $request->header('Idempotency-Key');
+if ($cachedResponse = Idempotency::get($key)) return $cachedResponse;
+```
+
+### 3. Modular Communication
+- **Synchronous:** Define Interface in `app/Contracts/Modules/{Module}Contract.php`.
+- **Asynchronous:** Dispatch `Modules\{Module}\Events\{Event}` and listen in other modules.
+
+### 4. Sparse Fieldsets
+Allow clients to request specific fields to optimize payload.
+```php
+// In JsonResource
+public function toArray(Request $request): array
+{
+    return $this->only($request->get('fields', ['id', 'name']));
+}
+```
+
+## Reference Guide
+| Topic | Reference |
+|-------|-----------|
+| API Standard | `references/api-standard.md` |
+| Module Flow | `references/modular-flow.md` |
+
+## Constraints
+- **MUST** follow "Zero Cross-Module Model Import" rule.
+- **MUST** use `SuccessResponse` or `ProblemResponse` wrappers.
+- **MUST** use Property Hooks for DTO transformations.

@@ -1,115 +1,79 @@
-# Laravel Starterkit API
+# Laravel Starterkit API (Industrial-Grade)
 
-Opinionated Laravel 13 starter kit for building scalable APIs. Modular architecture with single-action controllers, action classes, read-only repositories, and strict typing.
+> A high-performance, modular monolith boilerplate built with Laravel 13 and PHP 8.4, designed for scalability and enterprise-level maintainability.
 
-## Technical Stack
+---
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Laravel 13 + PHP 8.4 |
-| Auth | Sanctum (Bearer tokens) |
-| RBAC | Spatie laravel-permission |
-| Social Auth | Laravel Socialite (Google, GitHub) |
-| Feature Flags | Laravel Pennant |
-| Testing | Pest 4 |
-| API Docs | - |
-| Static Analysis | PHPStan level max |
-| Code Style | Laravel Pint |
+## 🎯 Motivation
 
-## Quick Start
+Modern application development often falls into two traps: **Big Ball of Mud** (Monoliths that become unmanageable) or **Microservices Overkill** (adding distributed system complexity too early).
 
-```bash
-composer run setup
-```
+This starter kit provides a **third way**: The **Modular Monolith**. It enforces strict module boundaries while keeping the deployment simple. By using industry standards like **RFC 9457**, **Idempotency**, and **Property Hooks**, we ensure your codebase is ready for both high traffic and high developer velocity.
 
-Or manually:
+## 🚀 Tech Stack
 
-```bash
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve
-```
+- **Framework:** Laravel 13
+- **Language:** PHP 8.4 (Strict Typing, Property Hooks)
+- **Auth:** Laravel Sanctum (Per-device token management)
+- **Permissions:** Spatie Laravel Permission
+- **Feature Flags:** Laravel Pennant
+- **Testing:** Pest PHP
+- **Static Analysis:** PHPStan (Max Level) & Laravel Pint
 
-## Architecture
+## 🏗️ Architecture Architecture
+
+We follow a **Contract-First Modular Monolith** approach:
 
 ```
-Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / Eloquent (write)
+Modules/
+├── IAM/                # Identity and Access Management
+│   ├── Actions/        # Single-purpose business logic
+│   ├── Controllers/    # Thin HTTP wrappers
+│   ├── Models/         # Eloquent Models (Property Hooks)
+│   ├── Payloads/       # Type-safe DTOs
+│   └── Routes/         # Modular routing
+app/
+├── Contracts/          # The only way modules talk to each other
+└── Http/Responses/     # RFC 9457 Problem Details
 ```
 
-- **Controllers** are `final readonly` invokable classes -- no business logic.
-- **Actions** encapsulate single business operations.
-- **Repositories** are read-only (query/find). Writes use Eloquent directly in actions.
-- **Modules** are self-contained in `modules/{Module}/` with their own routes, controllers, actions, models, and tests.
+## 💎 Core Values
 
-## Modules
+1. **Zero-Cross Model Import:** Module A never imports Module B's models.
+2. **Action-Payload Pattern:** Consistent business logic regardless of HTTP or Job context.
+3. **Industry Standards:** Native support for Idempotency, Rate Limiting, and Problem Details.
+4. **Developer Experience (DX):** Fully integrated with **Laravel Boost** and **Agent Skills** for AI-assisted development.
 
-```
-modules/
-  Auth/
-    Actions/             -- Login, Register, SocialCallback, etc.
-    Controllers/V1/      -- 13 invokable controllers
-    Payloads/V1/         -- LoginPayload, RegisterPayload
-    Providers/
-    Requests/V1/         -- Form request validation
-    Resources/
-    Routes/              -- api/v1/auth/*
-    Tests/               -- Feature + Unit (11 files)
-  Role/
-    Actions/             -- CRUD + Bulk for roles & permissions
-    Controllers/V1/      -- 10 invokable controllers
-    Database/
-      Factories/
-      Migrations/
-      Seeders/
-    Filters/
-    Models/              -- Role, Permission (Spatie)
-    Payloads/V1/
-    Providers/
-    Repositories/
-    Requests/V1/
-    Resources/
-    Routes/              -- api/v1/roles/*, api/v1/permissions/*
-    Tests/               -- Feature + Unit (4 files)
-  User/
-    Actions/             -- CRUD + Bulk for users
-    Controllers/V1/      -- 6 invokable controllers
-    Database/
-      Factories/         -- UserFactory
-      Seeders/
-    Actions/             -- User actions
-    Filters/
-    Models/              -- User (MustVerifyEmail, HasRoles)
-    Payloads/V1/
-    Providers/
-    Repositories/
-    Requests/V1/
-    Resources/
-    Routes/              -- api/v1/users/*
-    Tests/               -- Feature + Unit (3 files)
-```
+## 🛠️ Quick Start
 
-## Testing
+1. **Install Dependencies:**
+   ```bash
+   composer install
+   ```
 
-```bash
-# Full suite
-php artisan test --compact
+2. **Setup Environment:**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-# Single module
-./vendor/bin/pest modules/User
+3. **Database & Auth:**
+   ```bash
+   php artisan migrate --seed
+   ```
 
-# Filter by test name
-php artisan test --compact --filter=SocialLoginTest
-```
+4. **Run Tests:**
+   ```bash
+   php artisan test
+   ```
 
-## Code Quality
+## 📖 Documentation
 
-```bash
-./vendor/bin/pint
-./vendor/bin/phpstan analyse --memory-limit=512M
-```
+Detailed handbooks are available in the `docs/` directory:
+- [Architecture & Modularization](docs/architecture.md)
+- [API Standards (RFC 9457, Idempotency)](docs/api-standard.md)
+- [Coding Standards (Property Hooks, Final Classes)](docs/coding-standards.md)
+- [Authentication & RBAC](docs/auth.md)
 
-## License
-
-The Laravel framework is open-sourced under the MIT license.
+---
+Built with ❤️ for the Laravel Community.

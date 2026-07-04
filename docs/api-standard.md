@@ -1,77 +1,54 @@
-# API Standards
+# API Standards Handbook
 
-## Base URL
+Professional, production-ready API standards used in this starter kit.
 
-All endpoints: `/api/v1/{resource}/...`
+## 1. Error Handling (RFC 9457)
 
-## Authentication
+We don't just return `{"error": "message"}`. We follow the **Problem Details** standard.
 
-```
-Authorization: Bearer {token}
-```
-
-## Response Format
-
-### Success (single resource)
+### The Story: User Validation Fails
+When a user registers with an existing email, the API responds:
 
 ```json
 {
-    "status": 200,
-    "message": "User retrieved successfully",
-    "data": { ... }
+  "type": "https://api.example.com/errors/validation-failed",
+  "title": "Validation Error",
+  "status": 422,
+  "detail": "The email provided is already registered.",
+  "errors": {
+    "email": ["The email has already been taken."]
+  }
 }
 ```
 
-### Success (paginated list)
+## 2. Idempotency
+
+Prevent double-processing of sensitive requests (like payments).
+
+### How to use it:
+Send a `Idempotency-Key` header with a unique UUID.
+- **First Request:** Server processes and caches the result.
+- **Second Request (with same key):** Server immediately returns the cached result without re-processing.
+
+## 3. Rate Limiting Transparency
+
+We help frontend developers manage limits by sending these headers:
+- `X-RateLimit-Limit`: Maximum requests.
+- `X-RateLimit-Remaining`: Requests left.
+- `X-RateLimit-Reset`: When the limit resets.
+
+## 4. Response Consistency
+
+Every successful response follows this structure:
 
 ```json
 {
-    "status": 200,
-    "message": "Users retrieved successfully",
-    "data": [ ... ],
-    "meta": {
-        "current_page": 1,
-        "last_page": 5,
-        "per_page": 15,
-        "total": 72
-    }
+  "status": "success",
+  "message": "Resource created successfully",
+  "data": { ... }
 }
 ```
 
-### Error (RFC 9457 ProblemResponse)
+## 5. Stream Responses
 
-```json
-{
-    "type": "http://localhost/validation-error",
-    "title": "Validation Error",
-    "status": 422,
-    "message": "Validation Error",
-    "detail": "The given data was invalid.",
-    "errors": {
-        "email": ["The email field is required."]
-    }
-}
-```
-
-Error types by status:
-
-| Status | Type | Title |
-|--------|------|-------|
-| 400 | `/validation-error` | Validation Error |
-| 401 | `/unauthenticated` | Unauthenticated |
-| 403 | `/forbidden` | Forbidden |
-| 404 | `/not-found` | Not Found |
-| 422 | `/validation-error` | Validation Error |
-| 429 | `/rate-limited` | Too Many Requests |
-
-## Date Format
-
-All datetime fields: `Y-m-d H:i:s` (e.g. `2026-04-23 15:19:09`)
-
-## Locale
-
-Set via `Accept-Language` header. Supported: `en` (default), `id`.
-
-## Versioning
-
-URL-prefixed (`/api/v1/`). Supported versions defined in `config/apiroute.php`. Unsupported versions return 404.
+For large exports, we use `StreamedResponse`. This allows the server to send data line-by-line, keeping memory usage near zero regardless of file size.

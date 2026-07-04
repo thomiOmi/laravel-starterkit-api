@@ -1,29 +1,30 @@
-# PHP 8.4 Property Hooks
+# Property Hooks (PHP 8.4)
 
-Property hooks allow you to intercept and handle property access and modification directly within the class definition.
+Property hooks allow you to intercept property access and mutation directly in the class definition.
 
-## Use Case: Data Payloads
-
-In our Standard 2026 architecture, Property Hooks are mandatory for Payloads to ensure data integrity without external DTO builders.
-
-### Setters (Validation & Transformation)
-
+## Basic Syntax
 ```php
-public string $email {
-    set => strtolower(trim($value));
+class User
+{
+    public string $name {
+        get => ucfirst($this->name);
+        set(string $value) => strtolower($value);
+    }
 }
 ```
 
-### Getters (Derived Data)
-
+## Virtual Properties
+Properties that don't have a backing value in the database.
 ```php
-public string $fullName {
-    get => $this->firstName . ' ' . $this->lastName;
+class User extends Model
+{
+    public string $fullName {
+        get => "{$this->first_name} {$this->last_name}";
+    }
 }
 ```
 
-## Rules
-
-1. Always use `set` for normalization (lowercase, trim).
-2. Use `set` for simple validation (throwing `InvalidArgumentException`).
-3. If logic is complex, consider a dedicated private method called by the hook.
+## Advantages
+1. **Type Safety:** Hooks respect the property type.
+2. **Readability:** Logic is right next to the property.
+3. **Performance:** Native PHP implementation is faster than Laravel's `Attribute` class.
