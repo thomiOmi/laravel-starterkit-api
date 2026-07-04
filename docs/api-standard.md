@@ -1,54 +1,81 @@
 # API Standards Handbook
 
-Professional, production-ready API standards used in this starter kit.
+This API is designed for professionalism and contract stability, specifically for integration with SPA and Mobile apps.
 
 ## 1. Error Handling (RFC 9457)
 
-We don't just return `{"error": "message"}`. We follow the **Problem Details** standard.
+We use a global standard for error responses so clients can handle errors predictably.
 
-### The Story: User Validation Fails
-When a user registers with an existing email, the API responds:
+### Error Workflow:
+```mermaid
+graph TD
+    Req[Request] --> Val{Validation?}
+    Val -- Fail --> RFC[ProblemResponse RFC 9457]
+    Val -- Pass --> Proc[Process Action]
+    Proc -- Exception --> RFC
+    Proc -- Success --> Succ[SuccessResponse]
+```
 
+**Example Error Response (422):**
 ```json
 {
   "type": "https://api.example.com/errors/validation-failed",
   "title": "Validation Error",
   "status": 422,
-  "detail": "The email provided is already registered.",
+  "detail": "The provided data was invalid.",
   "errors": {
     "email": ["The email has already been taken."]
   }
 }
 ```
 
-## 2. Idempotency
+---
 
-Prevent double-processing of sensitive requests (like payments).
+## 2. Idempotency (Idempotency-Key)
 
-### How to use it:
-Send a `Idempotency-Key` header with a unique UUID.
-- **First Request:** Server processes and caches the result.
-- **Second Request (with same key):** Server immediately returns the cached result without re-processing.
+Critical for preventing duplicate data creation during unstable network connections (especially for Mobile).
 
-## 3. Rate Limiting Transparency
+### Idempotency Flow:
+```mermaid
+sequenceDiagram
+    participant C as Mobile Client
+    participant M as Idempotency Middleware
+    participant A as Business Action
 
-We help frontend developers manage limits by sending these headers:
-- `X-RateLimit-Limit`: Maximum requests.
-- `X-RateLimit-Remaining`: Requests left.
-- `X-RateLimit-Reset`: When the limit resets.
-
-## 4. Response Consistency
-
-Every successful response follows this structure:
-
-```json
-{
-  "status": "success",
-  "message": "Resource created successfully",
-  "data": { ... }
-}
+    C->>M: POST /orders (Header: Idempotency-Key: UUID-1)
+    alt Key not in Cache
+        M->>A: Process Order
+        A-->>M: Order Created
+        M->>M: Cache Result (Key: UUID-1)
+        M-->>C: 201 Created
+    else Key found in Cache
+        M-->>C: Return Cached Response (201 Created)
+    end
 ```
 
-## 5. Stream Responses
+---
 
-For large exports, we use `StreamedResponse`. This allows the server to send data line-by-line, keeping memory usage near zero regardless of file size.
+## 3. Streaming Response
+
+Use this for large data exports without burdening the server's RAM.
+
+**Example Case:** Exporting 100,000 transaction records to CSV.
+- **Without Stream:** Server collects all data in memory -> RAM reaches limit -> Server crashes.
+- **With Stream:** Server fetches 1 record -> sends it immediately to client -> fetches the next. RAM usage remains minimal.
+
+---
+
+## 4. Media & File Response
+
+Always use **Signed URLs** for private/sensitive files.
+- Links expire in 5-15 minutes.
+- Prevents permanent exposure of private file links.
+
+---
+
+## 5. Rate Limiting Transparency
+
+Every API response includes transparent headers:
+- `X-RateLimit-Limit`: Maximum allowance.
+- `X-RateLimit-Remaining`: Remaining allowance.
+- `X-RateLimit-Reset`: When allowance resets (Unix Timestamp).

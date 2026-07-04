@@ -1,44 +1,40 @@
 ---
 name: laravel-verification
-description: Proactive verification loop for Laravel 13 development. Uses MCP tools (database-schema, search-docs) and local tools (Pint, PHPStan, Pest) to ensure high-quality code delivery.
+description: Mandatory verification loop to maintain the "No-Ignore" quality policy. Uses MCP tools (database-schema) and static analysis (Pint, PHPStan, Pest).
 license: MIT
 metadata:
-  version: "2.0.0"
+  version: "2.2.0"
 ---
 
-# Laravel Verification Loop
+# Laravel Verification Loop (The Quality Gate)
 
-Systematic verification to ensure zero-regression and architectural compliance.
+You are responsible for ensuring that every piece of code meets the project's strict quality standards.
 
-## Verification Checklist
+## The Loop
+```mermaid
+graph TD
+    Start[Implementation Done] --> Pint[Run Pint: Fix Style]
+    Pint --> PHPStan[Run PHPStan Max: Strict Analysis]
+    PHPStan --> Pest[Run Pest: Functional Verification]
+    Pest --> MCP[Check DB Schema via MCP]
+    MCP --> Done[Declare Task Complete]
+```
 
-### 1. Database Integrity
-- Run `php artisan migrate`.
-- **Tool:** Use `database-schema` to verify table columns and constraints match expectations.
+## Mandatory Commands
+1. **Formatting:** `./vendor/bin/pint --format agent`
+2. **Analysis:** `./vendor/bin/phpstan analyse`
+3. **Testing:** `php artisan test --compact`
 
-### 2. Static Analysis & Linting
-- Run `./vendor/bin/pint --format agent`.
-- Run `./vendor/bin/phpstan analyse`.
-- **Constraint:** Fix all "mixed" type errors; no `@phpstan-ignore`.
-
-### 3. Logic & Behavior
-- Run `php artisan test --compact`.
-- **Goal:** 100% pass rate.
-
-### 4. Architectural Integrity
-- Verify no Model imports between `Modules/A` and `Modules/B`.
-- Confirm all new classes are `final`.
-
-## MCP Integration Workflow
-
-Whenever you finish a task, follow this loop:
-1. **Explore:** Use `database-schema` to confirm side effects.
-2. **Consult:** Use `search-docs` if using a new Laravel 13 feature.
-3. **Audit:** Use `read-log-entries` if any test fails with 500 error.
-4. **Fix:** Use `pint` and `phpstan` before reporting completion.
+## Strict Policies
+- **No @phpstan-ignore:** Suppressing errors is a failure. You must fix the type-hint or logic.
+- **Strict Typing:** All new code must have 100% type coverage for properties and methods.
+- **Schema Audit:** If you created a migration, you MUST run the `database-schema` MCP tool to verify the actual state of the DB.
 
 ## Failure Handling
-If a verification step fails:
-- Read the specific error message.
-- Use `php artisan pail` or `read-log-entries` to get the trace.
-- Fix the root cause, then restart the loop from step 1.
+1. **Pint Error:** Fix the file and re-run.
+2. **PHPStan Error:** Research the type issue (use `search-docs` if needed). Fix the code.
+3. **Pest Error:** Read the log via `read-log-entries`. Fix the regression.
+
+## Constraints
+- **MUST NOT** declare a task complete until all 3 local tools pass with 0 errors.
+- **MUST** provide the output summary of these tools in your final report.

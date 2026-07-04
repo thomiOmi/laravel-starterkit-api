@@ -1,36 +1,34 @@
-# Laravel 13 Standard Coding Guidelines
+# Laravel Starterkit Coding Guidelines (The Law)
 
-## Core Tech Stack
-- **Framework:** Laravel 13 (Modular Monolith)
-- **Runtime:** PHP 8.4+
-- **Database:** MySQL 8.0+
-- **Testing:** Pest 4.0+
-- **Static Analysis:** PHPStan (Larastan 3.0)
-- **Formatting:** Laravel Pint
+These rules are non-negotiable for all development within this repository. AI agents and human developers must adhere to these foundations to ensure scalability and maintainability.
 
-## Architectural Constraints (The Law)
-1. **Module Isolation:** `Modules/A` MUST NOT import anything from `Modules/B/Models`. Use `app/Contracts`.
-2. **Thin Controllers:** Controllers only handle HTTP. Logic goes to **Actions**.
-3. **Action Payloads:** Actions MUST receive a **Payload (DTO)** object, not a `Request` or `array`.
-4. **Final Classes:** All new classes MUST be `final` unless explicitly designed for inheritance.
-5. **Property Hooks:** Use PHP 8.4 **Property Hooks** for derived logic in Models and Payloads.
+## 1. Architectural Foundations
+- **Modular Monolith:** The application is organized into modules within `modules/`. Each module is self-contained.
+- **Module Isolation:** Modules MUST NOT import Models or internal classes from other modules directly.
+  - *Exception:* Sharing via `app/Contracts` (Interfaces) or communicating via `Events`.
+- **Final by Default:** All classes (Controllers, Actions, Services, Payloads) MUST be declared as `final`.
+- **No-Ignore Policy:** NEVER use `@phpstan-ignore`, `@noinspection`, or suppress any linting/static analysis errors. Fix the underlying code issue instead.
 
-## API Standards
-- **Errors:** All error responses MUST follow **RFC 9457 (ProblemResponse)**.
-- **Consistency:** Use `SuccessResponse` for 200/201 responses.
-- **Resources:** Always use `JsonResource` for data transformation.
-- **Headers:** Support `Idempotency-Key` and provide `X-RateLimit` headers.
+## 2. Business Logic Pattern (Action-Payload)
+- **Thin Controllers:** Controllers only transform the Request into a Payload and delegate to an Action.
+- **Action Mandate:** All business logic MUST reside in a single-purpose Action class.
+- **Payload Mandate:** Actions MUST receive a `final readonly` Payload (DTO) class. Never pass raw arrays or Request objects to an Action.
+- **Property Hooks:** Use PHP 8.4 Property Hooks for all derived logic, accessors, and mutators in Models and Payloads.
 
-## Development Workflow (Verification Loop)
-1. **Before Code:** Use `database-schema` to understand existing tables.
-2. **During Code:** Use `search-docs` for L13/PHP 8.4 syntax help.
-3. **After Code:**
-   - Run `./vendor/bin/pint --format agent`
-   - Run `./vendor/bin/phpstan analyse`
-   - Run `php artisan test --compact`
-   - Check `database-schema` if migrations were added.
+## 3. API Excellence
+- **Error Standard:** Use **RFC 9457 (ProblemResponse)** for all non-2xx responses.
+- **Contract Stability:** Always use `JsonResource` for response transformation to decouple DB schema from API contracts.
+- **Idempotency:** Support `Idempotency-Key` for sensitive state-changing operations.
+- **Type Safety:** Use strict typing for all properties, parameters, and return types. Avoid `mixed` at all costs.
 
-## File Ownership
-- **AGENTS.md:** Managed by `php artisan boost:install`. **DO NOT EDIT.**
-- **.ai/guidelines/**: Edit these source files to update AGENTS.md rules.
-- **.ai/skills/**: Edit these to update agent domain expertise.
+## 4. Verification Loop
+Before declaring a task complete, you MUST:
+1. Run `./vendor/bin/pint --format agent` to fix styling.
+2. Run `./vendor/bin/phpstan analyse` and ensure 0 errors.
+3. Run `php artisan test --compact` and ensure all tests pass.
+4. Use the `database-schema` MCP tool to verify any migration changes.
+
+## 5. File Ownership
+- **AGENTS.md**: Auto-generated. DO NOT EDIT.
+- **.ai/guidelines/**: Source of truth for guidelines.
+- **.ai/skills/**: Source of truth for domain-specific expertise.

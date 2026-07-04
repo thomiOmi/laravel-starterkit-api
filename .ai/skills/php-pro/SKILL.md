@@ -1,42 +1,62 @@
 ---
 name: php-pro
-description: Advanced PHP 8.4 patterns including Property Hooks, strict typing, and functional programming. Use for core logic, DTOs, and complex data structures.
+description: Expert PHP 8.4 implementation including Property Hooks, strict typing, and functional patterns. Use for core logic, DTOs, and complex data transformations.
 license: MIT
 metadata:
-  version: "2.0.0"
+  version: "2.2.0"
 ---
 
 # PHP 8.4 Professional Standards
 
-Expert-level PHP development with a focus on type safety and modern syntax.
+Leverage the full power of modern PHP to write expressive, fast, and safe code.
 
-## Modern PHP 8.4 Features
+## 1. Property Hooks (Mandatory for derived logic)
+Native alternative to Laravel Attributes or getters/setters.
 
-### 1. Property Hooks
-Replace verbose getters/setters.
 ```php
-public string $email {
-    set => strtolower($value);
-    get => $this->email;
+final class User
+{
+    /**
+     * Virtual property example
+     */
+    public string $fullName {
+        get => "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Mutator example
+     */
+    public string $password {
+        set(string $value) => Hash::make($value);
+    }
 }
 ```
 
-### 2. Final by Default
-Protect class hierarchies from unintended extension.
+## 2. Strict Immutability (Final & Readonly)
+Ensure your data structures are predictable.
+
 ```php
-final readonly class CreateUserPayload { ... }
+final readonly class CreateUserPayload
+{
+    public function __construct(
+        public string $name,
+        public string $email,
+        public UserRole $role = UserRole::Member,
+    ) {}
+}
 ```
 
-### 3. Strict Typing
-Always use `declare(strict_types=1);` and native types for EVERYTHING.
-
-## Functional Patterns
-- Use `array_map`, `array_filter` with explicit closures.
-- Use `match` expressions over `switch`.
-- Leverage Laravel Collections for complex data transformation.
+## 3. High-Level Type Safety
+- Use **Enums** for all fixed sets of values.
+- Use **Intersection Types** (`Countable&ArrayAccess`) for complex requirements.
+- Use **Readonly Classes** for DTOs/Payloads.
 
 ## Constraints
-- **MUST** use Property Hooks for derived data.
-- **MUST** use Constructor Property Promotion.
-- **MUST** use Enums for status/type fields.
-- **MUST** pass PHPStan Level 9 or max available.
+- **MUST** use `declare(strict_types=1);` in all new files.
+- **MUST** use Property Hooks for all calculated fields.
+- **MUST** use Enums instead of string constants.
+- **MUST NOT** use `mixed` type. Use specific types or union types.
+
+## Verification
+1. Run `phpstan` at max level.
+2. Check for "Property Type Coverage" to ensure all class properties are typed.

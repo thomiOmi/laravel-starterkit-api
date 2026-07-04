@@ -6,74 +6,88 @@
 
 ## 🎯 Motivation
 
-Modern application development often falls into two traps: **Big Ball of Mud** (Monoliths that become unmanageable) or **Microservices Overkill** (adding distributed system complexity too early).
+This starterkit was built with one primary goal: **To eliminate the repetition of setting up real-world projects.**
 
-This starter kit provides a **third way**: The **Modular Monolith**. It enforces strict module boundaries while keeping the deployment simple. By using industry standards like **RFC 9457**, **Idempotency**, and **Property Hooks**, we ensure your codebase is ready for both high traffic and high developer velocity.
+Most starterkits are either too generic or overly complex. This project takes a middle ground, providing a rock-solid yet flexible foundation for professional applications.
+
+### Why does this project exist?
+1. **Clone & Go Foundation:** I wanted a starterkit where I have Sanctum Auth, Spatie RBAC, and a mature API Standard ready to use. No more repeating the same basic setup for every new project.
+2. **Optional Modularity:** Using a modular concept allows real-world projects to add or install new features as separate modules. Modularity is optional; if you don't need a feature, don't enable the module. If you do, it integrates perfectly with the core.
+3. **Decoupled Frontend:** The main focus of this application is to serve as a backend for **SPA Frontends (Vue/React/Next.js)** or **Mobile Apps (Flutter/React Native)**. This is why API Standards (RFC 9457, Idempotency) are heavily emphasized here.
 
 ## 🚀 Tech Stack
 
-- **Framework:** Laravel 13
+- **Framework:** Laravel 13 (Modular Monolith)
 - **Language:** PHP 8.4 (Strict Typing, Property Hooks)
 - **Auth:** Laravel Sanctum (Per-device token management)
-- **Permissions:** Spatie Laravel Permission
+- **Permissions:** Spatie Laravel Permission (RBAC)
 - **Feature Flags:** Laravel Pennant
 - **Testing:** Pest PHP
-- **Static Analysis:** PHPStan (Max Level) & Laravel Pint
+- **Quality:** PHPStan (Max Level) & Laravel Pint
 
-## 🏗️ Architecture Architecture
+## 🏗️ Architecture
 
-We follow a **Contract-First Modular Monolith** approach:
+This project follows a **Contract-First Modular Monolith** approach.
 
-```
-Modules/
-├── IAM/                # Identity and Access Management
-│   ├── Actions/        # Single-purpose business logic
-│   ├── Controllers/    # Thin HTTP wrappers
-│   ├── Models/         # Eloquent Models (Property Hooks)
-│   ├── Payloads/       # Type-safe DTOs
-│   └── Routes/         # Modular routing
+```text
+modules/
+├── {Module}/
+│   ├── Actions/         # Single-purpose Business Logic
+│   ├── Controllers/     # Thin HTTP Layer (V1/, V2/ versioning)
+│   ├── Database/        # factories/, migrations/, seeders/
+│   ├── Events/          # Cross-module communication events
+│   ├── Filters/         # Query/filter objects
+│   ├── Jobs/            # Queued tasks
+│   ├── Models/          # Eloquent Models (PHP 8.4 Property Hooks)
+│   ├── Payloads/        # Type-safe DTOs (Action-Payload pattern)
+│   ├── Providers/       # Module service providers
+│   ├── Repositories/    # Optional: Complex data access
+│   ├── Requests/        # Form request validation
+│   ├── Resources/       # API Resources (JSON transformation)
+│   ├── Routes/          # V1.php, V2.php
+│   └── Tests/           # Feature & Unit tests
 app/
-├── Contracts/          # The only way modules talk to each other
-└── Http/Responses/     # RFC 9457 Problem Details
+├── Contracts/           # The Glue: Interfaces for module communication
+├── Http/
+│   ├── Controllers/     # Base Controller
+│   ├── Middleware/      # Core middleware
+│   └── Responses/       # Industrial Responses (RFC 9457)
+└── Providers/           # AppServiceProvider, AuthServiceProvider
+database/
+├── factories/           # Shared factories
+├── migrations/          # Shared migrations
+└── seeders/             # Core seeders
 ```
 
 ## 💎 Core Values
 
-1. **Zero-Cross Model Import:** Module A never imports Module B's models.
-2. **Action-Payload Pattern:** Consistent business logic regardless of HTTP or Job context.
-3. **Industry Standards:** Native support for Idempotency, Rate Limiting, and Problem Details.
-4. **Developer Experience (DX):** Fully integrated with **Laravel Boost** and **Agent Skills** for AI-assisted development.
+1. **Zero-Cross Model Import:** Modules never import each other's Models directly.
+2. **Action-Payload Pattern:** Consistent business logic regardless of transport layer (HTTP, Job, CLI).
+3. **Property Hooks Standard:** Native PHP 8.4 features for more expressive and faster code.
+4. **No-Ignore Quality:** Code quality is priority. Fix errors, don't ignore them.
 
 ## 🛠️ Quick Start
 
-1. **Install Dependencies:**
-   ```bash
-   composer install
-   ```
+```bash
+# 1. Clone & Install
+composer install
 
-2. **Setup Environment:**
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
+# 2. Setup Env
+cp .env.example .env && php artisan key:generate
 
-3. **Database & Auth:**
-   ```bash
-   php artisan migrate --seed
-   ```
+# 3. Migrate & Seed
+php artisan migrate --seed
 
-4. **Run Tests:**
-   ```bash
-   php artisan test
-   ```
+# 4. Verification
+php artisan test
+```
 
 ## 📖 Documentation
 
-Detailed handbooks are available in the `docs/` directory:
 - [Architecture & Modularization](docs/architecture.md)
 - [API Standards (RFC 9457, Idempotency)](docs/api-standard.md)
 - [Coding Standards (Property Hooks, Final Classes)](docs/coding-standards.md)
 - [Authentication & RBAC](docs/auth.md)
 
 ---
-Built with ❤️ for the Laravel Community.
+Built with ❤️ for real-world projects.

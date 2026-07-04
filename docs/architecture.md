@@ -1,52 +1,56 @@
 # Architecture Handbook: Modular Monolith
 
-This project is built as a **Modular Monolith**. It gives you the speed of a monolith with the organization of microservices.
+Welcome to the architectural guide. This starterkit is designed using a **Modular Monolith** pattern to keep the codebase clean and organized as the application grows.
 
-## The Story: Adding a New Feature
+## Pluggable Modules Philosophy
 
-Imagine you want to add a **Marketing** module with a "Discount" feature.
+Modules in this project are **pluggable**. You can build new features within the `modules/` directory without breaking core functionality. If you need to remove or move a module in the future, its coupling with the rest of the application is minimized through **Contracts**.
 
-### 1. Structure
-Create the folder at `modules/Marketing/`.
-```
-Marketing/
-├── Actions/        # Single Task (e.g., CalculateDiscountAction.php)
-├── Controllers/    # HTTP layer
-├── Models/         # Data layer
-└── Routes/         # API endpoints
-```
+---
 
-### 2. Communication
-If the **Order** module needs to check a discount:
-- **WRONG:** `use Modules\Marketing\Models\Discount;` (Tight coupling)
-- **RIGHT:**
-  1. Create `app/Contracts/MarketingContract.php`.
-  2. Bind it in `MarketingServiceProvider.php`.
-  3. Call `$marketing->calculate($order);` in the Order module.
+## Communication Flow
 
-## Module Isolation Diagram
+Cross-module communication is the most critical part of this architecture. We use two main approaches:
+
+### 1. Synchronous Communication (Contract-First)
+Use this when you need an immediate result from another module.
 
 ```mermaid
-graph TD
-    subgraph "Module: IAM"
-        AuthAction[AuthAction] --> UserModel[UserModel]
-    end
+sequenceDiagram
+    participant O as Module Order
+    participant C as app/Contracts
+    participant M as Module Marketing
 
-    subgraph "Module: Order"
-        CreateOrder[CreateOrderAction] --> OrderModel[OrderModel]
-    end
-
-    subgraph "Shared Layer (app/)"
-        IdentityContract[IdentityContract]
-        ProblemResponse[ProblemResponse]
-    end
-
-    CreateOrder -.->|Uses| IdentityContract
-    AuthAction -.->|Implements| IdentityContract
+    O->>C: Call MarketingContract->calculateDiscount()
+    C->>M: Route call to MarketingService
+    M-->>O: Return Discount Result
 ```
 
-## Key Rules
-1. **Never** import a model from another module.
-2. **Always** use Actions for business logic.
-3. **Always** use Payloads (DTO) to pass data into Actions.
-4. **Final** everything. No unintended inheritance.
+### 2. Asynchronous Communication (Event-Driven)
+Use this for side effects that don't need to be awaited.
+
+```mermaid
+graph LR
+    O[Module Order] -- Dispatches Event --> E((OrderPlaced))
+    E -- Handled by --> I[Module Inventory]
+    E -- Handled by --> N[Module Notification]
+```
+
+---
+
+## Directory Structure
+
+Every module follows a consistent structure, making navigation easy for developers and AI agents.
+
+```text
+modules/{Module}/
+├── Actions/      # Where business logic lives (One Action = One Task)
+├── Payloads/     # Data Transfer Objects (DTO) for Actions
+├── Models/       # Database representation with PHP 8.4 Hooks
+└── Providers/    # Registration of the module into the Laravel system
+```
+
+---
+
+## Why Not Microservices?
+We want microservices-like code organization with monolith-like deployment ease. If this application ever truly needs to be distributed, every folder in `modules/` is already prepared to be split into its own service because the dependencies are already isolated.

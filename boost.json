@@ -19,6 +19,7 @@
         "socialite-development",
         "pest-testing",
         "laravel-permission-development",
+        "laravel-api-standard",
         "laravel-attributes",
         "laravel-patterns",
         "laravel-security",

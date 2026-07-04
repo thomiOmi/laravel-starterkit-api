@@ -1,57 +1,74 @@
 ---
 name: laravel-patterns
-description: Industrial-grade Laravel patterns including RFC 9457 errors, Idempotency, Stream Responses, and Modular isolation. Use when designing API contracts, cross-module communication, or complex business logic.
+description: Architectural patterns for Modular Monoliths. Handles Action-Payload patterns, Cross-module communication (Contracts/Events), and Service Layer orchestration.
 license: MIT
 metadata:
-  version: "2.0.0"
+  version: "2.2.0"
 ---
 
-# Laravel Development Patterns (Industry Standard)
+# Laravel Architecture Patterns
 
-Production-grade patterns for scalable Laravel 13 applications.
+Production-grade patterns for building clean, isolated, and scalable modular applications.
 
-## Key Patterns
+## 1. The Action-Payload Pattern
+Decouple your business logic from the transport layer (HTTP, CLI, Jobs).
 
-### 1. RFC 9457 Error Handling
-Always use `ProblemResponse` for 4xx and 5xx errors.
-```php
-return new ProblemResponse(
-    type: 'https://api.example.com/errors/insufficient-funds',
-    title: 'Insufficient Funds',
-    status: 402,
-    detail: 'Your account balance is too low to complete this transaction.'
-);
+```mermaid
+graph LR
+    H[HTTP Request] --> P[Payload DTO]
+    C[CLI Command] --> P
+    J[Queue Job] --> P
+    P --> A[Action Class]
+    A --> O[Outcome]
 ```
 
-### 2. Idempotency
-Use `Idempotency-Key` header for critical POST requests.
-```php
-// In Controller
-$key = $request->header('Idempotency-Key');
-if ($cachedResponse = Idempotency::get($key)) return $cachedResponse;
+### Implementation Checklist
+- [ ] Create a `final readonly class Payload` with promoted properties.
+- [ ] Create a `final readonly class Action` with a single `handle(Payload $p)` method.
+- [ ] Use the Action in Controllers, Jobs, or Commands.
+
+## 2. Cross-Module Communication
+Maintain strict isolation between modules.
+
+### Synchronous (Contracts)
+If Module A needs a result from Module B immediately.
+1. Define Interface in `app/Contracts/Modules/{Module}Contract.php`.
+2. Implement in `Modules/{Module}/Services/{Module}Service.php`.
+3. Bind in `Modules/{Module}/Providers/{Module}ServiceProvider.php`.
+
+### Asynchronous (Event-Driven)
+If Module A just needs to broadcast that something happened.
+```mermaid
+sequenceDiagram
+    participant A as Module A
+    participant E as Event: OrderPlaced
+    participant B as Module B (Listener)
+
+    A->>E: Dispatch Event
+    E->>B: Execute Listener Logic
 ```
 
-### 3. Modular Communication
-- **Synchronous:** Define Interface in `app/Contracts/Modules/{Module}Contract.php`.
-- **Asynchronous:** Dispatch `Modules\{Module}\Events\{Event}` and listen in other modules.
+## 3. Service Layer Orchestration
+Use Domain Services for complex logic involving multiple models or third-party integrations.
 
-### 4. Sparse Fieldsets
-Allow clients to request specific fields to optimize payload.
 ```php
-// In JsonResource
-public function toArray(Request $request): array
+final readonly class PaymentService
 {
-    return $this->only($request->get('fields', ['id', 'name']));
+    public function __construct(
+        private StripeGateway $gateway,
+        private NotificationContract $notifier,
+    ) {}
+
+    public function process(PaymentPayload $payload): PaymentResult
+    {
+        // 1. Logic
+        // 2. Integration
+        // 3. Notification
+    }
 }
 ```
 
-## Reference Guide
-| Topic | Reference |
-|-------|-----------|
-| API Standard | `references/api-standard.md` |
-| Module Flow | `references/modular-flow.md` |
-
 ## Constraints
-- **MUST** follow "Zero Cross-Module Model Import" rule.
-- **MUST** use `SuccessResponse` or `ProblemResponse` wrappers.
-- **MUST** use Property Hooks for DTO transformations.
+- **MUST** enforce module isolation. No `use Modules\B\Models\User` in `Modules\A`.
+- **MUST** use `final` and `readonly` for pattern classes.
+- **MUST** provide architectural reasoning for chosen patterns.

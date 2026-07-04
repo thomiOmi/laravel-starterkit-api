@@ -1,58 +1,86 @@
-# Coding Standards Handbook (PHP 8.4 & Laravel 13)
+# Coding Standards Handbook
 
-We embrace the latest PHP features to write cleaner, safer code.
+Coding standards in this project focus on **Type Safety**, **Readability**, and leveraging the latest **PHP 8.4** features.
+
+---
 
 ## 1. Property Hooks (PHP 8.4)
 
-Stop writing verbose `Attribute` classes. Use native Property Hooks.
+Use Property Hooks for logic tied to properties. It is cleaner than traditional getters/setters or Laravel Attributes.
 
-### Before (L12 and below):
+### Complex Example:
 ```php
-protected function fullName(): Attribute
+final class User extends Model
 {
-    return Attribute::make(
-        get: fn () => "{$this->first_name} {$this->last_name}",
-    );
+    /**
+     * Hook to ensure email is always lowercase
+     * and full name is calculated dynamically.
+     */
+    public string $email {
+        set(string $value) => strtolower($value);
+    }
+
+    public string $fullName {
+        get => "{$this->first_name} {$this->last_name}";
+    }
 }
 ```
 
-### After (PHP 8.4):
+---
+
+## 2. Action-Payload Pattern
+
+This pattern ensures your business logic can be called from anywhere (Controller, Queue, or CLI) with consistently validated data.
+
+### Implementation:
+1. **Payload:** A `final readonly` class that wraps input data.
+2. **Action:** A `final readonly` class with a single `handle()` function.
+
 ```php
-public string $fullName {
-    get => "{$this->first_name} {$this->last_name}";
+// Payloads/RegisterUserPayload.php
+final readonly class RegisterUserPayload {
+    public function __construct(
+        public string $name,
+        public string $email,
+        public string $password,
+    ) {}
+}
+
+// Actions/RegisterUserAction.php
+final readonly class RegisterUserAction {
+    public function handle(RegisterUserPayload $payload): User {
+        return DB::transaction(fn() => User::create([...]));
+    }
 }
 ```
 
-## 2. Final Classes
+---
 
-By default, every class is `final`. This prevents "Magic Inheritance" and makes the code easier to reason about.
+## 3. Strict Quality Rules
 
-```php
-final readonly class RegisterUserAction
-{
-    // ...
-}
-```
+Code quality is non-negotiable. We use automated tools to enforce these standards.
 
-## 3. Action-Payload Pattern
+### No-Ignore Policy
+- **DO NOT** use `@phpstan-ignore-line` or similar annotations.
+- If there is a static analysis error, it's a sign your code is not safe. **Fix the code, do not hide the error.**
 
-An Action should not depend on a `Request`. It should receive a **Payload**.
+### Native Type Hints
+- Use type hints on **all** class properties, method parameters, and return types.
+- Explicitly use `?` for nullable types.
 
-### The Story: Creating a User
-1. **Controller** parses the `Request` into a `RegisterUserPayload`.
-2. **Action** receives the `RegisterUserPayload`.
-3. **Benefit:** You can now call the Action from a CLI Command or a Job using the same Payload object.
+### Final by Default
+- All new classes MUST be marked as `final`.
+- Use inheritance only if it is explicitly designed and strictly necessary.
 
-## 4. Strict Typing
+---
 
-Every property, parameter, and return value must have a native type hint.
-```php
-public function handle(UserPayload $payload): User
-```
+## 4. Linting & Formatting
 
-## 5. Formatting
-
-We use **Laravel Pint**. Before every commit, run:
+Run these commands before committing:
 ```bash
+# Automatically fix formatting
 ./vendor/bin/pint --format agent
+
+# Run static analysis
+./vendor/bin/phpstan analyse
 ```
