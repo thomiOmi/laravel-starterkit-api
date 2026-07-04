@@ -49,7 +49,7 @@ final readonly class PermissionIndexController
 
         $permissions = $this->listPermissions->handle(
             $filter,
-            $request->integer('page.size', 20),
+            min(100, $request->integer('page.size', 20)),
             $request->integer('page.number', 1),
         );
 

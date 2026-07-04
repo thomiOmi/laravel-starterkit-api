@@ -50,7 +50,7 @@ final readonly class RoleIndexController
 
         $roles = $this->listRoles->handle(
             $filter,
-            $request->integer('page.size', 10),
+            min(100, $request->integer('page.size', 10)),
             $request->integer('page.number', 1),
         );
 

@@ -29,7 +29,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         /** @var string $defaultPassword */
-        $defaultPassword = config('auth.default_password', 'password');
+        $defaultPassword = config('auth.default_password', Str::random(32));
 
         return [
             'name' => fake()->name(),

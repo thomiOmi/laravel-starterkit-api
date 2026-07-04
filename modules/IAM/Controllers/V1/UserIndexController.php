@@ -49,7 +49,7 @@ final readonly class UserIndexController
 
         $users = $this->listUsers->handle(
             $filter,
-            $request->integer('page.size', 10),
+            min(100, $request->integer('page.size', 10)),
             $request->integer('page.number', 1),
         );
 
