@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\LoginAction;
 use Modules\IAM\Requests\V1\LoginRequest;
@@ -21,9 +20,7 @@ final readonly class LoginController
      *
      * Authenticates a user with their credentials and generates an API access token.
      *
-     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}, 200>
-     *
-     * @throws ProblemResponse<array{errors: array<string, array<int, string>>}, 422>
+     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
      */
     public function __invoke(LoginRequest $request): SuccessResponse
     {

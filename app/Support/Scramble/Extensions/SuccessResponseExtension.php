@@ -22,22 +22,15 @@ use Illuminate\Pagination\CursorPaginator;
 
 final class SuccessResponseExtension extends TypeToSchemaExtension
 {
-    /**
-     * Determine if this extension should handle the given Scramble type inference.
-     */
     public function shouldHandle(Type $type): bool
     {
         return $type instanceof ScrambleObjectType && $type->isInstanceOf(SuccessResponse::class);
     }
 
-    /**
-     * Overrides the OpenAPI response generation layer to control status codes dynamically.
-     */
-    public function toResponse(Type $type): ?OpenApiResponse
+    public function toResponse(Type $type): OpenApiResponse
     {
         $code = 200;
 
-        // Extract the explicit status code integer from the second generic parameter: SuccessResponse<Data, 201>
         if ($type instanceof Generic && isset($type->templateTypes[1]) && $type->templateTypes[1] instanceof LiteralIntegerType) {
             $code = $type->templateTypes[1]->value;
         }
@@ -50,9 +43,6 @@ final class SuccessResponseExtension extends TypeToSchemaExtension
             ->setDescription($code === 201 ? 'Created' : 'Success');
     }
 
-    /**
-     * Constructs the outer JSON envelope structure for visual rendering in the Web UI.
-     */
     public function toSchema(Type $type): ObjectType
     {
         $code = 200;
@@ -60,13 +50,12 @@ final class SuccessResponseExtension extends TypeToSchemaExtension
             $code = $type->templateTypes[1]->value;
         }
 
-        $envelope = (new ObjectType)
-            ->addProperty('status', (new IntegerType)->example($code))
-            ->addProperty('title', (new StringType)->example($code === 201 ? 'Created' : 'OK'))
-            ->addProperty('detail', (new StringType)->example('The request was processed successfully.'))
-            ->addProperty('data', $this->resolveDataType($type));
+        $envelope = new ObjectType;
+        $envelope->addProperty('status', (new IntegerType)->example($code));
+        $envelope->addProperty('title', (new StringType)->example($code === 201 ? 'Created' : 'OK'));
+        $envelope->addProperty('detail', (new StringType)->example('The request was processed successfully.'));
+        $envelope->addProperty('data', $this->resolveDataType($type));
 
-        // Inject pagination layout if the endpoint indicates a listing/paginated array
         if ($this->isPaginated($type)) {
             $this->addPaginationFields($envelope);
         }
@@ -76,12 +65,8 @@ final class SuccessResponseExtension extends TypeToSchemaExtension
         return $envelope;
     }
 
-    /**
-     * Resolves and transforms the internal payload structure from the first generic parameter <T>
-     */
     private function resolveDataType(Type $type): \Dedoc\Scramble\Support\Generator\Types\Type
     {
-        // Fix: Explicitly drill down into the first array element [0] of templateTypes
         if ($type instanceof Generic && isset($type->templateTypes[0])) {
             return $this->openApiTransformer->transform($type->templateTypes[0]);
         }
@@ -89,19 +74,14 @@ final class SuccessResponseExtension extends TypeToSchemaExtension
         return new ObjectType;
     }
 
-    /**
-     * Checks if the response requires pagination envelopes (links & meta).
-     */
     private function isPaginated(Type $type): bool
     {
         if (! $type instanceof Generic || ! isset($type->templateTypes[0])) {
             return false;
         }
 
-        // Fix: Explicitly check the first array element [0] of templateTypes
         $dataType = $type->templateTypes[0];
 
-        // 1. Class Check: Scan if the explicit class types inside generics are paginators
         if ($dataType instanceof ScrambleObjectType) {
             if ($dataType->isInstanceOf(AbstractPaginator::class)
                 || $dataType->isInstanceOf(CursorPaginator::class)
@@ -110,7 +90,6 @@ final class SuccessResponseExtension extends TypeToSchemaExtension
             }
         }
 
-        // 2. Type Check: Automatically trigger pagination if data is a generic list array (e.g., array<int, DeviceResource>)
         if ($dataType instanceof ScrambleArrayType) {
             return true;
         }
@@ -118,26 +97,23 @@ final class SuccessResponseExtension extends TypeToSchemaExtension
         return false;
     }
 
-    /**
-     * Appends standardized links and meta structures to the main envelope schema.
-     */
     private function addPaginationFields(ObjectType $object): void
     {
-        $object->addProperty('links', (new ObjectType)
-            ->addProperty('first', (new StringType)->example('https://example.com'))
-            ->addProperty('last', (new StringType)->example('https://example.com'))
-            ->addProperty('prev', (new StringType)->nullable(true)->example(null))
-            ->addProperty('next', (new StringType)->example('https://example.com'))
-        );
+        $links = new ObjectType;
+        $links->addProperty('first', (new StringType)->example('https://example.com'));
+        $links->addProperty('last', (new StringType)->example('https://example.com'));
+        $links->addProperty('prev', (new StringType)->nullable(true)->example(null));
+        $links->addProperty('next', (new StringType)->example('https://example.com'));
+        $object->addProperty('links', $links);
 
-        $object->addProperty('meta', (new ObjectType)
-            ->addProperty('current_page', (new IntegerType)->example(1))
-            ->addProperty('from', (new IntegerType)->example(1))
-            ->addProperty('last_page', (new IntegerType)->example(5))
-            ->addProperty('path', (new StringType)->example('https://example.com'))
-            ->addProperty('per_page', (new IntegerType)->example(15))
-            ->addProperty('to', (new IntegerType)->example(15))
-            ->addProperty('total', (new IntegerType)->example(75))
-        );
+        $meta = new ObjectType;
+        $meta->addProperty('current_page', (new IntegerType)->example(1));
+        $meta->addProperty('from', (new IntegerType)->example(1));
+        $meta->addProperty('last_page', (new IntegerType)->example(5));
+        $meta->addProperty('path', (new StringType)->example('https://example.com'));
+        $meta->addProperty('per_page', (new IntegerType)->example(15));
+        $meta->addProperty('to', (new IntegerType)->example(15));
+        $meta->addProperty('total', (new IntegerType)->example(75));
+        $object->addProperty('meta', $meta);
     }
 }

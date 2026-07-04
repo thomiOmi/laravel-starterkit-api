@@ -1,6 +1,6 @@
 <?php
 
-use App\Support\Scramble\Extensions\ProblemResponseExtension;
+use App\Support\Scramble\Extensions\ProblemDetailsExceptionToResponseExtension;
 use App\Support\Scramble\Extensions\SuccessResponseExtension;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy;
@@ -153,7 +153,7 @@ return [
 
     'extensions' => [
         SuccessResponseExtension::class,
-        ProblemResponseExtension::class,
+        ProblemDetailsExceptionToResponseExtension::class,
     ],
 
     /*

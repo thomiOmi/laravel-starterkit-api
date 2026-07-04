@@ -20,7 +20,7 @@ final readonly class LogoutController
     /**
      * Auth Logout Endpoint.
      *
-     * @return SuccessResponse<null, 200>
+     * @return SuccessResponse<null>
      */
     public function __invoke(Request $request): SuccessResponse
     {

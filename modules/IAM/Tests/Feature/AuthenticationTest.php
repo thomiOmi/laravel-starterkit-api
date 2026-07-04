@@ -44,7 +44,7 @@ describe('Authentication Core (Registration Guarding)', function () {
             'email' => $user->email,
             'password' => $password,
             'device_name' => 'test-device',
-        ]))->toBeSuccessResponse();
+        ]))->toBeSuccessResponse(status: 201);
 
         // Should be able to get profile (unprotected by verified middleware)
         // but not access main features (protected by verified middleware)
