@@ -29,6 +29,8 @@ Most starterkits are either too generic or overly complex. This project takes a 
 
 This project follows a **Contract-First Modular Monolith** approach.
 
+### Directory Structure
+
 ```text
 modules/
 ├── {Module}/

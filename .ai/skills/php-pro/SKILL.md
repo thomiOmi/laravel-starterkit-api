@@ -1,62 +1,67 @@
 ---
 name: php-pro
-description: Expert PHP 8.4 implementation including Property Hooks, strict typing, and functional patterns. Use for core logic, DTOs, and complex data transformations.
+description: Expert PHP 8.4 patterns including Property Hooks, Strict Typing, and Immutability. Handles complex DTOs, Enums, and functional data processing.
 license: MIT
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # PHP 8.4 Professional Standards
 
-Leverage the full power of modern PHP to write expressive, fast, and safe code.
+Leverage modern PHP syntax to write safe, expressive, and high-performance code.
 
-## 1. Property Hooks (Mandatory for derived logic)
-Native alternative to Laravel Attributes or getters/setters.
+## 1. Property Hooks (The Standard)
+Mandatory for all derived or mutated logic within Models and Payloads.
 
 ```php
-final class User
+final class Order
 {
     /**
-     * Virtual property example
+     * Calculated virtual property
      */
-    public string $fullName {
-        get => "{$this->first_name} {$this->last_name}";
+    public int $totalCents {
+        get => $this->items->sum('price_cents') + $this->shipping_cents;
     }
 
     /**
-     * Mutator example
+     * Mutated backed property
      */
-    public string $password {
-        set(string $value) => Hash::make($value);
+    public string $trackingNumber {
+        set(string $value) => strtoupper(trim($value));
+        get => $this->tracking_number;
     }
 }
 ```
 
-## 2. Strict Immutability (Final & Readonly)
-Ensure your data structures are predictable.
+## 2. Advanced Immutability
+Use `final readonly` for all data-carrying classes (DTOs, Payloads, Value Objects).
 
 ```php
-final readonly class CreateUserPayload
+final readonly class Coordinates
 {
     public function __construct(
-        public string $name,
-        public string $email,
-        public UserRole $role = UserRole::Member,
+        public float $latitude,
+        public float $longitude,
     ) {}
+
+    public function toString(): string
+    {
+        return "{$this->latitude},{$this->longitude}";
+    }
 }
 ```
 
-## 3. High-Level Type Safety
-- Use **Enums** for all fixed sets of values.
-- Use **Intersection Types** (`Countable&ArrayAccess`) for complex requirements.
-- Use **Readonly Classes** for DTOs/Payloads.
+## 3. Strict Quality Checklist
+- **declare(strict_types=1):** Must be present in every file.
+- **Native Types:** No `mixed`, no untyped properties. Use Union Types or Intersection Types if necessary.
+- **Enums:** Use Backed Enums for any set of fixed values (Statuses, Types, Roles).
+
+## Verification Loop
+1. Run `phpstan` at max level.
+2. Check for "mixed" usage; eliminate all of them.
+3. Ensure all class properties have native type hints.
 
 ## Constraints
-- **MUST** use `declare(strict_types=1);` in all new files.
-- **MUST** use Property Hooks for all calculated fields.
-- **MUST** use Enums instead of string constants.
-- **MUST NOT** use `mixed` type. Use specific types or union types.
-
-## Verification
-1. Run `phpstan` at max level.
-2. Check for "Property Type Coverage" to ensure all class properties are typed.
+- **MUST** use Property Hooks for all accessors/mutators.
+- **MUST** use Constructor Property Promotion.
+- **MUST NOT** use `@phpstan-ignore`.

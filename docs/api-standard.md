@@ -77,5 +77,5 @@ Always use **Signed URLs** for private/sensitive files.
 
 Every API response includes transparent headers:
 - `X-RateLimit-Limit`: Maximum allowance.
-- `X-RateLimit-Remaining`: Remaining allowance.
+- `X-RateLimit-Remaining`: Requests left.
 - `X-RateLimit-Reset`: When allowance resets (Unix Timestamp).

@@ -32,7 +32,7 @@ final class User extends Model
 
 This pattern ensures your business logic can be called from anywhere (Controller, Queue, or CLI) with consistently validated data.
 
-### Implementation:
+### Implementation Checklist:
 1. **Payload:** A `final readonly` class that wraps input data.
 2. **Action:** A `final readonly` class with a single `handle()` function.
 
@@ -49,7 +49,7 @@ final readonly class RegisterUserPayload {
 // Actions/RegisterUserAction.php
 final readonly class RegisterUserAction {
     public function handle(RegisterUserPayload $payload): User {
-        return DB::transaction(fn() => User::create([...]));
+        return DB::transaction(fn() => User::create($payload->toArray()));
     }
 }
 ```

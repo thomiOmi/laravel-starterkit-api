@@ -1,74 +1,85 @@
 ---
 name: laravel-patterns
-description: Architectural patterns for Modular Monoliths. Handles Action-Payload patterns, Cross-module communication (Contracts/Events), and Service Layer orchestration.
+description: Architectural patterns for Modular Monoliths. Implements Action-Payload patterns, Cross-module communication (Contracts/Events), and Service Layer orchestration.
 license: MIT
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Laravel Architecture Patterns
 
-Production-grade patterns for building clean, isolated, and scalable modular applications.
+Standardized patterns for building isolated and scalable modular applications.
 
-## 1. The Action-Payload Pattern
-Decouple your business logic from the transport layer (HTTP, CLI, Jobs).
+## Gotchas
+- **Circular Dependencies:** Avoid Module A needing Module B while Module B needs Module A. If this happens, extract the shared logic into a `Core` module or `app/` layer.
+- **Event Bloat:** Don't dispatch events for trivial internal logic. Use them for cross-module side effects.
+- **Fat Services:** Services should orchestrate, not contain every single line of logic. Use Actions for specific units of work.
 
-```mermaid
-graph LR
-    H[HTTP Request] --> P[Payload DTO]
-    C[CLI Command] --> P
-    J[Queue Job] --> P
-    P --> A[Action Class]
-    A --> O[Outcome]
-```
+## 1. Cross-Module Communication
+Maintain strict module boundaries to allow future extraction into microservices.
 
-### Implementation Checklist
-- [ ] Create a `final readonly class Payload` with promoted properties.
-- [ ] Create a `final readonly class Action` with a single `handle(Payload $p)` method.
-- [ ] Use the Action in Controllers, Jobs, or Commands.
-
-## 2. Cross-Module Communication
-Maintain strict isolation between modules.
-
-### Synchronous (Contracts)
-If Module A needs a result from Module B immediately.
-1. Define Interface in `app/Contracts/Modules/{Module}Contract.php`.
-2. Implement in `Modules/{Module}/Services/{Module}Service.php`.
-3. Bind in `Modules/{Module}/Providers/{Module}ServiceProvider.php`.
-
-### Asynchronous (Event-Driven)
-If Module A just needs to broadcast that something happened.
-```mermaid
-sequenceDiagram
-    participant A as Module A
-    participant E as Event: OrderPlaced
-    participant B as Module B (Listener)
-
-    A->>E: Dispatch Event
-    E->>B: Execute Listener Logic
-```
-
-## 3. Service Layer Orchestration
-Use Domain Services for complex logic involving multiple models or third-party integrations.
+### Pattern: Synchronous (Contracts)
+Use when Module A needs a result from Module B immediately.
 
 ```php
-final readonly class PaymentService
+// app/Contracts/Modules/PricingContract.php
+interface PricingContract {
+    public function calculate(Order $order): int;
+}
+
+// Modules/Pricing/Services/PricingService.php (Implementation)
+final readonly class PricingService implements PricingContract {
+    public function calculate(Order $order): int { ... }
+}
+
+// In Module A
+public function __construct(private PricingContract $pricing) {}
+```
+
+### Pattern: Asynchronous (Events)
+Use for decoupled side effects.
+
+```mermaid
+sequenceDiagram
+    participant A as Module A (Action)
+    participant E as Event: UserRegistered
+    participant B as Module B (Listener)
+    participant C as Module C (Listener)
+
+    A->>E: Dispatch(new UserRegistered($user))
+    E->>B: Send Welcome Email
+    E->>C: Create Analytics Record
+```
+
+## 2. Action-Payload Orchestration
+Use Domain Services to coordinate multiple Actions or external integrations.
+
+```php
+final readonly class CheckoutService
 {
     public function __construct(
-        private StripeGateway $gateway,
-        private NotificationContract $notifier,
+        private ValidateStockAction $validateStock,
+        private CreateOrderAction $createOrder,
+        private PaymentContract $payment,
     ) {}
 
-    public function process(PaymentPayload $payload): PaymentResult
+    public function handle(CheckoutPayload $payload): Order
     {
-        // 1. Logic
-        // 2. Integration
-        // 3. Notification
+        return DB::transaction(function () use ($payload) {
+            $this->validateStock->handle($payload->items);
+            $order = $this->createOrder->handle($payload->toOrderPayload());
+            $this->payment->charge($order, $payload->paymentDetails);
+
+            return $order;
+        });
     }
 }
 ```
 
+## 3. The "Optional Module" Concept
+Design modules to be pluggable. A module should be able to be added or removed by simply adding/removing its Service Provider registration and its folder.
+
 ## Constraints
-- **MUST** enforce module isolation. No `use Modules\B\Models\User` in `Modules\A`.
-- **MUST** use `final` and `readonly` for pattern classes.
-- **MUST** provide architectural reasoning for chosen patterns.
+- **MUST** enforce the "Zero-Cross Model Import" law.
+- **MUST** use `final readonly` for all pattern-related classes.
+- **MUST** read `references/modular-ddd.md` for deep architectural theory if required.

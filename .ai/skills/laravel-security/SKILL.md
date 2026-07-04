@@ -1,78 +1,95 @@
 ---
 name: laravel-security
-description: API Security standards for Laravel 13. Includes Sanctum per-device auth, Spatie permissions (RBAC), and secure file handling with Signed URLs.
+description: Security standards for Laravel 13 APIs. Handles Sanctum per-device auth, RBAC with Spatie, secure file handling, and mass assignment protection.
 license: MIT
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Laravel API Security Standards
 
-Comprehensive security patterns to protect your application and data.
+Comprehensive security patterns for industrial-grade Laravel applications.
 
-## 1. Authentication (Sanctum)
-We use Laravel Sanctum with a focus on per-device token management.
+## Gotchas
+- **Broad CORS:** Never set `allowed_origins` to `*` in production.
+- **Leaked Tokens:** Ensure Sanctum tokens are only displayed once upon creation.
+- **Hardcoded Roles:** Never check for `->hasRole('admin')` directly in business logic. Use `->can('update-posts')` and assign permissions to roles.
 
-### Issuing Secure Tokens
+## 1. Authentication (Sanctum Per-Device)
+Allow users to manage individual device sessions.
+
+### Implementation: Secure Login
 ```php
-public function login(LoginRequest $request): SuccessResponse
+final readonly class LoginAction
 {
-    $user = $this->authenticate($request);
-
-    // Support device-specific names for better UX/Security
-    $token = $user->createToken(
-        name: $request->input('device_name', 'Default Device'),
-        abilities: ['*'],
-        expiresAt: now()->addMonths(6)
-    );
-
-    return new SuccessResponse(['token' => $token->plainTextToken]);
-}
-```
-
-## 2. Authorization (RBAC)
-Using Spatie Laravel Permission with a strict "Check Abilities, not Roles" approach.
-
-### Example Policy
-```php
-final readonly class PostPolicy
-{
-    public function update(User $user, Post $post): bool
+    public function handle(LoginPayload $payload): string
     {
-        // Admin can do anything
-        if ($user->hasRole('admin')) return true;
+        $user = User::where('email', $payload->email)->first();
 
-        // Owner check + specific permission
-        return $user->id === $post->user_id && $user->can('posts.update');
+        if (! $user || ! Hash::check($payload->password, $user->password)) {
+            throw new AuthenticationException('Invalid credentials.');
+        }
+
+        // Include device/agent info for security auditing
+        return $user->createToken(
+            name: $payload->deviceName ?? 'Unknown Device',
+            abilities: ['*'],
+            expiresAt: now()->addWeeks(4)
+        )->plainTextToken;
     }
 }
 ```
 
-## 3. Secure File Access (Signed URLs)
-Never expose direct storage links for private files.
+## 2. Authorization (Abilities Over Roles)
+Always authorize based on specific abilities/permissions.
+
+### Template: Model Policy
+```php
+final readonly class PostPolicy
+{
+    /**
+     * Use Gate::before in AppServiceProvider for super-admin bypass.
+     */
+    public function update(User $user, Post $post): bool
+    {
+        // 1. Check specific permission
+        if (! $user->can('posts.update')) {
+            return false;
+        }
+
+        // 2. Check ownership or other domain constraints
+        return $user->id === $post->user_id;
+    }
+}
+```
+
+## 3. Secure Media (Signed URLs)
+Ensure private media is never accessed via direct public paths.
 
 ```php
 use Illuminate\Support\Facades\Storage;
 
-final readonly class DownloadAction
+final readonly class GetDocumentUrlAction
 {
     public function handle(Document $doc): string
     {
-        // Generates a link that expires in 15 minutes
+        // 1. Authorize access
+        // 2. Generate temporary link
         return Storage::disk('s3')->temporaryUrl(
             $doc->path,
-            now()->addMinutes(15)
+            now()->addMinutes(15),
+            ['ResponseContentDisposition' => 'attachment']
         );
     }
 }
 ```
 
-## Security Checklist
-1. **APP_DEBUG:** Must be `false` in production to prevent leaking sensitive info via RFC 9457 details.
-2. **Password Hashing:** Ensure `hashed` cast is used in the User model.
-3. **Mass Assignment:** Use `$fillable` or `#[Fillable]` and always validate via `FormRequest`.
+## 4. Verification Checkpoints
+- [ ] Are all routes protected by `auth:sanctum`?
+- [ ] Is `APP_DEBUG=false` in your `.env.production`?
+- [ ] Do all models use `$fillable` or `#[Fillable]`?
+- [ ] Are sensitive fields (password, tokens) in `$hidden`?
 
 ## Constraints
-- **MUST** use `ProblemResponse` for 403/401 errors.
-- **MUST** use `auth:sanctum` middleware for all protected routes.
-- **MUST** use Signed URLs for any data that is not explicitly public.
+- **MUST** use `ProblemResponse` for unauthorized (401) or forbidden (403) access.
+- **MUST** read `references/security-audit.md` before implementing custom auth drivers.

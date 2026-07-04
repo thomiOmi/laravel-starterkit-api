@@ -1,6 +1,6 @@
 # Architecture Handbook: Modular Monolith
 
-Welcome to the architectural guide. This starterkit is designed using a **Modular Monolith** pattern to keep the codebase clean and organized as the application grows.
+This starterkit is designed using a **Modular Monolith** pattern to keep the codebase clean and organized as the application grows.
 
 ## Pluggable Modules Philosophy
 

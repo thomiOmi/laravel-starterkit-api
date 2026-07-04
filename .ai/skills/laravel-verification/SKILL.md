@@ -1,40 +1,53 @@
 ---
 name: laravel-verification
-description: Mandatory verification loop to maintain the "No-Ignore" quality policy. Uses MCP tools (database-schema) and static analysis (Pint, PHPStan, Pest).
+description: Enforces the "No-Ignore" quality policy. Guides AI agents through a mandatory verification loop using local tools and MCP schema checks.
 license: MIT
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Laravel Verification Loop (The Quality Gate)
 
-You are responsible for ensuring that every piece of code meets the project's strict quality standards.
+You are responsible for maintaining the project's high bar for quality. No task is complete until it passes the "Zero-Regression" loop.
 
-## The Loop
+## The Loop Workflow
 ```mermaid
 graph TD
     Start[Implementation Done] --> Pint[Run Pint: Fix Style]
-    Pint --> PHPStan[Run PHPStan Max: Strict Analysis]
-    PHPStan --> Pest[Run Pest: Functional Verification]
-    Pest --> MCP[Check DB Schema via MCP]
-    MCP --> Done[Declare Task Complete]
+    Pint --> PHPStan[Run PHPStan Max: Analysis]
+    PHPStan --> Pest[Run Pest: Tests]
+    Pest --> Schema[Check DB Schema via MCP]
+    Schema --> Done[Declare Task Complete]
 ```
 
-## Mandatory Commands
-1. **Formatting:** `./vendor/bin/pint --format agent`
-2. **Analysis:** `./vendor/bin/phpstan analyse`
-3. **Testing:** `php artisan test --compact`
+## Mandatory Command Checklist
 
-## Strict Policies
-- **No @phpstan-ignore:** Suppressing errors is a failure. You must fix the type-hint or logic.
-- **Strict Typing:** All new code must have 100% type coverage for properties and methods.
-- **Schema Audit:** If you created a migration, you MUST run the `database-schema` MCP tool to verify the actual state of the DB.
+### 1. Style & Linting
+```bash
+./vendor/bin/pint --format agent
+```
 
-## Failure Handling
-1. **Pint Error:** Fix the file and re-run.
-2. **PHPStan Error:** Research the type issue (use `search-docs` if needed). Fix the code.
-3. **Pest Error:** Read the log via `read-log-entries`. Fix the regression.
+### 2. Static Analysis
+```bash
+./vendor/bin/phpstan analyse
+```
+**Policy:** 0 errors allowed. **NEVER** use `@phpstan-ignore`. If a type is complex, use PHPDoc shapes or improve the native typing.
+
+### 3. Functional Testing
+```bash
+php artisan test --compact
+```
+**Policy:** All tests must pass. If you touch a module, you MUST run tests for that specific module.
+
+### 4. Database Audit (MCP)
+If your task involved a migration, you MUST call:
+- `database-schema` to verify the actual state of the database.
+- `database-query` (read-only) to verify data seeding if applicable.
+
+## Handling Failures
+- **Analysis Failure:** Research the type issue. Use `search-docs` for Laravel-specific type hints (e.g., Eloquent builder types).
+- **Test Failure:** Read the logs via `read-log-entries` or `php artisan pail`. Fix the regression in the code, not the test (unless the test was wrong).
 
 ## Constraints
-- **MUST NOT** declare a task complete until all 3 local tools pass with 0 errors.
-- **MUST** provide the output summary of these tools in your final report.
+- **MUST** provide the summary of tool outputs in your final submission.
+- **MUST** follow the "No-Ignore" policy strictly.
