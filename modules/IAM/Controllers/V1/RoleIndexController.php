@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Requests\PaginationRequest;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListRolesAction;
 use Modules\IAM\Filters\RoleFilter;
@@ -27,7 +27,7 @@ final readonly class RoleIndexController
     /**
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
-    public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(PaginationRequest $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
@@ -50,7 +50,7 @@ final readonly class RoleIndexController
 
         $roles = $this->listRoles->handle(
             $filter,
-            min(100, $request->integer('page.size', 10)),
+            $request->integer('page.size', 10),
             $request->integer('page.number', 1),
         );
 
