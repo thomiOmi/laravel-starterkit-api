@@ -7,9 +7,7 @@ Request
   -> Middleware (ForceJson, Auth, Throttle, TraceId, Locale, Can)
     -> Controller (final readonly __invoke)
       -> Action (final readonly, single responsibility)
-        -> Repository (read-only: findById, paginate)
-        OR
-        -> Eloquent directly (writes: create, update, delete)
+        -> Eloquent (models)
       <- Result (model, collection, or void)
     <- Response (JsonResponse or Resource)
   <- Client
@@ -29,7 +27,6 @@ modules/{Module}/
   Models/            -- Eloquent models
   Payloads/V1/       -- DTOs (typed data transfer)
   Providers/         -- Service provider (auto-registered)
-  Repositories/      -- Read-only data access
   Requests/V1/       -- Form request validation
   Resources/         -- API resource transformers
   Routes/            -- Route files (V1.php)
@@ -60,38 +57,9 @@ final readonly class ShowController
 ```php
 final readonly class SomeAction
 {
-    public function __construct(
-        private SomeRepository $repository,
-    ) {}
-
     public function handle(SomePayload $payload): Model
     {
-        // business logic
-    }
-}
-```
-
-### Read-Only Repository
-
-```php
-final readonly class UserRepository
-{
-    public function __construct(
-        private User $model,
-    ) {}
-
-    public function findById(string $id): ?User
-    {
-        return Cache::remember("user.{$id}", 300, fn () =>
-            $this->model->with(['roles', 'permissions'])->find($id)
-        );
-    }
-
-    public function paginate(array $filters): LengthAwarePaginator
-    {
-        return $this->model->query()
-            ->when(isset($filters['search']), fn ($q) => ...)
-            ->paginate();
+        // business logic using Eloquent models directly
     }
 }
 ```

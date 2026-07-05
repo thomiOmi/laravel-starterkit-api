@@ -1,3 +1,8 @@
+---
+name: laravel-patterns
+description: Laravel patterns and best practices
+---
+
 # Laravel Patterns Skill
 
 ## Core Philosophy

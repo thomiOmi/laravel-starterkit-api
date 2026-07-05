@@ -1,16 +1,6 @@
 ---
 name: php-pro
 description: Use when building PHP applications with modern PHP 8.4+ features and Laravel framework. Invokes strict typing, PHPStan level 9, PSR standards, and PHP 8.4 property hooks. Creates controllers, configures middleware, generates migrations, writes Pest tests, defines typed DTOs and value objects, sets up dependency injection, and scaffolds REST APIs. Use when working with Eloquent, Composer, or any PHP API development.
-license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: language
-  triggers: PHP, Laravel, Composer, PHPStan, PSR, PHP API, Eloquent
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: fullstack-guardian, fastapi-expert
 ---
 
 # PHP Pro

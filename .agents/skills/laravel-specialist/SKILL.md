@@ -1,16 +1,6 @@
 ---
 name: laravel-specialist
 description: Build and configure Laravel 10+ applications, including creating Eloquent models and relationships, implementing Sanctum authentication, configuring queues, designing RESTful APIs with API resources. Use when creating Laravel models, setting up queue workers, implementing Sanctum auth flows, optimising Eloquent queries, or writing Pest tests for Laravel features.
-license: MIT
-metadata:
-  author: https://github.com/Jeffallan
-  version: "1.1.0"
-  domain: backend
-  triggers: Laravel, Eloquent, PHP framework, Laravel API, Artisan, Laravel queues, Laravel testing, Sanctum
-  role: specialist
-  scope: implementation
-  output-format: code
-  related-skills: fullstack-guardian, test-master, devops-engineer, security-reviewer
 ---
 
 # Laravel Specialist
