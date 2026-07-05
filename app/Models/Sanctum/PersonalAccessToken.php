@@ -37,6 +37,8 @@ class PersonalAccessToken extends SanctumPersonalAccessToken
             'abilities' => 'json',
             'last_used_at' => 'datetime',
             'expires_at' => 'datetime',
+            'ip_address' => 'encrypted',
+            'user_agent' => 'encrypted',
         ];
     }
 }
