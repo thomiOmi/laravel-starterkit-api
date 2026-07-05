@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Requests\PaginationRequest;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListPermissionsAction;
 use Modules\IAM\Filters\PermissionFilter;
@@ -26,7 +26,7 @@ final readonly class PermissionIndexController
      *
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
-    public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(PaginationRequest $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
