@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\CreateRoleAction;
 use Modules\IAM\Requests\V1\RoleRequest;
 use Modules\IAM\Resources\RoleResource;
@@ -24,10 +21,6 @@ final readonly class RoleCreateController
      *
      * @param  RoleRequest  $request  The validated role creation request.
      * @return SuccessResponse<RoleResource>
-     *
-     * @throws AuthenticationException Full authentication is required to access role management.
-     * @throws AuthorizationException You do not have permission to create roles.
-     * @throws ValidationException The submitted data failed validation rules.
      */
     public function __invoke(RoleRequest $request): SuccessResponse
     {

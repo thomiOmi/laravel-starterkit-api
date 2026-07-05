@@ -7,8 +7,6 @@ namespace Modules\IAM\Controllers\V1;
 use App\Http\Requests\PaginationRequest;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListUsersAction;
@@ -27,22 +25,11 @@ final readonly class UserIndexController
      * Display a paginated listing of the users.
      *
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
-     *
-     * @throws AuthenticationException Full authentication is required to access user management.
-     * @throws AuthorizationException You do not have permission to view users.
      */
     public function __invoke(PaginationRequest $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
-
-        if ($currentUser === null) {
-            return new ProblemResponse(
-                title: 'Unauthenticated',
-                status: Response::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthenticated'),
-            );
-        }
 
         if (! $currentUser->can('user.view')) {
             return new ProblemResponse(

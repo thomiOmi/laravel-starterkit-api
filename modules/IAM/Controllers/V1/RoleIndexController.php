@@ -7,8 +7,6 @@ namespace Modules\IAM\Controllers\V1;
 use App\Http\Requests\PaginationRequest;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListRolesAction;
@@ -27,22 +25,11 @@ final readonly class RoleIndexController
      * Display a paginated listing of the roles.
      *
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
-     *
-     * @throws AuthenticationException Full authentication is required to access role management.
-     * @throws AuthorizationException You do not have permission to view roles.
      */
     public function __invoke(PaginationRequest $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
-
-        if ($currentUser === null) {
-            return new ProblemResponse(
-                title: 'Unauthenticated',
-                status: Response::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthenticated'),
-            );
-        }
 
         if (! $currentUser->can('role.view')) {
             return new ProblemResponse(

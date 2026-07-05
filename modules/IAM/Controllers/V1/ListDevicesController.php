@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -25,9 +23,6 @@ final readonly class ListDevicesController
      * List all authenticated user devices.
      *
      * @return SuccessResponse<AnonymousResourceCollection>
-     *
-     * @throws AuthenticationException Full authentication is required.
-     * @throws AuthorizationException You do not have permission to manage devices.
      */
     public function __invoke(Request $request): SuccessResponse
     {

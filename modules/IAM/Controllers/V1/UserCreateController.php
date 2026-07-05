@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\CreateUserAction;
 use Modules\IAM\Requests\V1\UserRequest;
 use Modules\IAM\Resources\UserResource;
@@ -24,10 +21,6 @@ final readonly class UserCreateController
      *
      * @param  UserRequest  $request  The validated user creation request.
      * @return SuccessResponse<UserResource>
-     *
-     * @throws AuthenticationException Full authentication is required to access user management.
-     * @throws AuthorizationException You do not have permission to create users.
-     * @throws ValidationException The submitted data failed validation rules.
      */
     public function __invoke(UserRequest $request): SuccessResponse
     {

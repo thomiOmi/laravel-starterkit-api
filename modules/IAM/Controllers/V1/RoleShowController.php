@@ -6,10 +6,7 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\ShowRoleAction;
 use Modules\IAM\Models\User;
@@ -27,23 +24,11 @@ final readonly class RoleShowController
      *
      * @param  string  $id  The role ID.
      * @return SuccessResponse<RoleResource>|ProblemResponse
-     *
-     * @throws AuthenticationException Full authentication is required to access role management.
-     * @throws AuthorizationException You do not have permission to view roles.
-     * @throws ModelNotFoundException The specified role was not found.
      */
     public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
-
-        if ($currentUser === null) {
-            return new ProblemResponse(
-                title: 'Unauthenticated',
-                status: Response::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthenticated'),
-            );
-        }
 
         if (! $currentUser->can('role.view')) {
             return new ProblemResponse(

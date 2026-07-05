@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\ResendVerificationAction;
 use Modules\IAM\Models\User;
-use Symfony\Component\HttpFoundation\Response;
 
 final readonly class ResendVerificationController
 {
@@ -21,21 +18,11 @@ final readonly class ResendVerificationController
 
     /**
      * @return SuccessResponse<null>
-     *
-     * @throws ValidationException The submitted data failed validation rules.
      */
-    public function __invoke(Request $request): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request): SuccessResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
-
-        if ($currentUser === null) {
-            return new ProblemResponse(
-                title: 'Unauthenticated',
-                status: Response::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthenticated'),
-            );
-        }
 
         $message = $this->resendVerificationAction->handle($currentUser);
 

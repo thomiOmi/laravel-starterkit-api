@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
+use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\DeleteRoleAction;
 use Modules\IAM\Models\User;
@@ -25,23 +22,12 @@ final readonly class RoleDeleteController
      * Remove the specified role from storage.
      *
      * @param  string  $id  The role ID.
-     *
-     * @throws AuthenticationException Full authentication is required to access role management.
-     * @throws AuthorizationException You do not have permission to delete roles.
-     * @throws ModelNotFoundException The specified role was not found.
+     * @return SuccessResponse<null>|ProblemResponse
      */
-    public function __invoke(Request $request, string $id): JsonResponse|ProblemResponse
+    public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
-
-        if ($currentUser === null) {
-            return new ProblemResponse(
-                title: 'Unauthenticated',
-                status: SymfonyResponse::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthenticated'),
-            );
-        }
 
         if (! $currentUser->can('role.delete')) {
             return new ProblemResponse(
@@ -52,7 +38,7 @@ final readonly class RoleDeleteController
         }
 
         if ($this->deleteRole->handle($id)) {
-            return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
+            return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);
         }
 
         return new ProblemResponse(

@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Http\Responses\ProblemResponse;
-use Illuminate\Auth\AuthenticationException;
+use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\LogoutOtherDevicesAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\LogoutOtherDevicesRequest;
@@ -23,28 +20,18 @@ final readonly class LogoutOtherDevicesController
     /**
      * Log out the authenticated user from all other devices.
      *
-     *
-     * @throws AuthenticationException Full authentication is required.
-     * @throws ValidationException The submitted data failed validation rules.
+     * @return SuccessResponse<null>
      */
-    public function __invoke(LogoutOtherDevicesRequest $request): JsonResponse|ProblemResponse
+    public function __invoke(LogoutOtherDevicesRequest $request): SuccessResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
-
-        if ($currentUser === null) {
-            return new ProblemResponse(
-                title: 'Unauthenticated',
-                status: SymfonyResponse::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthenticated'),
-            );
-        }
 
         $this->logoutOtherDevices->handle(
             $currentUser,
             $request->string('current_password')->toString(),
         );
 
-        return new JsonResponse(null, SymfonyResponse::HTTP_NO_CONTENT);
+        return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);
     }
 }

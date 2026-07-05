@@ -6,11 +6,7 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\AssignRolesToUserAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\AssignRolesRequest;
@@ -25,24 +21,11 @@ final readonly class UserAssignRolesController
 
     /**
      * @return SuccessResponse<UserResource>|ProblemResponse
-     *
-     * @throws AuthenticationException Full authentication is required to access user management.
-     * @throws AuthorizationException You do not have permission to assign roles.
-     * @throws ValidationException The submitted data failed validation rules.
-     * @throws ModelNotFoundException The specified user was not found.
      */
     public function __invoke(string $id, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User)|null $currentUser */
+        /** @var (Authenticatable&User) $currentUser */
         $currentUser = $formRequest->user();
-
-        if ($currentUser === null) {
-            return new ProblemResponse(
-                title: 'Unauthenticated',
-                status: Response::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthenticated'),
-            );
-        }
 
         $userModel = User::query()->find($id);
 
