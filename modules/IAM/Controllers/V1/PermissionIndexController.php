@@ -6,6 +6,8 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -25,6 +27,9 @@ final readonly class PermissionIndexController
      * Display a paginated listing of permissions.
      *
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
+     *
+     * @throws AuthenticationException Full authentication is required to access permission management.
+     * @throws AuthorizationException You do not have permission to view permissions.
      */
     public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {

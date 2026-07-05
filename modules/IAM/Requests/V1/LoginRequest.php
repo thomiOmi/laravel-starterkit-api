@@ -27,8 +27,25 @@ final class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
+            /**
+             * User email address.
+             *
+             * @example jane@example.com
+             */
             'email' => $this->emailRules(unique: false),
+            /**
+             * User password.
+             *
+             * @example password123
+             */
             'password' => $this->passwordRules(confirmed: false, validate: false),
+            /**
+             * Client device label for token tracking.
+             *
+             * If not provided, the user agent string will be used as the device name.
+             *
+             * @example 'My iPhone'
+             */
             'device_name' => ['nullable', 'string', 'max:255'],
         ];
     }

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\SocialCallbackAction;
 use Modules\IAM\Resources\UserResource;
 
@@ -17,6 +19,9 @@ final readonly class SocialCallbackController
 
     /**
      * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     *
+     * @throws AuthenticationException Unable to authenticate with the social provider.
+     * @throws ValidationException The social authentication data is invalid.
      */
     public function __invoke(string $provider, Request $request): SuccessResponse
     {

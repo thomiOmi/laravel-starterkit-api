@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\DeleteUserAction;
 use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,6 +26,11 @@ final readonly class UserDeleteController
      * Remove the specified user from storage.
      *
      * @param  string  $id  The user ID.
+     *
+     * @throws AuthenticationException Full authentication is required to access user management.
+     * @throws AuthorizationException You do not have permission to delete users.
+     * @throws ValidationException The submitted data failed validation rules.
+     * @throws ModelNotFoundException The specified user was not found.
      */
     public function __invoke(Request $request, string $id): JsonResponse|ProblemResponse
     {

@@ -6,7 +6,11 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\UpdateUserAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\UserRequest;
@@ -25,6 +29,11 @@ final readonly class UserUpdateController
      * @param  UserRequest  $request  The validated user update request.
      * @param  string  $id  The user ID.
      * @return SuccessResponse<UserResource>|ProblemResponse
+     *
+     * @throws AuthenticationException Full authentication is required to access user management.
+     * @throws AuthorizationException You do not have permission to update users.
+     * @throws ValidationException The submitted data failed validation rules.
+     * @throws ModelNotFoundException The specified user was not found.
      */
     public function __invoke(UserRequest $request, string $id): SuccessResponse|ProblemResponse
     {

@@ -7,6 +7,7 @@ namespace App\Http\Responses;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,7 +20,7 @@ final readonly class ProblemResponse implements Responsable
 {
     /**
      * @param  string  $typeKey  Key mapped in config/errors.php
-     * @param  string|null  $title  Short summary (Auto-fallback to HTTP status text)
+     * @param  string|null  $title  Short summary
      * @param  int  $status  HTTP status code
      * @param  string  $detail  Human-readable explanation
      * @param  array<string, mixed>  $extensions  Additional RFC 9457 extension members
@@ -36,9 +37,13 @@ final readonly class ProblemResponse implements Responsable
         private array $headers = [],
     ) {}
 
+    /**
+     * Transform the object into a JsonResponse.
+     *
+     * @param  Request  $request
+     */
     public function toResponse($request): JsonResponse
     {
-        // Fallback to Symfony's standard status texts if title is null/empty
         $title = $this->title ?: (Response::$statusTexts[$this->status] ?? 'Unknown Error');
 
         $payload = [
@@ -53,7 +58,6 @@ final readonly class ProblemResponse implements Responsable
             $payload['instance'] = $this->instance;
         }
 
-        // Merge Extra Fields with Protected Key Check and Arrayable Handling
         if (! empty($this->extensions)) {
             $protectedKeys = ['status', 'title', 'detail', 'type', 'instance', 'timestamp'];
 
@@ -68,6 +72,24 @@ final readonly class ProblemResponse implements Responsable
         return response()->json($payload, $this->status, array_merge($this->headers, [
             'Content-Type' => 'application/problem+json',
         ]));
+    }
+
+    /**
+     * Static factory method.
+     *
+     * @param  array<string, mixed>  $extensions
+     * @param  array<string, string>  $headers
+     */
+    public static function make(
+        string $typeKey = 'default',
+        ?string $title = null,
+        int $status = Response::HTTP_BAD_REQUEST,
+        string $detail = '',
+        array $extensions = [],
+        string $instance = '',
+        array $headers = [],
+    ): self {
+        return new self($typeKey, $title, $status, $detail, $extensions, $instance, $headers);
     }
 
     private function resolveTypeUri(): string

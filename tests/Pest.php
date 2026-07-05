@@ -62,9 +62,8 @@ expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 
-expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $type = null) {
-    /** @var Expectation<mixed> $this */
-    /** @var TestResponse $response */
+expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $type = null): Expectation {
+    /** @var Expectation<TestResponse> $this */
     $response = $this->value;
 
     $response->assertHeader('Content-Type', 'application/problem+json')
@@ -74,18 +73,19 @@ expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $ty
             'title',
             'status',
             'detail',
+            'timestamp',
         ]);
 
     if ($type !== null) {
-        expect($response->json('type'))->toContain($type);
+        $typeValue = $response->json('type');
+        expect(is_string($typeValue) ? $typeValue : '')->toContain($type);
     }
 
     return $this;
 });
 
-expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $title = null) {
-    /** @var Expectation<mixed> $this */
-    /** @var TestResponse $response */
+expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $title = null): Expectation {
+    /** @var Expectation<TestResponse> $this */
     $response = $this->value;
 
     $response->assertStatus($status);
@@ -111,11 +111,12 @@ expect()->extend('toBePaginated', function () {
     /** @var TestResponse $response */
     $response = $this->value;
 
-    $response->assertJsonStructure([
-        'data',
-        'links' => ['first', 'last', 'prev', 'next'],
-        'meta' => ['current_page', 'from', 'last_page', 'path', 'per_page', 'to', 'total'],
-    ]);
+    $response->assertJsonStructure(['status', 'data', 'meta']);
+
+    $meta = $response->json('meta');
+    expect($meta)
+        ->toBeArray()
+        ->toHaveKeys(['per_page', 'has_more']);
 
     return $this;
 });

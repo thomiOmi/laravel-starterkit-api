@@ -8,7 +8,11 @@ use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\LoginAction;
 use Modules\IAM\Requests\V1\LoginRequest;
 use Modules\IAM\Resources\UserResource;
+use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @unauthenticated
+ */
 final readonly class LoginController
 {
     public function __construct(
@@ -16,9 +20,9 @@ final readonly class LoginController
     ) {}
 
     /**
-     * Auth Login Endpoint.
+     * Login
      *
-     * Authenticates a user with their credentials and generates an API access token.
+     * Authenticate a user and issue a Sanctum bearer token.
      *
      * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
      */
@@ -30,7 +34,7 @@ final readonly class LoginController
             userAgent: $request->userAgent(),
         );
 
-        return new SuccessResponse(
+        return SuccessResponse::make(
             data: [
                 'user' => new UserResource($result['user']),
                 'access_token' => $result['access_token'],
@@ -38,7 +42,7 @@ final readonly class LoginController
             ],
             title: 'OK',
             detail: __('auth.login_success'),
-            status: 201,
+            status: Response::HTTP_CREATED,
         );
     }
 }

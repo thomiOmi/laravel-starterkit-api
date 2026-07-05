@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\DeleteRoleAction;
@@ -22,6 +25,10 @@ final readonly class RoleDeleteController
      * Remove the specified role from storage.
      *
      * @param  string  $id  The role ID.
+     *
+     * @throws AuthenticationException Full authentication is required to access role management.
+     * @throws AuthorizationException You do not have permission to delete roles.
+     * @throws ModelNotFoundException The specified role was not found.
      */
     public function __invoke(Request $request, string $id): JsonResponse|ProblemResponse
     {

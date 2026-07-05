@@ -6,6 +6,7 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\RegisterAction;
 use Modules\IAM\Requests\V1\RegisterRequest;
 use Modules\IAM\Resources\UserResource;
@@ -19,6 +20,8 @@ final readonly class RegisterController
 
     /**
      * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     *
+     * @throws ValidationException The submitted data failed validation rules.
      */
     public function __invoke(RegisterRequest $request): SuccessResponse
     {

@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\ResendVerificationAction;
 use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +21,8 @@ final readonly class ResendVerificationController
 
     /**
      * @return SuccessResponse<null>
+     *
+     * @throws ValidationException The submitted data failed validation rules.
      */
     public function __invoke(Request $request): SuccessResponse|ProblemResponse
     {

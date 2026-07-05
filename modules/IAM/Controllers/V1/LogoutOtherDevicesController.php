@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\LogoutOtherDevicesAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\LogoutOtherDevicesRequest;
@@ -18,6 +20,13 @@ final readonly class LogoutOtherDevicesController
         private LogoutOtherDevicesAction $logoutOtherDevices
     ) {}
 
+    /**
+     * Log out the authenticated user from all other devices.
+     *
+     *
+     * @throws AuthenticationException Full authentication is required.
+     * @throws ValidationException The submitted data failed validation rules.
+     */
     public function __invoke(LogoutOtherDevicesRequest $request): JsonResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */

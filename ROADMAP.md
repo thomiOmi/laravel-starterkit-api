@@ -13,9 +13,9 @@
 | **01** | **Constitution** | Define Architecture Standards | [x] |
 | **02** | **Core Refactor** | Generator & Trait Alignment | [x] |
 | **03** | **Enforcement** | Architecture Testing (ArchTest) | [x] |
-| **04** | **Documentation** | API Contract Automation | [ ] |
-| **05** | **Observability** | Real-time Monitoring | [ ] |
-| **06** | **Ecosystem** | Modular Packaging (Extras) | [ ] |
+| **04** | **Observability** | Real-time Monitoring | [ ] |
+| **05** | **Ecosystem** | Modular Packaging (Extras) | [ ] |
+| **06** | **Documentation** | API Contract Automation | [ ] |
 
 ---
 
@@ -41,20 +41,20 @@
 - [x] Write `ArchTest` to enforce Controller/Repository layering (via existing controller/action/payload/payloads rules).
 - [x] All `ArchTest` patterns use `config('architecture.module.base_path')` as the single source of truth for module location.
 
-### Phase 04: Documentation & Type Discovery
-*Goal: Automated API documentation with 0-boilerplate.*
-- [ ] Install & Configure `dedoc/scramble`.
-- [ ] Investigate & Fix missing schema detection (Deep-dive into Reflection/Type detection).
-- [ ] Implement "Auto-discovery helpers" (Transformers/Extenders) to minimize manual attributes.
-
-### Phase 05: Observability
+### Phase 04: Observability
 *Goal: Production-ready health monitoring.*
 - [ ] Integrate `laravel/pulse`.
 - [ ] Configure slow-query and slow-route tracking.
 - [ ] Set up alerts/thresholds in `architecture.php` (if applicable).
 
-### Phase 06: Ecosystem
+### Phase 05: Ecosystem
 *Goal: Clean module separation.*
 - [ ] Structure `modules/Extras` directory.
 - [ ] Migrate non-core features to the Extras directory.
 - [ ] Finalize the "Minimal Core" installation process.
+
+### Phase 06: Documentation & Type Discovery
+*Goal: Automated API documentation with 0-boilerplate.*
+- [ ] Install & Configure `dedoc/scramble`.
+- [ ] Investigate & Fix missing schema detection (Deep-dive into Reflection/Type detection).
+- [ ] Implement "Auto-discovery helpers" (Transformers/Extenders) to minimize manual attributes.

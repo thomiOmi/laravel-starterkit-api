@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
+use Illuminate\Auth\AuthenticationException;
 use Modules\IAM\Actions\SocialRedirectAction;
 
 final readonly class SocialRedirectController
@@ -15,6 +16,8 @@ final readonly class SocialRedirectController
 
     /**
      * @return SuccessResponse<array{url: string}>
+     *
+     * @throws AuthenticationException The social authentication provider is unavailable.
      */
     public function __invoke(string $provider): SuccessResponse
     {

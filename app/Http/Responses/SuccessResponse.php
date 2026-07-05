@@ -6,7 +6,9 @@ namespace App\Http\Responses;
 
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
@@ -15,25 +17,22 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Standard Success Response.
  *
- * Provides a consistent structure for successful API responses,
- * including automatic detection and formatting of various pagination types.
- *
- * @template T of mixed
+ * @template T
  */
 final readonly class SuccessResponse implements Responsable
 {
     /**
-     * @param  T  $data  The main payload (Model, Collection, or Paginator).
-     * @param  string  $title  A short summary of the response (Fallbacks to HTTP status text).
-     * @param  string  $detail  Detailed explanation of the response.
+     * @param  T  $data  The main payload.
+     * @param  string|null  $title  A short summary of the response.
+     * @param  string|null  $detail  Detailed explanation of the response.
      * @param  int  $status  The HTTP status code.
      * @param  array<string, mixed>  $extra  Additional top-level JSON fields.
      * @param  array<string, string>  $headers  Custom HTTP headers.
      */
     public function __construct(
         private mixed $data = null,
-        private string $title = '',
-        private string $detail = '',
+        private ?string $title = null,
+        private ?string $detail = null,
         private int $status = Response::HTTP_OK,
         private array $extra = [],
         private array $headers = [],
@@ -42,95 +41,163 @@ final readonly class SuccessResponse implements Responsable
     /**
      * Transform the object into a JsonResponse.
      *
-     * Automatically handles data extraction and metadata generation
-     * for Eloquent Resources and Paginators.
+     * @param  Request  $request
      */
     public function toResponse($request): JsonResponse
     {
         $payload = [
             'status' => $this->status,
-            'title' => $this->title !== '' ? $this->title : (Response::$statusTexts[$this->status] ?? 'Success'),
-            'detail' => $this->detail,
         ];
 
-        $inner = null;
-
-        // Data Processing & Transformation
-        if ($this->data instanceof ResourceCollection) {
-            $inner = $this->data->resource;
-
-            // If ResourceCollection wraps a paginator, serialize the data specifically
-            // to avoid double-nesting of links/meta within the 'data' key.
-            if ($inner instanceof LengthAwarePaginator || $inner instanceof Paginator || $inner instanceof CursorPaginator) {
-                $payload['data'] = $this->data->jsonSerialize();
-            } else {
-                $payload['data'] = $this->data->jsonSerialize();
-                $inner = null;
-            }
-        } elseif ($this->data instanceof LengthAwarePaginator || $this->data instanceof Paginator || $this->data instanceof CursorPaginator) {
-            // Memory Optimization: Access items() directly instead of toArray()
-            $payload['data'] = $this->data->items();
-            $inner = $this->data;
-        } else {
-            $payload['data'] = $this->data;
+        if ($this->title !== null) {
+            $payload['title'] = $this->title;
         }
 
-        // Metadata Generation (Links & Meta)
-        if ($inner instanceof LengthAwarePaginator) {
-            $payload['links'] = [
-                'first' => $inner->url(1),
-                'last' => $inner->url($inner->lastPage()),
-                'prev' => $inner->previousPageUrl(),
-                'next' => $inner->nextPageUrl(),
-            ];
-
-            $payload['meta'] = array_filter([
-                'current_page' => $inner->currentPage(),
-                'from' => $inner->firstItem(),
-                'last_page' => $inner->lastPage(),
-                'path' => $inner->path(),
-                'per_page' => $inner->perPage(),
-                'to' => $inner->lastItem(),
-                'total' => $inner->total(),
-            ], fn (mixed $v): bool => ! is_null($v));
-
-        } elseif ($inner instanceof Paginator) {
-            $payload['links'] = [
-                'first' => $inner->url(1),
-                'prev' => $inner->previousPageUrl(),
-                'next' => $inner->nextPageUrl(),
-            ];
-
-            $payload['meta'] = array_filter([
-                'current_page' => $inner->currentPage(),
-                'from' => $inner->firstItem(),
-                'path' => $inner->path(),
-                'per_page' => $inner->perPage(),
-                'to' => $inner->lastItem(),
-            ], fn (mixed $v): bool => ! is_null($v));
-
-        } elseif ($inner instanceof CursorPaginator) {
-            $cursorData = $inner->toArray();
-            $payload['links'] = [
-                'prev' => $cursorData['prev_page_url'] ?? null,
-                'next' => $cursorData['next_page_url'] ?? null,
-            ];
-
-            $payload['meta'] = array_filter([
-                'path' => $inner->path(),
-                'per_page' => $inner->perPage(),
-                'next_cursor' => $cursorData['next_cursor'] ?? null,
-                'prev_cursor' => $cursorData['prev_cursor'] ?? null,
-            ], fn (mixed $v): bool => ! is_null($v));
+        if ($this->detail !== null) {
+            $payload['detail'] = $this->detail;
         }
 
-        // Merge Extra Fields with Protected Key Check
+        $payload['data'] = $this->resolveData();
+
+        $paginator = $this->resolveTargetForMeta();
+        if ($paginator !== null) {
+            $payload['meta'] = $this->formatPaginationMeta($paginator);
+        }
+
         if (! empty($this->extra)) {
-            $protectedKeys = ['status', 'title', 'detail', 'data', 'meta', 'links'];
+            $protectedKeys = ['status', 'title', 'detail', 'data', 'meta'];
             $cleanExtra = array_diff_key($this->extra, array_flip($protectedKeys));
             $payload = array_merge($payload, $cleanExtra);
         }
 
         return response()->json($payload, $this->status, $this->headers);
+    }
+
+    /**
+     * Static factory method.
+     *
+     * @template TData
+     *
+     * @param  TData  $data
+     * @param  array<string, mixed>  $extra
+     * @param  array<string, string>  $headers
+     * @return self<TData>
+     */
+    public static function make(
+        mixed $data = null,
+        ?string $title = null,
+        ?string $detail = null,
+        int $status = Response::HTTP_OK,
+        array $extra = [],
+        array $headers = [],
+    ): self {
+        return new self($data, $title, $detail, $status, $extra, $headers);
+    }
+
+    /**
+     * Resolve the data for the response.
+     */
+    private function resolveData(): mixed
+    {
+        if ($this->data instanceof ResourceCollection) {
+            return $this->data->jsonSerialize();
+        }
+
+        if ($this->data instanceof AbstractPaginator || $this->data instanceof CursorPaginator) {
+            return $this->data->items();
+        }
+
+        return $this->data;
+    }
+
+    /**
+     * Resolve the paginator for meta information.
+     *
+     * @return LengthAwarePaginator<int|string, mixed>|Paginator<int|string, mixed>|CursorPaginator<int|string, mixed>|null
+     */
+    private function resolveTargetForMeta(): LengthAwarePaginator|Paginator|CursorPaginator|null
+    {
+        $target = $this->data;
+
+        if ($target instanceof ResourceCollection) {
+            $target = $target->resource;
+        }
+
+        if ($target instanceof LengthAwarePaginator || $target instanceof Paginator || $target instanceof CursorPaginator) {
+            return $target;
+        }
+
+        return null;
+    }
+
+    /**
+     * Format the pagination meta information.
+     *
+     * @param  LengthAwarePaginator<int|string, mixed>|Paginator<int|string, mixed>|CursorPaginator<int|string, mixed>  $paginator
+     * @return array<string, mixed>
+     */
+    private function formatPaginationMeta(mixed $paginator): array
+    {
+        if ($paginator instanceof LengthAwarePaginator) {
+            return $this->formatLengthAware($paginator);
+        }
+
+        if ($paginator instanceof Paginator) {
+            return $this->formatSimple($paginator);
+        }
+
+        return $this->formatCursor($paginator);
+    }
+
+    /**
+     * Format the meta information for a LengthAwarePaginator.
+     *
+     * @param  LengthAwarePaginator<int|string, mixed>  $paginator
+     * @return array{current_page: int, last_page: int, per_page: int, total: int, has_more: bool}
+     */
+    private function formatLengthAware(LengthAwarePaginator $paginator): array
+    {
+        return [
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'per_page' => $paginator->perPage(),
+            'total' => $paginator->total(),
+            'has_more' => $paginator->hasMorePages(),
+        ];
+    }
+
+    /**
+     * Format the meta information for a simple Paginator.
+     *
+     * @param  Paginator<int|string, mixed>  $paginator
+     * @return array{current_page: int, per_page: int, has_more: bool}
+     */
+    private function formatSimple(Paginator $paginator): array
+    {
+        return [
+            'current_page' => $paginator->currentPage(),
+            'per_page' => $paginator->perPage(),
+            'has_more' => $paginator->hasMorePages(),
+        ];
+    }
+
+    /**
+     * Format the meta information for a CursorPaginator.
+     *
+     * @param  CursorPaginator<int|string, mixed>  $paginator
+     * @return array{per_page: int, next_cursor: ?string, prev_cursor: ?string, has_more: bool}
+     */
+    private function formatCursor(CursorPaginator $paginator): array
+    {
+        $cursorData = $paginator->toArray();
+
+        return [
+            'per_page' => $paginator->perPage(),
+            // Keys from CursorPaginator array are dynamic and can be missing or non-string at runtime.
+            // Strict checks ensure PHPStan max level passes safely without internal inline type casting.
+            'next_cursor' => isset($cursorData['next_cursor']) && is_string($cursorData['next_cursor']) ? $cursorData['next_cursor'] : null,
+            'prev_cursor' => isset($cursorData['prev_cursor']) && is_string($cursorData['prev_cursor']) ? $cursorData['prev_cursor'] : null,
+            'has_more' => $paginator->hasMorePages(),
+        ];
     }
 }

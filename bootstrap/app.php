@@ -74,7 +74,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         // Validation Exception (422)
         $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
+            return ProblemResponse::make(
                 typeKey: 'validation',
                 title: __('auth.validation_failed'),
                 status: Response::HTTP_UNPROCESSABLE_ENTITY,
@@ -87,7 +87,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Authentication Exception (401)
         $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
+            return ProblemResponse::make(
                 typeKey: 'unauthenticated',
                 title: __('auth.unauthenticated'),
                 status: Response::HTTP_UNAUTHORIZED,
@@ -97,7 +97,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Access Denied / Forbidden (403)
         $exceptions->render(function (AccessDeniedHttpException|InvalidSignatureException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
+            return ProblemResponse::make(
                 typeKey: 'forbidden',
                 title: __('auth.forbidden'),
                 status: Response::HTTP_FORBIDDEN,
@@ -109,7 +109,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Not Found Exception (404)
         $exceptions->render(function (NotFoundHttpException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
+            return ProblemResponse::make(
                 typeKey: 'not_found',
                 title: __('auth.not_found'),
                 status: Response::HTTP_NOT_FOUND,
@@ -119,7 +119,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Too Many Requests Exception (429)
         $exceptions->render(function (TooManyRequestsHttpException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
+            return ProblemResponse::make(
                 typeKey: 'rate_limited',
                 title: __('auth.too_many_requests'),
                 status: Response::HTTP_TOO_MANY_REQUESTS,
@@ -129,7 +129,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Invalid Argument Exception (400)
         $exceptions->render(function (InvalidArgumentException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
+            return ProblemResponse::make(
                 typeKey: 'bad_request',
                 title: 'Bad Request',
                 status: Response::HTTP_BAD_REQUEST,
@@ -139,7 +139,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Generic HTTP Exceptions
         $exceptions->render(function (HttpExceptionInterface $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
+            return ProblemResponse::make(
                 typeKey: 'default',
                 title: $e->getMessage() ?: 'HTTP Error',
                 status: $e->getStatusCode(),
@@ -151,7 +151,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (Throwable $e, Request $request): ProblemResponse {
             $detail = config()->boolean('app.debug') ? $e->getMessage() : 'An internal server error occurred.';
 
-            return new ProblemResponse(
+            return ProblemResponse::make(
                 typeKey: 'internal_error',
                 title: 'Internal Server Error',
                 status: Response::HTTP_INTERNAL_SERVER_ERROR,

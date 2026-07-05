@@ -1,7 +1,5 @@
 <?php
 
-use App\Support\Scramble\Extensions\ProblemDetailsExceptionToResponseExtension;
-use App\Support\Scramble\Extensions\SuccessResponseExtension;
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
 use Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy;
 use Dedoc\Scramble\Support\Generator\SecuritySchemes\HttpSecurityScheme;
@@ -151,10 +149,7 @@ return [
         RestrictedDocsAccess::class,
     ],
 
-    'extensions' => [
-        SuccessResponseExtension::class,
-        ProblemDetailsExceptionToResponseExtension::class,
-    ],
+    'extensions' => [],
 
     /*
      * Automatically document API security (OpenAPI `security` / `securitySchemes`) based on route

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\ProblemResponse;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\DeleteDeviceAction;
@@ -18,6 +20,14 @@ final readonly class DeleteDeviceController
         private DeleteDeviceAction $deleteDevice
     ) {}
 
+    /**
+     * Delete an authenticated device session.
+     *
+     * @param  string  $device  The device ID.
+     *
+     * @throws AuthenticationException Full authentication is required.
+     * @throws ModelNotFoundException The specified device was not found.
+     */
     public function __invoke(Request $request, string $device): JsonResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */

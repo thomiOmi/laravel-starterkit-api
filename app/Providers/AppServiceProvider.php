@@ -48,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('super-admin') ? true : null;
         });
 
+        // $this->configureScramble();
         $this->configureEmailVerification();
         $this->configurePasswordReset();
     }
