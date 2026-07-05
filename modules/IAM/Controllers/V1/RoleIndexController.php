@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Requests\PaginationRequest;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListRolesAction;
 use Modules\IAM\Filters\RoleFilter;
@@ -31,7 +31,7 @@ final readonly class RoleIndexController
      * @throws AuthenticationException Full authentication is required to access role management.
      * @throws AuthorizationException You do not have permission to view roles.
      */
-    public function __invoke(Request $request, RoleFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(PaginationRequest $request, RoleFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();

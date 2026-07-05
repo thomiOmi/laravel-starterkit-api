@@ -3,7 +3,7 @@
 ## Data Flow
 
 ```
-Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / Eloquent (write) -> Response
+Request -> Middleware -> Controller (__invoke) -> Action -> Eloquent -> Response
 ```
 
 ## Layers
@@ -14,46 +14,56 @@ Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / 
 ### Actions
 `final readonly` classes in `Modules/{Module}/Actions/`. Each action encapsulates a single business operation with a `handle()` method. Injectable via constructor.
 
-### Repositories
-Read-only data access in `Modules/{Module}/Repositories/`. Provides `findById()` and `paginate()` methods with optional caching. Writes (create, update, delete) use Eloquent models directly inside actions.
-
 ### Models
 Eloquent models in `Modules/{Module}/Models/`. Uses `HasDefaultBehavior` trait which applies ULID primary keys, soft deletes, and consistent `Y-m-d H:i:s` date serialization.
 
-## Module Structure
+## Folder Structure
 
 ```
-modules/{Module}/
-  Actions/           -- Business logic (Create, Update, Delete actions)
-  Controllers/V1/    -- HTTP layer (final readonly __invoke)
-  Database/
-    Factories/       -- Model factories
-    Migrations/      -- Table migrations
-    Seeders/         -- Data seeders
-  Events/            -- Domain events (optional)
-  Filters/           -- Query string filtering (search, sort, status)
-  Models/            -- Eloquent models with HasDefaultBehavior
-  Payloads/V1/       -- Typed DTOs for action input
-  Providers/         -- Service provider (auto-registered by ModuleServiceProvider)
-  Repositories/      -- Read-only data access (findById, paginate)
-  Requests/V1/       -- Form request validation
-  Resources/         -- API resource transformers
-  Routes/            -- Route files (V1.php loaded by RouteServiceProvider)
-  Tests/             -- Pest tests (Feature + Unit)
+modules/
+├── {Module}/
+│   ├── Actions/         # Single-purpose use cases
+│   ├── Controllers/     # V1/, V2/ for API versioning
+│   ├── Database/
+│   │   ├── factories/
+│   │   ├── migrations/
+│   │   └── seeders/
+│   ├── Events/
+│   ├── Filters/         # Query/filter objects
+│   ├── Jobs/
+│   ├── Models/
+│   ├── Payloads/        # DTOs with PHP 8.4 property hooks
+│   ├── Providers/       # Service providers
+│   ├── Repositories/    # Read-only data access (optional)
+│   ├── Requests/        # Form request validation
+│   ├── Resources/       # API resources
+│   ├── Routes/          # V1.php, V2.php
+│   └── Tests/           # Feature and unit tests
+└── ...
+app/                     # Shared application code
+├── Concerns/            # Traits and shared logic
+├── Contracts/           # Interfaces for DI
+├── Http/
+│   ├── Controllers/     # Base controller
+│   ├── Middleware/      # ForceJsonResponse, etc.
+│   └── Responses/       # SuccessResponse, ProblemResponse
+├── Providers/           # AppServiceProvider
+├── Models/              # Shared Eloquent models
+├── Notifications/       # Shared notifications
+├── Supports/            # Shared helpers and utilities
+└── ...
 ```
 
 ### Current Modules
 
 ```
 modules/
-  Auth/    -- Authentication, devices, social login
-  Role/    -- Roles & permissions CRUD, Spatie integration
-  User/    -- User CRUD, bulk actions
+  IAM/    -- Identity and Access Management (Auth, User, Role, Permission)
 ```
 
 ## Response Types
 
-- **Single resource**: `new JsonResponse([...], status)`
+- **Single resource**: `new SuccessResponse(...)`
 - **Paginated collection**: `ResourceCollection::additional([...])->response()`
 - **Error**: `ProblemResponse` (RFC 9457)
 
@@ -67,10 +77,8 @@ Handled in `bootstrap/app.php`:
 - 422: `ValidationException`
 - 429: `TooManyRequestsHttpException`
 
-Laravel's `prepareException()` converts `AuthorizationException` to `AccessDeniedHttpException` and `ModelNotFoundException` to `NotFoundHttpException` before render callbacks.
-
 ## Service Providers
 
-- **AppServiceProvider**: Rate limiters, `Password::defaults()`, `Gate::before()` for super-admin, email verification config, password reset URL config
+- **AppServiceProvider**: Rate limiters, `Password::defaults()`, `Gate::before()` for super-admin
 - **RouteServiceProvider**: Loads module routes dynamically from `modules/*/Routes/{version}.php`
-- **Module providers**: Each module has `{Module}ServiceProvider`; migrations are loaded by `ModuleServiceProvider`
+- **Module providers**: Each module has `{Module}ServiceProvider`

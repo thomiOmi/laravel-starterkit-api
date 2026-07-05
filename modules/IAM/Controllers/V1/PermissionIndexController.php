@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Requests\PaginationRequest;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListPermissionsAction;
 use Modules\IAM\Filters\PermissionFilter;
@@ -31,7 +31,7 @@ final readonly class PermissionIndexController
      * @throws AuthenticationException Full authentication is required to access permission management.
      * @throws AuthorizationException You do not have permission to view permissions.
      */
-    public function __invoke(Request $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(PaginationRequest $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User)|null $currentUser */
         $currentUser = $request->user();
