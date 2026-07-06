@@ -86,11 +86,15 @@
         ],
         "pint": [
             "./vendor/bin/pint"
+        ],
+        "type-coverage": [
+            "php -d memory_limit=2G artisan test --type-coverage"
         ]
     },
     "scripts-descriptions": {
         "phpstan": "Run PHPStan static analysis against your application.",
-        "pint": "Run Pint code style fixer against your application."
+        "pint": "Run Pint code style fixer against your application.",
+        "type-coverage": "Run Pest type coverage analysis (100% required for return, param, property types)."
     },
     "extra": {
         "laravel": {
