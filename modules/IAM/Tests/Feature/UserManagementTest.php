@@ -15,8 +15,10 @@ beforeEach(function () {
     Event::fake();
     Notification::fake();
 
-    Role::create(['name' => 'admin', 'guard_name' => 'web']);
-    Role::create(['name' => 'user', 'guard_name' => 'web']);
+    foreach (['web', 'sanctum'] as $guard) {
+        Role::create(['name' => 'admin', 'guard_name' => $guard]);
+        Role::create(['name' => 'user', 'guard_name' => $guard]);
+    }
 });
 
 describe('Middleware Guarding (Verified Email)', function () {
@@ -73,5 +75,126 @@ describe('User CRUD & IDOR Protection', function () {
 
         expect($this->deleteJson("/api/v1/users/{$admin->id}"))
             ->toBeProblemResponse(status: 403);
+    })->group('v1');
+});
+
+describe('User Listing', function () {
+    it('lists all users with pagination when authorized', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo('user.view');
+        User::factory()->count(3)->create();
+
+        $response = $this->getJson('/api/v1/users');
+
+        expect($response)->toBeSuccessResponse()->toBePaginated();
+    })->group('v1');
+
+    it('denies listing without user.view permission', function () {
+        loginAsUser();
+
+        expect($this->getJson('/api/v1/users'))
+            ->toBeProblemResponse(status: 403);
+    })->group('v1');
+
+    it('can filter users by search term', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo('user.view');
+        User::factory()->create(['name' => 'Alice']);
+        User::factory()->create(['name' => 'Bob']);
+
+        $response = $this->getJson('/api/v1/users?search=Alice');
+
+        expect($response->json('data'))->toHaveCount(1)
+            ->and($response->json('data.0.name'))->toBe('Alice');
+    })->group('v1');
+});
+
+describe('User Creation', function () {
+    it('creates a new user when authorized', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => 'user.create', 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo('user.create');
+
+        expect($this->postJson('/api/v1/users', [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+            'password' => config('auth.default_password'),
+            'password_confirmation' => config('auth.default_password'),
+        ]))->toBeSuccessResponse(status: 201);
+    })->group('v1');
+
+    it('denies creation without user.create permission', function () {
+        loginAsUser();
+
+        expect($this->postJson('/api/v1/users', [
+            'name' => 'New User',
+            'email' => 'new@example.com',
+        ]))->toBeProblemResponse(status: 403);
+    })->group('v1');
+});
+
+describe('User Show', function () {
+    it('allows a user to view their own profile', function () {
+        $user = loginAsUser();
+
+        expect($this->getJson("/api/v1/users/{$user->id}"))
+            ->toBeSuccessResponse()
+            ->assertJsonPath('data.id', $user->id);
+    })->group('v1');
+
+    it('allows viewing another user with user.view permission', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo('user.view');
+        $other = User::factory()->create();
+
+        expect($this->getJson("/api/v1/users/{$other->id}"))
+            ->toBeSuccessResponse()
+            ->assertJsonPath('data.id', $other->id);
+    })->group('v1');
+
+    it('denies viewing another user without user.view permission', function () {
+        loginAsUser();
+        $other = User::factory()->create();
+
+        expect($this->getJson("/api/v1/users/{$other->id}"))
+            ->toBeProblemResponse(status: 403);
+    })->group('v1');
+});
+
+describe('User Update', function () {
+    it('allows a user to update their own profile', function () {
+        $user = loginAsUser();
+
+        expect($this->putJson("/api/v1/users/{$user->id}", [
+            'name' => 'Updated Name',
+            'email' => $user->email,
+        ]))->toBeSuccessResponse()
+            ->assertJsonPath('data.name', 'Updated Name');
+    })->group('v1');
+
+    it('allows updating another user with user.edit permission', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo('user.edit');
+        $other = User::factory()->create(['name' => 'Original']);
+
+        expect($this->putJson("/api/v1/users/{$other->id}", [
+            'name' => 'Updated by Admin',
+            'email' => $other->email,
+        ]))->toBeSuccessResponse()
+            ->assertJsonPath('data.name', 'Updated by Admin');
+    })->group('v1');
+
+    it('denies updating another user without user.edit permission', function () {
+        loginAsUser();
+        $other = User::factory()->create();
+
+        expect($this->putJson("/api/v1/users/{$other->id}", [
+            'name' => 'Hacked',
+            'email' => $other->email,
+        ]))->toBeProblemResponse(status: 403);
     })->group('v1');
 });
