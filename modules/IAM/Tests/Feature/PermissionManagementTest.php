@@ -45,6 +45,20 @@ describe('Permission Lifecycle', function () {
         expect(Permission::where('name', 'comment.delete')->exists())->toBeTrue();
     })->group('v1');
 
+    it('fails creating a duplicate permission', function () {
+        Permission::firstOrCreate(['name' => 'duplicate.perm', 'guard_name' => 'sanctum']);
+
+        expect($this->postJson('/api/v1/permissions', [
+            'name' => 'duplicate.perm',
+            'guard_name' => 'sanctum',
+        ]))->toBeProblemResponse(status: 422);
+    })->group('v1');
+
+    it('returns 404 for a non-existent permission', function () {
+        expect($this->getJson('/api/v1/permissions/999999'))
+            ->toBeProblemResponse(status: 404);
+    })->group('v1');
+
     it('shows permission details', function () {
         $perm = Permission::firstOrCreate(['name' => 'user.block', 'guard_name' => 'sanctum']);
 
@@ -66,6 +80,12 @@ describe('Permission Lifecycle', function () {
         expect($perm->fresh()->name)->toBe('new.perm');
     })->group('v1');
 
+    it('returns 404 when updating a non-existent permission', function () {
+        expect($this->putJson('/api/v1/permissions/999999', [
+            'name' => 'ghost',
+        ]))->toBeProblemResponse(status: 404);
+    })->group('v1');
+
     it('deletes a permission', function () {
         $perm = Permission::firstOrCreate(['name' => 'to.delete', 'guard_name' => 'sanctum']);
 
@@ -73,5 +93,10 @@ describe('Permission Lifecycle', function () {
 
         expect($response)->toBeSuccessResponse(status: 204);
         expect(Permission::where('id', $perm->id)->exists())->toBeFalse();
+    })->group('v1');
+
+    it('returns 403 when deleting a non-existent permission', function () {
+        expect($this->deleteJson('/api/v1/permissions/999999'))
+            ->toBeProblemResponse(status: 403);
     })->group('v1');
 });

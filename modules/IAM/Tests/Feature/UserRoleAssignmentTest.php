@@ -48,4 +48,24 @@ describe('User Role Management', function () {
         expect($this->putJson("/api/v1/users/{$user->id}/roles", ['roles' => ['admin']]))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
+
+    it('returns 404 when assigning roles to a non-existent user', function () {
+        $admin = loginAsUser();
+        $admin->givePermissionTo('user.edit');
+        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
+
+        expect($this->putJson('/api/v1/users/999999/roles', [
+            'roles' => ['admin'],
+        ]))->toBeProblemResponse(status: 404);
+    })->group('v1');
+
+    it('fails validation with non-existent role names', function () {
+        $admin = loginAsUser();
+        $admin->givePermissionTo('user.edit');
+        $user = User::factory()->create();
+
+        expect($this->putJson("/api/v1/users/{$user->id}/roles", [
+            'roles' => ['non-existent-role'],
+        ]))->toBeProblemResponse(status: 422);
+    })->group('v1');
 });

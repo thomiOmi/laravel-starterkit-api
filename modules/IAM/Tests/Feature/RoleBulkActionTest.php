@@ -15,6 +15,11 @@ beforeEach(function () {
 });
 
 describe('Role Bulk Operations', function () {
+    it('fails bulk delete with missing ids', function () {
+        expect($this->postJson('/api/v1/roles/bulk/delete', []))
+            ->toBeProblemResponse(status: 422);
+    })->group('v1');
+
     it('can bulk delete roles', function () {
         $roles = [
             Role::create(['name' => 'r1', 'guard_name' => 'web']),

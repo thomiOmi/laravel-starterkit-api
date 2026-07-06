@@ -22,6 +22,12 @@ describe('Password Management', function () {
 
         Notification::assertSentTo($user, ResetPasswordNotification::class);
     })->group('v1');
+
+    it('fails gracefully with non-existent email', function () {
+        expect($this->postJson('/api/v1/auth/forgot-password', [
+            'email' => 'nonexistent@example.com',
+        ]))->toBeSuccessResponse(); // Forgot password always returns success to prevent enumeration
+    })->group('v1');
 });
 
 describe('Email Verification Lifecycle', function () {
@@ -64,6 +70,11 @@ describe('Email Verification Lifecycle', function () {
         expect($this->withToken($newToken->plainTextToken)
             ->getJson('/api/v1/auth/me'))
             ->toBeSuccessResponse();
+    })->group('v1');
+
+    it('denies resending verification email when unauthenticated', function () {
+        expect($this->postJson('/api/v1/auth/email/verification-notification'))
+            ->toBeProblemResponse(status: 401);
     })->group('v1');
 
     it('denies verification if User ID is manipulated in the URL', function () {

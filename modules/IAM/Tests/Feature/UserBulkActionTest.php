@@ -21,6 +21,14 @@ beforeEach(function () {
 });
 
 describe('User Bulk Operations', function () {
+    it('fails bulk delete with missing ids', function () {
+        $admin = loginAsUser();
+        $admin->givePermissionTo('user.delete');
+
+        expect($this->postJson('/api/v1/users/bulk/delete', []))
+            ->toBeProblemResponse(status: 422);
+    })->group('v1');
+
     it('allows authorized admin to bulk delete users', function () {
         $admin = loginAsUser();
         $admin->givePermissionTo('user.delete');

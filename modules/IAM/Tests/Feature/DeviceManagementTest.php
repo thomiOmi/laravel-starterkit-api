@@ -29,4 +29,13 @@ describe('Device Management', function () {
 
         expect($user->tokens()->where('id', $id)->exists())->toBeFalse();
     })->group('v1');
+
+    it('returns 404 when deleting a non-existent device', function () {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $token = $user->createToken('current');
+
+        expect($this->withToken($token->plainTextToken)
+            ->deleteJson('/api/v1/auth/devices/999999'))
+            ->toBeProblemResponse(status: 404);
+    })->group('v1');
 });

@@ -15,6 +15,18 @@ beforeEach(function () {
 });
 
 describe('Authentication Core (Registration Guarding)', function () {
+    it('fails registration with duplicate email', function () {
+        $password = config('auth.default_password');
+        User::factory()->create(['email' => 'dup@auth.com']);
+
+        expect($this->postJson('/api/v1/auth/register', [
+            'name' => 'Duplicate User',
+            'email' => 'dup@auth.com',
+            'password' => $password,
+            'password_confirmation' => $password,
+        ]))->toBeProblemResponse(status: 422);
+    })->group('v1');
+
     it('registers a new user as unverified by default', function () {
         $password = config('auth.default_password');
         $payload = [
@@ -36,6 +48,17 @@ describe('Authentication Core (Registration Guarding)', function () {
         Notification::assertSentTo($user, VerifyEmail::class);
     })->group('v1');
 
+    it('fails login with invalid credentials', function () {
+        $password = 'secret';
+        User::factory()->create(['password' => $password]);
+
+        expect($this->postJson('/api/v1/auth/login', [
+            'email' => 'wrong@email.com',
+            'password' => $password,
+            'device_name' => 'test-device',
+        ]))->toBeProblemResponse(status: 422);
+    })->group('v1');
+
     it('logs in a user but remains restricted if unverified', function () {
         $password = 'secret';
         $user = User::factory()->create(['password' => $password, 'email_verified_at' => null]);
@@ -55,6 +78,11 @@ describe('Authentication Core (Registration Guarding)', function () {
 });
 
 describe('Profile & Session', function () {
+    it('denies profile access when unauthenticated', function () {
+        expect($this->getJson('/api/v1/auth/me'))
+            ->toBeProblemResponse(status: 401);
+    })->group('v1');
+
     it('gets the current user profile', function () {
         $user = loginAsUser();
 

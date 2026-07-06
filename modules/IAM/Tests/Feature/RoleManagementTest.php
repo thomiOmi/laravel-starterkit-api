@@ -41,6 +41,19 @@ describe('Role Listing & Filtering', function () {
 });
 
 describe('Role Lifecycle', function () {
+    it('fails creating a duplicate role name', function () {
+        Role::create(['name' => 'duplicate', 'guard_name' => 'web']);
+
+        expect($this->postJson('/api/v1/roles', [
+            'name' => 'duplicate',
+        ]))->toBeProblemResponse(status: 422);
+    })->group('v1');
+
+    it('returns 404 for a non-existent role', function () {
+        expect($this->getJson('/api/v1/roles/999999'))
+            ->toBeProblemResponse(status: 404);
+    })->group('v1');
+
     it('creates a new role with permissions', function () {
         $perm = Permission::firstOrCreate(['name' => 'post.view', 'guard_name' => 'sanctum']);
 
@@ -78,6 +91,12 @@ describe('Role Lifecycle', function () {
         expect($role->fresh()->name)->toBe('new-name');
     })->group('v1');
 
+    it('returns 404 when updating a non-existent role', function () {
+        expect($this->putJson('/api/v1/roles/999999', [
+            'name' => 'ghost',
+        ]))->toBeProblemResponse(status: 404);
+    })->group('v1');
+
     it('soft deletes a role', function () {
         $role = Role::create(['name' => 'to-be-deleted', 'guard_name' => 'web']);
 
@@ -85,5 +104,10 @@ describe('Role Lifecycle', function () {
 
         expect($response)->toBeSuccessResponse(status: 204);
         expect($role->fresh()->trashed())->toBeTrue();
+    })->group('v1');
+
+    it('returns 403 when deleting a non-existent role', function () {
+        expect($this->deleteJson('/api/v1/roles/999999'))
+            ->toBeProblemResponse(status: 403);
     })->group('v1');
 });

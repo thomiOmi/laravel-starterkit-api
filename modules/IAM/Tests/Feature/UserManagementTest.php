@@ -162,6 +162,15 @@ describe('User Show', function () {
         expect($this->getJson("/api/v1/users/{$other->id}"))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
+
+    it('returns 404 for a non-existent user with user.view permission', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo('user.view');
+
+        expect($this->getJson('/api/v1/users/999999'))
+            ->toBeProblemResponse(status: 404);
+    })->group('v1');
 });
 
 describe('User Update', function () {
@@ -196,5 +205,16 @@ describe('User Update', function () {
             'name' => 'Hacked',
             'email' => $other->email,
         ]))->toBeProblemResponse(status: 403);
+    })->group('v1');
+
+    it('returns 404 when updating a non-existent user with user.edit permission', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo('user.edit');
+
+        expect($this->putJson('/api/v1/users/999999', [
+            'name' => 'Ghost',
+            'email' => 'ghost@example.com',
+        ]))->toBeProblemResponse(status: 404);
     })->group('v1');
 });
