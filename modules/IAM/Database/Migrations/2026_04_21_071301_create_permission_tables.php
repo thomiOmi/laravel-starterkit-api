@@ -35,6 +35,8 @@ return new class extends Migration
             $table->softDeletes();
 
             $table->unique(['name', 'guard_name']);
+            $table->index('guard_name');
+            $table->index('deleted_at');
         });
 
         Schema::create($tableNames['roles'], function (Blueprint $table) use ($teams, $columnNames) {
@@ -52,6 +54,9 @@ return new class extends Migration
             } else {
                 $table->unique(['name', 'guard_name']);
             }
+
+            $table->index('deleted_at');
+            $table->index('created_at');
         });
 
         Schema::create($tableNames['model_has_permissions'], function (Blueprint $table) use ($tableNames, $columnNames, $pivotPermission, $teams) {

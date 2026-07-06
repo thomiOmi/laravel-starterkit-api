@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->timestamps();
+
+            $table->index(['tokenable_type', 'tokenable_id', 'last_used_at', 'created_at'], 'tokenable_device_index');
         });
     }
 
