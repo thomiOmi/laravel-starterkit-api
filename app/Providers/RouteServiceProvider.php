@@ -29,7 +29,7 @@ class RouteServiceProvider extends ServiceProvider
     protected function mapModuleApiRoutes(): void
     {
         $modulePath = base_path('modules');
-        $supportedVersions = config('apiroute.supported_versions', ['V1']);
+        $supportedVersions = config()->array('apiroute.supported_versions', ['V1']);
 
         if (! File::exists($modulePath)) {
             return;

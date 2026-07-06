@@ -32,8 +32,7 @@ class MakeModule extends Command
 
         $name = Str::studly($name);
         $version = strtoupper((string) $this->option('api-version'));
-        $basePathConfig = config('architecture.module.base_path');
-        $basePath = is_string($basePathConfig) ? $basePathConfig : base_path('modules');
+        $basePath = config()->string('architecture.module.base_path', base_path('modules'));
         $modulePath = "{$basePath}/{$name}";
 
         if (File::exists($modulePath) && ! $this->option('force')) {
@@ -306,7 +305,7 @@ PHP;
      */
     protected function getMigrationIdColumn(): string
     {
-        return match (config('architecture.model.default_id', 'ulid')) {
+        return match (config()->string('architecture.model.default_id', 'ulid')) {
             'uuid' => '$table->uuid(\'id\')->primary();',
             'integer' => '$table->id();',
             default => '$table->ulid(\'id\')->primary();',
@@ -318,7 +317,7 @@ PHP;
      */
     protected function getSoftDeletesColumn(): string
     {
-        if (! config('architecture.model.use_soft_deletes', true)) {
+        if (! config()->boolean('architecture.model.use_soft_deletes', true)) {
             return '';
         }
 
@@ -330,7 +329,7 @@ PHP;
      */
     protected function getSoftDeletesPhpdoc(): string
     {
-        if (! config('architecture.model.use_soft_deletes', true)) {
+        if (! config()->boolean('architecture.model.use_soft_deletes', true)) {
             return '';
         }
 

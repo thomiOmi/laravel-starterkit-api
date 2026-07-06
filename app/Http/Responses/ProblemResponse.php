@@ -8,7 +8,6 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -51,7 +50,7 @@ final readonly class ProblemResponse implements Responsable
             'title' => $title,
             'status' => $this->status,
             'detail' => $this->detail,
-            'timestamp' => Carbon::now()->toJSON(),
+            'timestamp' => now()->toJSON(),
         ];
 
         if ($this->instance !== '') {

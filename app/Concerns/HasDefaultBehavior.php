@@ -24,7 +24,7 @@ trait HasDefaultBehavior
      */
     public function initializeHasDefaultBehavior(): void
     {
-        $idStrategy = config('architecture.model.default_id', 'ulid');
+        $idStrategy = config()->string('architecture.model.default_id', 'ulid');
 
         if ($idStrategy === 'integer') {
             $this->keyType = 'int';
@@ -40,7 +40,7 @@ trait HasDefaultBehavior
      */
     public function initializeSoftDeletes(): void
     {
-        if (! config('architecture.model.use_soft_deletes', true)) {
+        if (! config()->boolean('architecture.model.use_soft_deletes', true)) {
             return;
         }
 
@@ -52,7 +52,7 @@ trait HasDefaultBehavior
      */
     public static function bootSoftDeletes(): void
     {
-        if (! config('architecture.model.use_soft_deletes', true)) {
+        if (! config()->boolean('architecture.model.use_soft_deletes', true)) {
             return;
         }
 

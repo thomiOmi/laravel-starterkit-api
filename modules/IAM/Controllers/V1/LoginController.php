@@ -34,7 +34,7 @@ final readonly class LoginController
             userAgent: $request->userAgent(),
         );
 
-        return SuccessResponse::make(
+        return new SuccessResponse(
             data: [
                 'user' => new UserResource($result['user']),
                 'access_token' => $result['access_token'],
