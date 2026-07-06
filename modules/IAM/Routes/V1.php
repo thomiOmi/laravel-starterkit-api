@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Modules\IAM\Controllers\V1\DeleteDeviceController;
-use Modules\IAM\Controllers\V1\ForgotPasswordController;
 use Modules\IAM\Controllers\V1\DeviceListController;
+use Modules\IAM\Controllers\V1\ForgotPasswordController;
 use Modules\IAM\Controllers\V1\LoginController;
 use Modules\IAM\Controllers\V1\LogoutController;
 use Modules\IAM\Controllers\V1\LogoutOtherDevicesController;
