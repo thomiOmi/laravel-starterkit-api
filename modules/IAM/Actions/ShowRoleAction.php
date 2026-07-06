@@ -10,6 +10,6 @@ final readonly class ShowRoleAction
 {
     public function handle(string $id): ?Role
     {
-        return Role::query()->find($id);
+        return Role::with(['permissions:id,name'])->find($id);
     }
 }

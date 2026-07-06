@@ -10,6 +10,6 @@ final readonly class ShowUserAction
 {
     public function handle(string $id): ?User
     {
-        return User::query()->find($id);
+        return User::with(['roles.permissions:id,name', 'permissions:id,name'])->find($id);
     }
 }
