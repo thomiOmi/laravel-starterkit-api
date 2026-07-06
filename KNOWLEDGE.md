@@ -60,6 +60,7 @@
 |-------|---------|-------|
 | Module Unit tests (Auth\Unit) fail with `no such table: users` | Migration ordering — module tests may run before global migrations. Pre-existing, outside current session scope. | 2026-06-29 |
 | AuthTest `avatar` MissingAttributeException | Pre-existing issue with the User model `$appends` / `$with` config. | 2026-06-29 |
+| Spatie Permission cache race condition in parallel CI | When CI uses shared Redis, parallel workers share `spatie.permission.cache` key. Worker A creates permission → Worker B's stale cache says it doesn't exist ⇒ `PermissionDoesNotExist`. *Mitigation:* `phpunit.xml` sets `CACHE_STORE=array` + `tests/Pest.php` calls `forgetCachedPermissions()` in `beforeEach`. *Long-term:* Investigate `TEST_TOKEN`-based cache prefix for shared-service CI. | 2026-07-06 |
 
 ---
 

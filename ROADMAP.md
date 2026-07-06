@@ -47,6 +47,13 @@
 - [ ] Configure slow-query and slow-route tracking.
 - [ ] Set up alerts/thresholds in `architecture.php` (if applicable).
 
+### Phase 04b: CI & Test Infrastructure
+*Goal: Fast, reliable CI with production-like services.*
+- [ ] Investigate Spatie Permission cache race condition in parallel CI tests.
+- [ ] Re-introduce MySQL and Redis services in CI with proper per-worker isolation (separate databases, unique cache prefixes).
+- [ ] Evaluate `TEST_TOKEN`-based cache/session prefixing for shared services.
+- [ ] Document findings in KNOWLEDGE.md and ROADMAP.md.
+
 ### Phase 05: Ecosystem
 *Goal: Clean module separation.*
 - [ ] Structure `modules/Extras` directory.

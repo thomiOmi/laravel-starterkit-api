@@ -18,70 +18,30 @@ jobs:
   laravel:
     name: Laravel (PHP ${{ matrix.php-versions }})
     runs-on: ubuntu-latest
-    
+
     env:
-      DB_CONNECTION: mysql
-      DB_HOST: 127.0.0.1
-      DB_DATABASE: laravel
-      DB_USERNAME: root
-      DB_PASSWORD: password
-      RATE_LIMIT_AUTH_PER_IP: 60
-      BROADCAST_CONNECTION: log
-      CACHE_STORE: redis
-      QUEUE_CONNECTION: redis
-      SESSION_DRIVER: redis
-
-    # Docs: https://docs.github.com/en/actions/using-containerized-services
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: false
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: laravel
-        ports:
-          # Maps tcp port 3306 on service container to the host
-          - 3306:3306
-        # Set health checks to wait until mysql has started
-        options: >-
-          --health-cmd="mysqladmin ping" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=3
-
-      redis:
-        image: redis:8.6
-        ports:
-          # Maps port 6379 on service container to the host
-          - 6379:6379
-        # Set health checks to wait until redis has started
-        options: >-
-          --health-cmd="redis-cli ping" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=3
+      APP_ENV: testing
+      CACHE_STORE: array
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
 
     strategy:
       fail-fast: false
       matrix:
         php-versions: ['8.4', '8.5']
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v6
 
-      # Docs: https://github.com/shivammathur/setup-php
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-versions }}
-        extensions: mbstring, dom, fileinfo, mysql
+        extensions: mbstring, dom, fileinfo, pdo_sqlite
         coverage: none
-    
-    # Local MySQL service in GitHub hosted environments is disabled by default.
-    # If you are using it instead of service containers, make sure you start it.
-    # - name: Start mysql service
-    #   run: sudo systemctl start mysql.service
 
     - name: Get Composer Cache Directory
       id: composer-cache
@@ -106,28 +66,13 @@ jobs:
         php -r "file_exists('.env') || copy('.env.example', '.env');"
         php artisan key:generate
 
-    - name: Clear Config
-      run: php artisan config:clear
-
-    - name: Run Migration
-      run: php artisan migrate -v
-      env:
-        DB_PORT: ${{ job.services.mysql.ports['3306'] }}
-        REDIS_PORT: ${{ job.services.redis.ports['6379'] }}
-
     - name: Check Code Formatting (Pint)
       run: vendor/bin/pint --test
 
     - name: Static Analysis (Larastan)
       run: vendor/bin/phpstan analyse --error-format=github
-      
+
     - name: Execute Tests (Unit and Feature tests) via PHPUnit/Pest
-      env:
-        DB_PORT: ${{ job.services.mysql.ports['3306'] }}
-        REDIS_PORT: ${{ job.services.redis.ports['6379'] }}
-        CACHE_STORE: array
-        SESSION_DRIVER: array
-        QUEUE_CONNECTION: sync
       run: php artisan test --compact --parallel
 
     - name: Check for known vulnerabilities
