@@ -45,7 +45,7 @@ describe('Email Verification Lifecycle', function () {
 
         // Click verification link (Signed URL)
         $url = URL::temporarySignedRoute(
-            'api.v1.verification.verify',
+            'v1.auth.verification.verify',
             now()->addMinutes(60),
             ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
         );
@@ -71,7 +71,7 @@ describe('Email Verification Lifecycle', function () {
         $userB = User::factory()->create(['email_verified_at' => null]);
 
         $url = URL::temporarySignedRoute(
-            'api.v1.verification.verify',
+            'v1.auth.verification.verify',
             now()->addMinutes(60),
             ['id' => $userA->id, 'hash' => sha1($userA->getEmailForVerification())]
         );
@@ -88,7 +88,7 @@ describe('Email Verification Lifecycle', function () {
         $user = User::factory()->create(['email_verified_at' => null]);
 
         $url = URL::temporarySignedRoute(
-            'api.v1.verification.verify',
+            'v1.auth.verification.verify',
             now()->subMinutes(1), // Already expired
             ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
         );

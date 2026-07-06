@@ -13,7 +13,7 @@ use Spatie\Permission\PermissionRegistrar;
 test('BulkActionRequest validates ULIDs and count limits', function () {
     Route::post('/test-bulk', function (BulkActionRequest $request) {
         return response()->json(['valid' => true]);
-    })->name('api.v1.user.bulk.delete');
+    })->name('v1.user.bulk.delete');
 
     $user = loginAsUser();
     Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
@@ -36,7 +36,7 @@ test('BulkActionRequest enforces modular permissions', function () {
 
     Route::post('/api/v1/user/bulk/delete', function (BulkActionRequest $request) {
         return response()->json(['authorized' => true]);
-    })->name('api.v1.user.bulk.delete');
+    })->name('v1.user.bulk.delete');
 
     $this->postJson('/api/v1/user/bulk/delete', [
         'ids' => [(string) Str::ulid()],

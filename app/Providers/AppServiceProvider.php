@@ -136,7 +136,7 @@ class AppServiceProvider extends ServiceProvider
             $expire = config()->integer('auth.verification.expire', 60);
 
             $signedRouteUrl = URL::temporarySignedRoute(
-                'api.v1.verification.verify',
+                'v1.auth.verification.verify',
                 now()->addMinutes($expire),
                 [
                     'id' => $notifiable->getAuthIdentifier(),

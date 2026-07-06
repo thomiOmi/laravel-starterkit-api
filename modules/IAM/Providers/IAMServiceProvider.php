@@ -20,7 +20,7 @@ class IAMServiceProvider extends ServiceProvider
     {
         Route::prefix('api/v1')
             ->middleware('api')
-            ->name('api.v1.')
+            ->name('v1.')
             ->group(base_path('modules/IAM/Routes/V1.php'));
     }
 }
