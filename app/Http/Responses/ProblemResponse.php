@@ -73,24 +73,6 @@ final readonly class ProblemResponse implements Responsable
         ]));
     }
 
-    /**
-     * Static factory method.
-     *
-     * @param  array<string, mixed>  $extensions
-     * @param  array<string, string>  $headers
-     */
-    public static function make(
-        string $typeKey = 'default',
-        ?string $title = null,
-        int $status = Response::HTTP_BAD_REQUEST,
-        string $detail = '',
-        array $extensions = [],
-        string $instance = '',
-        array $headers = [],
-    ): self {
-        return new self($typeKey, $title, $status, $detail, $extensions, $instance, $headers);
-    }
-
     private function resolveTypeUri(): string
     {
         if ($this->typeKey === 'about:blank') {

@@ -74,27 +74,6 @@ final readonly class SuccessResponse implements Responsable
     }
 
     /**
-     * Static factory method.
-     *
-     * @template TData
-     *
-     * @param  TData  $data
-     * @param  array<string, mixed>  $extra
-     * @param  array<string, string>  $headers
-     * @return self<TData>
-     */
-    public static function make(
-        mixed $data = null,
-        ?string $title = null,
-        ?string $detail = null,
-        int $status = Response::HTTP_OK,
-        array $extra = [],
-        array $headers = [],
-    ): self {
-        return new self($data, $title, $detail, $status, $extra, $headers);
-    }
-
-    /**
      * Resolve the data for the response.
      */
     private function resolveData(): mixed
