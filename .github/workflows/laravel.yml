@@ -49,18 +49,6 @@ jobs:
           --health-timeout=5s 
           --health-retries=3
 
-      redis:
-        image: redis:7.4
-        ports:
-          # Maps port 6379 on service container to the host
-          - 6379:6379
-        # Set health checks to wait until redis has started
-        options: >-
-          --health-cmd="redis-cli ping" 
-          --health-interval=10s 
-          --health-timeout=5s 
-          --health-retries=3
-
     strategy:
       fail-fast: false
       matrix:
@@ -113,7 +101,6 @@ jobs:
       run: php artisan migrate -v
       env:
         DB_PORT: ${{ job.services.mysql.ports['3306'] }}
-        REDIS_PORT: ${{ job.services.redis.ports['6379'] }}
 
     - name: Check Code Formatting (Pint)
       run: vendor/bin/pint --test
@@ -124,7 +111,6 @@ jobs:
     - name: Execute Tests (Unit and Feature tests) via PHPUnit/Pest
       env:
         DB_PORT: ${{ job.services.mysql.ports['3306'] }}
-        REDIS_PORT: ${{ job.services.redis.ports['6379'] }}
       run: php artisan test --compact --parallel
 
     - name: Check for known vulnerabilities
