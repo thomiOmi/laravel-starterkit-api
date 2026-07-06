@@ -8,19 +8,19 @@ return [
     |--------------------------------------------------------------------------
     | Model Standards
     |--------------------------------------------------------------------------
-    | Mengatur perilaku global Eloquent Model.
+    | Configure global Eloquent Model behavior.
     */
     'model' => [
-        'default_id' => 'ulid', // Opsi: 'ulid', 'uuid', 'integer'
+        'default_id' => 'ulid', // Options: 'ulid', 'uuid', 'integer'
         'use_soft_deletes' => true,
-        'audit_columns' => true, // Opsional: Tambahkan created_by/updated_by jika perlu
+        'audit_columns' => true, // Optional: Add created_by/updated_by if needed
     ],
 
     /*
     |--------------------------------------------------------------------------
     | Module Standards
     |--------------------------------------------------------------------------
-    | Aturan saat MakeModule.php dijalankan.
+    | Rules applied when MakeModule.php runs.
     */
     'module' => [
         'base_path' => base_path('modules'),
@@ -32,7 +32,7 @@ return [
     |--------------------------------------------------------------------------
     | Layering Standards
     |--------------------------------------------------------------------------
-    | Mendefinisikan akses antar layer untuk ArchTest di Tahap 3.
+    | Defines layer access rules for ArchTest in Phase 3.
     |
     | Each key is a layer identifier. The value is the namespace prefix that
     | arch tests use to match classes belonging to that layer.
