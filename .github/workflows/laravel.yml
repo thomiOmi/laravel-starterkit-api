@@ -98,6 +98,9 @@ jobs:
     - name: Install Composer Dependencies
       run: composer install --no-progress --prefer-dist --optimize-autoloader
 
+    - name: Validate composer.json
+      run: composer validate --strict
+
     - name: Prepare the application
       run: |
         php -r "file_exists('.env') || copy('.env.example', '.env');"
@@ -122,4 +125,7 @@ jobs:
       env:
         DB_PORT: ${{ job.services.mysql.ports['3306'] }}
         REDIS_PORT: ${{ job.services.redis.ports['6379'] }}
-      run: php artisan test
+      run: php artisan test --compact --parallel
+
+    - name: Check for known vulnerabilities
+      run: composer audit
