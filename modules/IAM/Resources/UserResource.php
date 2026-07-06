@@ -26,27 +26,27 @@ class UserResource extends JsonResource
         /** @var list<string>|null $roles */
         $roles = $this->resource->relationLoaded('roles')
             ? $this->resource->roles->pluck('name')->map(function (mixed $val): string {
-                return is_string($val) || is_int($val) ? (string) $val : '';
+                return is_string($val) || is_int($val) ? strval($val) : '';
             })->values()->all()
             : null;
 
         /** @var list<string>|null $permissions */
         $permissions = ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
             ? $this->resource->getAllPermissions()->pluck('name')->map(function (mixed $val): string {
-                return is_string($val) || is_int($val) ? (string) $val : '';
+                return is_string($val) || is_int($val) ? strval($val) : '';
             })->values()->all()
             : null;
 
         return [
-            'id' => (string) $this->resource->id,
+            'id' => strval($this->resource->id),
             'name' => $this->resource->name,
             'email' => $this->resource->email,
             'avatar' => is_string($this->resource->avatar) ? $this->resource->avatar : null,
             'roles' => $roles,
             'permissions' => $permissions,
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
-            'created_at' => (string) $this->formatDate($this->resource->created_at),
-            'updated_at' => (string) $this->formatDate($this->resource->updated_at),
+            'created_at' => $this->formatDate($this->resource->created_at) ?? '',
+            'updated_at' => $this->formatDate($this->resource->updated_at) ?? '',
             'deleted_at' => $this->formatDate($this->resource->deleted_at),
         ];
     }

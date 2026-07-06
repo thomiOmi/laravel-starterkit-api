@@ -20,7 +20,7 @@ final readonly class TraceIdMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $traceId = (string) Str::ulid();
+        $traceId = Str::ulid()->toString();
 
         // Store in Laravel Context for logging and tracing
         Context::add('trace_id', $traceId);

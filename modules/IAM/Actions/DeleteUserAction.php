@@ -28,6 +28,6 @@ final readonly class DeleteUserAction
 
         Cache::forget("user_{$user->id}");
 
-        return (bool) $user->delete();
+        return $user->delete() ?? false;
     }
 }

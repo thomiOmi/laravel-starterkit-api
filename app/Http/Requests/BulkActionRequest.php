@@ -24,7 +24,7 @@ class BulkActionRequest extends FormRequest
             return false;
         }
 
-        $routeName = (string) $this->route()?->getName();
+        $routeName = strval($this->route()?->getName());
         $action = $this->resolveBulkAction($routeName);
 
         if ($action === null) {

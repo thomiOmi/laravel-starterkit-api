@@ -26,17 +26,17 @@ class RoleResource extends JsonResource
         /** @var list<string>|null $permissions */
         $permissions = $this->resource->relationLoaded('permissions')
             ? $this->resource->permissions->pluck('name')->map(function (mixed $val): string {
-                return is_string($val) || is_int($val) ? (string) $val : '';
+                return is_string($val) || is_int($val) ? strval($val) : '';
             })->values()->all()
             : null;
 
         return [
-            'id' => (string) $this->resource->id,
+            'id' => strval($this->resource->id),
             'name' => $this->resource->name,
             'description' => is_string($this->resource->description) ? $this->resource->description : null,
             'permissions' => $permissions,
-            'created_at' => (string) $this->formatDate($this->resource->created_at),
-            'updated_at' => (string) $this->formatDate($this->resource->updated_at),
+            'created_at' => $this->formatDate($this->resource->created_at) ?? '',
+            'updated_at' => $this->formatDate($this->resource->updated_at) ?? '',
         ];
     }
 }

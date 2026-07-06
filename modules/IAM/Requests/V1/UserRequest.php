@@ -40,7 +40,7 @@ final class UserRequest extends FormRequest
         $id = $authenticatedUser->getKey();
 
         // Check if the user is updating their own profile or has permission
-        return (is_string($id) || is_int($id) ? (string) $id : '') === $userId || $authenticatedUser->can('user.edit');
+        return (is_string($id) || is_int($id) ? strval($id) : '') === $userId || $authenticatedUser->can('user.edit');
     }
 
     /**

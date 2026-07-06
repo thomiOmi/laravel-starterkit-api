@@ -22,7 +22,7 @@ describe('LogoutOtherDevicesAction', function () {
         $user->withAccessToken($currentToken);
 
         $action = app(LogoutOtherDevicesAction::class);
-        $action->handle($user, (string) $currentToken->id);
+        $action->handle($user, strval($currentToken->id));
 
         expect($user->tokens()->count())->toBe(1)
             ->and($user->tokens()->first()->id)->toBe($currentToken->id);

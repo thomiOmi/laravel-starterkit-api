@@ -33,7 +33,7 @@ final readonly class RolePayload
     public static function fromRequest(RoleRequest $request): self
     {
         /** @var array<int, string> $permissions */
-        $permissions = (array) $request->input('permissions', []);
+        $permissions = $request->input('permissions', []);
 
         return new self(
             name: trim($request->string('name')->toString()),

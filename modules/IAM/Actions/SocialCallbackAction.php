@@ -44,7 +44,7 @@ final readonly class SocialCallbackAction
         $user = DB::transaction(function () use ($provider, $socialUser): User {
             $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
                 ->where('provider', $provider)
-                ->where('provider_id', (string) $socialUser->getId())
+                ->where('provider_id', strval($socialUser->getId()))
                 ->first();
 
             if ($user !== null) {
@@ -59,7 +59,7 @@ final readonly class SocialCallbackAction
                 if ($user !== null) {
                     $user->update([
                         'provider' => $provider,
-                        'provider_id' => (string) $socialUser->getId(),
+                        'provider_id' => strval($socialUser->getId()),
                         'avatar' => $socialUser->getAvatar(),
                     ]);
 
@@ -73,7 +73,7 @@ final readonly class SocialCallbackAction
                 'email' => $socialUser->getEmail() ?? "{$provider}-{$socialUser->getId()}@social.local",
                 'password' => null,
                 'provider' => $provider,
-                'provider_id' => (string) $socialUser->getId(),
+                'provider_id' => strval($socialUser->getId()),
                 'avatar' => $socialUser->getAvatar(),
             ]);
 

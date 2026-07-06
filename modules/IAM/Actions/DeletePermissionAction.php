@@ -19,6 +19,6 @@ final readonly class DeletePermissionAction
 
         Cache::forget("permission_{$permission->id}");
 
-        return (bool) $permission->delete();
+        return $permission->delete() ?? false;
     }
 }

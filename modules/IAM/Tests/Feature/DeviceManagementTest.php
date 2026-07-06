@@ -21,7 +21,7 @@ describe('Device Management', function () {
         $user = User::factory()->create(['email_verified_at' => now()]);
         $token = $user->createToken('current');
         $otherToken = $user->createToken('other');
-        $id = (string) $otherToken->accessToken->id;
+        $id = strval($otherToken->accessToken->id);
 
         expect($this->withToken($token->plainTextToken)
             ->deleteJson("/api/v1/auth/devices/{$id}"))

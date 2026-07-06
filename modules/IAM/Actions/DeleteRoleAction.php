@@ -23,6 +23,6 @@ final readonly class DeleteRoleAction
 
         Cache::forget("role_{$role->id}");
 
-        return (bool) $role->delete();
+        return $role->delete() ?? false;
     }
 }

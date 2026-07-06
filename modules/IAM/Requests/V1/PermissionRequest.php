@@ -40,7 +40,7 @@ final class PermissionRequest extends FormRequest
                 'max:255',
                 Rule::unique('permissions', 'name')->ignore($permissionId),
             ],
-            'guard_name' => ['nullable', 'string', Rule::in(array_keys((array) config('auth.guards', [])))],
+            'guard_name' => ['nullable', 'string', Rule::in(array_keys(config()->array('auth.guards', [])))],
         ];
     }
 

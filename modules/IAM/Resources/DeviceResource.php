@@ -31,13 +31,13 @@ class DeviceResource extends JsonResource
         $userCurrentToken = $user->currentAccessToken();
 
         return [
-            'id' => (string) $this->resource->id,
-            'name' => (string) $this->resource->name,
+            'id' => strval($this->resource->id),
+            'name' => strval($this->resource->name),
             'ip_address' => is_string($this->resource->ip_address) ? $this->resource->ip_address : null,
             'user_agent' => is_string($this->resource->user_agent) ? $this->resource->user_agent : null,
             'last_used_at' => $this->formatDate($this->resource->last_used_at),
-            'created_at' => (string) $this->formatDate($this->resource->created_at),
-            'is_current' => (string) $userCurrentToken->id === (string) $this->resource->id,
+            'created_at' => $this->formatDate($this->resource->created_at) ?? '',
+            'is_current' => strval($userCurrentToken->id) === strval($this->resource->id),
         ];
     }
 }
