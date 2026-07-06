@@ -13,7 +13,7 @@ use Modules\IAM\Models\User;
 use Modules\IAM\Resources\DeviceResource;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class ListDevicesController
+final readonly class DeviceListController
 {
     public function __construct(
         private ListDevicesAction $listDevices

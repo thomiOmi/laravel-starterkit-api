@@ -9,29 +9,29 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Modules\IAM\Actions\ListUsersAction;
-use Modules\IAM\Filters\UserFilter;
+use Modules\IAM\Actions\ListPermissionsAction;
+use Modules\IAM\Filters\PermissionFilter;
 use Modules\IAM\Models\User;
-use Modules\IAM\Resources\UserResource;
+use Modules\IAM\Resources\PermissionResource;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class UserIndexController
+final readonly class PermissionListController
 {
     public function __construct(
-        private ListUsersAction $listUsers
+        private ListPermissionsAction $listPermissions
     ) {}
 
     /**
-     * Display a paginated listing of the users.
+     * Display a paginated listing of permissions.
      *
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
-    public function __invoke(PaginationRequest $request, UserFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(PaginationRequest $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        if (! $currentUser->can('user.view')) {
+        if (! $currentUser->can('permission.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -39,16 +39,16 @@ final readonly class UserIndexController
             );
         }
 
-        $users = $this->listUsers->handle(
+        $permissions = $this->listPermissions->handle(
             $filter,
-            $request->integer('page.size', 10),
+            $request->integer('page.size', 20),
             $request->integer('page.number', 1),
         );
 
         return new SuccessResponse(
-            data: UserResource::collection($users),
+            data: PermissionResource::collection($permissions),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Users']),
+            detail: __('general.retrieved', ['resource' => 'Permissions']),
         );
     }
 }

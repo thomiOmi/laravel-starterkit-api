@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @authenticated
  */
-final readonly class IndexController
+final readonly class ListController
 {
     public function __construct(
         private List{{pluralModule}}Action $list{{pluralModule}}

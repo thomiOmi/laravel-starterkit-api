@@ -9,29 +9,29 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Modules\IAM\Actions\ListRolesAction;
-use Modules\IAM\Filters\RoleFilter;
+use Modules\IAM\Actions\ListUsersAction;
+use Modules\IAM\Filters\UserFilter;
 use Modules\IAM\Models\User;
-use Modules\IAM\Resources\RoleResource;
+use Modules\IAM\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class RoleIndexController
+final readonly class UserListController
 {
     public function __construct(
-        private ListRolesAction $listRoles
+        private ListUsersAction $listUsers
     ) {}
 
     /**
-     * Display a paginated listing of the roles.
+     * Display a paginated listing of the users.
      *
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
-    public function __invoke(PaginationRequest $request, RoleFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(PaginationRequest $request, UserFilter $filter): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        if (! $currentUser->can('role.view')) {
+        if (! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -39,16 +39,16 @@ final readonly class RoleIndexController
             );
         }
 
-        $roles = $this->listRoles->handle(
+        $users = $this->listUsers->handle(
             $filter,
             $request->integer('page.size', 10),
             $request->integer('page.number', 1),
         );
 
         return new SuccessResponse(
-            data: RoleResource::collection($roles),
+            data: UserResource::collection($users),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Roles']),
+            detail: __('general.retrieved', ['resource' => 'Users']),
         );
     }
 }

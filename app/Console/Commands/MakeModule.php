@@ -160,7 +160,7 @@ class MakeModule extends Command
         }
 
         // Controllers
-        $this->createFileFromStub($path."/Controllers/{$version}/IndexController.php", 'controller.index', $replacements);
+        $this->createFileFromStub($path."/Controllers/{$version}/ListController.php", 'controller.index', $replacements);
 
         $this->createFileFromStub($path."/Resources/{$name}Resource.php", 'resource', $replacements);
 
@@ -265,9 +265,9 @@ class MakeModule extends Command
 
         $uses = [];
         $routeDefs = [];
+        $uses[] = "use {$namespace}\\ListController;";
 
-        $uses[] = "use {$namespace}\\IndexController;";
-        $routeDefs[] = "    Route::get('/', IndexController::class)->name('index');";
+        $routeDefs[] = "    Route::get('/', ListController::class)->name('index');";
 
         if ($options['action']) {
             $uses[] = "use {$namespace}\\CreateController;";

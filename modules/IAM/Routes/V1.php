@@ -5,14 +5,14 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Modules\IAM\Controllers\V1\DeleteDeviceController;
 use Modules\IAM\Controllers\V1\ForgotPasswordController;
-use Modules\IAM\Controllers\V1\ListDevicesController;
+use Modules\IAM\Controllers\V1\DeviceListController;
 use Modules\IAM\Controllers\V1\LoginController;
 use Modules\IAM\Controllers\V1\LogoutController;
 use Modules\IAM\Controllers\V1\LogoutOtherDevicesController;
 use Modules\IAM\Controllers\V1\MeController;
 use Modules\IAM\Controllers\V1\PermissionCreateController;
 use Modules\IAM\Controllers\V1\PermissionDeleteController;
-use Modules\IAM\Controllers\V1\PermissionIndexController;
+use Modules\IAM\Controllers\V1\PermissionListController;
 use Modules\IAM\Controllers\V1\PermissionShowController;
 use Modules\IAM\Controllers\V1\PermissionUpdateController;
 use Modules\IAM\Controllers\V1\RegisterController;
@@ -22,7 +22,7 @@ use Modules\IAM\Controllers\V1\RoleBulkDeleteController;
 use Modules\IAM\Controllers\V1\RoleBulkRestoreController;
 use Modules\IAM\Controllers\V1\RoleCreateController;
 use Modules\IAM\Controllers\V1\RoleDeleteController;
-use Modules\IAM\Controllers\V1\RoleIndexController;
+use Modules\IAM\Controllers\V1\RoleListController;
 use Modules\IAM\Controllers\V1\RoleShowController;
 use Modules\IAM\Controllers\V1\RoleUpdateController;
 use Modules\IAM\Controllers\V1\SocialCallbackController;
@@ -32,7 +32,7 @@ use Modules\IAM\Controllers\V1\UserBulkDeleteController;
 use Modules\IAM\Controllers\V1\UserBulkRestoreController;
 use Modules\IAM\Controllers\V1\UserCreateController;
 use Modules\IAM\Controllers\V1\UserDeleteController;
-use Modules\IAM\Controllers\V1\UserIndexController;
+use Modules\IAM\Controllers\V1\UserListController;
 use Modules\IAM\Controllers\V1\UserShowController;
 use Modules\IAM\Controllers\V1\UserUpdateController;
 use Modules\IAM\Controllers\V1\VerifyEmailController;
@@ -59,7 +59,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
             Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');
             Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
 
-            Route::get('devices', ListDevicesController::class)->middleware('ability:auth:manage')->name('devices.index');
+            Route::get('devices', DeviceListController::class)->middleware('ability:auth:manage')->name('devices.index');
             Route::delete('devices/{device}', DeleteDeviceController::class)->middleware('ability:auth:manage')->name('devices.delete');
             Route::post('devices/logout-others', LogoutOtherDevicesController::class)->middleware('ability:auth:manage')->name('devices.logout-others');
         });
@@ -67,7 +67,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 });
 
 Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
-    Route::get('/', UserIndexController::class)->name('index');
+    Route::get('/', UserListController::class)->name('index');
     Route::post('/', UserCreateController::class)->name('create');
 
     Route::post('/bulk/delete', UserBulkDeleteController::class)->name('bulk.delete');
@@ -80,7 +80,7 @@ Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'verified', '
 });
 
 Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
-    Route::get('/', RoleIndexController::class)->name('index');
+    Route::get('/', RoleListController::class)->name('index');
     Route::post('/', RoleCreateController::class)->name('create');
 
     Route::post('/bulk/delete', RoleBulkDeleteController::class)->name('bulk.delete');
@@ -92,7 +92,7 @@ Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', '
 });
 
 Route::prefix('permissions')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->name('permissions.')->group(function () {
-    Route::get('/', PermissionIndexController::class)->name('index');
+    Route::get('/', PermissionListController::class)->name('index');
     Route::post('/', PermissionCreateController::class)->name('create');
     Route::get('/{permission}', PermissionShowController::class)->name('show');
     Route::put('/{permission}', PermissionUpdateController::class)->name('update');
