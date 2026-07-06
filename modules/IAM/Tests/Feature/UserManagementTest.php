@@ -82,6 +82,7 @@ describe('User Listing', function () {
     it('lists all users with pagination when authorized', function () {
         $admin = loginAsUser();
         Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.view');
         User::factory()->count(3)->create();
 
@@ -100,6 +101,7 @@ describe('User Listing', function () {
     it('can filter users by search term', function () {
         $admin = loginAsUser();
         Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.view');
         User::factory()->create(['name' => 'Alice']);
         User::factory()->create(['name' => 'Bob']);
@@ -115,6 +117,7 @@ describe('User Creation', function () {
     it('creates a new user when authorized', function () {
         $admin = loginAsUser();
         Permission::firstOrCreate(['name' => 'user.create', 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.create');
 
         expect($this->postJson('/api/v1/users', [
@@ -147,6 +150,7 @@ describe('User Show', function () {
     it('allows viewing another user with user.view permission', function () {
         $admin = loginAsUser();
         Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.view');
         $other = User::factory()->create();
 
@@ -166,6 +170,7 @@ describe('User Show', function () {
     it('returns 404 for a non-existent user with user.view permission', function () {
         $admin = loginAsUser();
         Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.view');
 
         expect($this->getJson('/api/v1/users/999999'))
@@ -187,6 +192,7 @@ describe('User Update', function () {
     it('allows updating another user with user.edit permission', function () {
         $admin = loginAsUser();
         Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.edit');
         $other = User::factory()->create(['name' => 'Original']);
 
@@ -210,6 +216,7 @@ describe('User Update', function () {
     it('returns 404 when updating a non-existent user with user.edit permission', function () {
         $admin = loginAsUser();
         Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         $admin->givePermissionTo('user.edit');
 
         expect($this->putJson('/api/v1/users/999999', [

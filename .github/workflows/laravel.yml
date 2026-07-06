@@ -27,9 +27,9 @@ jobs:
       DB_PASSWORD: password
       RATE_LIMIT_AUTH_PER_IP: 60
       BROADCAST_CONNECTION: log
-      CACHE_STORE: redis
-      QUEUE_CONNECTION: redis
-      SESSION_DRIVER: redis
+      CACHE_STORE: array
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
 
     # Docs: https://docs.github.com/en/actions/using-containerized-services
     services:
