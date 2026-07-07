@@ -46,7 +46,7 @@ describe('BulkDeleteUsersAction', function () {
         $target = User::factory()->create();
         $action = new BulkDeleteUsersAction($auth);
 
-        $action->handle([$target->id]);
+        $_ = $action->handle([$target->id]);
 
         Cache::shouldHaveReceived('forget')
             ->with("user_{$target->id}")
