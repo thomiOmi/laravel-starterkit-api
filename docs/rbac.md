@@ -27,14 +27,15 @@ Uses Spatie `laravel-permission` integrated with ULID primary keys and soft dele
 | `admin` | Full CRUD on users, roles, permissions |
 | `user` | Limited read-only access |
 
-## Route Protection
+## Authorization
+
+FormRequest `authorize()` checks Spatie permissions:
 
 ```php
-// Permission-based
-Route::get('/users', [IndexController::class])->middleware('can:user.view');
-
-// Role-based (also available via Spatie)
-Route::get('/admin', [AdminController::class])->middleware('role:admin');
+public function authorize(): bool
+{
+    return $this->user()?->can('user.view') ?? false;
+}
 ```
 
 ## Endpoints
@@ -57,9 +58,9 @@ Route::get('/admin', [AdminController::class])->middleware('role:admin');
 
 ## Models
 
-- `Modules\Role\Models\Role` -- extends Spatie `Role` with ULID, soft deletes, `HasFactory`
-- `Modules\Role\Models\Permission` -- extends Spatie `Permission` with ULID, soft deletes, `HasFactory`
-- `Modules\User\Models\User` -- uses `HasRoles` trait
+- `Modules\IAM\Models\Role` -- extends Spatie `Role` with ULID, soft deletes, `HasFactory`
+- `Modules\IAM\Models\Permission` -- extends Spatie `Permission` with ULID, soft deletes, `HasFactory`
+- `Modules\IAM\Models\User` -- uses `HasRoles` trait
 
 ## Gate
 

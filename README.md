@@ -1,6 +1,6 @@
 # Laravel Starterkit API
 
-Opinionated Laravel 13 starter kit for building scalable APIs. Modular architecture with single-action controllers, action classes, read-only repositories, and strict typing.
+Opinionated Laravel 13 starter kit for building scalable APIs. Modular architecture with single-action controllers, action classes, and strict typing.
 
 ## Technical Stack
 
@@ -35,13 +35,12 @@ php artisan serve
 ## Architecture
 
 ```
-Request -> Middleware -> Controller (__invoke) -> Action -> Repository (read) / Eloquent (write)
+Request -> Middleware -> Controller (__invoke) -> Action -> Eloquent -> Response
 ```
 
 - **Controllers** are `final readonly` invokable classes -- no business logic.
-- **Actions** encapsulate single business operations.
-- **Repositories** are read-only (query/find). Writes use Eloquent directly in actions.
-- **Modules** are self-contained in `modules/{Module}/` with their own routes, controllers, actions, models, and tests.
+- **Actions** encapsulate single business operations with a `handle()` method.
+- **Modules** are self-contained in `modules/{Module}/` with their own routes, controllers, actions, payloads, models, and tests.
 
 ## Structure
 
@@ -54,40 +53,33 @@ modules/
 │   │   ├── factories/
 │   │   ├── migrations/
 │   │   └── seeders/
-│   ├── Events/
-│   ├── Filters/         # Query/filter objects
-│   ├── Jobs/
+│   ├── Filters/         # Query string filtering (extends BaseFilter)
 │   ├── Models/
-│   ├── Payloads/        # DTOs with PHP 8.4 property hooks
+│   ├── Payloads/        # Immutable DTOs with constructor promotion
 │   ├── Providers/       # Service providers
-│   ├── Repositories/
 │   ├── Requests/        # Form request validation
 │   ├── Resources/       # API resources
 │   ├── Routes/          # V1.php, V2.php
 │   └── Tests/           # Feature and unit tests
 └── ...
 app/                     # Shared application code
-├── Concerns/            # Traits and shared logic
-├── Contracts/           # Interfaces for DI
+├── Concerns/            # Traits (FormatDates, HasDefaultBehavior, etc.)
+├── Contracts/           # Interfaces (Identity)
 ├── Http/
-│   ├── Controllers/     # Base controller
-│   ├── Middleware/      # ForceJsonResponse, etc.
-│   └── Responses/       # SuccessResponse, ProblemResponse
-├── Providers/           # AppServiceProvider
-├── Models/              # Shared Eloquent models
-├── Notifications/       # Shared notifications
-├── Supports/            # Shared helpers and utilities
-└── ...
+│   ├── Middleware/      # ForceJsonResponse, Sunset, TraceId, etc.
+│   └── Responses/       # SuccessResponse, ProblemResponse (RFC 9457)
+├── Providers/           # AppServiceProvider, ModuleServiceProvider
+└── Notifications/       # Shared notifications (VerifyEmail, ResetPassword)
 config/
 database/
 ├── factories/           # Shared factories
 ├── migrations/          # Shared migrations
 └── seeders/             # Shared seeders
 routes/
-├── api.php              # Module route loader
+├── api.php              # (reserved for future use -- modules auto-register via ModuleServiceProvider)
 └── console.php
 tests/                   # Shared tests / global test helpers
-├── Architecture/        # Architecture tests (e.g., modular structure)
+├── Architecture/        # Architecture tests (N+1, module isolation, etc.)
 ├── Feature/
 └── Unit/
 ```
@@ -98,18 +90,21 @@ tests/                   # Shared tests / global test helpers
 # Full suite
 php artisan test --compact
 
-# Single module
-./vendor/bin/pest modules/User
+# Parallel
+php artisan test --compact --parallel
 
-# Filter by test name
-php artisan test --compact --filter=SocialLoginTest
+# Single module
+php artisan test --compact --filter=UserManagementTest
+
+# Type coverage
+php -d memory_limit=2G artisan test --type-coverage
 ```
 
 ## Code Quality
 
 ```bash
-./vendor/bin/pint
-./vendor/bin/phpstan analyse --memory-limit=512M
+./vendor/bin/pint --dirty --format agent
+./vendor/bin/phpstan analyse --memory-limit=2G
 ```
 
 ## License

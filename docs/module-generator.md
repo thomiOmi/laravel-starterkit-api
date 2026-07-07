@@ -39,11 +39,17 @@ modules/{Module}/
   Models/               -- Eloquent models
   Payloads/V1/          -- DTOs for action input
   Providers/            -- Service provider
-  Repositories/         -- Read-only data access
   Requests/V1/          -- Form request validation
   Resources/            -- API resource transformers
   Routes/               -- Route files (v1.php)
   Tests/                -- Feature and unit tests
+```
+
+Optional directories (created with `--event` or `--repository` flags):
+
+```
+  Events/               -- Event classes (--event / -E)
+  Repositories/         -- Read-only data access (--repository / -r)
 ```
 
 ## Registration

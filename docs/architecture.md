@@ -12,10 +12,10 @@ Request -> Middleware -> Controller (__invoke) -> Action -> Eloquent -> Response
 `final readonly` invokable classes in `Modules/{Module}/Controllers/V1/`. They handle HTTP concerns only: parse request, call action, return response. No business logic.
 
 ### Actions
-`final readonly` classes in `Modules/{Module}/Actions/`. Each action encapsulates a single business operation with a `handle()` method. Injectable via constructor.
+`final readonly` classes in `Modules/{Module}/Actions/`. Each action encapsulates a single business operation with a `handle()` method annotated with `#[\NoDiscard]`. Injectable via constructor.
 
 ### Models
-Eloquent models in `Modules/{Module}/Models/`. Uses `HasDefaultBehavior` trait which applies ULID primary keys, soft deletes, and consistent `Y-m-d H:i:s` date serialization.
+Eloquent models in `Modules/{Module}/Models/`. Uses `HasDefaultBehavior` trait which applies ULID primary keys, soft deletes, and consistent `Y-m-d H:i:s` date serialization. Configured via PHP 8 attributes (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`).
 
 ## Folder Structure
 
@@ -28,30 +28,24 @@ modules/
 │   │   ├── factories/
 │   │   ├── migrations/
 │   │   └── seeders/
-│   ├── Events/
-│   ├── Filters/         # Query/filter objects
-│   ├── Jobs/
+│   ├── Filters/         # Query string filtering (extends BaseFilter)
 │   ├── Models/
-│   ├── Payloads/        # DTOs with PHP 8.4 property hooks
+│   ├── Payloads/        # Immutable DTOs with constructor promotion
 │   ├── Providers/       # Service providers
-│   ├── Repositories/    # Read-only data access (optional)
 │   ├── Requests/        # Form request validation
 │   ├── Resources/       # API resources
 │   ├── Routes/          # V1.php, V2.php
 │   └── Tests/           # Feature and unit tests
 └── ...
 app/                     # Shared application code
-├── Concerns/            # Traits and shared logic
-├── Contracts/           # Interfaces for DI
+├── Concerns/            # Traits (FormatDates, HasDefaultBehavior, etc.)
+├── Contracts/           # Interfaces (Identity)
 ├── Http/
 │   ├── Controllers/     # Base controller
-│   ├── Middleware/      # ForceJsonResponse, etc.
-│   └── Responses/       # SuccessResponse, ProblemResponse
-├── Providers/           # AppServiceProvider
-├── Models/              # Shared Eloquent models
-├── Notifications/       # Shared notifications
-├── Supports/            # Shared helpers and utilities
-└── ...
+│   ├── Middleware/      # ForceJsonResponse, Sunset, TraceId, PlanFeature, SetLocale
+│   └── Responses/       # SuccessResponse, ProblemResponse (RFC 9457)
+├── Providers/           # AppServiceProvider, ModuleServiceProvider
+└── Notifications/       # Shared notifications
 ```
 
 ### Current Modules
@@ -63,9 +57,9 @@ modules/
 
 ## Response Types
 
-- **Single resource**: `new SuccessResponse(...)`
-- **Paginated collection**: `ResourceCollection::additional([...])->response()`
-- **Error**: `ProblemResponse` (RFC 9457)
+- **Single resource**: `new SuccessResponse(data: new {Resource}Resource($model), ...)`
+- **Paginated collection**: `new SuccessResponse(data: {Resource}Resource::collection($models), ...)`
+- **Error**: `new ProblemResponse(...)` (RFC 9457)
 
 ## Exception Handling
 
@@ -79,6 +73,6 @@ Handled in `bootstrap/app.php`:
 
 ## Service Providers
 
-- **AppServiceProvider**: Rate limiters, `Password::defaults()`, `Gate::before()` for super-admin
-- **RouteServiceProvider**: Loads module routes dynamically from `modules/*/Routes/{version}.php`
-- **Module providers**: Each module has `{Module}ServiceProvider`
+- **AppServiceProvider**: Rate limiters, `Password::defaults()`, `Gate::before()` for super-admin, feature flag definitions
+- **ModuleServiceProvider**: Auto-discovers and registers all module providers by scanning `modules/` directory
+- **Module providers**: Each module has `{Module}ServiceProvider` responsible for registering its own routes

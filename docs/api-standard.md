@@ -17,7 +17,8 @@ Authorization: Bearer {token}
 ```json
 {
     "status": 200,
-    "message": "User retrieved successfully",
+    "title": "OK",
+    "detail": "User retrieved successfully.",
     "data": { ... }
 }
 ```
@@ -27,13 +28,15 @@ Authorization: Bearer {token}
 ```json
 {
     "status": 200,
-    "message": "Users retrieved successfully",
+    "title": "OK",
+    "detail": "Users retrieved successfully.",
     "data": [ ... ],
     "meta": {
         "current_page": 1,
         "last_page": 5,
         "per_page": 15,
-        "total": 72
+        "total": 72,
+        "has_more": true
     }
 }
 ```
@@ -45,7 +48,6 @@ Authorization: Bearer {token}
     "type": "http://localhost/validation-error",
     "title": "Validation Error",
     "status": 422,
-    "message": "Validation Error",
     "detail": "The given data was invalid.",
     "errors": {
         "email": ["The email field is required."]
