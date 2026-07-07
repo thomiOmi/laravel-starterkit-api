@@ -19,11 +19,6 @@
         "socialite-development",
         "pest-testing",
         "laravel-permission-development",
-        "laravel-attributes",
-        "laravel-patterns",
-        "laravel-security",
-        "laravel-specialist",
-        "laravel-verification",
-        "php-pro"
+        "laravel-attributes"
     ]
 }
