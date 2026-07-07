@@ -22,6 +22,7 @@ final readonly class LoginAction
      *
      * @throws ValidationException
      */
+    #[\NoDiscard]
     public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
         /** @var User|null $user */

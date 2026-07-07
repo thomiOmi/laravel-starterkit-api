@@ -17,6 +17,7 @@ final readonly class BulkDeleteUsersAction
     /**
      * @param  array<int, string|int>  $ids
      */
+    #[\NoDiscard]
     public function handle(array $ids): int
     {
         $ids = array_filter($ids, fn (string|int $id): bool => $id !== $this->auth->id());

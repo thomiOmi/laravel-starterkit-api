@@ -188,7 +188,7 @@ abstract class BaseFilter
                 continue;
             }
 
-            $method = Str::camel(strval($name));
+            $method = Str::camel((string) $name);
 
             if (method_exists($this, $method)) {
                 $result = $this->{$method}($builder, $value);

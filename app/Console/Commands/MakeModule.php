@@ -31,7 +31,7 @@ class MakeModule extends Command
         }
 
         $name = Str::studly($name);
-        $version = strtoupper(strval($this->option('api-version')));
+        $version = strtoupper((string) $this->option('api-version'));
         $basePath = config()->string('architecture.module.base_path', base_path('modules'));
         $modulePath = "{$basePath}/{$name}";
 
@@ -68,7 +68,7 @@ class MakeModule extends Command
      */
     protected function resolveOption(string $name, string $question, bool $default = true): bool
     {
-        $except = strval($this->option('except'));
+        $except = (string) $this->option('except');
         if ($except !== '' && in_array($name, array_map('trim', explode(',', $except)), true)) {
             return false;
         }
@@ -248,7 +248,7 @@ class MakeModule extends Command
         $content = File::get($stubPath);
 
         foreach ($replacements as $key => $value) {
-            $content = str_replace('{{'.$key.'}}', is_scalar($value) ? strval($value) : '', $content);
+            $content = str_replace('{{'.$key.'}}', is_scalar($value) ? (string) $value : '', $content);
         }
 
         File::put($path, $content);

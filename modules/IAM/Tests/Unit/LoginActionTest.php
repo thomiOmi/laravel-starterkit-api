@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\LoginAction;
 use Modules\IAM\Models\Role;
@@ -14,9 +15,10 @@ use Modules\IAM\Payloads\V1\LoginPayload;
  * Unit test for LoginAction focus on Abilities and Eager Loading.
  */
 describe('LoginAction', function () {
-    it('authenticates user with valid credentials and eager loads relations', function () {
-        $password = config('auth.default_password');
-        $user = User::factory()->create(['password' => $password]);
+    $password = 'test-password';
+
+    it('authenticates user with valid credentials and eager loads relations', function () use ($password) {
+        $user = User::factory()->create(['password' => Hash::make($password)]);
 
         $action = app(LoginAction::class);
         $payload = new LoginPayload(
@@ -34,14 +36,14 @@ describe('LoginAction', function () {
             ->and($result['user']->relationLoaded('permissions'))->toBeTrue();
     });
 
-    it('assigns wildcard abilities to admins', function () {
+    it('assigns wildcard abilities to admins', function () use ($password) {
         Role::create(['name' => 'admin', 'guard_name' => 'web']);
-        $user = User::factory()->create();
+        $user = User::factory()->create(['password' => Hash::make($password)]);
         $user->assignRole('admin');
 
         $payload = new LoginPayload(
             email: $user->email,
-            password: config('auth.default_password'),
+            password: $password,
             deviceName: 'test'
         );
 
@@ -51,14 +53,14 @@ describe('LoginAction', function () {
         expect($user->tokens()->first()->abilities)->toBe(['*']);
     });
 
-    it('assigns restricted abilities to regular users', function () {
+    it('assigns restricted abilities to regular users', function () use ($password) {
         Role::create(['name' => 'user', 'guard_name' => 'web']);
-        $user = User::factory()->create();
+        $user = User::factory()->create(['password' => Hash::make($password)]);
         $user->assignRole('user');
 
         $payload = new LoginPayload(
             email: $user->email,
-            password: config('auth.default_password'),
+            password: $password,
             deviceName: 'test'
         );
 

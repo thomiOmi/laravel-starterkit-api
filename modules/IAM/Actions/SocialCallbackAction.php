@@ -9,7 +9,6 @@ use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
 use Laravel\Socialite\Two\InvalidStateException;
-use Laravel\Socialite\Two\User as SocialUser;
 use Modules\IAM\Models\User;
 use Modules\IAM\Services\UserAuthorizationService;
 
@@ -25,6 +24,7 @@ final readonly class SocialCallbackAction
     /**
      * @return array{user: User, access_token: string, token_type: string}
      */
+    #[\NoDiscard]
     public function handle(string $provider, string $ipAddress, ?string $userAgent): array
     {
         if (! in_array($provider, self::ALLOWED_PROVIDERS, true)) {
@@ -35,7 +35,7 @@ final readonly class SocialCallbackAction
         $driver = Socialite::driver($provider);
 
         try {
-            /** @var SocialUser $socialUser */
+            /** @var \Laravel\Socialite\Two\User $socialUser */
             $socialUser = $driver->stateless()->user();
         } catch (InvalidStateException) {
             throw new InvalidArgumentException(__('auth.social_denied'));
@@ -44,7 +44,7 @@ final readonly class SocialCallbackAction
         $user = DB::transaction(function () use ($provider, $socialUser): User {
             $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
                 ->where('provider', $provider)
-                ->where('provider_id', strval($socialUser->getId()))
+                ->where('provider_id', (string) $socialUser->getId())
                 ->first();
 
             if ($user !== null) {
@@ -59,7 +59,7 @@ final readonly class SocialCallbackAction
                 if ($user !== null) {
                     $user->update([
                         'provider' => $provider,
-                        'provider_id' => strval($socialUser->getId()),
+                        'provider_id' => (string) $socialUser->getId(),
                         'avatar' => $socialUser->getAvatar(),
                     ]);
 
@@ -67,13 +67,12 @@ final readonly class SocialCallbackAction
                 }
             }
 
-            /** @var User $user */
             $user = User::create([
                 'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'Social User',
                 'email' => $socialUser->getEmail() ?? "{$provider}-{$socialUser->getId()}@social.local",
                 'password' => null,
                 'provider' => $provider,
-                'provider_id' => strval($socialUser->getId()),
+                'provider_id' => (string) $socialUser->getId(),
                 'avatar' => $socialUser->getAvatar(),
             ]);
 

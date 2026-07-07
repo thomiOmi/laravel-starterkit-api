@@ -9,6 +9,7 @@ use Modules\IAM\Payloads\V1\UserPayload;
 
 final readonly class CreateUserAction
 {
+    #[\NoDiscard]
     public function handle(UserPayload $payload): User
     {
         $user = User::create($payload->toArray());

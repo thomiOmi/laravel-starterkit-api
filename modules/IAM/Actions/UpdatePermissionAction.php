@@ -10,6 +10,7 @@ use Modules\IAM\Payloads\V1\PermissionPayload;
 
 final readonly class UpdatePermissionAction
 {
+    #[\NoDiscard]
     public function handle(string $id, PermissionPayload $payload): ?Permission
     {
         $permission = Permission::query()->find($id);

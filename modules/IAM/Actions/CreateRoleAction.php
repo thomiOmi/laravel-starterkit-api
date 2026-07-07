@@ -9,6 +9,7 @@ use Modules\IAM\Payloads\V1\RolePayload;
 
 final readonly class CreateRoleAction
 {
+    #[\NoDiscard]
     public function handle(RolePayload $payload): Role
     {
         /** @var Role $role */

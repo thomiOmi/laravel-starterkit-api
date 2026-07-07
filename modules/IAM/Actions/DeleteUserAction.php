@@ -14,6 +14,7 @@ final readonly class DeleteUserAction
         private Guard $auth,
     ) {}
 
+    #[\NoDiscard]
     public function handle(string $id): bool
     {
         if ($id === $this->auth->id()) {

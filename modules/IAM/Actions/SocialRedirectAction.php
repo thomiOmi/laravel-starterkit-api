@@ -13,6 +13,7 @@ final readonly class SocialRedirectAction
     /** @var array<int, string> */
     private const array ALLOWED_PROVIDERS = ['google', 'github'];
 
+    #[\NoDiscard]
     public function handle(string $provider): string
     {
         if (! in_array($provider, self::ALLOWED_PROVIDERS, true)) {

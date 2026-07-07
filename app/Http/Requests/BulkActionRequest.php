@@ -24,7 +24,7 @@ final class BulkActionRequest extends FormRequest
             return false;
         }
 
-        $routeName = strval($this->route()?->getName());
+        $routeName = (string) $this->route()?->getName();
         $action = $this->resolveBulkAction($routeName);
 
         if ($action === null) {
@@ -50,18 +50,6 @@ final class BulkActionRequest extends FormRequest
 
             if ($action === 'restore') {
                 return $user->can('role.edit');
-            }
-
-            return false;
-        }
-
-        if (str_contains($routeName, '.permissions.')) {
-            if ($action === 'delete') {
-                return $user->can('permission.delete');
-            }
-
-            if ($action === 'restore') {
-                return $user->can('permission.edit');
             }
 
             return false;

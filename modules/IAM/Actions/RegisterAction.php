@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use Illuminate\Auth\Events\Registered;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\RegisterPayload;
 use Modules\IAM\Services\UserAuthorizationService;
@@ -17,6 +18,7 @@ final readonly class RegisterAction
     /**
      * @return array{user: User, access_token: string, token_type: string}
      */
+    #[\NoDiscard]
     public function handle(RegisterPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
         $user = User::create([
@@ -26,6 +28,8 @@ final readonly class RegisterAction
         ]);
 
         $user->assignRole('user');
+
+        event(new Registered($user));
 
         $token = $this->authorization->createAccessToken(
             $user,

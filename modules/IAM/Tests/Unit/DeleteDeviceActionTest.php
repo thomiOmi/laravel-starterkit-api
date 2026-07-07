@@ -14,7 +14,7 @@ describe('DeleteDeviceAction', function () {
         $token = $user->createToken('test-device');
         $action = app(DeleteDeviceAction::class);
 
-        $action->handle($user, strval($token->accessToken->id));
+        $action->handle($user, (string) $token->accessToken->id);
 
         expect($user->tokens()->count())->toBe(0);
     });

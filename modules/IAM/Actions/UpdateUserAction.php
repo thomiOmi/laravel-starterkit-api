@@ -10,6 +10,7 @@ use Modules\IAM\Payloads\V1\UserPayload;
 
 final readonly class UpdateUserAction
 {
+    #[\NoDiscard]
     public function handle(string $id, UserPayload $payload): ?User
     {
         $user = User::query()->find($id);

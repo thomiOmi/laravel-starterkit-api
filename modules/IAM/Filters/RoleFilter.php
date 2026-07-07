@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Filters;
 
+use App\Filters\BaseFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Modules\IAM\Models\Role;
 

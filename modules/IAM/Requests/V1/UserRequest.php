@@ -35,7 +35,7 @@ final class UserRequest extends FormRequest
         $userId = $this->route('user');
         $id = $user?->getKey();
 
-        return (is_string($id) || is_int($id) ? strval($id) : '') === $userId || ($user?->can('user.edit') ?? false);
+        return (is_string($id) || is_int($id) ? (string) $id : '') === $userId || ($user?->can('user.edit') ?? false);
     }
 
     /**

@@ -32,7 +32,7 @@ final readonly class UserShowController
 
         $currentUserId = $currentUser->getKey();
 
-        if ((is_string($currentUserId) || is_int($currentUserId) ? strval($currentUserId) : '') !== $id && ! $currentUser->can('user.view')) {
+        if ((is_string($currentUserId) || is_int($currentUserId) ? (string) $currentUserId : '') !== $id && ! $currentUser->can('user.view')) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,

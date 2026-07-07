@@ -6,6 +6,7 @@ namespace Modules\IAM\Models;
 
 use App\Concerns\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
@@ -31,6 +32,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
     'guard_name',
     'description',
 ])]
+#[UseFactory(RoleFactory::class)]
 class Role extends SpatieRole
 {
     public const string SUPER_ADMIN = 'super-admin';

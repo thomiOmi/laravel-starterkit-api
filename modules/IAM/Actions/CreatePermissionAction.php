@@ -9,6 +9,7 @@ use Modules\IAM\Payloads\V1\PermissionPayload;
 
 final readonly class CreatePermissionAction
 {
+    #[\NoDiscard]
     public function handle(PermissionPayload $payload): Permission
     {
         /** @var Permission $permission */

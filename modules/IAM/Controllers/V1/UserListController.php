@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Http\Requests\PaginationRequest;
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListUsersAction;
 use Modules\IAM\Filters\UserFilter;
-use Modules\IAM\Models\User;
+use Modules\IAM\Requests\V1\UserListRequest;
 use Modules\IAM\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response;
 
 final readonly class UserListController
 {
@@ -24,21 +20,10 @@ final readonly class UserListController
     /**
      * Display a paginated listing of the users.
      *
-     * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
+     * @return SuccessResponse<AnonymousResourceCollection>
      */
-    public function __invoke(PaginationRequest $request, UserFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(UserListRequest $request, UserFilter $filter): SuccessResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $request->user();
-
-        if (! $currentUser->can('user.view')) {
-            return new ProblemResponse(
-                title: 'Forbidden',
-                status: Response::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
-            );
-        }
-
         $users = $this->listUsers->handle(
             $filter,
             $request->integer('page.size', 10),

@@ -24,7 +24,7 @@ class PermissionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => strval($this->resource->id),
+            'id' => (string) $this->resource->id,
             'name' => $this->resource->name,
             'guard_name' => $this->resource->guard_name,
             'created_at' => $this->formatDate($this->resource->created_at) ?? '',

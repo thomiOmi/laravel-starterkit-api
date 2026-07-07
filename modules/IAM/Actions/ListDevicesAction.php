@@ -13,6 +13,7 @@ final readonly class ListDevicesAction
     /**
      * @return Collection<int, PersonalAccessToken>
      */
+    #[\NoDiscard]
     public function handle(User $user): Collection
     {
         /** @var Collection<int, PersonalAccessToken> */

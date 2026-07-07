@@ -41,8 +41,9 @@ describe('Middleware Guarding (Verified Email)', function () {
 });
 
 describe('User Registration & Initial State', function () {
-    it('assigns default role and unverified state on registration', function () {
-        $password = config('auth.default_password');
+    $password = 'test-password';
+
+    it('assigns default role and unverified state on registration', function () use ($password) {
         $payload = [
             'name' => 'New Customer',
             'email' => 'customer@test.com',
@@ -112,7 +113,9 @@ describe('User Listing', function () {
 });
 
 describe('User Creation', function () {
-    it('creates a new user when authorized', function () {
+    $password = 'test-password';
+
+    it('creates a new user when authorized', function () use ($password) {
         $admin = loginAsUser();
         Permission::firstOrCreate(['name' => 'user.create', 'guard_name' => 'sanctum']);
         $admin->givePermissionTo('user.create');
@@ -120,8 +123,8 @@ describe('User Creation', function () {
         expect($this->postJson('/api/v1/users', [
             'name' => 'New User',
             'email' => 'new@example.com',
-            'password' => config('auth.default_password'),
-            'password_confirmation' => config('auth.default_password'),
+            'password' => $password,
+            'password_confirmation' => $password,
         ]))->toBeSuccessResponse(status: 201);
     })->group('v1');
 

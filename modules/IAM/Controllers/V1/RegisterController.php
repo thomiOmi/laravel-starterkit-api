@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Auth\Events\Registered;
 use Modules\IAM\Actions\RegisterAction;
 use Modules\IAM\Requests\V1\RegisterRequest;
 use Modules\IAM\Resources\UserResource;
@@ -27,8 +26,6 @@ final readonly class RegisterController
             ip: $request->ip(),
             userAgent: $request->userAgent(),
         );
-
-        event(new Registered($result['user']));
 
         return new SuccessResponse(
             data: [

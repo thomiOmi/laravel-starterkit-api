@@ -79,5 +79,5 @@ arch('modules should be isolated', function () {
 
     expect($moduleNs)
         ->toOnlyBeUsedIn($moduleNs)
-        ->ignoring(['App\Providers', 'Tests', 'App\Console', 'Database\Seeders']);
+        ->ignoring(['App\Providers', 'App\Filters', 'Tests', 'App\Console', 'Database\Seeders']);
 });

@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Feature;
 
+use Illuminate\Support\Facades\Hash;
 use Modules\IAM\Models\User;
 
 describe('Logout Other Devices', function () {
-    it('logs out from all other devices while keeping the current one', function () {
-        $user = User::factory()->create(['email_verified_at' => now()]);
+    $password = 'test-password';
+
+    it('logs out from all other devices while keeping the current one', function () use ($password) {
+        $user = User::factory()->create(['password' => Hash::make($password), 'email_verified_at' => now()]);
         $currentToken = $user->createToken('current');
         $user->createToken('other-1');
         $user->createToken('other-2');
@@ -17,7 +20,7 @@ describe('Logout Other Devices', function () {
 
         expect($this->withToken($currentToken->plainTextToken)
             ->postJson('/api/v1/auth/devices/logout-others', [
-                'current_password' => config('auth.default_password'),
+                'current_password' => $password,
             ]))
             ->assertStatus(204);
 

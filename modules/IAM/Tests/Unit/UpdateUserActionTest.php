@@ -17,7 +17,7 @@ describe('UpdateUserAction', function () {
         $payload = new UserPayload(name: 'Updated Name', email: $user->email);
 
         $action = app(UpdateUserAction::class);
-        $result = $action->handle(strval($user->id), $payload);
+        $result = $action->handle((string) $user->id, $payload);
 
         expect($result)->toBeInstanceOf(User::class)
             ->name->toBe('Updated Name');

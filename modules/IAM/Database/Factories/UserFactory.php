@@ -28,14 +28,13 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        /** @var string $defaultPassword */
-        $defaultPassword = config('auth.default_password', Str::random(32));
+        $defaultPassword = config('auth.default_password');
 
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make($defaultPassword),
+            'password' => static::$password ??= Hash::make(is_string($defaultPassword) ? $defaultPassword : Str::random(32)),
             'remember_token' => Str::random(10),
             'provider' => null,
             'provider_id' => null,

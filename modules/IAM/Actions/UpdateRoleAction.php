@@ -10,6 +10,7 @@ use Modules\IAM\Payloads\V1\RolePayload;
 
 final readonly class UpdateRoleAction
 {
+    #[\NoDiscard]
     public function handle(string $id, RolePayload $payload): ?Role
     {
         $role = Role::query()->find($id);

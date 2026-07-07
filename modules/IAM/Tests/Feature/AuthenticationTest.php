@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Tests\Feature;
 
 use App\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Modules\IAM\Models\Role;
 use Modules\IAM\Models\User;
@@ -15,8 +16,9 @@ beforeEach(function () {
 });
 
 describe('Authentication Core (Registration Guarding)', function () {
-    it('fails registration with duplicate email', function () {
-        $password = config('auth.default_password');
+    $password = 'test-password';
+
+    it('fails registration with duplicate email', function () use ($password) {
         User::factory()->create(['email' => 'dup@auth.com']);
 
         expect($this->postJson('/api/v1/auth/register', [
@@ -27,8 +29,7 @@ describe('Authentication Core (Registration Guarding)', function () {
         ]))->toBeProblemResponse(status: 422);
     })->group('v1');
 
-    it('registers a new user as unverified by default', function () {
-        $password = config('auth.default_password');
+    it('registers a new user as unverified by default', function () use ($password) {
         $payload = [
             'name' => 'Unverified User',
             'email' => 'new@auth.com',
@@ -44,13 +45,12 @@ describe('Authentication Core (Registration Guarding)', function () {
         expect($user->email_verified_at)->toBeNull()
             ->and($user->hasVerifiedEmail())->toBeFalse();
 
-        // Check verification notification was sent
         Notification::assertSentTo($user, VerifyEmail::class);
     })->group('v1');
 
     it('fails login with invalid credentials', function () {
         $password = 'secret';
-        User::factory()->create(['password' => $password]);
+        User::factory()->create(['password' => Hash::make($password)]);
 
         expect($this->postJson('/api/v1/auth/login', [
             'email' => 'wrong@email.com',
@@ -61,7 +61,7 @@ describe('Authentication Core (Registration Guarding)', function () {
 
     it('logs in a user but remains restricted if unverified', function () {
         $password = 'secret';
-        $user = User::factory()->create(['password' => $password, 'email_verified_at' => null]);
+        $user = User::factory()->create(['password' => Hash::make($password), 'email_verified_at' => null]);
 
         expect($this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
@@ -69,8 +69,6 @@ describe('Authentication Core (Registration Guarding)', function () {
             'device_name' => 'test-device',
         ]))->toBeSuccessResponse(status: 201);
 
-        // Should be able to get profile (unprotected by verified middleware)
-        // but not access main features (protected by verified middleware)
         expect($this->actingAs($user)
             ->getJson('/api/v1/users'))
             ->toBeProblemResponse(status: 403);
