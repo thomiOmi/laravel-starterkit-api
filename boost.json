@@ -19,6 +19,7 @@
         "socialite-development",
         "pest-testing",
         "laravel-permission-development",
-        "laravel-attributes"
+        "laravel-attributes",
+        "modular-architecture"
     ]
 }

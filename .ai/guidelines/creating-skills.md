@@ -64,12 +64,11 @@ Add `.md` files to `.ai/guidelines/`. Guidelines are loaded upfront, so keep the
 
 Run `php artisan boost:install -n` to install Boost-provided guidelines and skills. All custom files in `.ai/` are preserved.
 
-## Existing Skills Reference
+## Existing Skills
 
-| Skill | Description |
-|---|---|
-| `laravel-specialist` | Laravel 13+, modules, controllers, actions, Eloquent, API endpoints |
-| `laravel-patterns` | Modular DDD, Single-Action Controllers, Action pattern, Payloads |
-| `laravel-security` | Security best practices, Sanctum, Spatie permission, RFC 9457 |
-| `laravel-verification` | QA verification loop — Pint, PHPStan, Pest, Arch tests |
-| `php-pro` | PHP 8.4+ strict typing, immutability, Property Hooks |
+| Skill | Location | Description |
+|---|---|---|
+| `laravel-attributes` | `.ai/skills/laravel-attributes/` | PHP 8 attributes for Laravel models, jobs, commands, form requests |
+| `modular-architecture` | `.ai/skills/modular-architecture/` | Module DDD structure: Actions, Controllers, Filters, Payloads, Resources |
+
+Use the `skill` tool to load a skill when the task matches its description. List all available skills with the `available_skills` list in the system prompt.
