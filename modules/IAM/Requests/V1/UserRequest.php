@@ -26,21 +26,16 @@ final class UserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $authenticatedUser = $this->user();
-
-        if ($authenticatedUser === null) {
-            return false;
-        }
+        $user = $this->user();
 
         if ($this->isMethod('POST')) {
-            return $authenticatedUser->can('user.create');
+            return $user?->can('user.create') ?? false;
         }
 
         $userId = $this->route('user');
-        $id = $authenticatedUser->getKey();
+        $id = $user?->getKey();
 
-        // Check if the user is updating their own profile or has permission
-        return (is_string($id) || is_int($id) ? strval($id) : '') === $userId || $authenticatedUser->can('user.edit');
+        return (is_string($id) || is_int($id) ? strval($id) : '') === $userId || ($user?->can('user.edit') ?? false);
     }
 
     /**

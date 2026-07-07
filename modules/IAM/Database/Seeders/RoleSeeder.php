@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Database\Seeders;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Modules\IAM\Models\Permission;
@@ -19,7 +20,9 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         // Reset cached roles and permissions
-        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+        /** @var PermissionRegistrar $registrar */
+        $registrar = app(PermissionRegistrar::class);
+        $registrar->forgetCachedPermissions();
 
         $guards = ['web', 'sanctum'];
         $permissions = [
@@ -74,7 +77,9 @@ class RoleSeeder extends Seeder
             });
 
         // Assign 'user' role to all other users that don't have a role
-        User::whereDoesntHave('roles')
+        /** @var Builder<User> $query */
+        $query = User::whereDoesntHave('roles');
+        $query
             ->with('roles')
             ->chunkById(100, function (Collection $users) {
                 foreach ($users as $user) {

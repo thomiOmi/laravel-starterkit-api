@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
-class SetLocaleMiddleware
+final class SetLocaleMiddleware
 {
     /** @var array<int, string> */
     private array $availableLocales;

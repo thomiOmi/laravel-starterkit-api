@@ -11,7 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *
  * Validate bulk action requests for any module.
  */
-class BulkActionRequest extends FormRequest
+final class BulkActionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

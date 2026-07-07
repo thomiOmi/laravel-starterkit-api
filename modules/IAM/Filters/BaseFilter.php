@@ -122,7 +122,9 @@ abstract class BaseFilter
             array_unshift($columns, $keyName);
         }
 
-        return $builder->select(array_values($columns));
+        $builder->select(array_values($columns));
+
+        return $builder;
     }
 
     /**

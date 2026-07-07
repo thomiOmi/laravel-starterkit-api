@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final class ForceJsonResponse
+final readonly class ForceJsonResponse
 {
     /**
      * @param  Closure(Request): (Response)  $next

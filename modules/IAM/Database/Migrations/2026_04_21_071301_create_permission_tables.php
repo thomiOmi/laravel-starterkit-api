@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Cache\CacheManager;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -124,9 +125,9 @@ return new class extends Migration
             $table->primary([$pivotPermission, $pivotRole], 'role_has_permissions_permission_id_role_id_primary');
         });
 
-        app('cache')
-            ->store(((is_string($s = config('permission.cache.store')) || is_null($s)) ? $s : null) != 'default' ? ((is_string($s = config('permission.cache.store')) || is_null($s)) ? $s : null) : null)
-            ->forget((is_string($k = config('permission.cache.key')) ? $k : ''));
+        /** @var CacheManager $cache */
+        $cache = app('cache');
+        $cache->store()->forget(config('permission.cache.key'));
     }
 
     /**

@@ -8,7 +8,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class PlanFeatureMiddleware
+final readonly class PlanFeatureMiddleware
 {
     /**
      * Handle an incoming request.
@@ -17,8 +17,6 @@ class PlanFeatureMiddleware
      */
     public function handle(Request $request, Closure $next, string $feature): Response
     {
-        // Multi-tenancy support removed.
-        // For now, we allow all features or you can implement a different check here.
         return $next($request);
     }
 }

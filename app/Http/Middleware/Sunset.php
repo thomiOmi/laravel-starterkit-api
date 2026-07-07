@@ -10,7 +10,7 @@ use DateTimeInterface;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final class Sunset
+final readonly class Sunset
 {
     /**
      * Handle an incoming request.

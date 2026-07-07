@@ -15,15 +15,9 @@ final class PermissionRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $user = $this->user();
-
-        if ($user === null) {
-            return false;
-        }
-
         return $this->isMethod('POST')
-            ? $user->can('permission.create')
-            : $user->can('permission.edit');
+            ? ($this->user()?->can('permission.create') ?? false)
+            : ($this->user()?->can('permission.edit') ?? false);
     }
 
     /**

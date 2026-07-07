@@ -21,15 +21,9 @@ final class RoleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $user = $this->user();
-
-        if ($user === null) {
-            return false;
-        }
-
         return $this->isMethod('POST')
-            ? $user->can('role.create')
-            : $user->can('role.edit');
+            ? ($this->user()?->can('role.create') ?? false)
+            : ($this->user()?->can('role.edit') ?? false);
     }
 
     /**

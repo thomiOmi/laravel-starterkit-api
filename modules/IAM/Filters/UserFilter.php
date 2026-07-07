@@ -67,11 +67,15 @@ class UserFilter extends BaseFilter
         }
 
         if ($value === 'verified') {
-            return $builder->whereNotNull('email_verified_at');
+            $builder->whereNotNull('email_verified_at');
+
+            return $builder;
         }
 
         if ($value === 'unverified') {
-            return $builder->whereNull('email_verified_at');
+            $builder->whereNull('email_verified_at');
+
+            return $builder;
         }
 
         return $builder;
