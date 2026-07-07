@@ -22,6 +22,6 @@ describe('SocialRedirectAction', function () {
     it('throws InvalidArgumentException for an invalid provider', function () {
         $action = app(SocialRedirectAction::class);
 
-        $action->handle('facebook');
+        $_ = $action->handle('facebook');
     })->throws(InvalidArgumentException::class);
 });

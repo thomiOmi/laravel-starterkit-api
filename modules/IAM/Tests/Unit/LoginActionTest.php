@@ -48,7 +48,7 @@ describe('LoginAction', function () {
         );
 
         $action = app(LoginAction::class);
-        $action->handle($payload);
+        $_ = $action->handle($payload);
 
         expect($user->tokens()->first()->abilities)->toBe(['*']);
     });
@@ -65,7 +65,7 @@ describe('LoginAction', function () {
         );
 
         $action = app(LoginAction::class);
-        $action->handle($payload);
+        $_ = $action->handle($payload);
 
         expect($user->tokens()->first()->abilities)->toContain('users:read');
     });
@@ -78,6 +78,6 @@ describe('LoginAction', function () {
             password: 'wrong-password',
         );
 
-        $action->handle($payload);
+        $_ = $action->handle($payload);
     })->throws(ValidationException::class);
 });
