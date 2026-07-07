@@ -10,6 +10,14 @@ final readonly class ShowPermissionAction
 {
     public function handle(string $id): ?Permission
     {
-        return Permission::query()->find($id);
+        return Permission::query()
+            ->select([
+                'id',
+                'name',
+                'guard_name',
+                'created_at',
+                'updated_at',
+            ])
+            ->find($id);
     }
 }
