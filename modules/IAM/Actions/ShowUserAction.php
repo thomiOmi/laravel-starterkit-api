@@ -11,6 +11,17 @@ final readonly class ShowUserAction
     #[\NoDiscard]
     public function handle(string $id): ?User
     {
-        return User::with(['roles.permissions:id,name', 'permissions:id,name'])->find($id);
+        return User::select([
+            'id',
+            'name',
+            'email',
+            'avatar',
+            'provider',
+            'provider_id',
+            'email_verified_at',
+            'created_at',
+            'updated_at',
+            'deleted_at',
+        ])->with(['roles.permissions:id,name', 'permissions:id,name'])->find($id);
     }
 }
