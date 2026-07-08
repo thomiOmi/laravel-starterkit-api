@@ -9,7 +9,6 @@ use Modules\IAM\Models\Role;
 
 final readonly class DeleteRoleAction
 {
-    #[\NoDiscard]
     public function handle(string $id): bool
     {
         $role = Role::query()->find($id);

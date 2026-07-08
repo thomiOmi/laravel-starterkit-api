@@ -8,7 +8,6 @@ use Modules\IAM\Models\User;
 
 final readonly class ResendVerificationAction
 {
-    #[\NoDiscard]
     public function handle(User $user): string
     {
         if ($user->hasVerifiedEmail()) {

@@ -11,7 +11,6 @@ final readonly class AssignRolesToUserAction
     /**
      * @param  array<int, string>  $roles
      */
-    #[\NoDiscard]
     public function handle(User $user, array $roles): User
     {
         $user->syncRoles($roles);

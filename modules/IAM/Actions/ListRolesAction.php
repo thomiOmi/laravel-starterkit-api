@@ -18,7 +18,6 @@ final readonly class ListRolesAction
      * @param  int|null  $page  The page number to retrieve.
      * @return Paginator<int, Role>
      */
-    #[\NoDiscard]
     public function handle(RoleFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
         $builder = $filter->apply(

@@ -59,6 +59,6 @@ describe('SocialCallbackAction', function () {
     it('throws InvalidArgumentException for an invalid provider', function () {
         $action = app(SocialCallbackAction::class);
 
-        $_ = $action->handle('facebook', '127.0.0.1', 'Test');
+        $action->handle('facebook', '127.0.0.1', 'Test');
     })->throws(InvalidArgumentException::class);
 });

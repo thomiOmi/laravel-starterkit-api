@@ -18,7 +18,6 @@ final readonly class ListPermissionsAction
      * @param  int|null  $page  The page number to retrieve.
      * @return Paginator<int, Permission>
      */
-    #[\NoDiscard]
     public function handle(PermissionFilter $filter, int $pageSize = 20, ?int $page = null): Paginator
     {
         $builder = $filter->apply(

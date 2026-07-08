@@ -26,7 +26,7 @@ describe('BulkRestoreUsersAction', function () {
         $user->delete();
         $action = app(BulkRestoreUsersAction::class);
 
-        $_ = $action->handle([$user->id]);
+        $action->handle([$user->id]);
 
         Cache::shouldHaveReceived('forget')
             ->with("user_{$user->id}")

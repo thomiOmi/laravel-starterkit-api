@@ -9,7 +9,6 @@ use Modules\IAM\Models\Permission;
 
 final readonly class DeletePermissionAction
 {
-    #[\NoDiscard]
     public function handle(string $id): bool
     {
         $permission = Permission::query()->find($id);

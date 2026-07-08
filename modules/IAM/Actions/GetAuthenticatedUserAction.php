@@ -11,7 +11,6 @@ use Modules\IAM\Models\User;
  */
 final readonly class GetAuthenticatedUserAction
 {
-    #[\NoDiscard]
     public function handle(User $user): User
     {
         return $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']);

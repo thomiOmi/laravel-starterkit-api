@@ -18,7 +18,6 @@ final readonly class RegisterAction
     /**
      * @return array{user: User, access_token: string, token_type: string}
      */
-    #[\NoDiscard]
     public function handle(RegisterPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
         $user = User::create([

@@ -12,7 +12,6 @@ final readonly class BulkRestoreUsersAction
     /**
      * @param  array<int, string|int>  $ids
      */
-    #[\NoDiscard]
     public function handle(array $ids): int
     {
         foreach ($ids as $id) {

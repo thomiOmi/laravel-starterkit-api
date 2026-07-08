@@ -8,7 +8,6 @@ use Modules\IAM\Models\Role;
 
 final readonly class ShowRoleAction
 {
-    #[\NoDiscard]
     public function handle(string $id): ?Role
     {
         return Role::with(['permissions:id,name'])->find($id);

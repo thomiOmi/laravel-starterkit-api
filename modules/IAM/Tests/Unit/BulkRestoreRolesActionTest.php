@@ -26,7 +26,7 @@ describe('BulkRestoreRolesAction', function () {
         $role->delete();
         $action = app(BulkRestoreRolesAction::class);
 
-        $_ = $action->handle([$role->id]);
+        $action->handle([$role->id]);
 
         Cache::shouldHaveReceived('forget')
             ->with("role_{$role->id}")

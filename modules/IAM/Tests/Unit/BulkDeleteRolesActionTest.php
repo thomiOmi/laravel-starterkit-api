@@ -34,7 +34,7 @@ describe('BulkDeleteRolesAction', function () {
         $role = Role::create(['name' => 'editor', 'guard_name' => 'web']);
         $action = app(BulkDeleteRolesAction::class);
 
-        $_ = $action->handle([$role->id]);
+        $action->handle([$role->id]);
 
         Cache::shouldHaveReceived('forget')
             ->with("role_{$role->id}")

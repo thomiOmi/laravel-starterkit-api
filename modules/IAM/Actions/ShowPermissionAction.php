@@ -8,7 +8,6 @@ use Modules\IAM\Models\Permission;
 
 final readonly class ShowPermissionAction
 {
-    #[\NoDiscard]
     public function handle(string $id): ?Permission
     {
         return Permission::query()

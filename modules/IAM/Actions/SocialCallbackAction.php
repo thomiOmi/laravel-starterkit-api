@@ -24,7 +24,6 @@ final readonly class SocialCallbackAction
     /**
      * @return array{user: User, access_token: string, token_type: string}
      */
-    #[\NoDiscard]
     public function handle(string $provider, string $ipAddress, ?string $userAgent): array
     {
         if (! in_array($provider, self::ALLOWED_PROVIDERS, true)) {

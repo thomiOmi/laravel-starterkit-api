@@ -18,7 +18,6 @@ final readonly class ListUsersAction
      * @param  int|null  $page  The page number to retrieve.
      * @return Paginator<int, User>
      */
-    #[\NoDiscard]
     public function handle(UserFilter $filter, int $pageSize = 10, ?int $page = null): Paginator
     {
         $builder = $filter->apply(
