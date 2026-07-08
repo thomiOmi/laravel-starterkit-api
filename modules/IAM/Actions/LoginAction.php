@@ -18,7 +18,7 @@ final readonly class LoginAction
     ) {}
 
     /**
-     * @return array{user: User, access_token: string, token_type: string}
+     * @return array{user: User, access_token: string, token_type: string, expires_at: ?string, expires_in: ?int}
      *
      * @throws ValidationException
      */

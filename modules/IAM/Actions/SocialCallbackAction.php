@@ -22,7 +22,7 @@ final readonly class SocialCallbackAction
     ) {}
 
     /**
-     * @return array{user: User, access_token: string, token_type: string}
+     * @return array{user: User, access_token: string, token_type: string, expires_at: ?string, expires_in: ?int}
      */
     public function handle(string $provider, string $ipAddress, ?string $userAgent): array
     {
