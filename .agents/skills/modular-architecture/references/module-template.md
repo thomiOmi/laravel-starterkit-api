@@ -116,7 +116,6 @@ use Modules\{Module}\Payloads\V1\{Resource}Payload;
 
 final readonly class Create{Resource}Action
 {
-    #[\NoDiscard]
     public function handle({Resource}Payload $payload): {Resource}
     {
         return {Resource}::create($payload->toArray());

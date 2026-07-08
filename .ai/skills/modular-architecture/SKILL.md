@@ -109,7 +109,6 @@ final readonly class {Resource}{Action}Controller
 ```php
 final readonly class {Action}
 {
-    #[\NoDiscard]
     public function handle({Payload} $payload): {Model}
     {
         // ...
@@ -119,7 +118,7 @@ final readonly class {Action}
 
 - Namespace: `Modules\{Module}\Actions`
 - Must be `final readonly`
-- Must have `handle()` method annotated with `#[\NoDiscard]` (PHP 8.4) to warn if return value is discarded
+- Must have `handle()` method returning the appropriate type
 - Must receive Payload (not Request) for mutations
 - Must inject dependencies via constructor
 - Must not use `Illuminate\Http\Request`
@@ -314,7 +313,6 @@ Unit test per Action (test business logic in isolation). Feature test per endpoi
 - Write Unit test per Action + Feature test per endpoint
 - Use `(string)` / `(int)` / `(bool)` for type casting over function calls
 - Route naming format: `v1.{module}.{name}`
-- Add `#[\NoDiscard]` on Action `handle()` methods (PHP 8.4) to prevent accidentally discarding return values
 - Use `#[Middleware]` attribute (Laravel 13+) on controllers as an alternative to defining middleware in route groups
 
 ## Project-Specific Prohibitions (Must Do Not)

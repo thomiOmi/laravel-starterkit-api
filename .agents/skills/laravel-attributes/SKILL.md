@@ -67,7 +67,4 @@ class StripeGateway implements PaymentGateway {}
 // Prevent sensitive values from leaking into stack traces
 function login(string $user, #[\SensitiveParameter] string $password): void {}
 
-// Warn when a return value is accidentally discarded (PHP 8.5+)
-#[\NoDiscard('check for per-item errors')]
-function bulkProcess(array $items): array {}
 ```
