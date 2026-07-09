@@ -42,6 +42,11 @@ jobs:
         php-version: ${{ matrix.php-versions }}
         extensions: mbstring, dom, fileinfo, pdo_sqlite, xml, curl, zip, pcntl
         coverage: pcov
+        ini-values: |
+          memory_limit=-1
+          pcov.enabled=1
+          pcov.directory=.
+          pcov.exclude="~vendor~"
 
     - name: Get Composer Cache Directory
       id: composer-cache
