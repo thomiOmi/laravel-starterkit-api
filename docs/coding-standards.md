@@ -14,7 +14,7 @@
 
 ## Architecture
 - Controllers: `final readonly` invokable classes with `__invoke()` -- no business logic
-- Actions: `final readonly` with `handle()` method annotated with `#[\NoDiscard]` -- single responsibility
+- Actions: `final readonly` with `handle()` method -- single responsibility
 - Models in `Modules/{Module}/Models/`. Use `HasDefaultBehavior` (ULID, soft deletes, date format)
 - No repositories: Use Eloquent directly within actions
 - Payloads: `final readonly` DTOs with `fromRequest()` factory and `toArray()`

@@ -12,7 +12,7 @@ Request -> Middleware -> Controller (__invoke) -> Action -> Eloquent -> Response
 `final readonly` invokable classes in `Modules/{Module}/Controllers/V1/`. They handle HTTP concerns only: parse request, call action, return response. No business logic.
 
 ### Actions
-`final readonly` classes in `Modules/{Module}/Actions/`. Each action encapsulates a single business operation with a `handle()` method annotated with `#[\NoDiscard]`. Injectable via constructor.
+`final readonly` classes in `Modules/{Module}/Actions/`. Each action encapsulates a single business operation with a `handle()` method. Injectable via constructor.
 
 ### Models
 Eloquent models in `Modules/{Module}/Models/`. Uses `HasDefaultBehavior` trait which applies ULID primary keys, soft deletes, and consistent `Y-m-d H:i:s` date serialization. Configured via PHP 8 attributes (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`).
