@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\Identity;
+use App\Enums\RoleEnum;
 use App\Models\Sanctum\PersonalAccessToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -45,7 +46,7 @@ class AppServiceProvider extends ServiceProvider
         $this->defineFeatures();
 
         Gate::before(function (Identity $user, string $ability) {
-            return $user->hasRole('super-admin') ? true : null;
+            return $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null;
         });
 
         // $this->configureScramble();
@@ -82,7 +83,7 @@ class AppServiceProvider extends ServiceProvider
     protected function defineFeatures(): void
     {
         Feature::define('beta-feature', function (Identity $user) {
-            return $user->hasRole('admin');
+            return $user->hasRole(RoleEnum::Admin->value);
         });
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Enums\PermissionEnum;
 use App\Http\Requests\PaginationRequest;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
@@ -31,7 +32,7 @@ final readonly class RoleListController
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        if (! $currentUser->can('role.view')) {
+        if (! $currentUser->can(PermissionEnum::RoleView->value)) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,

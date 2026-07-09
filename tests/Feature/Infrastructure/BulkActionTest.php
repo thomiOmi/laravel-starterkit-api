@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Infrastructure;
 
+use App\Enums\PermissionEnum;
 use App\Http\Requests\BulkActionRequest;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -16,8 +17,8 @@ test('BulkActionRequest validates ULIDs and count limits', function () {
     })->name('v1.user.bulk.delete');
 
     $user = loginAsUser();
-    Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
-    $user->givePermissionTo('user.delete');
+    Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
+    $user->givePermissionTo(PermissionEnum::UserDelete);
 
     $this->postJson('/test-bulk', [])
         ->assertStatus(422)
@@ -31,7 +32,7 @@ test('BulkActionRequest validates ULIDs and count limits', function () {
 test('BulkActionRequest enforces modular permissions', function () {
     $user = loginAsUser();
 
-    Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     Route::post('/api/v1/user/bulk/delete', function (BulkActionRequest $request) {
@@ -43,7 +44,7 @@ test('BulkActionRequest enforces modular permissions', function () {
         'action' => 'delete',
     ])->assertStatus(403);
 
-    $user->givePermissionTo('user.delete');
+    $user->givePermissionTo(PermissionEnum::UserDelete);
 
     $this->postJson('/api/v1/user/bulk/delete', [
         'ids' => [(string) Str::ulid()],

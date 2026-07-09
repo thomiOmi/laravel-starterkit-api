@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Modules\IAM\Actions\LoginAction;
@@ -37,9 +38,9 @@ describe('LoginAction', function () {
     });
 
     it('assigns wildcard abilities to admins', function () use ($password) {
-        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
+        Role::create(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
         $user = User::factory()->create(['password' => Hash::make($password)]);
-        $user->assignRole('admin');
+        $user->assignRole(RoleEnum::Admin);
 
         $payload = new LoginPayload(
             email: $user->email,
@@ -54,9 +55,9 @@ describe('LoginAction', function () {
     });
 
     it('assigns restricted abilities to regular users', function () use ($password) {
-        Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
+        Role::create(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
         $user = User::factory()->create(['password' => Hash::make($password)]);
-        $user->assignRole('user');
+        $user->assignRole(RoleEnum::User);
 
         $payload = new LoginPayload(
             email: $user->email,

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use App\Enums\RoleEnum;
 use Modules\IAM\Actions\CreateUserAction;
 use Modules\IAM\Models\Role;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UserPayload;
 
 beforeEach(function () {
-    Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
+    Role::create(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
 });
 
 describe('CreateUserAction', function () {
@@ -27,6 +28,6 @@ describe('CreateUserAction', function () {
             ->name->toBe('Test User')
             ->email->toBe('test@create.com');
 
-        expect($user->hasRole('user'))->toBeTrue();
+        expect($user->hasRole(RoleEnum::User))->toBeTrue();
     });
 });

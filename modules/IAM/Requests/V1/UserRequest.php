@@ -6,6 +6,7 @@ namespace Modules\IAM\Requests\V1;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Enums\PermissionEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
@@ -29,13 +30,13 @@ final class UserRequest extends FormRequest
         $user = $this->user();
 
         if ($this->isMethod('POST')) {
-            return $user?->can('user.create') ?? false;
+            return $user?->can(PermissionEnum::UserCreate->value) ?? false;
         }
 
         $userId = $this->route('user');
         $id = $user?->getKey();
 
-        return (is_string($id) || is_int($id) ? (string) $id : '') === $userId || ($user?->can('user.edit') ?? false);
+        return (is_string($id) || is_int($id) ? (string) $id : '') === $userId || ($user?->can(PermissionEnum::UserEdit->value) ?? false);
     }
 
     /**

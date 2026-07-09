@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use App\Enums\RoleEnum;
 use Modules\IAM\Actions\ListRolesAction;
 use Modules\IAM\Filters\RoleFilter;
 use Modules\IAM\Models\Role;
 
 describe('ListRolesAction', function () {
     it('returns paginated roles', function () {
-        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
+        Role::create(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
         $action = app(ListRolesAction::class);
 
         $result = $action->handle(app(RoleFilter::class));

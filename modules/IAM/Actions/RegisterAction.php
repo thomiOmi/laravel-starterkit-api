@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Enums\RoleEnum;
 use Illuminate\Auth\Events\Registered;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\RegisterPayload;
@@ -26,7 +27,7 @@ final readonly class RegisterAction
             'password' => $payload->password,
         ]);
 
-        $user->assignRole('user');
+        $user->assignRole(RoleEnum::User);
 
         event(new Registered($user));
 

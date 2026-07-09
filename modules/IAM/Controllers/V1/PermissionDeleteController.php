@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Enums\PermissionEnum;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -29,7 +30,7 @@ final readonly class PermissionDeleteController
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        if (! $currentUser->can('permission.delete')) {
+        if (! $currentUser->can(PermissionEnum::PermissionDelete->value)) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: SymfonyResponse::HTTP_FORBIDDEN,

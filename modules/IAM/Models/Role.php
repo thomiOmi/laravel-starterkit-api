@@ -35,8 +35,6 @@ use Spatie\Permission\Models\Role as SpatieRole;
 #[UseFactory(RoleFactory::class)]
 class Role extends SpatieRole
 {
-    public const string SUPER_ADMIN = 'super-admin';
-
     /** @use HasFactory<RoleFactory> */
     use HasDefaultBehavior, HasFactory;
 }

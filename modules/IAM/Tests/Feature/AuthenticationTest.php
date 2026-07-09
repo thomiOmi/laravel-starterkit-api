@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Feature;
 
+use App\Enums\RoleEnum;
 use App\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -12,7 +13,7 @@ use Modules\IAM\Models\User;
 
 beforeEach(function () {
     Notification::fake();
-    Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
+    Role::create(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
 });
 
 describe('Authentication Core (Registration Guarding)', function () {

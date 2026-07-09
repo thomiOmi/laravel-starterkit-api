@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Models\Role;
 
@@ -20,7 +21,7 @@ final readonly class BulkDeleteRolesAction
 
         /** @var int $count */
         $count = Role::whereIn('id', $ids)
-            ->where('name', '!=', Role::SUPER_ADMIN)
+            ->where('name', '!=', RoleEnum::SuperAdmin->value)
             ->delete();
 
         return $count;

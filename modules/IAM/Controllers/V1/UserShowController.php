@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Enums\PermissionEnum;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -32,7 +33,7 @@ final readonly class UserShowController
 
         $currentUserId = $currentUser->getKey();
 
-        if ((is_string($currentUserId) || is_int($currentUserId) ? (string) $currentUserId : '') !== $id && ! $currentUser->can('user.view')) {
+        if ((is_string($currentUserId) || is_int($currentUserId) ? (string) $currentUserId : '') !== $id && ! $currentUser->can(PermissionEnum::UserView->value)) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Feature;
 
+use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Modules\IAM\Models\Permission;
@@ -14,8 +15,8 @@ beforeEach(function () {
     Event::fake();
     Notification::fake();
 
-    Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
-    Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
 
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
@@ -23,7 +24,7 @@ beforeEach(function () {
 describe('User Bulk Operations', function () {
     it('fails bulk delete with missing ids', function () {
         $admin = loginAsUser();
-        $admin->givePermissionTo('user.delete');
+        $admin->givePermissionTo(PermissionEnum::UserDelete);
 
         expect($this->postJson('/api/v1/users/bulk/delete', []))
             ->toBeProblemResponse(status: 422);
@@ -31,7 +32,7 @@ describe('User Bulk Operations', function () {
 
     it('allows authorized admin to bulk delete users', function () {
         $admin = loginAsUser();
-        $admin->givePermissionTo('user.delete');
+        $admin->givePermissionTo(PermissionEnum::UserDelete);
         $users = User::factory()->count(2)->create();
         $ids = $users->pluck('id')->toArray();
 
@@ -53,7 +54,7 @@ describe('User Bulk Operations', function () {
 
     it('allows authorized admin to bulk restore users', function () {
         $admin = loginAsUser();
-        $admin->givePermissionTo('user.edit');
+        $admin->givePermissionTo(PermissionEnum::UserEdit);
         $users = User::factory()->count(2)->create();
         $ids = $users->pluck('id')->toArray();
 

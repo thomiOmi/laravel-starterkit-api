@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Feature;
 
+use App\Enums\PermissionEnum;
 use Modules\IAM\Models\Permission;
 
 beforeEach(function () {
     $this->admin = loginAsUser();
-    Permission::firstOrCreate(['name' => 'permission.view', 'guard_name' => 'sanctum']);
-    Permission::firstOrCreate(['name' => 'permission.create', 'guard_name' => 'sanctum']);
-    Permission::firstOrCreate(['name' => 'permission.edit', 'guard_name' => 'sanctum']);
-    Permission::firstOrCreate(['name' => 'permission.delete', 'guard_name' => 'sanctum']);
-    $this->admin->givePermissionTo(['permission.view', 'permission.create', 'permission.edit', 'permission.delete']);
+    Permission::firstOrCreate(['name' => PermissionEnum::PermissionView->value, 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::PermissionCreate->value, 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::PermissionEdit->value, 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::PermissionDelete->value, 'guard_name' => 'sanctum']);
+    $this->admin->givePermissionTo([
+        PermissionEnum::PermissionView,
+        PermissionEnum::PermissionCreate,
+        PermissionEnum::PermissionEdit,
+        PermissionEnum::PermissionDelete,
+    ]);
 });
 
 describe('Permission Listing & Filtering', function () {

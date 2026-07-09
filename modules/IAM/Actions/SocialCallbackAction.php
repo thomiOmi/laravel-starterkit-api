@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
@@ -75,7 +76,7 @@ final readonly class SocialCallbackAction
                 'avatar' => $socialUser->getAvatar(),
             ]);
 
-            $user->assignRole('user');
+            $user->assignRole(RoleEnum::User);
 
             return $user;
         });

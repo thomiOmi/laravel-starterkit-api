@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Feature;
 
+use App\Enums\RoleEnum;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
 use Modules\IAM\Models\Role;
 use Modules\IAM\Models\User;
 
 beforeEach(function () {
-    Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
+    Role::create(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
 });
 
 describe('Social Authentication', function () {

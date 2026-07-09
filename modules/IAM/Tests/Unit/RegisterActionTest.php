@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use App\Enums\RoleEnum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\IAM\Actions\RegisterAction;
 use Modules\IAM\Models\Role;
@@ -13,7 +14,7 @@ use Modules\IAM\Payloads\V1\RegisterPayload;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
+    Role::create(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
 });
 
 describe('RegisterAction', function () {

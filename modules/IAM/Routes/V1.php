@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Route;
 use Modules\IAM\Controllers\V1\DeleteDeviceController;
 use Modules\IAM\Controllers\V1\DeviceListController;
@@ -79,20 +80,20 @@ Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'verified', '
 });
 
 Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
-    Route::get('/', RoleListController::class)->middleware('permission:role.view')->name('index');
-    Route::post('/', RoleCreateController::class)->middleware('permission:role.create')->name('create');
+    Route::get('/', RoleListController::class)->middleware('permission:'.PermissionEnum::RoleView->value)->name('index');
+    Route::post('/', RoleCreateController::class)->middleware('permission:'.PermissionEnum::RoleCreate->value)->name('create');
 
-    Route::post('/bulk/delete', RoleBulkDeleteController::class)->middleware('permission:role.delete')->name('bulk.delete');
+    Route::post('/bulk/delete', RoleBulkDeleteController::class)->middleware('permission:'.PermissionEnum::RoleDelete->value)->name('bulk.delete');
 
-    Route::get('/{role}', RoleShowController::class)->middleware('permission:role.view')->name('show');
-    Route::put('/{role}', RoleUpdateController::class)->middleware('permission:role.edit')->name('update');
-    Route::delete('/{role}', RoleDeleteController::class)->middleware('permission:role.delete')->name('delete');
+    Route::get('/{role}', RoleShowController::class)->middleware('permission:'.PermissionEnum::RoleView->value)->name('show');
+    Route::put('/{role}', RoleUpdateController::class)->middleware('permission:'.PermissionEnum::RoleEdit->value)->name('update');
+    Route::delete('/{role}', RoleDeleteController::class)->middleware('permission:'.PermissionEnum::RoleDelete->value)->name('delete');
 });
 
 Route::prefix('permissions')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->name('permissions.')->group(function () {
-    Route::get('/', PermissionListController::class)->middleware('permission:permission.view')->name('index');
-    Route::post('/', PermissionCreateController::class)->middleware('permission:permission.create')->name('create');
-    Route::get('/{permission}', PermissionShowController::class)->middleware('permission:permission.view')->name('show');
-    Route::put('/{permission}', PermissionUpdateController::class)->middleware('permission:permission.edit')->name('update');
-    Route::delete('/{permission}', PermissionDeleteController::class)->middleware('permission:permission.delete')->name('delete');
+    Route::get('/', PermissionListController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('index');
+    Route::post('/', PermissionCreateController::class)->middleware('permission:'.PermissionEnum::PermissionCreate->value)->name('create');
+    Route::get('/{permission}', PermissionShowController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('show');
+    Route::put('/{permission}', PermissionUpdateController::class)->middleware('permission:'.PermissionEnum::PermissionEdit->value)->name('update');
+    Route::delete('/{permission}', PermissionDeleteController::class)->middleware('permission:'.PermissionEnum::PermissionDelete->value)->name('delete');
 });

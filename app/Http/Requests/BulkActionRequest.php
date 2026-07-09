@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\PermissionEnum;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -33,11 +34,11 @@ final class BulkActionRequest extends FormRequest
 
         if (str_contains($routeName, '.user.')) {
             if ($action === 'delete') {
-                return $user->can('user.delete');
+                return $user->can(PermissionEnum::UserDelete->value);
             }
 
             if ($action === 'restore') {
-                return $user->can('user.edit');
+                return $user->can(PermissionEnum::UserEdit->value);
             }
 
             return false;
@@ -45,11 +46,11 @@ final class BulkActionRequest extends FormRequest
 
         if (str_contains($routeName, '.role.')) {
             if ($action === 'delete') {
-                return $user->can('role.delete');
+                return $user->can(PermissionEnum::RoleDelete->value);
             }
 
             if ($action === 'restore') {
-                return $user->can('role.edit');
+                return $user->can(PermissionEnum::RoleEdit->value);
             }
 
             return false;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Models\Role;
 
@@ -17,7 +18,7 @@ final readonly class DeleteRoleAction
             return false;
         }
 
-        if ($role->name === Role::SUPER_ADMIN) {
+        if ($role->name === RoleEnum::SuperAdmin->value) {
             return false;
         }
 

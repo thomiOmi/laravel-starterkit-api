@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Feature;
 
+use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Modules\IAM\Models\Permission;
@@ -15,7 +17,7 @@ beforeEach(function () {
     Event::fake();
     Notification::fake();
 
-    Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
 
@@ -43,25 +45,25 @@ describe('User Role Management', function () {
     it('prevents privilege escalation by unauthorized users', function () {
         loginAsUser(); // Regular user
         $user = User::factory()->create();
-        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
+        Role::create(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
 
-        expect($this->putJson("/api/v1/users/{$user->id}/roles", ['roles' => ['admin']]))
+        expect($this->putJson("/api/v1/users/{$user->id}/roles", ['roles' => [RoleEnum::Admin->value]]))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
 
     it('returns 404 when assigning roles to a non-existent user', function () {
         $admin = loginAsUser();
-        $admin->givePermissionTo('user.edit');
-        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo(PermissionEnum::UserEdit);
+        Role::create(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
 
         expect($this->putJson('/api/v1/users/999999/roles', [
-            'roles' => ['admin'],
+            'roles' => [RoleEnum::Admin->value],
         ]))->toBeProblemResponse(status: 404);
     })->group('v1');
 
     it('fails validation with non-existent role names', function () {
         $admin = loginAsUser();
-        $admin->givePermissionTo('user.edit');
+        $admin->givePermissionTo(PermissionEnum::UserEdit);
         $user = User::factory()->create();
 
         expect($this->putJson("/api/v1/users/{$user->id}/roles", [

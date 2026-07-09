@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use App\Enums\RoleEnum;
 use Modules\IAM\Actions\DeleteRoleAction;
 use Modules\IAM\Models\Role;
 
@@ -23,7 +24,7 @@ describe('DeleteRoleAction', function () {
     });
 
     it('returns false for the super-admin role', function () {
-        $role = Role::create(['name' => 'super-admin', 'guard_name' => 'sanctum']);
+        $role = Role::create(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
         $action = app(DeleteRoleAction::class);
 
         expect($action->handle($role->id))->toBeFalse();

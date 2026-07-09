@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use App\Enums\RoleEnum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
@@ -15,7 +16,7 @@ use Modules\IAM\Models\User;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
+    Role::create(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
 });
 
 describe('SocialCallbackAction', function () {

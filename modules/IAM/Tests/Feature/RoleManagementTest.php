@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Feature;
 
+use App\Enums\PermissionEnum;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
 
 beforeEach(function () {
     $this->admin = loginAsUser();
     // Ensure admin has required permissions
-    Permission::firstOrCreate(['name' => 'role.view', 'guard_name' => 'sanctum']);
-    Permission::firstOrCreate(['name' => 'role.create', 'guard_name' => 'sanctum']);
-    Permission::firstOrCreate(['name' => 'role.edit', 'guard_name' => 'sanctum']);
-    Permission::firstOrCreate(['name' => 'role.delete', 'guard_name' => 'sanctum']);
-    $this->admin->givePermissionTo(['role.view', 'role.create', 'role.edit', 'role.delete']);
+    Permission::firstOrCreate(['name' => PermissionEnum::RoleView->value, 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::RoleCreate->value, 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::RoleEdit->value, 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::RoleDelete->value, 'guard_name' => 'sanctum']);
+    $this->admin->givePermissionTo([
+        PermissionEnum::RoleView,
+        PermissionEnum::RoleCreate,
+        PermissionEnum::RoleEdit,
+        PermissionEnum::RoleDelete,
+    ]);
 });
 
 describe('Role Listing & Filtering', function () {

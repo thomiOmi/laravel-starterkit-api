@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Requests\V1;
 
+use App\Enums\PermissionEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\IAM\Payloads\V1\PermissionPayload;
@@ -16,8 +17,8 @@ final class PermissionRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->isMethod('POST')
-            ? ($this->user()?->can('permission.create') ?? false)
-            : ($this->user()?->can('permission.edit') ?? false);
+            ? ($this->user()?->can(PermissionEnum::PermissionCreate->value) ?? false)
+            : ($this->user()?->can(PermissionEnum::PermissionEdit->value) ?? false);
     }
 
     /**

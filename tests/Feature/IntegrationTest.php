@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Modules\IAM\Models\Permission;
@@ -13,7 +15,7 @@ use Modules\IAM\Models\User;
 beforeEach(function () {
     Notification::fake();
     foreach (['web', 'sanctum'] as $guard) {
-        Role::create(['name' => 'user', 'guard_name' => $guard]);
+        Role::create(['name' => RoleEnum::User->value, 'guard_name' => $guard]);
         Role::create(['name' => 'editor', 'guard_name' => $guard]);
     }
 });
@@ -58,8 +60,8 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
 
     // Assign Role (By Admin)
     $admin = loginAsUser(); // Helper creates verified admin by default if role is assigned
-    Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
-    $admin->givePermissionTo('user.edit');
+    Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
+    $admin->givePermissionTo(PermissionEnum::UserEdit);
 
     expect($this->actingAs($admin)
         ->putJson("/api/v1/users/{$user->id}/roles", [

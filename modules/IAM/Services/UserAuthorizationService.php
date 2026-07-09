@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Services;
 
+use App\Enums\RoleEnum;
 use App\Models\Sanctum\PersonalAccessToken;
 use Modules\IAM\Models\User;
 
@@ -16,7 +17,7 @@ final readonly class UserAuthorizationService
      */
     public function determineTokenAbilities(User $user): array
     {
-        return $user->hasRole(['admin', 'super-admin'])
+        return $user->hasRole([RoleEnum::Admin->value, RoleEnum::SuperAdmin->value])
             ? ['*']
             : ['users:read', 'users:write', 'auth:manage'];
     }

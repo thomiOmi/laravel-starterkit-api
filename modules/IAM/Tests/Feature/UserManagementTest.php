@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Feature;
 
+use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Modules\IAM\Models\Permission;
@@ -16,15 +18,15 @@ beforeEach(function () {
     Notification::fake();
 
     foreach (['web', 'sanctum'] as $guard) {
-        Role::create(['name' => 'admin', 'guard_name' => $guard]);
-        Role::create(['name' => 'user', 'guard_name' => $guard]);
+        Role::create(['name' => RoleEnum::Admin->value, 'guard_name' => $guard]);
+        Role::create(['name' => RoleEnum::User->value, 'guard_name' => $guard]);
     }
 });
 
 describe('Middleware Guarding (Verified Email)', function () {
     it('denies access to user listing if email is not verified', function () {
         $user = User::factory()->create(['email_verified_at' => null]);
-        $user->assignRole('admin'); // Even an admin must be verified
+        $user->assignRole(RoleEnum::Admin); // Even an admin must be verified
 
         expect($this->actingAs($user)
             ->getJson('/api/v1/users'))
@@ -55,7 +57,7 @@ describe('User Registration & Initial State', function () {
 
         $user = User::where('email', 'customer@test.com')->first();
         expect($user->email_verified_at)->toBeNull()
-            ->and($user->hasRole('user'))->toBeTrue();
+            ->and($user->hasRole(RoleEnum::User))->toBeTrue();
     })->group('v1');
 });
 
@@ -70,9 +72,9 @@ describe('User CRUD & IDOR Protection', function () {
 
     it('prevents self-deletion', function () {
         $admin = loginAsUser();
-        Permission::firstOrCreate(['name' => 'user.delete', 'guard_name' => 'sanctum']);
+        Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
-        $admin->givePermissionTo('user.delete');
+        $admin->givePermissionTo(PermissionEnum::UserDelete);
 
         expect($this->deleteJson("/api/v1/users/{$admin->id}"))
             ->toBeProblemResponse(status: 403);
@@ -82,8 +84,8 @@ describe('User CRUD & IDOR Protection', function () {
 describe('User Listing', function () {
     it('lists all users with pagination when authorized', function () {
         $admin = loginAsUser();
-        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
-        $admin->givePermissionTo('user.view');
+        Permission::firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo(PermissionEnum::UserView);
         User::factory()->count(3)->create();
 
         $response = $this->getJson('/api/v1/users');
@@ -100,8 +102,8 @@ describe('User Listing', function () {
 
     it('can filter users by search term', function () {
         $admin = loginAsUser();
-        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
-        $admin->givePermissionTo('user.view');
+        Permission::firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo(PermissionEnum::UserView);
         User::factory()->create(['name' => 'Alice']);
         User::factory()->create(['name' => 'Bob']);
 
@@ -117,8 +119,8 @@ describe('User Creation', function () {
 
     it('creates a new user when authorized', function () use ($password) {
         $admin = loginAsUser();
-        Permission::firstOrCreate(['name' => 'user.create', 'guard_name' => 'sanctum']);
-        $admin->givePermissionTo('user.create');
+        Permission::firstOrCreate(['name' => PermissionEnum::UserCreate->value, 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo(PermissionEnum::UserCreate);
 
         expect($this->postJson('/api/v1/users', [
             'name' => 'New User',
@@ -149,8 +151,8 @@ describe('User Show', function () {
 
     it('allows viewing another user with user.view permission', function () {
         $admin = loginAsUser();
-        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
-        $admin->givePermissionTo('user.view');
+        Permission::firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo(PermissionEnum::UserView);
         $other = User::factory()->create();
 
         expect($this->getJson("/api/v1/users/{$other->id}"))
@@ -168,8 +170,8 @@ describe('User Show', function () {
 
     it('returns 404 for a non-existent user with user.view permission', function () {
         $admin = loginAsUser();
-        Permission::firstOrCreate(['name' => 'user.view', 'guard_name' => 'sanctum']);
-        $admin->givePermissionTo('user.view');
+        Permission::firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo(PermissionEnum::UserView);
 
         expect($this->getJson('/api/v1/users/999999'))
             ->toBeProblemResponse(status: 404);
@@ -189,8 +191,8 @@ describe('User Update', function () {
 
     it('allows updating another user with user.edit permission', function () {
         $admin = loginAsUser();
-        Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
-        $admin->givePermissionTo('user.edit');
+        Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo(PermissionEnum::UserEdit);
         $other = User::factory()->create(['name' => 'Original']);
 
         expect($this->putJson("/api/v1/users/{$other->id}", [
@@ -212,8 +214,8 @@ describe('User Update', function () {
 
     it('returns 404 when updating a non-existent user with user.edit permission', function () {
         $admin = loginAsUser();
-        Permission::firstOrCreate(['name' => 'user.edit', 'guard_name' => 'sanctum']);
-        $admin->givePermissionTo('user.edit');
+        Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
+        $admin->givePermissionTo(PermissionEnum::UserEdit);
 
         expect($this->putJson('/api/v1/users/999999', [
             'name' => 'Ghost',

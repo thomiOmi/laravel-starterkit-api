@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Enums\RoleEnum;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UserPayload;
 
@@ -13,7 +14,7 @@ final readonly class CreateUserAction
     {
         $user = User::create($payload->toArray());
 
-        $user->assignRole('user');
+        $user->assignRole(RoleEnum::User);
 
         return $user;
     }
