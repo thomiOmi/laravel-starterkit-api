@@ -36,7 +36,7 @@
 
 - After writing PHP code, run: `./vendor/bin/pint --dirty --format agent`
 - Then run: `vendor/bin/phpstan analyse --memory-limit=2G` (or `PAO_FORCE=true vendor/bin/phpstan analyse --memory-limit=2G` for JSON output)
-- Then run type coverage: `php -d memory_limit=2G artisan test --type-coverage` (or `composer type-coverage`)
+- Then run type coverage: `php -d memory_limit=2G artisan test --coverage`
 - Run tests: `php artisan test --compact` (or `PAO_FORCE=true vendor/bin/pest --compact` for JSON output)
 - Fix all errors in code (do NOT modify `phpstan.neon`)
 - Do NOT use `@phpstan-ignore` comments — fix the root cause instead
