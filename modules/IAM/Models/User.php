@@ -51,7 +51,6 @@ class User extends Authenticatable implements Identity
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
-
     /**
      * Send the email verification notification.
      */
