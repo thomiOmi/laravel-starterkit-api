@@ -16,6 +16,7 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
  * @property string $id
  * @property string $name
  * @property string $guard_name
+ * @property string|null $description
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
@@ -25,6 +26,7 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
 #[Fillable([
     'name',
     'guard_name',
+    'description',
 ])]
 #[UseFactory(PermissionFactory::class)]
 class Permission extends SpatiePermission

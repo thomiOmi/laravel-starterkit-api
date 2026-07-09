@@ -24,6 +24,7 @@ class PermissionFactory extends Factory
         return [
             'name' => fake()->unique()->word(),
             'guard_name' => 'web',
+            'description' => fake()->sentence(),
         ];
     }
 }
