@@ -97,7 +97,7 @@ php artisan test --compact --parallel
 php artisan test --compact --filter=UserManagementTest
 
 # Type coverage
-php -d memory_limit=2G artisan test --type-coverage
+php artisan test --coverage
 ```
 
 ## Code Quality

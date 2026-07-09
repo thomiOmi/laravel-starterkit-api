@@ -56,7 +56,7 @@ Three tiers:
 ## Code Quality
 - Format: `./vendor/bin/pint --dirty --format agent`
 - Static analysis: `./vendor/bin/phpstan analyse --memory-limit=2G`
-- Type coverage: `php -d memory_limit=2G artisan test --type-coverage`
+- Type coverage: `php artisan test --coverage`
 - Do not use `@phpstan-ignore` comments
 - Do not modify `phpstan.neon`
 - No `dd()`, `dump()`, `console.log()` in committed code
