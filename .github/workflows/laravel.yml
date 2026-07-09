@@ -40,8 +40,8 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-versions }}
-        extensions: mbstring, dom, fileinfo, pdo_sqlite
-        coverage: none
+        extensions: mbstring, dom, fileinfo, pdo_sqlite, xml, curl, zip, pcntl
+        coverage: pcov
 
     - name: Get Composer Cache Directory
       id: composer-cache
@@ -55,16 +55,19 @@ jobs:
         key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
         restore-keys: ${{ runner.os }}-composer-
 
-    - name: Install Composer Dependencies
-      run: composer install --no-progress --prefer-dist --optimize-autoloader
-
     - name: Validate composer.json
       run: composer validate --strict
 
-    - name: Prepare the application
+    - name: Install Composer Dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: Check for Known Vulnerabilities
+      run: composer audit
+
+    - name: Prepare the Application
       run: |
-        php -r "file_exists('.env') || copy('.env.example', '.env');"
-        php artisan key:generate
+        php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+        php artisan key:generate --env=testing
 
     - name: Check Code Formatting (Pint)
       run: vendor/bin/pint --test
@@ -72,11 +75,5 @@ jobs:
     - name: Static Analysis (Larastan)
       run: vendor/bin/phpstan analyse --error-format=github
 
-    - name: Type Coverage (Pest)
-      run: php -d memory_limit=2G artisan test --type-coverage
-
-    - name: Execute Tests (Unit and Feature tests) via PHPUnit/Pest
-      run: php artisan test --compact --parallel
-
-    - name: Check for known vulnerabilities
-      run: composer audit
+    - name: Execute Tests & Type Coverage (Pest/PHPUnit)
+      run: php artisan test --parallel --compact --coverage
