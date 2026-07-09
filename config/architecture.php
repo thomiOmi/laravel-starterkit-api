@@ -12,8 +12,6 @@ return [
     */
     'model' => [
         'default_id' => 'ulid', // Options: 'ulid', 'uuid', 'integer'
-        'use_soft_deletes' => true,
-        'audit_columns' => true, // Optional: Add created_by/updated_by if needed
     ],
 
     /*

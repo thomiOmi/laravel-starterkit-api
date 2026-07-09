@@ -31,23 +31,7 @@ describe('Role Bulk Operations', function () {
             ->toBeSuccessResponse();
 
         foreach ($roles as $role) {
-            expect($role->fresh()->trashed())->toBeTrue();
-        }
-    })->group('v1');
-
-    it('can bulk restore roles', function () {
-        $roles = [
-            Role::create(['name' => 'r1', 'guard_name' => 'web']),
-            Role::create(['name' => 'r2', 'guard_name' => 'web']),
-        ];
-        $ids = collect($roles)->pluck('id')->toArray();
-        Role::whereIn('id', $ids)->delete();
-
-        expect($this->postJson('/api/v1/roles/bulk/restore', ['ids' => $ids]))
-            ->toBeSuccessResponse();
-
-        foreach ($roles as $role) {
-            expect($role->fresh()->trashed())->toBeFalse();
+            expect($role->fresh())->toBeNull();
         }
     })->group('v1');
 });

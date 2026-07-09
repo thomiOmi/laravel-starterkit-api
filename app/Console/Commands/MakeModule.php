@@ -150,9 +150,7 @@ class MakeModule extends Command
             'routesContent' => $this->getRoutesContent($name, $version, $options),
         ]));
 
-        $this->createFileFromStub($path."/Models/{$name}.php", 'model', array_merge($replacements, [
-            'softDeletesPhpdoc' => $this->getSoftDeletesPhpdoc(),
-        ]));
+        $this->createFileFromStub($path."/Models/{$name}.php", 'model', $replacements);
 
         // Repository
         if ($options['repository']) {
@@ -216,7 +214,7 @@ class MakeModule extends Command
             $fileName = date('Y_m_d_His')."_create_{$tableName}_table.php";
             $this->createFileFromStub("{$migrationPath}/{$fileName}", 'migration', array_merge($replacements, [
                 'idColumn' => $this->getMigrationIdColumn(),
-                'softDeletesColumn' => $this->getSoftDeletesColumn(),
+
             ]));
         }
 
@@ -310,30 +308,6 @@ PHP;
             'integer' => '$table->id();',
             default => '$table->ulid(\'id\')->primary();',
         };
-    }
-
-    /**
-     * Get the soft deletes migration column based on architecture config.
-     */
-    protected function getSoftDeletesColumn(): string
-    {
-        if (! config()->boolean('architecture.model.use_soft_deletes', true)) {
-            return '';
-        }
-
-        return '$table->softDeletes();';
-    }
-
-    /**
-     * Get the soft deletes PHPDoc line for generated models.
-     */
-    protected function getSoftDeletesPhpdoc(): string
-    {
-        if (! config()->boolean('architecture.model.use_soft_deletes', true)) {
-            return '';
-        }
-
-        return " * @property Carbon|null \$deleted_at The timestamp when soft deleted.\n";
     }
 
     /**

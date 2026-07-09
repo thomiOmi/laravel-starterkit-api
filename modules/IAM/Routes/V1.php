@@ -19,7 +19,6 @@ use Modules\IAM\Controllers\V1\RegisterController;
 use Modules\IAM\Controllers\V1\ResendVerificationController;
 use Modules\IAM\Controllers\V1\ResetPasswordController;
 use Modules\IAM\Controllers\V1\RoleBulkDeleteController;
-use Modules\IAM\Controllers\V1\RoleBulkRestoreController;
 use Modules\IAM\Controllers\V1\RoleCreateController;
 use Modules\IAM\Controllers\V1\RoleDeleteController;
 use Modules\IAM\Controllers\V1\RoleListController;
@@ -84,7 +83,6 @@ Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', '
     Route::post('/', RoleCreateController::class)->name('create');
 
     Route::post('/bulk/delete', RoleBulkDeleteController::class)->name('bulk.delete');
-    Route::post('/bulk/restore', RoleBulkRestoreController::class)->name('bulk.restore');
 
     Route::get('/{role}', RoleShowController::class)->name('show');
     Route::put('/{role}', RoleUpdateController::class)->name('update');

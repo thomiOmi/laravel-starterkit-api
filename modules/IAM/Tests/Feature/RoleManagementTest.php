@@ -97,13 +97,13 @@ describe('Role Lifecycle', function () {
         ]))->toBeProblemResponse(status: 404);
     })->group('v1');
 
-    it('soft deletes a role', function () {
+    it('deletes a role', function () {
         $role = Role::create(['name' => 'to-be-deleted', 'guard_name' => 'web']);
 
         $response = $this->deleteJson("/api/v1/roles/{$role->id}");
 
         expect($response)->toBeSuccessResponse(status: 204);
-        expect($role->fresh()->trashed())->toBeTrue();
+        expect($role->fresh())->toBeNull();
     })->group('v1');
 
     it('returns 403 when deleting a non-existent role', function () {

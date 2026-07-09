@@ -19,7 +19,7 @@ class UserResource extends JsonResource
     use FormatDates;
 
     /**
-     * @return array{id: string, name: string, email: string, avatar: string|null, roles: string[]|null, permissions: string[]|null, email_verified_at: string|null, created_at: string, updated_at: string, deleted_at: string|null}
+     * @return array{id: string, name: string, email: string, avatar: string|null, roles: string[]|null, permissions: string[]|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null, deleted_at: string|null}
      */
     public function toArray(Request $request): array
     {
@@ -45,8 +45,8 @@ class UserResource extends JsonResource
             'roles' => $roles,
             'permissions' => $permissions,
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),
-            'created_at' => $this->formatDate($this->resource->created_at) ?? '',
-            'updated_at' => $this->formatDate($this->resource->updated_at) ?? '',
+            'created_at' => $this->formatDate($this->resource->created_at),
+            'updated_at' => $this->formatDate($this->resource->updated_at),
             'deleted_at' => $this->formatDate($this->resource->deleted_at),
         ];
     }

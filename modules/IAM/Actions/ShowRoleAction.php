@@ -17,7 +17,6 @@ final readonly class ShowRoleAction
             'guard_name',
             'created_at',
             'updated_at',
-            'deleted_at',
         ])->with(['permissions:id,name'])->find($id);
     }
 }

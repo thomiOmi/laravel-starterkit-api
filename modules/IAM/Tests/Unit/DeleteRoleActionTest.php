@@ -13,7 +13,7 @@ describe('DeleteRoleAction', function () {
         $action = app(DeleteRoleAction::class);
 
         expect($action->handle($role->id))->toBeTrue();
-        expect($role->fresh()->trashed())->toBeTrue();
+        expect($role->fresh())->toBeNull();
     });
 
     it('returns false for a non-existent role', function () {
@@ -27,6 +27,6 @@ describe('DeleteRoleAction', function () {
         $action = app(DeleteRoleAction::class);
 
         expect($action->handle($role->id))->toBeFalse();
-        expect($role->fresh()->trashed())->toBeFalse();
+        expect($role->fresh())->not->toBeNull();
     });
 });

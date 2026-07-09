@@ -17,7 +17,7 @@ describe('BulkDeleteRolesAction', function () {
         $count = $action->handle([$role->id]);
 
         expect($count)->toBe(1);
-        expect($role->fresh()->trashed())->toBeTrue();
+        expect($role->fresh())->toBeNull();
     });
 
     it('does not delete super-admin role', function () {
