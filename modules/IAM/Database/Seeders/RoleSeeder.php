@@ -24,7 +24,7 @@ class RoleSeeder extends Seeder
         $registrar = app(PermissionRegistrar::class);
         $registrar->forgetCachedPermissions();
 
-        $guards = ['web', 'sanctum'];
+        $guards = ['sanctum'];
         $permissions = [
             'user.view',
             'user.create',

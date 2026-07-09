@@ -9,7 +9,7 @@ use Modules\IAM\Models\Permission;
 
 describe('DeletePermissionAction', function () {
     it('deletes an existing permission', function () {
-        $perm = Permission::create(['name' => 'to.delete', 'guard_name' => 'web']);
+        $perm = Permission::create(['name' => 'to.delete', 'guard_name' => 'sanctum']);
         $action = app(DeletePermissionAction::class);
 
         expect($action->handle($perm->id))->toBeTrue();

@@ -51,8 +51,6 @@ class User extends Authenticatable implements Identity
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
-    /** @var string|array<int, string> */
-    protected string|array $guard_name = ['web', 'sanctum'];
 
     /**
      * Send the email verification notification.

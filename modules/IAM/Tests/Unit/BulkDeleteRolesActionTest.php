@@ -10,8 +10,8 @@ use Modules\IAM\Models\Role;
 
 describe('BulkDeleteRolesAction', function () {
     it('deletes roles except super-admin', function () {
-        $role = Role::create(['name' => 'editor', 'guard_name' => 'web']);
-        Role::create(['name' => Role::SUPER_ADMIN, 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'editor', 'guard_name' => 'sanctum']);
+        Role::create(['name' => Role::SUPER_ADMIN, 'guard_name' => 'sanctum']);
         $action = app(BulkDeleteRolesAction::class);
 
         $count = $action->handle([$role->id]);
@@ -21,7 +21,7 @@ describe('BulkDeleteRolesAction', function () {
     });
 
     it('does not delete super-admin role', function () {
-        $saRole = Role::create(['name' => Role::SUPER_ADMIN, 'guard_name' => 'web']);
+        $saRole = Role::create(['name' => Role::SUPER_ADMIN, 'guard_name' => 'sanctum']);
         $action = app(BulkDeleteRolesAction::class);
 
         $count = $action->handle([$saRole->id]);
@@ -31,7 +31,7 @@ describe('BulkDeleteRolesAction', function () {
 
     it('forgets cache for each role', function () {
         Cache::spy();
-        $role = Role::create(['name' => 'editor', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'editor', 'guard_name' => 'sanctum']);
         $action = app(BulkDeleteRolesAction::class);
 
         $action->handle([$role->id]);

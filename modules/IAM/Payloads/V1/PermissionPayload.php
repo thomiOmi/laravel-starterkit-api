@@ -10,14 +10,14 @@ final readonly class PermissionPayload
 {
     public function __construct(
         public string $name,
-        public string $guardName = 'web',
+        public string $guardName = 'sanctum',
     ) {}
 
     public static function fromRequest(PermissionRequest $request): self
     {
         return new self(
             name: trim($request->string('name')->toString()),
-            guardName: trim($request->string('guard_name', 'web')->toString()) ?: 'web',
+            guardName: trim($request->string('guard_name', 'sanctum')->toString()) ?: 'sanctum',
         );
     }
 

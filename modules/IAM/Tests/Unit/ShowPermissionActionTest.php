@@ -9,7 +9,7 @@ use Modules\IAM\Models\Permission;
 
 describe('ShowPermissionAction', function () {
     it('finds an existing permission by id', function () {
-        $perm = Permission::create(['name' => 'test.perm', 'guard_name' => 'web']);
+        $perm = Permission::create(['name' => 'test.perm', 'guard_name' => 'sanctum']);
         $action = app(ShowPermissionAction::class);
 
         $result = $action->handle($perm->id);

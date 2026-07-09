@@ -12,7 +12,7 @@ use Modules\IAM\Models\User;
 
 beforeEach(function () {
     Notification::fake();
-    Role::create(['name' => 'user', 'guard_name' => 'web']);
+    Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
 });
 
 describe('Authentication Core (Registration Guarding)', function () {

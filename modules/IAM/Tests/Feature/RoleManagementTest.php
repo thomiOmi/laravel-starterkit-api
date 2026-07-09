@@ -19,7 +19,7 @@ beforeEach(function () {
 
 describe('Role Listing & Filtering', function () {
     it('can list all roles with pagination', function () {
-        Role::create(['name' => 'manager', 'guard_name' => 'web']);
+        Role::create(['name' => 'manager', 'guard_name' => 'sanctum']);
 
         $response = $this->getJson('/api/v1/roles');
 
@@ -30,8 +30,8 @@ describe('Role Listing & Filtering', function () {
     })->group('v1');
 
     it('can filter roles by search term', function () {
-        Role::create(['name' => 'editor', 'guard_name' => 'web']);
-        Role::create(['name' => 'viewer', 'guard_name' => 'web']);
+        Role::create(['name' => 'editor', 'guard_name' => 'sanctum']);
+        Role::create(['name' => 'viewer', 'guard_name' => 'sanctum']);
 
         $response = $this->getJson('/api/v1/roles?search=editor');
 
@@ -42,7 +42,7 @@ describe('Role Listing & Filtering', function () {
 
 describe('Role Lifecycle', function () {
     it('fails creating a duplicate role name', function () {
-        Role::create(['name' => 'duplicate', 'guard_name' => 'web']);
+        Role::create(['name' => 'duplicate', 'guard_name' => 'sanctum']);
 
         expect($this->postJson('/api/v1/roles', [
             'name' => 'duplicate',
@@ -71,7 +71,7 @@ describe('Role Lifecycle', function () {
     })->group('v1');
 
     it('shows role details', function () {
-        $role = Role::create(['name' => 'support', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'support', 'guard_name' => 'sanctum']);
 
         $response = $this->getJson("/api/v1/roles/{$role->id}");
 
@@ -81,7 +81,7 @@ describe('Role Lifecycle', function () {
     })->group('v1');
 
     it('updates an existing role', function () {
-        $role = Role::create(['name' => 'old-name', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'old-name', 'guard_name' => 'sanctum']);
 
         $response = $this->putJson("/api/v1/roles/{$role->id}", [
             'name' => 'new-name',
@@ -98,7 +98,7 @@ describe('Role Lifecycle', function () {
     })->group('v1');
 
     it('deletes a role', function () {
-        $role = Role::create(['name' => 'to-be-deleted', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'to-be-deleted', 'guard_name' => 'sanctum']);
 
         $response = $this->deleteJson("/api/v1/roles/{$role->id}");
 

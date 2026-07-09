@@ -15,7 +15,7 @@ use Modules\IAM\Models\User;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    Role::create(['name' => 'user', 'guard_name' => 'web']);
+    Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
 });
 
 describe('SocialCallbackAction', function () {

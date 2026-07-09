@@ -11,7 +11,7 @@ use Modules\IAM\Payloads\V1\RolePayload;
 
 describe('UpdateRoleAction', function () {
     it('updates an existing role name', function () {
-        $role = Role::create(['name' => 'old-role', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'old-role', 'guard_name' => 'sanctum']);
         $action = app(UpdateRoleAction::class);
 
         $result = $action->handle($role->id, new RolePayload(
@@ -23,8 +23,8 @@ describe('UpdateRoleAction', function () {
     });
 
     it('syncs permissions when provided', function () {
-        $perm = Permission::create(['name' => 'role.perm', 'guard_name' => 'web']);
-        $role = Role::create(['name' => 'perm-role', 'guard_name' => 'web']);
+        $perm = Permission::create(['name' => 'role.perm', 'guard_name' => 'sanctum']);
+        $role = Role::create(['name' => 'perm-role', 'guard_name' => 'sanctum']);
         $action = app(UpdateRoleAction::class);
 
         $result = $action->handle($role->id, new RolePayload(

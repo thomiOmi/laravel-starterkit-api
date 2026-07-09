@@ -9,7 +9,7 @@ use Modules\IAM\Models\Role;
 
 describe('ShowRoleAction', function () {
     it('finds an existing role by id', function () {
-        $role = Role::create(['name' => 'test-role', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'test-role', 'guard_name' => 'sanctum']);
         $action = app(ShowRoleAction::class);
 
         $result = $action->handle($role->id);

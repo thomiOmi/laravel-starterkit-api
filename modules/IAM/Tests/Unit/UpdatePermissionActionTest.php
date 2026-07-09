@@ -10,7 +10,7 @@ use Modules\IAM\Payloads\V1\PermissionPayload;
 
 describe('UpdatePermissionAction', function () {
     it('updates an existing permission', function () {
-        $perm = Permission::create(['name' => 'old.name', 'guard_name' => 'web']);
+        $perm = Permission::create(['name' => 'old.name', 'guard_name' => 'sanctum']);
         $action = app(UpdatePermissionAction::class);
 
         $result = $action->handle($perm->id, new PermissionPayload(

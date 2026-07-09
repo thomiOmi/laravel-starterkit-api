@@ -10,7 +10,7 @@ use Modules\IAM\Models\Role;
 
 describe('ListRolesAction', function () {
     it('returns paginated roles', function () {
-        Role::create(['name' => 'admin', 'guard_name' => 'web']);
+        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
         $action = app(ListRolesAction::class);
 
         $result = $action->handle(app(RoleFilter::class));

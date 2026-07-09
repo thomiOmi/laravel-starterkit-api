@@ -9,7 +9,7 @@ use Modules\IAM\Models\Role;
 
 describe('DeleteRoleAction', function () {
     it('deletes an existing role', function () {
-        $role = Role::create(['name' => 'to.delete', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'to.delete', 'guard_name' => 'sanctum']);
         $action = app(DeleteRoleAction::class);
 
         expect($action->handle($role->id))->toBeTrue();
@@ -23,7 +23,7 @@ describe('DeleteRoleAction', function () {
     });
 
     it('returns false for the super-admin role', function () {
-        $role = Role::create(['name' => 'super-admin', 'guard_name' => 'web']);
+        $role = Role::create(['name' => 'super-admin', 'guard_name' => 'sanctum']);
         $action = app(DeleteRoleAction::class);
 
         expect($action->handle($role->id))->toBeFalse();

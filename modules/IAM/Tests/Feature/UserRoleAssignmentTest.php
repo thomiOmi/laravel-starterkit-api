@@ -43,7 +43,7 @@ describe('User Role Management', function () {
     it('prevents privilege escalation by unauthorized users', function () {
         loginAsUser(); // Regular user
         $user = User::factory()->create();
-        Role::create(['name' => 'admin', 'guard_name' => 'web']);
+        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
 
         expect($this->putJson("/api/v1/users/{$user->id}/roles", ['roles' => ['admin']]))
             ->toBeProblemResponse(status: 403);

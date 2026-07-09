@@ -10,7 +10,7 @@ use Modules\IAM\Models\Permission;
 
 describe('ListPermissionsAction', function () {
     it('returns paginated permissions', function () {
-        Permission::create(['name' => 'test.perm', 'guard_name' => 'web']);
+        Permission::create(['name' => 'test.perm', 'guard_name' => 'sanctum']);
         $action = app(ListPermissionsAction::class);
 
         $result = $action->handle(app(PermissionFilter::class));

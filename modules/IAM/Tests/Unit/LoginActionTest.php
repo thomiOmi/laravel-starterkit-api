@@ -37,7 +37,7 @@ describe('LoginAction', function () {
     });
 
     it('assigns wildcard abilities to admins', function () use ($password) {
-        Role::create(['name' => 'admin', 'guard_name' => 'web']);
+        Role::create(['name' => 'admin', 'guard_name' => 'sanctum']);
         $user = User::factory()->create(['password' => Hash::make($password)]);
         $user->assignRole('admin');
 
@@ -54,7 +54,7 @@ describe('LoginAction', function () {
     });
 
     it('assigns restricted abilities to regular users', function () use ($password) {
-        Role::create(['name' => 'user', 'guard_name' => 'web']);
+        Role::create(['name' => 'user', 'guard_name' => 'sanctum']);
         $user = User::factory()->create(['password' => Hash::make($password)]);
         $user->assignRole('user');
 
