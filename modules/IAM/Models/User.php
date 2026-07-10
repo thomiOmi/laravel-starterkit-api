@@ -44,7 +44,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static \Illuminate\Database\Eloquent\Builder<static> whereDoesntHave(string $relation, \Closure|null $callback = null)
  */
 #[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'provider_id'])]
 #[UseFactory(UserFactory::class)]
 class User extends Authenticatable implements Identity
 {
@@ -78,6 +78,7 @@ class User extends Authenticatable implements Identity
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'provider_id' => 'encrypted',
         ];
     }
 }
