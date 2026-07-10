@@ -13,7 +13,7 @@ version:
   syncCheck: false
 
 commits:
-  conventional: true
+  conventional: false
 
 git:
   push: true
