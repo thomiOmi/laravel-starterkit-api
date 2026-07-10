@@ -15,76 +15,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  APP_ENV: testing
-  CACHE_STORE: array
-  SESSION_DRIVER: array
-  QUEUE_CONNECTION: sync
-  DB_CONNECTION: sqlite
-  DB_DATABASE: ':memory:'
-  PHP_VERSION: '8.4'
-  LARAVEL_VERSION: '13'
-  TEST_FRAMEWORK: 'Pest v4'
-  TENANT_MODEL: 'multi-tenant (cove-scoped)'
-
 jobs:
   sentinel-scan:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
-      security-events: write
-
-    # Only run on protected branches
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          ref: ${{ github.ref }}
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: pdo, sqlite
-          tools: composer:latest
-          coverage: none
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Prepare the Application
-        run: |
-          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
-          php artisan key:generate --env=testing
-          php artisan config:clear --env=testing
-
-      - name: Audit Composer Dependencies
-        run: composer audit
-
-      - name: Run Pest baseline (pre-security-fix)
-        id: baseline_tests
-        run: vendor/bin/pest --no-interaction --compact 2>&1 | tee test-baseline.log
-        continue-on-error: true
-
-      - name: Invoke Jules — SENTINEL Security Agent
-        uses: google-labs-code/jules-action@v1.0.0
+      - uses: google-labs-code/jules-action@v1.0.0
         id: sentinel
         with:
           include_commit_log: true
@@ -92,6 +30,15 @@ jobs:
             # SENTINEL: Security Agent for Laravel 13+
 
             You are SENTINEL, a security agent hunting Laravel-specific vulnerabilities. Focus on **high-confidence, automatable fixes**.
+
+            ## Project Context
+
+            - **Framework:** Laravel 13, PHP 8.4
+            - **Auth:** Sanctum Bearer tokens (API-only, no cookie auth)
+            - **Permissions:** Spatie Permission with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
+            - **Multi-tenant:** cove-scoped roles and permissions
+            - **Encrypted fields:** sensitive PII uses `#[Encrypted]` cast
+            - **Tests:** Pest 4 with `toBeSuccessResponse()`, `toBeProblemResponse()`, `toBePaginated()`
 
             ## What to Scan
 
@@ -127,17 +74,6 @@ jobs:
             4. **📝 VALIDATE** — Confirm Pest suite passes
             5. **🎁 PRESENT** — Draft PR with severity and fix
 
-            ## PR Format
-
-            ```
-            🔒 Sentinel: [vulnerability]
-
-            🚨 Severity: [CRITICAL | HIGH | MEDIUM]
-            ⚠️  What: [Specific vulnerability]
-            🛡️  Fix: [What was changed and why it's safer]
-            🔬 Tests: [Which test suite validates the fix]
-            ```
-
             ## Rules & Guardrails
 
             - **CRITICAL issues:** Always PR. No exceptions.
@@ -151,33 +87,6 @@ jobs:
             - **Run full Pest suite.** All tests must pass.
             - **If fix requires architectural change,** don't PR — flag in comment instead.
 
-            ## Laravel-Specific High Confidence Patterns (Auto-fixable)
-
-            ✅ **Auto-fixable without domain knowledge:**
-            ```php
-            // ❌ No $fillable/$guarded
-            class User extends Model { }
-            // ✅ Add $guarded = ['id', 'password']
-
-            // ❌ Hardcoded secret in code
-            $key = 'sk_live_xxxxx';
-            // ✅ Move to config('services.stripe.secret_key')
-
-            // ❌ No validation
-            Route::post('/users', fn() => User::create(request()->all()));
-            // ✅ Add FormRequest or validate()
-
-            // ❌ Missing auth
-            Route::get('/admin', fn() => AdminPanel::render());
-            // ✅ Add ->middleware('auth') or ->can('admin')
-
-            // ❌ Sensitive field unencrypted
-            class User extends Model {
-              protected $casts = ['phone' => 'string'];
-            }
-            // ✅ Add #[Encrypted] cast or encrypted() column
-            ```
-
             ## Non-Goals
 
             - Authorization logic refactoring (too context-dependent)
@@ -187,27 +96,8 @@ jobs:
             - Database security configuration
             - Server/infrastructure security
 
-            ## Context
+            ## Severity Filter
 
-            - **Framework:** Laravel ${{ env.LARAVEL_VERSION }}
-            - **PHP:** ${{ env.PHP_VERSION }}
-            - **Multi-tenant:** ${{ env.TENANT_MODEL }}
-            - **Permission system:** Spatie Permission with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
-            - **Auth method:** Sanctum Bearer tokens (API-only, no cookie auth)
-            - **Encrypted fields** — sensitive PII uses `#[Encrypted]` cast
-            - **Pest 4** — `toBeSuccessResponse()`, `toBeProblemResponse()`, `toBePaginated()` helpers
-            - **Severity filter:** ${{ inputs.severity_filter || 'CRITICAL' }}
+            Current minimum severity: ${{ inputs.severity_filter || 'CRITICAL' }}
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}
-
-      - name: Verify Pest suite passes post-fix
-        run: |
-          php artisan config:clear --env=testing
-          vendor/bin/pest --no-interaction --compact
-
-      - name: Summary
-        if: always()
-        run: |
-          echo "## SENTINEL Security Scan Complete"
-          echo "- Severity Level: ${{ inputs.severity_filter || 'CRITICAL' }}"
-          echo "- Status: ${{ job.status }}"

@@ -15,77 +15,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  APP_ENV: testing
-  CACHE_STORE: array
-  SESSION_DRIVER: array
-  QUEUE_CONNECTION: sync
-  DB_CONNECTION: sqlite
-  DB_DATABASE: ':memory:'
-  PHP_VERSION: '8.4'
-  LARAVEL_VERSION: '13'
-  TEST_FRAMEWORK: 'Pest v4'
-  ARCHITECTURE: 'Modular (Repository/Action patterns)'
-
 jobs:
   custodian-scan:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
-
-    # Only run on main branches, not during feature development
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          ref: ${{ github.ref }}
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: pdo, sqlite
-          tools: composer:latest
-          coverage: none
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Prepare the Application
-        run: |
-          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
-          php artisan key:generate --env=testing
-          php artisan config:clear --env=testing
-
-      - name: Run static analysis baseline (PHPStan)
-        id: phpstan_baseline
-        run: vendor/bin/phpstan analyse --no-interaction 2>&1 | tee phpstan-baseline.log
-        continue-on-error: true
-
-      - name: Run Pest baseline (pre-cleanup)
-        id: baseline_tests
-        run: vendor/bin/pest --no-interaction 2>&1 | tee test-baseline.log
-        continue-on-error: true
-
-      - name: Invoke Jules — CUSTODIAN Maintenance Agent
-        uses: google-labs-code/jules-action@v1.0.0
+      - uses: google-labs-code/jules-action@v1.0.0
         id: custodian
         with:
           include_commit_log: true
@@ -93,6 +30,16 @@ jobs:
             # CUSTODIAN: Maintenance Agent for Laravel 13+
 
             You are CUSTODIAN, a code quality and maintenance agent for Laravel projects. Focus on **high-confidence, low-risk cleanups**.
+
+            ## Project Context
+
+            - **Framework:** Laravel 13, PHP 8.4
+            - **Tests:** Pest 4 with `toBeSuccessResponse()`, `toBeProblemResponse()`, `toBePaginated()`
+            - **Architecture:** Modular DDD (Actions, Controllers, Filters, Payloads, Resources per module)
+            - **Permissions:** Spatie Permission with Sanctum guard, `PermissionEnum`/`RoleEnum`
+            - **Code style:** PHP 8 attributes (`#[Fillable]`, `#[Hidden]`) over `$fillable`/`$hidden`
+            - **Tests run:** `php artisan test --compact --parallel`
+            - **Static analysis:** PHPStan at max level
 
             ## What to Clean Up
 
@@ -137,20 +84,6 @@ jobs:
             4. **📝 TEST** — Run Pest suite; all tests pass
             5. **🎁 PRESENT** — Draft PR with grouped changes
 
-            ## PR Format
-
-            ```
-            ♻️  Custodian: [maintenance category]
-
-            🧹 Changes:
-            - [Removed X unused Y]
-            - [Refactored Z into reusable Q]
-            - [Fixed naming inconsistency: old → new]
-
-            📊 Impact: [Improves readability | Removes ~X lines of dead code | etc]
-            🔬 Verified: [Pest tests pass | Manual review confirms no side effects]
-            ```
-
             ## Rules & Guardrails
 
             ### ALWAYS SKIP
@@ -174,79 +107,6 @@ jobs:
             - **Run Pest suite locally.** All tests must pass.
             - **If uncertain, leave it.** No cleanup worth breaking a hidden dependency.
 
-            ## High-Confidence Patterns (Safe to Auto-fix)
-
-            ✅ **Obviously safe removals:**
-            ```php
-            // ❌ Unused variable
-            $result = someFunction();
-            doSomethingElse();
-
-            // ✅ Remove $result line
-
-            // ❌ Unreachable code
-            if (false) {
-              doExpensiveWork();
-            }
-
-            // ✅ Remove entire block
-
-            // ❌ Unused import
-            use App\Models\User;
-            // (no reference to User in file)
-
-            // ✅ Remove use statement
-
-            // ❌ Dead parameter
-            public function process($user, $config) {
-              return $config->getValue();
-              // $user never used
-            }
-
-            // ✅ Remove $user parameter (if no parent override)
-            ```
-
-            ✅ **Safe naming fixes:**
-            ```php
-            // ❌ Vague names
-            $data = [];
-            foreach ($items as $item) {
-              $data[] = $item->id;
-            }
-
-            // ✅ Rename
-            $userIds = [];
-            foreach ($users as $user) {
-              $userIds[] = $user->id;
-            }
-
-            // ❌ Missing intent
-            public function check() { }
-
-            // ✅ Rename to intent
-            public function canAccessDashboard() { }
-            ```
-
-            ✅ **Safe extraction:**
-            ```php
-            // ❌ Duplication in controllers
-            public function store(UserRequest $request) {
-              $validated = $request->validated();
-              $user = User::create($validated);
-              // ... 10 lines of setup
-            }
-
-            public function update(UserRequest $request) {
-              $validated = $request->validated();
-              $user = User::find($request->id);
-              // ... same 10 lines
-            }
-
-            // ✅ Extract to Action or scope
-            // CreateUserAction, UpdateUserAction
-            // Reduces duplication, tests independently
-            ```
-
             ## Non-Goals
 
             - Architectural restructuring (Models → Services, etc.)
@@ -255,34 +115,8 @@ jobs:
             - Breaking changes to public APIs
             - Removing code "just because it's old"
 
-            ## Context
+            ## Focus Areas
 
-            - **Framework:** Laravel ${{ env.LARAVEL_VERSION }}
-            - **PHP:** ${{ env.PHP_VERSION }}
-            - **Tests:** ${{ env.TEST_FRAMEWORK }}
-            - **Architecture:** ${{ env.ARCHITECTURE }}
-            - **PHP 8 attributes preferred** over `$fillable`/`$hidden` (use `#[Fillable]`, `#[Hidden]`)
-            - **Spatie Permission** with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
-            - **Modular DDD** — Actions, Controllers, Filters, Payloads, Resources per module
-            - **Pest 4** — `toBeSuccessResponse()`, `toBeProblemResponse()`, `toBePaginated()` helpers
-            - **Focus Areas:** ${{ inputs.focus || 'all' }}
-            - **PHPStan baseline:** See phpstan-baseline.log
-            - **Test baseline:** See test-baseline.log
+            Current scan focus: ${{ inputs.focus || 'all' }}
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}
-
-      - name: Verify Pest suite passes post-cleanup
-        run: |
-          php artisan config:clear --env=testing
-          vendor/bin/pest --no-interaction --compact
-
-      - name: Run PHPStan post-cleanup
-        run: vendor/bin/phpstan analyse --no-interaction
-
-      - name: Summary
-        if: always()
-        run: |
-          echo "## CUSTODIAN Maintenance Scan Complete"
-          echo "- Focus: ${{ inputs.focus || 'all' }}"
-          echo "- PR Created: ${{ steps.custodian.outputs.pr_created || 'false' }}"
-          echo "- Status: ${{ job.status }}"

@@ -9,14 +9,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
-env:
-  APP_ENV: testing
-  CACHE_STORE: array
-  SESSION_DRIVER: array
-  QUEUE_CONNECTION: sync
-  DB_CONNECTION: sqlite
-  DB_DATABASE: ':memory:'
-
 jobs:
   fix-failure:
     if: >
@@ -25,47 +17,10 @@ jobs:
       github.event.workflow_run.actor.type != 'Bot'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      actions: read
-      pull-requests: write
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
-          fetch-depth: 0
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: pdo, sqlite
-          tools: composer:latest
-          coverage: none
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Prepare the Application
-        run: |
-          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
-          php artisan key:generate --env=testing
-          php artisan config:clear --env=testing
-
-      - name: Invoke Jules to fix failure
-        uses: google-labs-code/jules-action@v1.0.0
+      - uses: google-labs-code/jules-action@v1.0.0
         with:
           include_last_commit: true
           include_commit_log: true
@@ -102,11 +57,5 @@ jobs:
             - `final readonly` for Action / Controller / Payload classes
             - Keep changes under 30 lines (surgical fixes)
             - All existing tests must pass
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
 
-      - name: Verify fix passes quality gate
-        run: |
-          php artisan config:clear --env=testing
-          vendor/bin/pint --test
-          vendor/bin/phpstan analyse --error-format=github
-          vendor/bin/pest --no-interaction --compact
+          jules_api_key: ${{ secrets.JULES_API_KEY }}

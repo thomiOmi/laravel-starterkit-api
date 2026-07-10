@@ -8,65 +8,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.issue.number }}
   cancel-in-progress: true
 
-env:
-  APP_ENV: testing
-  CACHE_STORE: array
-  SESSION_DRIVER: array
-  QUEUE_CONNECTION: sync
-  DB_CONNECTION: sqlite
-  DB_DATABASE: ':memory:'
-
 jobs:
   fix-bug:
     if: github.event.label.name == 'bug'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      issues: write
-      pull-requests: write
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: pdo, sqlite
-          tools: composer:latest
-          coverage: none
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Prepare the Application
-        run: |
-          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
-          php artisan key:generate --env=testing
-          php artisan config:clear --env=testing
-
-      - name: Run Pest baseline
-        id: baseline_tests
-        run: vendor/bin/pest --no-interaction --compact 2>&1 | tee test-baseline.log
-        continue-on-error: true
-
-      - name: Invoke Jules
+      - uses: google-labs-code/jules-action@v1.0.0
         if: ${{ contains(fromJSON('["thomiOmi"]'), github.event.issue.user.login) }}
-        uses: google-labs-code/jules-action@v1.0.0
         with:
           include_last_commit: true
           include_commit_log: true
@@ -102,9 +53,5 @@ jobs:
             - `final readonly` for Action / Controller / Payload classes
             - Keep changes under 100 lines
             - All existing tests must pass
-          jules_api_key: ${{ secrets.JULES_API_KEY }}
 
-      - name: Verify Pest suite passes post-fix
-        run: |
-          php artisan config:clear --env=testing
-          vendor/bin/pest --no-interaction --compact
+          jules_api_key: ${{ secrets.JULES_API_KEY }}

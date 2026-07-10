@@ -15,72 +15,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  APP_ENV: testing
-  CACHE_STORE: array
-  SESSION_DRIVER: array
-  QUEUE_CONNECTION: sync
-  DB_CONNECTION: sqlite
-  DB_DATABASE: ':memory:'
-  PHP_VERSION: '8.4'
-  LARAVEL_VERSION: '13'
-  TEST_FRAMEWORK: 'Pest v4'
-  ARCHITECTURE: 'Modular (Repository/Action patterns)'
-
 jobs:
   turbo-scan:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
-
-    # Only run on main branches, not hotfixes
-    if: |
-      github.event_name == 'workflow_dispatch' || 
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+      contents: read
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          ref: ${{ inputs.target_branch || github.ref }}
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: pdo, sqlite
-          tools: composer:latest
-          coverage: none
-
-      - name: Get Composer Cache Directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Prepare the Application
-        run: |
-          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
-          php artisan key:generate --env=testing
-          php artisan config:clear --env=testing
-
-      - name: Run Pest baseline (pre-optimization)
-        id: baseline_tests
-        run: vendor/bin/pest --no-interaction --compact --coverage 2>&1 | tee test-baseline.log
-        continue-on-error: true
-
-      - name: Invoke Jules — TURBO Optimization Agent
-        uses: google-labs-code/jules-action@v1.0.0
+      - uses: google-labs-code/jules-action@v1.0.0
         id: turbo
         with:
           include_commit_log: true
@@ -88,6 +30,14 @@ jobs:
             # TURBO: Performance Optimization Agent for Laravel 13+
 
             You are TURBO, a performance optimization agent for Laravel backends. Focus on **high-confidence, low-risk wins**.
+
+            ## Project Context
+
+            - **Framework:** Laravel 13, PHP 8.4
+            - **Architecture:** Modular DDD (Actions, Controllers, Filters, Payloads, Resources per module)
+            - **Permissions:** Spatie Permission with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
+            - **Code style:** PHP 8 attributes (`#[Fillable]`, `#[Hidden]`) over `$fillable`/`$hidden`
+            - **Tests:** Pest 4 parallel — `php artisan test --compact --parallel`
 
             ## What to Hunt
 
@@ -126,17 +76,6 @@ jobs:
             4. **✅ VERIFY** — Confirm tests pass; calculate expected speedup
             5. **🎁 PRESENT** — Draft PR with measurement
 
-            ## PR Format
-
-            ```
-            🚀 Turbo: [optimization]
-
-            💡 Pattern: [N+1 eager load | Query result handling | etc]
-            🎯 Why: [Specific cost — e.g., "5 extra queries per request"]
-            📊 Impact: ~[X]ms saved per request (or queries reduced from N to M)
-            🔬 Method: [Ran Pest suite | Measured via Laravel Debugbar | SPX profiler]
-            ```
-
             ## Rules & Guardrails
 
             - **Only if tests exist** in the changed file. No test coverage = no PR.
@@ -154,27 +93,4 @@ jobs:
             - Eloquent macro definitions (unless obvious duplication)
             - Changes affecting request/response cycle timing (middleware, event dispatch order)
 
-            ## Context
-
-            - **Framework:** Laravel ${{ env.LARAVEL_VERSION }}
-            - **PHP:** ${{ env.PHP_VERSION }}
-            - **Tests:** ${{ env.TEST_FRAMEWORK }}
-            - **Architecture:** ${{ env.ARCHITECTURE }}
-            - **Spatie Permission** with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
-            - **Modular DDD** — Actions, Controllers, Filters, Payloads, Resources per module
-            - **Pest 4 parallel** — `php artisan test --compact --parallel`
-            - **PHP 8 attributes** used over `$fillable`/`$hidden`
-            - **Test baseline:** See test-baseline.log for current test health
-
           jules_api_key: ${{ secrets.JULES_API_KEY }}
-
-      - name: Verify Pest suite passes post-optimization
-        run: |
-          php artisan config:clear --env=testing
-          vendor/bin/pest --no-interaction --compact --parallel
-
-      - name: Summary
-        if: always()
-        run: |
-          echo "## TURBO Optimization Scan Complete"
-          echo "- Status: ${{ job.status }}"
