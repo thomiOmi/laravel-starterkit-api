@@ -22,6 +22,6 @@ final readonly class UpdateUserAction
 
         Cache::forget("user_{$user->id}");
 
-        return $user;
+        return $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']);
     }
 }
