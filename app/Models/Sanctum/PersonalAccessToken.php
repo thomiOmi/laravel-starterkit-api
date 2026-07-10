@@ -24,4 +24,20 @@ use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
     'ip_address',
     'user_agent',
 ])]
-class PersonalAccessToken extends SanctumPersonalAccessToken {}
+class PersonalAccessToken extends SanctumPersonalAccessToken
+{
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'abilities' => 'json',
+            'ip_address' => 'encrypted',
+            'last_used_at' => 'datetime',
+            'expires_at' => 'datetime',
+        ];
+    }
+}
