@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.19.1](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.19.1) (2026-07-10)
+
+### Performance Improvements
+
+- **iam:** optimize CreateUserAction and UpdateUserAction with eager loading ([4c5da5e](https://github.com/thomiOmi/laravel-starterkit-api/commit/4c5da5e497d9f3c11a2cab1eb6dcebbd83bf91b1))
+
+### Continuous Integration
+
+- **release:** drop redundant git config (env vars handle authorship) ([0433945](https://github.com/thomiOmi/laravel-starterkit-api/commit/043394583c02b2e03ef70ffabe27282363ce931b))
+- **release:** set git author to triggering actor ([686f83c](https://github.com/thomiOmi/laravel-starterkit-api/commit/686f83c08fe6dbd6a80cd0f685f857ecb9ba0581))
 ## [0.19.0](https://github.com/thomiOmi/laravel-starterkit-api/releases/tag/v0.19.0) (2026-07-09)
 
 ### Features
