@@ -104,11 +104,6 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
-      - name: Configure Git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
       - name: Run Shipmark Release
         id: shipmark
         run: npx @grazulex/shipmark release --ci "$BUMP" 2>&1 | tee /tmp/shipmark.log
