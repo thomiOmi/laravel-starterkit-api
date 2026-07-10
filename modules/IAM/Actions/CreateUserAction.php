@@ -16,6 +16,6 @@ final readonly class CreateUserAction
 
         $user->assignRole(RoleEnum::User);
 
-        return $user;
+        return $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']);
     }
 }
