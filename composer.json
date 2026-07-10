@@ -54,6 +54,7 @@
             "@php artisan migrate --force"
         ],
         "release": "npx @grazulex/shipmark release",
+        "release:dry": "npx @grazulex/shipmark release --ci auto --dry-run",
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan serve"
