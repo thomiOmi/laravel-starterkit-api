@@ -16,6 +16,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  APP_ENV: testing
+  CACHE_STORE: array
+  SESSION_DRIVER: array
+  QUEUE_CONNECTION: sync
+  DB_CONNECTION: sqlite
+  DB_DATABASE: ':memory:'
   PHP_VERSION: '8.4'
   LARAVEL_VERSION: '13'
   TEST_FRAMEWORK: 'Pest v4'
@@ -61,17 +67,27 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --no-interaction --no-scripts --prefer-dist
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare the Application
+        run: |
+          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+          php artisan key:generate --env=testing
+          php artisan config:clear --env=testing
+
+      - name: Audit Composer Dependencies
+        run: composer audit
 
       - name: Run Pest baseline (pre-security-fix)
         id: baseline_tests
-        run: vendor/bin/pest --no-interaction 2>&1 | tee test-baseline.log
+        run: vendor/bin/pest --no-interaction --compact 2>&1 | tee test-baseline.log
         continue-on-error: true
 
       - name: Invoke Jules — SENTINEL Security Agent
         uses: google-labs-code/jules-action@v1.0.0
         id: sentinel
         with:
+          include_commit_log: true
           prompt: |
             # SENTINEL: Security Agent for Laravel 13+
 
@@ -176,15 +192,18 @@ jobs:
             - **Framework:** Laravel ${{ env.LARAVEL_VERSION }}
             - **PHP:** ${{ env.PHP_VERSION }}
             - **Multi-tenant:** ${{ env.TENANT_MODEL }}
-            - **Permission system:** Spatie Permission with cove-scoped roles
+            - **Permission system:** Spatie Permission with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
             - **Auth method:** Sanctum Bearer tokens (API-only, no cookie auth)
+            - **Encrypted fields** — sensitive PII uses `#[Encrypted]` cast
+            - **Pest 4** — `toBeSuccessResponse()`, `toBeProblemResponse()`, `toBePaginated()` helpers
             - **Severity filter:** ${{ inputs.severity_filter || 'CRITICAL' }}
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}
 
       - name: Verify Pest suite passes post-fix
-        run: vendor/bin/pest --no-interaction
-        continue-on-error: true
+        run: |
+          php artisan config:clear --env=testing
+          vendor/bin/pest --no-interaction --compact
 
       - name: Summary
         if: always()

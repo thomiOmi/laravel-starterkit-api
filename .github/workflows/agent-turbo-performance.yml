@@ -16,7 +16,12 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Framework context for Jules
+  APP_ENV: testing
+  CACHE_STORE: array
+  SESSION_DRIVER: array
+  QUEUE_CONNECTION: sync
+  DB_CONNECTION: sqlite
+  DB_DATABASE: ':memory:'
   PHP_VERSION: '8.4'
   LARAVEL_VERSION: '13'
   TEST_FRAMEWORK: 'Pest v4'
@@ -61,18 +66,24 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --no-interaction --no-scripts --prefer-dist
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare the Application
+        run: |
+          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+          php artisan key:generate --env=testing
+          php artisan config:clear --env=testing
 
       - name: Run Pest baseline (pre-optimization)
         id: baseline_tests
-        run: vendor/bin/pest --no-interaction 2>&1 | tee test-baseline.log
+        run: vendor/bin/pest --no-interaction --compact --coverage 2>&1 | tee test-baseline.log
         continue-on-error: true
 
       - name: Invoke Jules — TURBO Optimization Agent
         uses: google-labs-code/jules-action@v1.0.0
         id: turbo
         with:
-          # Load improved Laravel-specific prompt
+          include_commit_log: true
           prompt: |
             # TURBO: Performance Optimization Agent for Laravel 13+
 
@@ -149,13 +160,18 @@ jobs:
             - **PHP:** ${{ env.PHP_VERSION }}
             - **Tests:** ${{ env.TEST_FRAMEWORK }}
             - **Architecture:** ${{ env.ARCHITECTURE }}
+            - **Spatie Permission** with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
+            - **Modular DDD** — Actions, Controllers, Filters, Payloads, Resources per module
+            - **Pest 4 parallel** — `php artisan test --compact --parallel`
+            - **PHP 8 attributes** used over `$fillable`/`$hidden`
             - **Test baseline:** See test-baseline.log for current test health
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}
 
       - name: Verify Pest suite passes post-optimization
-        run: vendor/bin/pest --no-interaction
-        continue-on-error: true
+        run: |
+          php artisan config:clear --env=testing
+          vendor/bin/pest --no-interaction --compact --parallel
 
       - name: Summary
         if: always()

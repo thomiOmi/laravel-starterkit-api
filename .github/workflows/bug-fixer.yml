@@ -8,13 +8,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.issue.number }}
   cancel-in-progress: true
 
+env:
+  APP_ENV: testing
+  CACHE_STORE: array
+  SESSION_DRIVER: array
+  QUEUE_CONNECTION: sync
+  DB_CONNECTION: sqlite
+  DB_DATABASE: ':memory:'
+
 jobs:
   fix-bug:
-    # Only run when the 'bug' label is added
-    # Note you can also get Jules to trigger
-    # on repos by adding the 'jules' label,
-    # but this example lets you manage the prompt
-    # explicitly, add preamble, etc.
     if: github.event.label.name == 'bug'
     runs-on: ubuntu-latest
     permissions:
@@ -23,28 +26,85 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo, sqlite
+          tools: composer:latest
+          coverage: none
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare the Application
+        run: |
+          php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+          php artisan key:generate --env=testing
+          php artisan config:clear --env=testing
+
+      - name: Run Pest baseline
+        id: baseline_tests
+        run: vendor/bin/pest --no-interaction --compact 2>&1 | tee test-baseline.log
+        continue-on-error: true
+
       - name: Invoke Jules
-        # SECURITY: Only allow trusted users to trigger Jules
         if: ${{ contains(fromJSON('["thomiOmi"]'), github.event.issue.user.login) }}
         uses: google-labs-code/jules-action@v1.0.0
         with:
+          include_last_commit: true
+          include_commit_log: true
           prompt: |
-            Please diagnose and fix the following bug:
+            Please diagnose and fix the following bug in this Laravel 13 project:
 
             ## ${{ github.event.issue.title }}
 
             ${{ github.event.issue.body }}
 
-            Debugging Process:
-            1. **Analysis** - Review the bug report and identify the root cause
-            2. **Diagnosis** - Trace the issue through the codebase
-            3. **Fix** - Implement a minimal, targeted fix
-            4. **Testing** - Add a regression test that would have caught this bug
-            5. **Documentation** - Add comments explaining the fix
+            ## Project Context
 
-            Please provide:
-            - Clear explanation of the root cause
-            - The complete fix with all necessary changes
-            - Test cases to prevent regression
+            - **Framework:** Laravel 13, PHP 8.4
+            - **Architecture:** Modular DDD (Actions, Controllers, Filters, Payloads, Resources per module)
+            - **Auth:** Sanctum Bearer tokens (API-only)
+            - **Permissions:** Spatie Permission with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
+            - **Tests:** Pest 4 with `--compact --parallel`
+            - **Code style:** PHP 8 attributes (`#[Fillable]`, `#[Hidden]`) over `$fillable`/`$hidden`
+            - **Test helpers:** `toBeSuccessResponse()`, `toBeProblemResponse()`, `toBePaginated()`
+
+            ## Process
+
+            1. **Analysis** — Review the bug report and identify root cause
+            2. **Diagnosis** — Trace the issue through the codebase
+            3. **Fix** — Implement minimal, targeted fix (follow existing conventions)
+            4. **Testing** — Add regression test matching existing Pest patterns
+            5. **Documentation** — Add inline comments for non-obvious fix logic
+
+            ## Rules
+
+            - Follow Laravel 13 conventions
+            - Use `declare(strict_types=1)` on every PHP file
+            - `final readonly` for Action / Controller / Payload classes
+            - Keep changes under 100 lines
+            - All existing tests must pass
           jules_api_key: ${{ secrets.JULES_API_KEY }}
-          starting_branch: 'main'
+
+      - name: Verify Pest suite passes post-fix
+        run: |
+          php artisan config:clear --env=testing
+          vendor/bin/pest --no-interaction --compact
