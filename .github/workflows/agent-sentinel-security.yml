@@ -2,14 +2,8 @@ name: Agent SENTINEL — Security Scanning
 
 on:
   schedule:
-    # Run daily at 5 AM UTC (1 hour after TURBO, avoid conflicts)
     - cron: '0 5 * * *'
   workflow_dispatch:
-    inputs:
-      severity_filter:
-        description: 'Minimum severity to fix (CRITICAL, HIGH, MEDIUM)'
-        required: false
-        default: 'CRITICAL'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -71,7 +65,12 @@ jobs:
             1. **🔍 SCAN** — Git diff for CRITICAL and HIGH patterns
             2. **✅ VERIFY** — Ensure fix doesn't break related logic (check tests)
             3. **🔧 FIX** — Apply pattern-based fix
-            4. **📝 VALIDATE** — Confirm Pest suite passes
+            4. **🔄 VERIFICATION LOOP** — Run the full quality gate:
+               - `vendor/bin/pint --test`
+               - `vendor/bin/phpstan analyse`
+               - `php artisan test --compact --parallel`
+               - If ANY step fails → diagnose → fix → re-run from step 3
+               - Only proceed when all three pass
             5. **🎁 PRESENT** — Draft PR with severity and fix
 
             ## Rules & Guardrails
@@ -95,9 +94,5 @@ jobs:
             - Cryptographic algorithm recommendations
             - Database security configuration
             - Server/infrastructure security
-
-            ## Severity Filter
-
-            Current minimum severity: ${{ inputs.severity_filter || 'CRITICAL' }}
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}

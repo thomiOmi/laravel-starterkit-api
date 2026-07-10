@@ -2,14 +2,8 @@ name: Agent CUSTODIAN — Code Maintenance
 
 on:
   schedule:
-    # Run every Monday at 2 AM UTC (before business hours, weekly instead of daily)
     - cron: '0 2 * * 1'
   workflow_dispatch:
-    inputs:
-      focus:
-        description: 'Focus area (dead_code, duplication, naming, complexity, all)'
-        required: false
-        default: 'all'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -81,7 +75,12 @@ jobs:
             1. **🔍 SCAN** — Identify dead code, duplication, naming issues in diff
             2. **✅ VERIFY** — Ensure removal/refactor won't break tests or implicit usage
             3. **🧹 CLEAN** — Remove or refactor with clear intent
-            4. **📝 TEST** — Run Pest suite; all tests pass
+            4. **🔄 VERIFICATION LOOP** — Run the full quality gate:
+               - `vendor/bin/pint --test`
+               - `vendor/bin/phpstan analyse`
+               - `php artisan test --compact --parallel`
+               - If ANY step fails → diagnose → fix → re-run from step 3
+               - Only proceed when all three pass
             5. **🎁 PRESENT** — Draft PR with grouped changes
 
             ## Rules & Guardrails
@@ -114,9 +113,5 @@ jobs:
             - Security hardening (use SENTINEL for that)
             - Breaking changes to public APIs
             - Removing code "just because it's old"
-
-            ## Focus Areas
-
-            Current scan focus: ${{ inputs.focus || 'all' }}
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}

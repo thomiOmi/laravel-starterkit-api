@@ -2,14 +2,8 @@ name: Agent TURBO — Performance Optimization
 
 on:
   schedule:
-    # Run daily at 4 AM UTC (after night batch jobs complete)
     - cron: '0 4 * * *'
   workflow_dispatch:
-    inputs:
-      target_branch:
-        description: 'Target branch for scan'
-        required: false
-        default: 'develop'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -73,7 +67,12 @@ jobs:
                - Won't break Observers/Listeners/Events
                - **MUST be backed by test coverage** (Pest) in changed file
             3. **🔧 OPTIMIZE** — Change + comment explaining Eloquent behavior
-            4. **✅ VERIFY** — Confirm tests pass; calculate expected speedup
+            4. **🔄 VERIFICATION LOOP** — Run the full quality gate:
+               - `vendor/bin/pint --test`
+               - `vendor/bin/phpstan analyse`
+               - `php artisan test --compact --parallel`
+               - If ANY step fails → diagnose → fix → re-run from step 3
+               - Only proceed when all three pass
             5. **🎁 PRESENT** — Draft PR with measurement
 
             ## Rules & Guardrails

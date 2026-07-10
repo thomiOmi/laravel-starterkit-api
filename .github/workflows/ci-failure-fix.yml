@@ -56,6 +56,6 @@ jobs:
             - `declare(strict_types=1)` on every PHP file
             - `final readonly` for Action / Controller / Payload classes
             - Keep changes under 30 lines (surgical fixes)
-            - All existing tests must pass
+            - **Verification loop:** after applying fix, run `vendor/bin/pint --test && vendor/bin/phpstan analyse && php artisan test --compact --parallel`. If any step fails → diagnose → fix → re-run until all pass before creating PR.
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}
