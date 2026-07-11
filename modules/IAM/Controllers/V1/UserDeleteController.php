@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -41,6 +42,16 @@ final readonly class UserDeleteController
         }
 
         if (! $currentUser->can(PermissionEnum::UserDelete->value)) {
+            return new ProblemResponse(
+                title: 'Forbidden',
+                status: Response::HTTP_FORBIDDEN,
+                detail: __('general.forbidden'),
+            );
+        }
+
+        $targetUser = User::query()->find($id);
+
+        if ($targetUser?->hasRole(RoleEnum::SuperAdmin->value) && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,

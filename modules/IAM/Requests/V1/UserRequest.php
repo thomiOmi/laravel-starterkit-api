@@ -6,8 +6,11 @@ namespace Modules\IAM\Requests\V1;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Contracts\Identity;
 use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
@@ -29,14 +32,45 @@ final class UserRequest extends FormRequest
     {
         $user = $this->user();
 
+        if ($user === null) {
+            return false;
+        }
+
+        /** @var Identity $user */
         if ($this->isMethod('POST')) {
-            return $user?->can(PermissionEnum::UserCreate->value) ?? false;
+            return $user->can(PermissionEnum::UserCreate->value);
         }
 
         $userId = $this->route('user');
-        $id = $user?->getKey();
 
-        return (is_string($id) || is_int($id) ? (string) $id : '') === $userId || ($user?->can(PermissionEnum::UserEdit->value) ?? false);
+        if (! is_string($userId)) {
+            return $user->can(PermissionEnum::UserEdit->value);
+        }
+
+        /** @var string|int $id */
+        $id = $user->getAuthIdentifier();
+
+        $canEdit = (string) $id === $userId || $user->can(PermissionEnum::UserEdit->value);
+
+        if (! $canEdit) {
+            return false;
+        }
+
+        // If the actor is already a SuperAdmin, they can edit anything.
+        if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
+            return true;
+        }
+
+        // If the actor is NOT a SuperAdmin, they cannot edit a SuperAdmin.
+        /** @var class-string<Model> $model */
+        $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
+        $targetUser = $model::query()->find($userId);
+
+        if ($targetUser instanceof Identity && $targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

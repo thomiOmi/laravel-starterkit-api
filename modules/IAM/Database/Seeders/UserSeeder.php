@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $rawPassword = config('auth.default_password');
-        $password = Hash::make(is_string($rawPassword) ? $rawPassword : Str::random(32));
+        $password = Hash::make(filled($rawPassword) ? (string) $rawPassword : Str::random(32));
 
         UserFactory::new()->create([
             'name' => 'Super Admin',

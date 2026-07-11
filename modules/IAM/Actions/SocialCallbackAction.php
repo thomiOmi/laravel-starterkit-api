@@ -57,17 +57,18 @@ final readonly class SocialCallbackAction
                     ->first();
 
                 if ($user !== null) {
-                    $user->update([
+                    $user->forceFill([
                         'provider' => $provider,
                         'provider_id' => (string) $socialUser->getId(),
                         'avatar' => $socialUser->getAvatar(),
-                    ]);
+                        'email_verified_at' => $user->email_verified_at ?? now(),
+                    ])->save();
 
                     return $user;
                 }
             }
 
-            $user = User::create([
+            $user = new User([
                 'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'Social User',
                 'email' => $socialUser->getEmail() ?? "{$provider}-{$socialUser->getId()}@social.local",
                 'password' => null,
@@ -75,6 +76,8 @@ final readonly class SocialCallbackAction
                 'provider_id' => (string) $socialUser->getId(),
                 'avatar' => $socialUser->getAvatar(),
             ]);
+
+            $user->forceFill(['email_verified_at' => now()])->save();
 
             $user->assignRole(RoleEnum::User);
 
