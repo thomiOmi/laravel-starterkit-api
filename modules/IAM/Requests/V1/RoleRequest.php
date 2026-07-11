@@ -7,10 +7,12 @@ namespace Modules\IAM\Requests\V1;
 use App\Contracts\Identity;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 use Modules\IAM\Payloads\V1\RolePayload;
+use Spatie\Permission\Contracts\Role;
 
 /**
  * Role Request
@@ -45,10 +47,10 @@ final class RoleRequest extends FormRequest
 
         $roleId = $this->route('role');
         if (is_string($roleId)) {
-            /** @var class-string<\Illuminate\Database\Eloquent\Model> $roleModel */
+            /** @var class-string<Model> $roleModel */
             $roleModel = (string) config('permission.models.role', 'Modules\IAM\Models\Role');
             $role = $roleModel::query()->find($roleId);
-            if ($role instanceof \Spatie\Permission\Contracts\Role && $role->name === RoleEnum::SuperAdmin->value) {
+            if ($role instanceof Role && $role->name === RoleEnum::SuperAdmin->value) {
                 return false;
             }
         }

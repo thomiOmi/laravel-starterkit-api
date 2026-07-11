@@ -10,6 +10,7 @@ use App\Contracts\Identity;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
@@ -60,7 +61,7 @@ final class UserRequest extends FormRequest
         }
 
         // If the actor is NOT a SuperAdmin, they cannot edit a SuperAdmin.
-        /** @var class-string<\Illuminate\Database\Eloquent\Model> $model */
+        /** @var class-string<Model> $model */
         $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
         $targetUser = $model::query()->find($userId);
 

@@ -43,7 +43,7 @@ final readonly class BulkDeleteUsersAction
         }
 
         foreach ($ids as $id) {
-            Cache::forget('user_' . (is_string($id) || is_int($id) ? (string) $id : ''));
+            Cache::forget('user_'.(is_string($id) || is_int($id) ? (string) $id : ''));
         }
 
         /** @var int $count */
