@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Requests\V1;
 
+use App\Contracts\Identity;
 use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
@@ -22,9 +24,36 @@ final class RoleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->isMethod('POST')
-            ? ($this->user()?->can(PermissionEnum::RoleCreate->value) ?? false)
-            : ($this->user()?->can(PermissionEnum::RoleEdit->value) ?? false);
+        $user = $this->user();
+
+        if ($user === null) {
+            return false;
+        }
+
+        /** @var Identity $user */
+        $isAuthorized = $this->isMethod('POST')
+            ? $user->can(PermissionEnum::RoleCreate->value)
+            : $user->can(PermissionEnum::RoleEdit->value);
+
+        if (! $isAuthorized) {
+            return false;
+        }
+
+        if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
+            return true;
+        }
+
+        $roleId = $this->route('role');
+        if (is_string($roleId)) {
+            /** @var class-string<\Illuminate\Database\Eloquent\Model> $roleModel */
+            $roleModel = (string) config('permission.models.role', 'Modules\IAM\Models\Role');
+            $role = $roleModel::query()->find($roleId);
+            if ($role instanceof \Spatie\Permission\Contracts\Role && $role->name === RoleEnum::SuperAdmin->value) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

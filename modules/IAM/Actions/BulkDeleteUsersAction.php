@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Contracts\Identity;
+use App\Enums\RoleEnum;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Models\User;
@@ -25,8 +27,23 @@ final readonly class BulkDeleteUsersAction
             return 0;
         }
 
+        /** @var Identity|null $currentUser */
+        $currentUser = $this->auth->user();
+
+        if ($currentUser !== null && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
+            $ids = User::query()
+                ->whereIn('id', $ids)
+                ->whereDoesntHave('roles', fn ($q) => $q->where('name', RoleEnum::SuperAdmin->value))
+                ->pluck('id')
+                ->toArray();
+        }
+
+        if ($ids === []) {
+            return 0;
+        }
+
         foreach ($ids as $id) {
-            Cache::forget("user_{$id}");
+            Cache::forget('user_' . (is_string($id) || is_int($id) ? (string) $id : ''));
         }
 
         /** @var int $count */
