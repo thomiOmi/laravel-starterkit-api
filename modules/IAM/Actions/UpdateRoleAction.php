@@ -22,11 +22,10 @@ final readonly class UpdateRoleAction
 
         if ($payload->permissions !== []) {
             $role->syncPermissions($payload->permissions);
-            $role->load('permissions:id,name');
         }
 
         Cache::forget("role_{$role->id}");
 
-        return $role;
+        return $role->loadMissing(['permissions:id,name']);
     }
 }
