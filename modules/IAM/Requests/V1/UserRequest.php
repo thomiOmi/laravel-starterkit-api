@@ -47,9 +47,10 @@ final class UserRequest extends FormRequest
             return $user->can(PermissionEnum::UserEdit->value);
         }
 
+        /** @var string|int $id */
         $id = $user->getAuthIdentifier();
 
-        $canEdit = (string) (is_string($id) || is_int($id) ? $id : '') === $userId || $user->can(PermissionEnum::UserEdit->value);
+        $canEdit = (string) $id === $userId || $user->can(PermissionEnum::UserEdit->value);
 
         if (! $canEdit) {
             return false;

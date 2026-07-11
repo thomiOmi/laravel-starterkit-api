@@ -37,8 +37,9 @@ final readonly class BulkRestoreUsersAction
             return 0;
         }
 
+        /** @var array<int, string|int> $ids */
         foreach ($ids as $id) {
-            Cache::forget('user_'.(is_string($id) || is_int($id) ? (string) $id : ''));
+            Cache::forget("user_{$id}");
         }
 
         /** @var int $count */
