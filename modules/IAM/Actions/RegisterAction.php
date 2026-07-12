@@ -39,7 +39,7 @@ final readonly class RegisterAction
         );
 
         return [
-            'user' => $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']),
+            'user' => $user->loadMissing(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']),
             ...$token,
         ];
     }
