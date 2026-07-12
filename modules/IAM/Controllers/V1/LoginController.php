@@ -8,7 +8,6 @@ use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\LoginAction;
 use Modules\IAM\Requests\V1\LoginRequest;
 use Modules\IAM\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @unauthenticated
@@ -24,7 +23,7 @@ final readonly class LoginController
      *
      * Authenticate a user and issue a Sanctum bearer token.
      *
-     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string}>
+     * @return SuccessResponse<array{user: UserResource, access_token: string, token_type: string, expires_at: ?string, expires_in: ?int}>
      */
     public function __invoke(LoginRequest $request): SuccessResponse
     {
@@ -39,10 +38,11 @@ final readonly class LoginController
                 'user' => new UserResource($result['user']),
                 'access_token' => $result['access_token'],
                 'token_type' => $result['token_type'],
+                'expires_at' => $result['expires_at'],
+                'expires_in' => $result['expires_in'],
             ],
             title: 'OK',
             detail: __('auth.login_success'),
-            status: Response::HTTP_CREATED,
         );
     }
 }

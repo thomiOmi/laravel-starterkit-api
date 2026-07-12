@@ -71,6 +71,29 @@
 **Reason:** The project has per-device session management built in, allowing users to manage individual device tokens (revoke, list, name). JWT is stateless and does not support per-device revocation; Sanctum's token-based approach maps naturally to a device-per-token model.
 **Applies to:** This project only.
 
+### Release Pipeline & Agent Workflow Standardisation — 2026-07-13
+**Decision:** Create `release.yml` with quality gate (Pint→PHPStan→Pest), `shipmark` for versioning, and `gh release create --generate-notes`. Strip all agent workflow YMLs (`agent-*.yml`, `bug-fixer.yml`, `ci-failure-fix.yml`) to Jules-only — no checkout/setup/install/test on GitHub runner. All `inputs` removed; verification loops delegated to Jules' own prompt.
+**Reason:** Shipmark handles version bump + changelog idempotently without creating a redundant GitHub Release. Agent workflows were bloated with CI steps that belong in `ci.yml` — Jules runs in a remote container, not on the repo's runner. Reduces GitHub Actions minutes and avoids PR-branch-sync friction.
+**Alternatives rejected:** `semantic-release` (too JS-heavy for a Laravel project), single monolithic agent YML (loss of per-workflow granularity).
+**Impact:** `composer release:dry` available locally. `release.yml` will fail fast if pipeline steps fail. Future agent workflows follow the same Jules-only pattern.
+
+### ULID Standardisation — 2026-07-13
+**Decision:** Remove primary key type config (`architecture.model.default_id`) and all UUID/integer conditionals. All IDs are ULID-only. Macro `whereId` deleted from `AppServiceProvider`; routes use `whereUlid`. Controllers/Resources have match guards simplified to direct `(string)` or `->id` access. `HasDefaultBehavior::initializeHasDefaultBehavior()` removed. `MakeModule::getMigrationIdColumn()` hardcoded to ulid.
+**Reason:** Reducing surface area for bugs and cognitive load. The project only uses ULID; supporting UUID/integer selection is dead code.
+**Alternatives rejected:** Keeping the config switch "for future flexibility" (YAGNI — adds complexity with no benefit).
+**Impact:** All future modules will use ULID primary keys automatically.
+
+### No Encryption for IP Address & User-Agent — 2026-07-13
+**Decision:** `ip_address` and `user_agent` in `personal_access_tokens` are not encrypted. Column stays VARCHAR(45) / TEXT. Cast `'ip_address' => 'encrypted'` removed from `PersonalAccessToken` model.
+**Reason:** IP addresses are already logged by the server (Nginx, load balancer) — encrypting them in the database provides a false sense of security with no real benefit, while removing utility (diagnostics, rate-limiting by IP, geolocation). User-agent is not sensitive data. Encryption also forces column resizing (VARCHAR(45) → TEXT) because base64 output is ~3× the input size.
+**Alternatives rejected:** Encrypt via Laravel casts (adds storage overhead, removes search/filter capability, causes `Data too long for column` errors).
+**Impact:** AI agents and developers should not recommend encryption for these fields. The starterkit stays simple.
+
+### Postman Collection Setup — 2026-07-13
+**Decision:** Generate Postman Collection v2.1.0 JSON from 28 YAML request files in `postman/` directory. Uploaded to workspace "My Workspace" along with an environment (`base_url`, `auth_token`, ULID variable placeholders). Bearer auth at collection level; Login request has auto-token script on test event.
+**Reason:** Team needs a shareable API collection for development and testing. Postman workspace integration via MCP.
+**Applies to:** This project only.
+
 ---
 
 ## Update Log
@@ -80,3 +103,8 @@
 -->
 - 2026-06-29: Added testing improvements — 9-item plan covering Sanctum::actingAs, Notification::assertSentTo, AssertableJson, Event::fake, travelTo. Removed DeviceManagementTest Sanctum::actingAs (reverted to original Bearer header approach due to token count issues).
 - 2026-06-29: Fixed `MissingAttributeException` for `avatar`/`deleted_at` — added all nullable columns (`provider`, `provider_id`, `avatar`, `deleted_at`) to UserFactory default definition. Fixed PermissionCRUDTest: `assertSoftDeleted` for soft-delete model, 403 expectation for non-existent permission delete (controller returns 403 when handle returns false).
+- 2026-07-13: Added release pipeline (`release.yml`, `.shipmarkrc.yml`), Jules-only agent workflows (5 files), `composer release:dry` script.
+- 2026-07-13: Fixed 3 Jules PR audit issues — `whereId` RouteRegistrar macro, `findOrFail` in all Actions, `guard_name` hidden from API responses.
+- 2026-07-13: ULID standardisation — removed configurable primary key strategy, deleted `whereId` macro, simplified Controllers/Resources match guards, removed redundant `initializeHasDefaultBehavior()`.
+- 2026-07-13: Generated and uploaded Postman Collection (28 requests, 4 folders) + environment to "My Workspace".
+- 2026-07-13: Removed `ip_address' => 'encrypted'` cast from PersonalAccessToken — IP/user-agent does not need encryption in database.

@@ -55,7 +55,7 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
         'password' => $password,
     ]);
 
-    expect($loginResponse)->toBeSuccessResponse(status: 201)
+    expect($loginResponse)->toBeSuccessResponse()
         ->assertJsonStructure(['data' => ['access_token']]);
 
     // Assign Role (By Admin)

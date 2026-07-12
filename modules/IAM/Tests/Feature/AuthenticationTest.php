@@ -68,7 +68,7 @@ describe('Authentication Core (Registration Guarding)', function () {
             'email' => $user->email,
             'password' => $password,
             'device_name' => 'test-device',
-        ]))->toBeSuccessResponse(status: 201);
+        ]))->toBeSuccessResponse();
 
         expect($this->actingAs($user)
             ->getJson('/api/v1/users'))

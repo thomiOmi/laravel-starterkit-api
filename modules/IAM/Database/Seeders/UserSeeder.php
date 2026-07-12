@@ -34,6 +34,12 @@ class UserSeeder extends Seeder
             'password' => $password,
         ]);
 
-        UserFactory::new()->count(10)->create();
+        UserFactory::new()->unverified()->create([
+            'name' => 'Unverified User',
+            'email' => 'unverified@example.com',
+            'password' => $password,
+        ]);
+
+        UserFactory::new()->count(9)->create();
     }
 }
