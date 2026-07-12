@@ -42,7 +42,19 @@ final readonly class SocialCallbackAction
         }
 
         $user = DB::transaction(function () use ($provider, $socialUser): User {
-            $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
+            $user = User::with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])
+                ->select([
+                    'id',
+                    'name',
+                    'email',
+                    'avatar',
+                    'provider',
+                    'provider_id',
+                    'email_verified_at',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                ])
                 ->where('provider', $provider)
                 ->where('provider_id', (string) $socialUser->getId())
                 ->first();
@@ -52,7 +64,19 @@ final readonly class SocialCallbackAction
             }
 
             if ($socialUser->getEmail() !== null && $socialUser->getEmail() !== '') {
-                $user = User::with(['roles.permissions:id,name', 'permissions:id,name'])
+                $user = User::with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])
+                    ->select([
+                        'id',
+                        'name',
+                        'email',
+                        'avatar',
+                        'provider',
+                        'provider_id',
+                        'email_verified_at',
+                        'created_at',
+                        'updated_at',
+                        'deleted_at',
+                    ])
                     ->where('email', $socialUser->getEmail())
                     ->first();
 
@@ -92,7 +116,7 @@ final readonly class SocialCallbackAction
         );
 
         return [
-            'user' => $user->loadMissing(['roles.permissions:id,name', 'permissions:id,name']),
+            'user' => $user->loadMissing(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']),
             ...$token,
         ];
     }
