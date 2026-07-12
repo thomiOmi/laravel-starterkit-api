@@ -19,29 +19,25 @@ class UserResource extends JsonResource
     use FormatDates;
 
     /**
-     * @return array{id: string, name: string, email: string, avatar: string|null, roles: string[]|null, permissions: string[]|null, email_verified_at: string|null, created_at: string|null, updated_at: string|null, deleted_at: string|null}
+     * @return array{id: string, name: string, email: string, avatar: ?string, roles: string[]|null, permissions: string[]|null, email_verified_at: ?string, created_at: ?string, updated_at: ?string, deleted_at: ?string}
      */
     public function toArray(Request $request): array
     {
         /** @var list<string>|null $roles */
         $roles = $this->resource->relationLoaded('roles')
-            ? $this->resource->roles->pluck('name')->map(function (mixed $val): string {
-                return (string) $val;
-            })->values()->all()
+            ? $this->resource->roles->pluck('name')->values()->all()
             : null;
 
         /** @var list<string>|null $permissions */
         $permissions = ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
-            ? $this->resource->getAllPermissions()->pluck('name')->map(function (mixed $val): string {
-                return (string) $val;
-            })->values()->all()
+            ? $this->resource->getAllPermissions()->pluck('name')->values()->all()
             : null;
 
         return [
-            'id' => (string) $this->resource->id,
+            'id' => $this->resource->id,
             'name' => $this->resource->name,
             'email' => $this->resource->email,
-            'avatar' => is_string($this->resource->avatar) ? $this->resource->avatar : null,
+            'avatar' => $this->resource->avatar,
             'roles' => $roles,
             'permissions' => $permissions,
             'email_verified_at' => $this->formatDate($this->resource->email_verified_at),

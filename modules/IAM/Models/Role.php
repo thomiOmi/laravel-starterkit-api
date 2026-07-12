@@ -22,10 +22,6 @@ use Spatie\Permission\Models\Role as SpatieRole;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Permission> $permissions
- *
- * @method static Role firstOrCreate(array<string, mixed> $attributes = [], array<string, mixed> $values = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static> with(mixed $relations)
- * @method static \Illuminate\Database\Eloquent\Builder<static> where(string|\Closure $column, mixed $operator = null, mixed $value = null, string $boolean = 'and')
  */
 #[Fillable([
     'name',

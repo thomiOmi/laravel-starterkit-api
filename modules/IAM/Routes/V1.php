@@ -90,7 +90,7 @@ Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', '
     Route::delete('/{role}', RoleDeleteController::class)->middleware('permission:'.PermissionEnum::RoleDelete->value)->name('delete');
 })->whereUlid(['role']);
 
-Route::prefix('permissions')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->name('permissions.')->group(function () {
+Route::prefix('permissions')->name('permission.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
     Route::get('/', PermissionListController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('index');
     Route::post('/', PermissionCreateController::class)->middleware('permission:'.PermissionEnum::PermissionCreate->value)->name('create');
     Route::get('/{permission}', PermissionShowController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('show');

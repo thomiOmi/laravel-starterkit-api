@@ -38,10 +38,6 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $deleted_at The timestamp when the user was soft deleted.
  * @property-read Collection<int, Role> $roles The roles assigned to the user.
  * @property-read Collection<int, Permission> $permissions The permissions assigned to the user.
- *
- * @method static User create(array<string, mixed> $attributes = [])
- * @method static User|null first(mixed $columns = ['*'])
- * @method static \Illuminate\Database\Eloquent\Builder<static> whereDoesntHave(string $relation, \Closure|null $callback = null)
  */
 #[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar'])]
 #[Hidden(['password', 'remember_token', 'provider_id'])]
@@ -71,7 +67,7 @@ class User extends Authenticatable implements Identity
     /**
      * Get the attributes that should be cast.
      *
-     * @return array<string, string> An array of attribute names and their corresponding cast types.
+     * @return array<string, string>
      */
     protected function casts(): array
     {

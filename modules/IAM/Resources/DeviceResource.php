@@ -20,7 +20,7 @@ class DeviceResource extends JsonResource
     use FormatDates;
 
     /**
-     * @return array{id: string, name: string, ip_address: ?string, user_agent: ?string, last_used_at: ?string, created_at: string|null, is_current: bool}
+     * @return array{id: string, name: string, ip_address: ?string, user_agent: ?string, last_used_at: ?string, created_at: ?string, is_current: bool}
      */
     public function toArray(Request $request): array
     {
@@ -31,10 +31,10 @@ class DeviceResource extends JsonResource
         $userCurrentToken = $user->currentAccessToken();
 
         return [
-            'id' => (string) $this->resource->id,
-            'name' => (string) $this->resource->name,
-            'ip_address' => is_string($this->resource->ip_address) ? $this->resource->ip_address : null,
-            'user_agent' => is_string($this->resource->user_agent) ? $this->resource->user_agent : null,
+            'id' => $this->resource->id,
+            'name' => $this->resource->name,
+            'ip_address' => $this->resource->ip_address,
+            'user_agent' => $this->resource->user_agent,
             'last_used_at' => $this->formatDate($this->resource->last_used_at),
             'created_at' => $this->formatDate($this->resource->created_at),
             'is_current' => (string) $userCurrentToken->id === (string) $this->resource->id,

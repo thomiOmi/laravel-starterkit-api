@@ -19,12 +19,12 @@ class PermissionResource extends JsonResource
     use FormatDates;
 
     /**
-     * @return array{id: string, name: string, created_at: string|null, updated_at: string|null}
+     * @return array{id: string, name: string, created_at: ?string, updated_at: ?string}
      */
     public function toArray(Request $request): array
     {
         return [
-            'id' => (string) $this->resource->id,
+            'id' => $this->resource->id,
             'name' => $this->resource->name,
             'created_at' => $this->formatDate($this->resource->created_at),
             'updated_at' => $this->formatDate($this->resource->updated_at),

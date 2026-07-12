@@ -19,9 +19,6 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
  * @property string|null $description
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- *
- * @method static Permission firstOrCreate(array<string, mixed> $attributes = [], array<string, mixed> $values = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static> where(string|\Closure $column, mixed $operator = null, mixed $value = null, string $boolean = 'and')
  */
 #[Fillable([
     'name',
