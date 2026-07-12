@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Modules\IAM\Actions\UpdateUserAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UserPayload;
@@ -23,12 +24,10 @@ describe('UpdateUserAction', function () {
             ->name->toBe('Updated Name');
     });
 
-    it('returns null when user is not found', function () {
+    it('throws exception when user is not found', function () {
         $payload = new UserPayload(name: 'Ghost', email: 'ghost@test.com');
         $action = app(UpdateUserAction::class);
 
-        $result = $action->handle('non-existent-id', $payload);
-
-        expect($result)->toBeNull();
+        expect(fn () => $action->handle('non-existent-id', $payload))->toThrow(ModelNotFoundException::class);
     });
 });

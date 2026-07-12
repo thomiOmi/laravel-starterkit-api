@@ -77,7 +77,7 @@ Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'verified', '
     Route::put('/{user}', UserUpdateController::class)->name('update');
     Route::put('/{user}/roles', UserAssignRolesController::class)->name('roles.assign');
     Route::delete('/{user}', UserDeleteController::class)->name('delete');
-})->whereUlid(['user']);
+})->whereId('user');
 
 Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
     Route::get('/', RoleListController::class)->middleware('permission:'.PermissionEnum::RoleView->value)->name('index');
@@ -88,7 +88,7 @@ Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', '
     Route::get('/{role}', RoleShowController::class)->middleware('permission:'.PermissionEnum::RoleView->value)->name('show');
     Route::put('/{role}', RoleUpdateController::class)->middleware('permission:'.PermissionEnum::RoleEdit->value)->name('update');
     Route::delete('/{role}', RoleDeleteController::class)->middleware('permission:'.PermissionEnum::RoleDelete->value)->name('delete');
-})->whereUlid(['role']);
+})->whereId('role');
 
 Route::prefix('permissions')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->name('permissions.')->group(function () {
     Route::get('/', PermissionListController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('index');
@@ -96,4 +96,4 @@ Route::prefix('permissions')->middleware(['auth:sanctum', 'verified', 'throttle:
     Route::get('/{permission}', PermissionShowController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('show');
     Route::put('/{permission}', PermissionUpdateController::class)->middleware('permission:'.PermissionEnum::PermissionEdit->value)->name('update');
     Route::delete('/{permission}', PermissionDeleteController::class)->middleware('permission:'.PermissionEnum::PermissionDelete->value)->name('delete');
-})->whereUlid(['permission']);
+})->whereId('permission');

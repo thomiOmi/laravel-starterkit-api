@@ -32,8 +32,12 @@ final readonly class UserDeleteController
         $currentUser = $request->user();
 
         $currentUserId = $currentUser->getKey();
+        $currentUserId = match (true) {
+            is_string($currentUserId), is_int($currentUserId) => (string) $currentUserId,
+            default => '',
+        };
 
-        if ((is_string($currentUserId) || is_int($currentUserId) ? (string) $currentUserId : '') === $id) {
+        if ($currentUserId === $id) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,

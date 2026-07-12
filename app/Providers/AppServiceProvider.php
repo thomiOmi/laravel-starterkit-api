@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -47,6 +48,22 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::before(function (Identity $user, string $ability) {
             return $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null;
+        });
+
+        RouteRegistrar::macro('whereId', function (string|array $parameters): RouteRegistrar {
+            $parameters = (array) $parameters;
+
+            $idType = config()->string('architecture.model.default_id', 'ulid');
+
+            if ($idType === 'uuid') {
+                return $this->whereUuid($parameters);
+            }
+
+            if ($idType === 'integer') {
+                return $this->whereNumber($parameters);
+            }
+
+            return $this->whereUlid($parameters);
         });
 
         // $this->configureScramble();

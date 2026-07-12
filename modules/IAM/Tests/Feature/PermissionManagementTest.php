@@ -40,12 +40,9 @@ describe('Permission Listing & Filtering', function () {
 
 describe('Permission Lifecycle', function () {
     it('creates a new permission', function () {
-        $payload = [
+        $response = $this->postJson('/api/v1/permissions', [
             'name' => 'comment.delete',
-            'guard_name' => 'sanctum',
-        ];
-
-        $response = $this->postJson('/api/v1/permissions', $payload);
+        ]);
 
         expect($response)->toBeSuccessResponse(status: 201);
         expect(Permission::where('name', 'comment.delete')->exists())->toBeTrue();
@@ -56,7 +53,6 @@ describe('Permission Lifecycle', function () {
 
         expect($this->postJson('/api/v1/permissions', [
             'name' => 'duplicate.perm',
-            'guard_name' => 'sanctum',
         ]))->toBeProblemResponse(status: 422);
     })->group('v1');
 
@@ -101,8 +97,8 @@ describe('Permission Lifecycle', function () {
         expect(Permission::where('id', $perm->id)->exists())->toBeFalse();
     })->group('v1');
 
-    it('returns 403 when deleting a non-existent permission', function () {
+    it('returns 404 when deleting a non-existent permission', function () {
         expect($this->deleteJson('/api/v1/permissions/999999'))
-            ->toBeProblemResponse(status: 403);
-    })->group('v1');
+            ->toBeProblemResponse(status: 404);
+    });
 });

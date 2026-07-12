@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Modules\IAM\Actions\UpdatePermissionAction;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Payloads\V1\PermissionPayload;
@@ -15,21 +16,17 @@ describe('UpdatePermissionAction', function () {
 
         $result = $action->handle($perm->id, new PermissionPayload(
             name: 'new.name',
-            guardName: 'web',
         ));
 
         expect($result)->toBeInstanceOf(Permission::class)
             ->name->toBe('new.name');
     });
 
-    it('returns null for a non-existent permission', function () {
+    it('throws exception for a non-existent permission', function () {
         $action = app(UpdatePermissionAction::class);
 
-        $result = $action->handle('999999', new PermissionPayload(
+        expect(fn () => $action->handle('999999', new PermissionPayload(
             name: 'ghost',
-            guardName: 'web',
-        ));
-
-        expect($result)->toBeNull();
+        )))->toThrow(ModelNotFoundException::class);
     });
 });

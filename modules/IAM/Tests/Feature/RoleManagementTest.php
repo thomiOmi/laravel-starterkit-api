@@ -112,8 +112,8 @@ describe('Role Lifecycle', function () {
         expect($role->fresh())->toBeNull();
     })->group('v1');
 
-    it('returns 403 when deleting a non-existent role', function () {
+    it('returns 404 when deleting a non-existent role', function () {
         expect($this->deleteJson('/api/v1/roles/999999'))
-            ->toBeProblemResponse(status: 403);
+            ->toBeProblemResponse(status: 404);
     })->group('v1');
 });

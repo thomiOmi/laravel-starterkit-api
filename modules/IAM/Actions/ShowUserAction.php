@@ -8,7 +8,7 @@ use Modules\IAM\Models\User;
 
 final readonly class ShowUserAction
 {
-    public function handle(string $id): ?User
+    public function handle(string $id): User
     {
         return User::select([
             'id',
@@ -21,6 +21,6 @@ final readonly class ShowUserAction
             'created_at',
             'updated_at',
             'deleted_at',
-        ])->with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])->find($id);
+        ])->with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])->findOrFail($id);
     }
 }

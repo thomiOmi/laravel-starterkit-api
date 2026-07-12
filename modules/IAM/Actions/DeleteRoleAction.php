@@ -12,11 +12,7 @@ final readonly class DeleteRoleAction
 {
     public function handle(string $id): bool
     {
-        $role = Role::query()->find($id);
-
-        if (! $role) {
-            return false;
-        }
+        $role = Role::query()->findOrFail($id);
 
         if ($role->name === RoleEnum::SuperAdmin->value) {
             return false;

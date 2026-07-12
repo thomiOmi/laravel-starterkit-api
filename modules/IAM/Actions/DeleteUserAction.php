@@ -22,11 +22,7 @@ final readonly class DeleteUserAction
             return false;
         }
 
-        $user = User::query()->find($id);
-
-        if (! $user) {
-            return false;
-        }
+        $user = User::query()->findOrFail($id);
 
         /** @var Identity|null $currentUser */
         $currentUser = $this->auth->user();

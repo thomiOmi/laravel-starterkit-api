@@ -32,8 +32,12 @@ final readonly class UserShowController
         $currentUser = $request->user();
 
         $currentUserId = $currentUser->getKey();
+        $currentUserId = match (true) {
+            is_string($currentUserId), is_int($currentUserId) => (string) $currentUserId,
+            default => '',
+        };
 
-        if ((is_string($currentUserId) || is_int($currentUserId) ? (string) $currentUserId : '') !== $id && ! $currentUser->can(PermissionEnum::UserView->value)) {
+        if ($currentUserId !== $id && ! $currentUser->can(PermissionEnum::UserView->value)) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -42,14 +46,6 @@ final readonly class UserShowController
         }
 
         $user = $this->showUser->handle($id);
-
-        if (! $user) {
-            return new ProblemResponse(
-                title: 'Not Found',
-                status: Response::HTTP_NOT_FOUND,
-                detail: __('general.not_found', ['resource' => 'User']),
-            );
-        }
 
         return new SuccessResponse(
             data: new UserResource($user),

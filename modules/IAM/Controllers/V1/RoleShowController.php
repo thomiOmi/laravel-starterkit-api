@@ -41,14 +41,6 @@ final readonly class RoleShowController
 
         $role = $this->showRole->handle($id);
 
-        if ($role === null) {
-            return new ProblemResponse(
-                title: 'Not Found',
-                status: Response::HTTP_NOT_FOUND,
-                detail: __('general.not_found', ['resource' => 'Role']),
-            );
-        }
-
         return new SuccessResponse(
             data: new RoleResource($role),
             title: 'OK',

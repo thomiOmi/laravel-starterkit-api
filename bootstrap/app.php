@@ -11,6 +11,7 @@ use App\Http\Responses\ProblemResponse;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -108,7 +109,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // Not Found Exception (404)
-        $exceptions->render(function (NotFoundHttpException $e, Request $request): ProblemResponse {
+        $exceptions->render(function (NotFoundHttpException|ModelNotFoundException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'not_found',
                 title: __('auth.not_found'),

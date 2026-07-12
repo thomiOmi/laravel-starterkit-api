@@ -11,11 +11,7 @@ final readonly class DeletePermissionAction
 {
     public function handle(string $id): bool
     {
-        $permission = Permission::query()->find($id);
-
-        if (! $permission) {
-            return false;
-        }
+        $permission = Permission::query()->findOrFail($id);
 
         Cache::forget("permission_{$permission->id}");
 

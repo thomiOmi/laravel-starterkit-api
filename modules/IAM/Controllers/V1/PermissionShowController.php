@@ -41,14 +41,6 @@ final readonly class PermissionShowController
 
         $permission = $this->showPermission->handle($id);
 
-        if ($permission === null) {
-            return new ProblemResponse(
-                title: 'Not Found',
-                status: Response::HTTP_NOT_FOUND,
-                detail: __('general.not_found', ['resource' => 'Permission']),
-            );
-        }
-
         return new SuccessResponse(
             data: new PermissionResource($permission),
             title: 'OK',

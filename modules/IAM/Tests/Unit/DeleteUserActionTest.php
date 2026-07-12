@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Tests\Unit;
 
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Modules\IAM\Actions\DeleteUserAction;
 use Modules\IAM\Models\User;
 
@@ -26,12 +27,12 @@ describe('DeleteUserAction', function () {
         expect($action->handle($user->id))->toBeFalse();
     });
 
-    it('returns false for a non-existent user', function () {
+    it('throws exception for a non-existent user', function () {
         $user = User::factory()->create();
         $guard = app(Guard::class);
         $guard->setUser($user);
         $action = new DeleteUserAction($guard);
 
-        expect($action->handle('999999'))->toBeFalse();
+        expect(fn () => $action->handle('999999'))->toThrow(ModelNotFoundException::class);
     });
 });

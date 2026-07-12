@@ -8,7 +8,7 @@ use Modules\IAM\Models\Role;
 
 final readonly class ShowRoleAction
 {
-    public function handle(string $id): ?Role
+    public function handle(string $id): Role
     {
         return Role::select([
             'id',
@@ -17,6 +17,6 @@ final readonly class ShowRoleAction
             'guard_name',
             'created_at',
             'updated_at',
-        ])->with(['permissions:id,name'])->find($id);
+        ])->with(['permissions:id,name'])->findOrFail($id);
     }
 }

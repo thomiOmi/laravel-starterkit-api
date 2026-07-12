@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Tests\Unit;
 
 use App\Enums\RoleEnum;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Modules\IAM\Actions\DeleteRoleAction;
 use Modules\IAM\Models\Role;
 
@@ -17,10 +18,10 @@ describe('DeleteRoleAction', function () {
         expect($role->fresh())->toBeNull();
     });
 
-    it('returns false for a non-existent role', function () {
+    it('throws exception for a non-existent role', function () {
         $action = app(DeleteRoleAction::class);
 
-        expect($action->handle('999999'))->toBeFalse();
+        expect(fn () => $action->handle('999999'))->toThrow(ModelNotFoundException::class);
     });
 
     it('returns false for the super-admin role', function () {

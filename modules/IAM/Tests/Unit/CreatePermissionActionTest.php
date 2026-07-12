@@ -14,7 +14,6 @@ describe('CreatePermissionAction', function () {
 
         $perm = $action->handle(new PermissionPayload(
             name: 'custom.perm',
-            guardName: 'web',
         ));
 
         expect($perm)->toBeInstanceOf(Permission::class)
