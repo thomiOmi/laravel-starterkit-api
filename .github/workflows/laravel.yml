@@ -21,11 +21,6 @@ jobs:
 
     env:
       APP_ENV: testing
-      CACHE_STORE: array
-      SESSION_DRIVER: array
-      QUEUE_CONNECTION: sync
-      DB_CONNECTION: sqlite
-      DB_DATABASE: ':memory:'
 
     strategy:
       fail-fast: false
@@ -72,6 +67,9 @@ jobs:
       run: |
         php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
         php artisan key:generate --env=testing
+
+    - name: Create Database
+      run: touch database/database.sqlite
 
     - name: Check Code Formatting (Pint)
       run: vendor/bin/pint --test
