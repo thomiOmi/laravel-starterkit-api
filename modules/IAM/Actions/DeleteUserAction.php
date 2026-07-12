@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Contracts\Identity;
+use App\Enums\RoleEnum;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Models\User;
@@ -23,6 +25,13 @@ final readonly class DeleteUserAction
         $user = User::query()->find($id);
 
         if (! $user) {
+            return false;
+        }
+
+        /** @var Identity|null $currentUser */
+        $currentUser = $this->auth->user();
+
+        if ($user->hasRole(RoleEnum::SuperAdmin->value) && ($currentUser === null || ! $currentUser->hasRole(RoleEnum::SuperAdmin->value))) {
             return false;
         }
 
