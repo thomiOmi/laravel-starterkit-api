@@ -31,7 +31,7 @@ final readonly class UserShowController
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        $currentUserId = (string) $currentUser->getKey();
+        $currentUserId = $currentUser->id;
 
         if ($currentUserId !== $id && ! $currentUser->can(PermissionEnum::UserView->value)) {
             return new ProblemResponse(

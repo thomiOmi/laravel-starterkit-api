@@ -31,7 +31,7 @@ final readonly class UserDeleteController
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        $currentUserId = (string) $currentUser->getKey();
+        $currentUserId = $currentUser->id;
 
         if ($currentUserId === $id) {
             return new ProblemResponse(

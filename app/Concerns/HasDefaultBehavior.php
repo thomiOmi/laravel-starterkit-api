@@ -17,15 +17,6 @@ trait HasDefaultBehavior
     use HasUlids;
 
     /**
-     * Initialize the trait.
-     */
-    public function initializeHasDefaultBehavior(): void
-    {
-        $this->keyType = 'string';
-        $this->incrementing = false;
-    }
-
-    /**
      * Prepare a date for array / JSON serialization.
      */
     protected function serializeDate(\DateTimeInterface $date): string
