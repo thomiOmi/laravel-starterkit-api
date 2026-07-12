@@ -26,20 +26,14 @@ class UserResource extends JsonResource
         /** @var list<string>|null $roles */
         $roles = $this->resource->relationLoaded('roles')
             ? $this->resource->roles->pluck('name')->map(function (mixed $val): string {
-                return match (true) {
-                    is_string($val), is_int($val) => (string) $val,
-                    default => '',
-                };
+                return (string) $val;
             })->values()->all()
             : null;
 
         /** @var list<string>|null $permissions */
         $permissions = ($this->resource->relationLoaded('roles') || $this->resource->relationLoaded('permissions'))
             ? $this->resource->getAllPermissions()->pluck('name')->map(function (mixed $val): string {
-                return match (true) {
-                    is_string($val), is_int($val) => (string) $val,
-                    default => '',
-                };
+                return (string) $val;
             })->values()->all()
             : null;
 

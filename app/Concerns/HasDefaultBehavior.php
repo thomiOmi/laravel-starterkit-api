@@ -7,9 +7,9 @@ namespace App\Concerns;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 
 /**
- * Trait providing default behaviors for models, driven by `config/architecture.php`.
+ * Trait providing default behaviors for models.
  *
- * - ID strategy: ulid (default), uuid, or integer
+ * - ID strategy: ULID (standard)
  * - Date serialization: Y-m-d H:i:s
  */
 trait HasDefaultBehavior
@@ -17,19 +17,12 @@ trait HasDefaultBehavior
     use HasUlids;
 
     /**
-     * Initialize the trait based on architecture config.
+     * Initialize the trait.
      */
     public function initializeHasDefaultBehavior(): void
     {
-        $idStrategy = config()->string('architecture.model.default_id', 'ulid');
-
-        if ($idStrategy === 'integer') {
-            $this->keyType = 'int';
-            $this->incrementing = true;
-        } else {
-            $this->keyType = 'string';
-            $this->incrementing = false;
-        }
+        $this->keyType = 'string';
+        $this->incrementing = false;
     }
 
     /**

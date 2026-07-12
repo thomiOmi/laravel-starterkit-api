@@ -299,15 +299,11 @@ PHP;
     }
 
     /**
-     * Get the migration ID column definition based on architecture config.
+     * Get the migration ID column definition (ULID standard).
      */
     protected function getMigrationIdColumn(): string
     {
-        return match (config()->string('architecture.model.default_id', 'ulid')) {
-            'uuid' => '$table->uuid(\'id\')->primary();',
-            'integer' => '$table->id();',
-            default => '$table->ulid(\'id\')->primary();',
-        };
+        return '$table->ulid(\'id\')->primary();';
     }
 
     /**
