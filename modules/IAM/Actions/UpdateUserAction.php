@@ -14,7 +14,8 @@ final readonly class UpdateUserAction
     {
         $user = User::query()->findOrFail($id);
 
-        $user->update($payload->toArray());
+        $user->fill($payload->toArray());
+        $user->save();
 
         Cache::forget("user_{$user->id}");
 
