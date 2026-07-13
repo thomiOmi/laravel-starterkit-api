@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Contracts\Identity;
 use App\Enums\RoleEnum;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Support\Facades\Cache;
@@ -21,7 +20,7 @@ final readonly class BulkRestoreUsersAction
      */
     public function handle(array $ids): int
     {
-        /** @var Identity|null $currentUser */
+        /** @var User|null $currentUser */
         $currentUser = $this->auth->user();
 
         if ($currentUser !== null && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {

@@ -23,17 +23,17 @@ final readonly class UserDeleteController
     /**
      * Remove the specified user from storage.
      *
-     * @param  string  $id  The user ID.
+     * @param  string  $user  The user ID.
      * @return SuccessResponse<null>|ProblemResponse
      */
-    public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
         $currentUserId = $currentUser->id;
 
-        if ($currentUserId === $id) {
+        if ($currentUserId === $user) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -49,9 +49,9 @@ final readonly class UserDeleteController
             );
         }
 
-        $targetUser = User::query()->find($id);
+        $targetUser = User::query()->findOrFail($user);
 
-        if ($targetUser?->hasRole(RoleEnum::SuperAdmin->value) && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
+        if ($targetUser->hasRole(RoleEnum::SuperAdmin->value) && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -59,7 +59,7 @@ final readonly class UserDeleteController
             );
         }
 
-        if ($this->deleteUser->handle($id)) {
+        if ($this->deleteUser->handle($user)) {
             return new SuccessResponse(null, status: Response::HTTP_NO_CONTENT);
         }
 

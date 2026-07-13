@@ -6,6 +6,7 @@ namespace Modules\IAM\Models;
 
 use App\Concerns\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,6 +29,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
     'guard_name',
     'description',
 ])]
+#[Hidden(['guard_name'])]
 #[UseFactory(RoleFactory::class)]
 class Role extends SpatieRole
 {

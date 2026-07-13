@@ -38,7 +38,7 @@ final class BulkActionRequest extends FormRequest
             }
 
             if ($action === 'restore') {
-                return $user->can(PermissionEnum::UserEdit->value);
+                return $user->can(PermissionEnum::UserRestore->value);
             }
 
             return false;

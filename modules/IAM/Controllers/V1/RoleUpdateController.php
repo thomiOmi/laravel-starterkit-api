@@ -19,15 +19,15 @@ final readonly class RoleUpdateController
      * Update the specified role in storage.
      *
      * @param  RoleRequest  $request  The validated role update request.
-     * @param  string  $id  The role ID.
+     * @param  string  $role  The role ID.
      * @return SuccessResponse<RoleResource>
      */
-    public function __invoke(RoleRequest $request, string $id): SuccessResponse
+    public function __invoke(RoleRequest $request, string $role): SuccessResponse
     {
-        $role = $this->updateRole->handle($id, $request->payload());
+        $roleModel = $this->updateRole->handle($role, $request->payload());
 
         return new SuccessResponse(
-            data: new RoleResource($role),
+            data: new RoleResource($roleModel),
             title: 'OK',
             detail: __('general.updated', ['resource' => 'Role']),
         );

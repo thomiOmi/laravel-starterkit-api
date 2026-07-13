@@ -49,8 +49,9 @@ final class RoleRequest extends FormRequest
         if (is_string($roleId)) {
             /** @var class-string<Model> $roleModel */
             $roleModel = (string) config('permission.models.role', 'Modules\IAM\Models\Role');
-            $role = $roleModel::query()->find($roleId);
-            if ($role instanceof Role && $role->name === RoleEnum::SuperAdmin->value) {
+            /** @var Role $role */
+            $role = $roleModel::query()->findOrFail($roleId);
+            if ($role->name === RoleEnum::SuperAdmin->value) {
                 return false;
             }
         }

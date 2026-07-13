@@ -27,10 +27,7 @@ final readonly class LogoutOtherDevicesController
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        $this->logoutOtherDevices->handle(
-            $currentUser,
-            $request->string('current_password')->toString(),
-        );
+        $this->logoutOtherDevices->handle($currentUser);
 
         return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);
     }

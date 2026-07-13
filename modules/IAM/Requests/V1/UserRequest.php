@@ -64,9 +64,10 @@ final class UserRequest extends FormRequest
         // If the actor is NOT a SuperAdmin, they cannot edit a SuperAdmin.
         /** @var class-string<Model> $model */
         $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
-        $targetUser = $model::query()->find($userId);
+        /** @var Identity $targetUser */
+        $targetUser = $model::query()->findOrFail($userId);
 
-        if ($targetUser instanceof Identity && $targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
+        if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
             return false;
         }
 

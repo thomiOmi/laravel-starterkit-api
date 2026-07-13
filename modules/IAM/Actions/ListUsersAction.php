@@ -22,7 +22,7 @@ final readonly class ListUsersAction
     {
         $builder = $filter->apply(
             User::query()
-                ->with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])
+                ->with(['roles:id,name', 'roles.permissions:id,name', 'permissions:id,name'])
                 ->select([
                     'id',
                     'name',

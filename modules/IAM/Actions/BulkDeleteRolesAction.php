@@ -15,13 +15,13 @@ final readonly class BulkDeleteRolesAction
      */
     public function handle(array $ids): int
     {
-        $cacheKeys = array_map(fn (string|int $id): string => "role_{$id}", $ids);
-        Cache::deleteMultiple($cacheKeys);
-
         /** @var int $count */
         $count = Role::whereIn('id', $ids)
             ->where('name', '!=', RoleEnum::SuperAdmin->value)
             ->delete();
+
+        $cacheKeys = array_map(fn (string|int $id): string => "role_{$id}", $ids);
+        Cache::deleteMultiple($cacheKeys);
 
         return $count;
     }

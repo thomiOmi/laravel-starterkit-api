@@ -25,7 +25,6 @@ final readonly class ListPermissionsAction
                 ->select([
                     'id',
                     'name',
-                    'guard_name',
                     'created_at',
                     'updated_at',
                 ])

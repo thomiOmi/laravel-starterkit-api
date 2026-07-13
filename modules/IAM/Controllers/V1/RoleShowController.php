@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Enums\PermissionEnum;
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\ShowRoleAction;
-use Modules\IAM\Models\User;
 use Modules\IAM\Resources\RoleResource;
-use Symfony\Component\HttpFoundation\Response;
 
 final readonly class RoleShowController
 {
@@ -23,26 +18,15 @@ final readonly class RoleShowController
     /**
      * Display the specified role.
      *
-     * @param  string  $id  The role ID.
-     * @return SuccessResponse<RoleResource>|ProblemResponse
+     * @param  string  $role  The role ID.
+     * @return SuccessResponse<RoleResource>
      */
-    public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $role): SuccessResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $request->user();
-
-        if (! $currentUser->can(PermissionEnum::RoleView->value)) {
-            return new ProblemResponse(
-                title: 'Forbidden',
-                status: Response::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
-            );
-        }
-
-        $role = $this->showRole->handle($id);
+        $roleModel = $this->showRole->handle($role);
 
         return new SuccessResponse(
-            data: new RoleResource($role),
+            data: new RoleResource($roleModel),
             title: 'OK',
             detail: __('general.retrieved', ['resource' => 'Role']),
         );

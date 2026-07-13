@@ -17,6 +17,7 @@ beforeEach(function () {
 
     Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
     Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
+    Permission::firstOrCreate(['name' => PermissionEnum::UserRestore->value, 'guard_name' => 'sanctum']);
 
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
@@ -54,7 +55,7 @@ describe('User Bulk Operations', function () {
 
     it('allows authorized admin to bulk restore users', function () {
         $admin = loginAsUser();
-        $admin->givePermissionTo(PermissionEnum::UserEdit);
+        $admin->givePermissionTo(PermissionEnum::UserRestore);
         $users = User::factory()->count(2)->create();
         $ids = $users->pluck('id')->toArray();
 

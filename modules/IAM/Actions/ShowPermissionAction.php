@@ -14,7 +14,6 @@ final readonly class ShowPermissionAction
             ->select([
                 'id',
                 'name',
-                'guard_name',
                 'created_at',
                 'updated_at',
             ])

@@ -57,7 +57,8 @@
         "release:dry": "npx @grazulex/shipmark release --ci auto --dry-run",
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "@php artisan serve"
+            "@php artisan serve",
+            "@php artisan queue:listen --tries=1 --timeout=0"
         ],
         "test": [
             "@php artisan config:clear --ansi",

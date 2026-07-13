@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Enums\PermissionEnum;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\DeletePermissionAction;
-use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class PermissionDeleteController
@@ -22,23 +19,12 @@ final readonly class PermissionDeleteController
     /**
      * Remove the specified permission.
      *
-     * @param  string  $id  The permission ID.
+     * @param  string  $permission  The permission ID.
      * @return SuccessResponse<null>|ProblemResponse
      */
-    public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $permission): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $request->user();
-
-        if (! $currentUser->can(PermissionEnum::PermissionDelete->value)) {
-            return new ProblemResponse(
-                title: 'Forbidden',
-                status: SymfonyResponse::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
-            );
-        }
-
-        if ($this->deletePermission->handle($id)) {
+        if ($this->deletePermission->handle($permission)) {
             return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);
         }
 

@@ -23,13 +23,7 @@ return new class extends Migration
 
         if (! Schema::hasColumn($tableNames['permissions'], 'description')) {
             Schema::table($tableNames['permissions'], static function (Blueprint $table): void {
-                $table->string('description')->nullable();
-            });
-        }
-
-        if (! Schema::hasColumn($tableNames['roles'], 'description')) {
-            Schema::table($tableNames['roles'], static function (Blueprint $table): void {
-                $table->string('description')->nullable();
+                $table->text('description')->nullable();
             });
         }
     }
@@ -39,10 +33,6 @@ return new class extends Migration
         $tableNames = self::tableNames();
 
         Schema::table($tableNames['permissions'], static function (Blueprint $table): void {
-            $table->dropColumn('description');
-        });
-
-        Schema::table($tableNames['roles'], static function (Blueprint $table): void {
             $table->dropColumn('description');
         });
     }

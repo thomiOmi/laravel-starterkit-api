@@ -24,4 +24,13 @@ use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
     'ip_address',
     'user_agent',
 ])]
-class PersonalAccessToken extends SanctumPersonalAccessToken {}
+class PersonalAccessToken extends SanctumPersonalAccessToken
+{
+    /**
+     * Prepare a date for array / JSON serialization.
+     */
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+}

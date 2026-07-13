@@ -23,17 +23,17 @@ final readonly class UserShowController
     /**
      * Display the specified user.
      *
-     * @param  string  $id  The user ID.
+     * @param  string  $user  The user ID.
      * @return SuccessResponse<UserResource>|ProblemResponse
      */
-    public function __invoke(Request $request, string $id): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
         $currentUserId = $currentUser->id;
 
-        if ($currentUserId !== $id && ! $currentUser->can(PermissionEnum::UserView->value)) {
+        if ($currentUserId !== $user && ! $currentUser->can(PermissionEnum::UserView->value)) {
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
@@ -41,10 +41,10 @@ final readonly class UserShowController
             );
         }
 
-        $user = $this->showUser->handle($id);
+        $userModel = $this->showUser->handle($user);
 
         return new SuccessResponse(
-            data: new UserResource($user),
+            data: new UserResource($userModel),
             title: 'OK',
             detail: __('general.retrieved', ['resource' => 'User']),
         );

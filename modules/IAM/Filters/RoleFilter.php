@@ -24,7 +24,6 @@ class RoleFilter extends BaseFilter
         'id',
         'name',
         'description',
-        'guard_name',
         'created_at',
         'updated_at',
     ];

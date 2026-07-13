@@ -108,3 +108,4 @@
 - 2026-07-13: ULID standardisation — removed configurable primary key strategy, deleted `whereId` macro, simplified Controllers/Resources match guards, removed redundant `initializeHasDefaultBehavior()`.
 - 2026-07-13: Generated and uploaded Postman Collection (28 requests, 4 folders) + environment to "My Workspace".
 - 2026-07-13: Removed `ip_address' => 'encrypted'` cast from PersonalAccessToken — IP/user-agent does not need encryption in database.
+- 2026-07-14: Executed full ORM/Code audit fixes — H1 (10 controllers param name mismatch), H2 (auth on UserList/UserAssignRoles/Bulk controllers), H3 (N+1 DeleteUserAction), H4 (dead param LogoutOtherDevicesAction), M1 (redundant auth Role/Permission controllers), M3 (whereUlid devices route), M5 (cache-after-DB BulkDeleteRoles), M7-M8 (migration column type + wrong down()), M9 (HasDefaultBehavior on PersonalAccessToken).

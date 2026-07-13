@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Infrastructure;
 
+use App\Enums\PermissionEnum;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
 use App\Http\Middleware\TraceIdMiddleware;
@@ -31,6 +32,17 @@ test('SunsetMiddleware adds RFC 7231 header via HTTP', function () {
 
     expect($response)->toHaveSunsetHeader($date);
 });
+
+test('SpatiePermissionMiddleware denies user without permission', function () {
+    $user = loginAsUser();
+
+    Route::get('/test-permission', fn () => response()->json(['ok' => true]))
+        ->middleware(['auth:sanctum', 'permission:'.PermissionEnum::RoleView->value]);
+
+    $response = $this->get('/test-permission');
+
+    expect($response)->toBeProblemResponse(status: 403);
+})->group('v1');
 
 test('SetLocaleMiddleware handles Accept-Language via HTTP', function () {
     Route::get('/test-locale', fn () => response()->json(['locale' => app()->getLocale()]))

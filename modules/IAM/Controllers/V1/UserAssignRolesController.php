@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Modules\IAM\Actions\AssignRolesToUserAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\AssignRolesRequest;
 use Modules\IAM\Resources\UserResource;
-use Symfony\Component\HttpFoundation\Response;
 
 final readonly class UserAssignRolesController
 {
@@ -20,22 +17,11 @@ final readonly class UserAssignRolesController
     ) {}
 
     /**
-     * @return SuccessResponse<UserResource>|ProblemResponse
+     * @return SuccessResponse<UserResource>
      */
-    public function __invoke(string $id, AssignRolesRequest $formRequest): SuccessResponse|ProblemResponse
+    public function __invoke(AssignRolesRequest $formRequest, string $user): SuccessResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $formRequest->user();
-
-        $userModel = User::query()->find($id);
-
-        if (! $userModel) {
-            return new ProblemResponse(
-                title: 'Not Found',
-                status: Response::HTTP_NOT_FOUND,
-                detail: __('general.not_found', ['resource' => 'User']),
-            );
-        }
+        $userModel = User::query()->findOrFail($user);
 
         /** @var array<int, string> $roles */
         $roles = $formRequest->validated('roles');

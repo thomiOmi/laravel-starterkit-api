@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\PlanFeatureMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
 use App\Http\Middleware\TraceIdMiddleware;
 use App\Http\Responses\ProblemResponse;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
@@ -50,7 +50,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->priority([
-            ForceJsonResponse::class,
             EnsureFrontendRequestsAreStateful::class,
             Authenticate::class,
             AuthenticatesRequests::class,
@@ -60,7 +59,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->append(SetLocaleMiddleware::class);
         $middleware->prependToGroup('api', TraceIdMiddleware::class);
-        $middleware->prependToGroup('api', ForceJsonResponse::class);
 
         $middleware->trustHosts(at: function (): array {
             /** @var array<int, string> $hosts */
@@ -73,13 +71,17 @@ return Application::configure(basePath: dirname(__DIR__))
         // $middleware->throttleApi(); // We will define custom throttle in routes
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e): bool {
+            return $request->is('api/*') || $request->expectsJson();
+        });
+
         // Validation Exception (422)
         $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'validation',
                 title: __('auth.validation_failed'),
                 status: Response::HTTP_UNPROCESSABLE_ENTITY,
-                detail: 'The given data was invalid.',
+                detail: $e->getMessage() ?: 'The given data was invalid.',
                 extensions: [
                     'errors' => $e->errors(),
                 ]
@@ -97,7 +99,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // Access Denied / Forbidden (403)
-        $exceptions->render(function (AccessDeniedHttpException|InvalidSignatureException $e, Request $request): ProblemResponse {
+        $exceptions->render(function (AccessDeniedHttpException|InvalidSignatureException|AuthorizationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'forbidden',
                 title: __('auth.forbidden'),

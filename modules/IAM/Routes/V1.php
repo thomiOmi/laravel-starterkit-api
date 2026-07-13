@@ -62,21 +62,21 @@ Route::prefix('auth')->name('auth.')->group(function () {
             Route::get('devices', DeviceListController::class)->middleware('ability:auth:manage')->name('devices.index');
             Route::delete('devices/{device}', DeleteDeviceController::class)->middleware('ability:auth:manage')->name('devices.delete');
             Route::post('devices/logout-others', LogoutOtherDevicesController::class)->middleware('ability:auth:manage')->name('devices.logout-others');
-        });
+        })->whereUlid(['device']);
     });
 });
 
 Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
-    Route::get('/', UserListController::class)->name('index');
-    Route::post('/', UserCreateController::class)->name('create');
+    Route::get('/', UserListController::class)->middleware('permission:'.PermissionEnum::UserView->value)->name('index');
+    Route::post('/', UserCreateController::class)->middleware('permission:'.PermissionEnum::UserCreate->value)->name('create');
 
-    Route::post('/bulk/delete', UserBulkDeleteController::class)->name('bulk.delete');
-    Route::post('/bulk/restore', UserBulkRestoreController::class)->name('bulk.restore');
+    Route::post('/bulk/delete', UserBulkDeleteController::class)->middleware('permission:'.PermissionEnum::UserDelete->value)->name('bulk.delete');
+    Route::post('/bulk/restore', UserBulkRestoreController::class)->middleware('permission:'.PermissionEnum::UserRestore->value)->name('bulk.restore');
 
     Route::get('/{user}', UserShowController::class)->name('show');
     Route::put('/{user}', UserUpdateController::class)->name('update');
-    Route::put('/{user}/roles', UserAssignRolesController::class)->name('roles.assign');
-    Route::delete('/{user}', UserDeleteController::class)->name('delete');
+    Route::put('/{user}/roles', UserAssignRolesController::class)->middleware('permission:'.PermissionEnum::UserEdit->value)->name('roles.assign');
+    Route::delete('/{user}', UserDeleteController::class)->middleware('permission:'.PermissionEnum::UserDelete->value)->name('delete');
 })->whereUlid(['user']);
 
 Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {

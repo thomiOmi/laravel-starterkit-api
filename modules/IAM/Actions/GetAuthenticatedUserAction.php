@@ -13,6 +13,6 @@ final readonly class GetAuthenticatedUserAction
 {
     public function handle(User $user): User
     {
-        return $user->loadMissing(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']);
+        return $user->loadMissing(['roles:id,name', 'roles.permissions:id,name', 'permissions:id,name']);
     }
 }

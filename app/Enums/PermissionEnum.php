@@ -10,6 +10,7 @@ enum PermissionEnum: string
     case UserCreate = 'user.create';
     case UserEdit = 'user.edit';
     case UserDelete = 'user.delete';
+    case UserRestore = 'user.restore';
 
     case RoleView = 'role.view';
     case RoleCreate = 'role.create';

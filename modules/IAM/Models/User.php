@@ -57,10 +57,11 @@ class User extends Authenticatable implements Identity
 
     /**
      * Send the password reset notification.
+     *
+     * @param  string  $token  The password reset token.
      */
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
-        /** @var string $token */
         $this->notify(new ResetPassword($token));
     }
 

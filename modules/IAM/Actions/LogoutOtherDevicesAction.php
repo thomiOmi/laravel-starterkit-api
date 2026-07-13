@@ -9,7 +9,7 @@ use Modules\IAM\Models\User;
 
 final readonly class LogoutOtherDevicesAction
 {
-    public function handle(User $user, string $currentPassword): void
+    public function handle(User $user): void
     {
         /** @var PersonalAccessToken $currentToken */
         $currentToken = $user->currentAccessToken();

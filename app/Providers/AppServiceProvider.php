@@ -49,9 +49,10 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null;
         });
 
-        // $this->configureScramble();
         $this->configureEmailVerification();
         $this->configurePasswordReset();
+
+        // $this->configureScramble();
     }
 
     /**
