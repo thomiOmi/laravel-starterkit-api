@@ -25,7 +25,7 @@ final readonly class LoginAction
     public function handle(LoginPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
         /** @var User|null $user */
-        $user = User::with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])
+        $user = User::query()
             ->select([
                 'id',
                 'name',
@@ -46,6 +46,8 @@ final readonly class LoginAction
                 'password' => [__('auth.failed')],
             ]);
         }
+
+        $user->loadMissing(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']);
 
         $token = $this->authorization->createAccessToken(
             $user,
