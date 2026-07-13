@@ -15,9 +15,8 @@ final readonly class BulkDeleteRolesAction
      */
     public function handle(array $ids): int
     {
-        foreach ($ids as $id) {
-            Cache::forget("role_{$id}");
-        }
+        $cacheKeys = array_map(fn (string|int $id): string => "role_{$id}", $ids);
+        Cache::deleteMultiple($cacheKeys);
 
         /** @var int $count */
         $count = Role::whereIn('id', $ids)

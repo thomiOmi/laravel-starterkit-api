@@ -48,8 +48,8 @@ describe('BulkDeleteUsersAction', function () {
 
         $action->handle([$target->id]);
 
-        Cache::shouldHaveReceived('forget')
-            ->with("user_{$target->id}")
+        Cache::shouldHaveReceived('deleteMultiple')
+            ->with(["user_{$target->id}"])
             ->once();
     });
 });

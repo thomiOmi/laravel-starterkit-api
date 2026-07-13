@@ -37,8 +37,8 @@ describe('BulkDeleteRolesAction', function () {
 
         $action->handle([$role->id]);
 
-        Cache::shouldHaveReceived('forget')
-            ->with("role_{$role->id}")
+        Cache::shouldHaveReceived('deleteMultiple')
+            ->with(["role_{$role->id}"])
             ->once();
     });
 });

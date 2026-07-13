@@ -28,8 +28,8 @@ describe('BulkRestoreUsersAction', function () {
 
         $action->handle([$user->id]);
 
-        Cache::shouldHaveReceived('forget')
-            ->with("user_{$user->id}")
+        Cache::shouldHaveReceived('deleteMultiple')
+            ->with(["user_{$user->id}"])
             ->once();
     });
 });

@@ -38,9 +38,8 @@ final readonly class BulkRestoreUsersAction
         }
 
         /** @var array<int, string|int> $ids */
-        foreach ($ids as $id) {
-            Cache::forget("user_{$id}");
-        }
+        $cacheKeys = array_map(fn (string|int $id): string => "user_{$id}", $ids);
+        Cache::deleteMultiple($cacheKeys);
 
         /** @var int $count */
         $count = User::onlyTrashed()->whereIn('id', $ids)->restore();
