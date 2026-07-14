@@ -6,6 +6,7 @@ namespace Modules\IAM\Actions;
 
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Modules\IAM\Models\User;
 
 final readonly class ListDevicesAction
@@ -24,7 +25,7 @@ final readonly class ListDevicesAction
             'user_agent',
         ];
 
-        /** @var \Illuminate\Pagination\LengthAwarePaginator<int, PersonalAccessToken> $paginator */
+        /** @var LengthAwarePaginator<int, PersonalAccessToken> $paginator */
         $paginator = $user->tokens()
             ->select($columns)
             ->orderBy('last_used_at', 'desc')
