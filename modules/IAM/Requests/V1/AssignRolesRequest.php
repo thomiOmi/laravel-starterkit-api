@@ -7,6 +7,7 @@ namespace Modules\IAM\Requests\V1;
 use App\Contracts\Identity;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,11 +28,29 @@ final class AssignRolesRequest extends FormRequest
             return false;
         }
 
+        // If the actor is already a SuperAdmin, they can edit anything.
+        if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
+            return true;
+        }
+
         /** @var array<int, string> $roles */
         $roles = $this->input('roles', []);
 
-        if (in_array(RoleEnum::SuperAdmin->value, $roles, true) && ! $user->hasRole(RoleEnum::SuperAdmin->value)) {
+        if (in_array(RoleEnum::SuperAdmin->value, $roles, true)) {
             return false;
+        }
+
+        $userId = $this->route('user');
+
+        if (is_string($userId)) {
+            /** @var class-string<Model> $model */
+            $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
+            /** @var Identity $targetUser */
+            $targetUser = $model::query()->findOrFail($userId);
+
+            if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
+                return false;
+            }
         }
 
         return true;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sanctum;
 
+use App\Concerns\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
@@ -26,11 +27,19 @@ use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 ])]
 class PersonalAccessToken extends SanctumPersonalAccessToken
 {
+    use HasDefaultBehavior;
+
     /**
-     * Prepare a date for array / JSON serialization.
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
      */
-    protected function serializeDate(\DateTimeInterface $date): string
+    protected function casts(): array
     {
-        return $date->format('Y-m-d H:i:s');
+        return [
+            'abilities' => 'json',
+            'last_used_at' => 'datetime',
+            'expires_at' => 'datetime',
+        ];
     }
 }
