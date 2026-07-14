@@ -29,7 +29,11 @@ final readonly class DeviceListController
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        $devices = $this->listDevices->handle($currentUser);
+        $devices = $this->listDevices->handle(
+            $currentUser,
+            $request->integer('page.size', 10),
+            $request->integer('page.number', 1)
+        );
 
         return new SuccessResponse(
             data: DeviceResource::collection($devices),
