@@ -32,7 +32,7 @@ final readonly class DeviceListController
         $devices = $this->listDevices->handle(
             $currentUser,
             $request->integer('page.size', 10),
-            $request->integer('page.number') ?: null,
+            $request->integer('page.number', 1)
         );
 
         return new SuccessResponse(
