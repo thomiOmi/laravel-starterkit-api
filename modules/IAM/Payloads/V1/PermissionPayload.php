@@ -15,7 +15,7 @@ final readonly class PermissionPayload
     public static function fromRequest(PermissionRequest $request): self
     {
         return new self(
-            name: trim($request->string('name')->toString()),
+            name: $request->safe()->string('name')->trim()->toString(),
         );
     }
 

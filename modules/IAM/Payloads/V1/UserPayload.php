@@ -33,9 +33,9 @@ final readonly class UserPayload
     public static function fromRequest(UserRequest $request): self
     {
         return new self(
-            name: trim($request->string('name')->toString()),
-            email: strtolower(trim($request->string('email')->toString())),
-            password: $request->filled('password') ? $request->string('password')->toString() : null,
+            name: $request->safe()->string('name')->trim()->toString(),
+            email: $request->safe()->string('email')->trim()->lower()->toString(),
+            password: $request->safe()->has('password') ? $request->safe()->string('password')->toString() : null,
         );
     }
 
