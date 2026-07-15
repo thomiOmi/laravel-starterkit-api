@@ -32,8 +32,10 @@ return [
     'verified' => 'Email verified successfully.',
     'verification_link_sent' => 'A new verification link has been sent to your email address.',
     'unauthenticated' => 'Unauthenticated',
+    'bad_request' => 'Bad Request',
     'forbidden' => 'Forbidden',
     'not_found' => 'Not Found',
     'validation_failed' => 'Validation Failed',
     'too_many_requests' => 'Too Many Requests',
+    'internal_error' => 'Internal Server Error',
 ];

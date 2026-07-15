@@ -7,9 +7,12 @@ namespace Modules\IAM\Services;
 use App\Enums\RoleEnum;
 use App\Models\Sanctum\PersonalAccessToken;
 use Modules\IAM\Models\User;
+use App\Concerns\FormatDates;
 
 final readonly class UserAuthorizationService
 {
+    use FormatDates;
+
     /**
      * Determine token abilities based on the user's roles.
      *
@@ -50,7 +53,7 @@ final readonly class UserAuthorizationService
         return [
             'access_token' => $token->plainTextToken,
             'token_type' => 'Bearer',
-            'expires_at' => $expiresAt?->toIso8601String(),
+            'expires_at' => $this->formatDate($expiresAt),
             'expires_in' => $expiresAt !== null ? $expirationMinutes * 60 : null,
         ];
     }

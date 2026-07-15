@@ -38,8 +38,8 @@ use Modules\IAM\Controllers\V1\UserUpdateController;
 use Modules\IAM\Controllers\V1\VerifyEmailController;
 
 Route::prefix('auth')->name('auth.')->group(function () {
-    Route::post('register', RegisterController::class)->middleware('throttle:auth')->name('register');
     Route::post('login', LoginController::class)->middleware('throttle:auth')->name('login');
+    Route::post('register', RegisterController::class)->middleware('throttle:auth')->name('register');
     Route::post('forgot-password', ForgotPasswordController::class)->middleware('throttle:auth')->name('password.forgot');
     Route::post('reset-password', ResetPasswordController::class)->middleware('throttle:auth')->name('password.reset');
 

@@ -20,8 +20,10 @@ return [
     'verified' => 'Email berhasil diverifikasi.',
     'verification_link_sent' => 'Tautan verifikasi baru telah dikirim ke alamat email Anda.',
     'unauthenticated' => 'Tidak terautentikasi',
+    'bad_request' => 'Permintaan Buruk',
     'forbidden' => 'Terlarang',
     'not_found' => 'Tidak ditemukan',
     'validation_failed' => 'Validasi gagal',
     'too_many_requests' => 'Terlalu banyak permintaan',
+    'internal_error' => 'Kesalahan Server Internal',
 ];

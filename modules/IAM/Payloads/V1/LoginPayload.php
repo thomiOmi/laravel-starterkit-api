@@ -17,7 +17,7 @@ final readonly class LoginPayload
     public static function fromRequest(LoginRequest $request): self
     {
         return new self(
-            email: strtolower(trim($request->string('email')->toString())),
+            email: $request->string('email')->toString(),
             password: $request->string('password')->toString(),
             deviceName: trim($request->string('device_name')->toString()) ?: null,
         );
