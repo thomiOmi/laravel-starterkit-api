@@ -38,6 +38,12 @@
      **Impact:** [What this affects going forward]
 -->
 
+### Eager-Loading Roles with Guard Name Narrowing — 2026-07-15
+**Decision:** Standardize role eager-loading column narrowing to `roles:id,name,guard_name` across all user-related Actions.
+**Reason:** Spatie Laravel Permission checks user roles and permissions against explicit guards (e.g. `sanctum`). If the `guard_name` attribute is missing from the loaded Role models, it may trigger lazy-loading queries or verify authorization incorrectly. Narrowing specifically to `roles:id,name,guard_name` keeps the selection sparse/optimized while preserving the necessary data for Spatie's permission checking.
+**Alternatives rejected:** Loading all columns (disregards sparse field selection, leading to higher DB payload) or using `roles:id,name` (causes lazy loading of `guard_name` when permissions are checked).
+**Impact:** All 9 user-related actions are fully optimized and compliant with Spatie Permission requirements.
+
 ---
 
 ## Conventions

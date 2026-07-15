@@ -21,6 +21,6 @@ final readonly class ShowUserAction
             'created_at',
             'updated_at',
             'deleted_at',
-        ])->with(['roles:id,name', 'roles.permissions:id,name', 'permissions:id,name'])->findOrFail($id);
+        ])->with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])->findOrFail($id);
     }
 }

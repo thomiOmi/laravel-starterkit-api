@@ -15,6 +15,6 @@ final readonly class AssignRolesToUserAction
     {
         $user->syncRoles($roles);
 
-        return $user->loadMissing(['roles:id,name', 'roles.permissions:id,name', 'permissions:id,name']);
+        return $user->loadMissing(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']);
     }
 }

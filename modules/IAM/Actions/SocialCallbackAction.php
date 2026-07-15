@@ -84,7 +84,7 @@ final readonly class SocialCallbackAction
             return $user;
         });
 
-        $user->loadMissing(['roles:id,name', 'roles.permissions:id,name', 'permissions:id,name']);
+        $user->loadMissing(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']);
 
         $token = $this->authorization->createAccessToken(
             $user,
