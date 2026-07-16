@@ -34,7 +34,7 @@ final readonly class PermissionListController
 
         if (! $currentUser->can(PermissionEnum::PermissionView->value)) {
             return new ProblemResponse(
-                title: 'Forbidden',
+                title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: __('general.action_forbidden'),
             );

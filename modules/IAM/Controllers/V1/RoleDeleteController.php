@@ -29,7 +29,7 @@ final readonly class RoleDeleteController
         }
 
         return new ProblemResponse(
-            title: 'Forbidden',
+            title: __('auth.http_forbidden'),
             status: SymfonyResponse::HTTP_FORBIDDEN,
             detail: __('general.resource_delete_error', ['resource' => 'Role']),
         );

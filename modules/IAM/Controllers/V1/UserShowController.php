@@ -35,7 +35,7 @@ final readonly class UserShowController
 
         if ($currentUserId !== $user && ! $currentUser->can(PermissionEnum::UserView->value)) {
             return new ProblemResponse(
-                title: 'Forbidden',
+                title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: __('general.action_forbidden'),
             );

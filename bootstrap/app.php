@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\FeatureFlagMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
@@ -39,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
+            'verified' => EnsureEmailIsVerified::class,
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
             'role' => RoleMiddleware::class,
@@ -81,7 +83,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 typeKey: 'validation',
                 title: __('auth.http_validation_failed'),
                 status: $e->getCode() ?: Response::HTTP_UNPROCESSABLE_ENTITY,
-                detail: $e->getMessage() ?: 'The given data was invalid.',
+                detail: $e->getMessage() ?: __('auth.validation_failed'),
                 extensions: [
                     'errors' => $e->errors(),
                 ]
@@ -94,7 +96,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 typeKey: 'unauthenticated',
                 title: __('auth.http_unauthorized'),
                 status: $e->getCode() ?: Response::HTTP_UNAUTHORIZED,
-                detail: $e->getMessage() ?: 'You must be authenticated to access this resource.',
+                detail: $e->getMessage() ?: __('auth.unauthenticated'),
             );
         });
 
@@ -105,8 +107,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 title: __('auth.http_forbidden'),
                 status: $e->getCode() ?: Response::HTTP_FORBIDDEN,
                 detail: $e instanceof InvalidSignatureException
-                    ? 'The request signature is invalid or has expired.'
-                    : 'You are not authorised to perform this action.'
+                    ? __('auth.invalid_signature')
+                    : __('auth.access_denied')
             );
         });
 
@@ -116,7 +118,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 typeKey: 'not_found',
                 title: __('auth.http_not_found'),
                 status: $e->getCode() ?: Response::HTTP_NOT_FOUND,
-                detail: $e->getMessage() ?: 'The requested URL does not exist.',
+                detail: $e->getMessage() ?: __('auth.not_found_detail'),
             );
         });
 
@@ -126,7 +128,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 typeKey: 'rate_limited',
                 title: __('auth.http_too_many_requests'),
                 status: $e->getCode() ?: Response::HTTP_TOO_MANY_REQUESTS,
-                detail: $e->getMessage() ?: 'You have exceeded the request rate limit. Please try again later.',
+                detail: $e->getMessage() ?: __('auth.rate_limited_detail'),
             );
         });
 
@@ -136,7 +138,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 typeKey: 'bad_request',
                 title: __('auth.http_bad_request'),
                 status: $e->getCode() ?: Response::HTTP_BAD_REQUEST,
-                detail: $e->getMessage() ?: 'The request could not be understood by the server due to malformed syntax.',
+                detail: $e->getMessage() ?: __('auth.bad_request_detail'),
             );
         });
 
@@ -146,13 +148,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 typeKey: 'default',
                 title: __('auth.http_forbidden'),
                 status: $e->getCode() ?: Response::HTTP_FORBIDDEN,
-                detail: $e->getMessage() ?: 'You are not authorised to perform this action.',
+                detail: $e->getMessage() ?: __('auth.access_denied'),
             );
         });
 
         // Fatal / Internal Server Errors (500)
         $exceptions->render(function (Throwable $e, Request $request): ProblemResponse {
-            $detail = config()->boolean('app.debug') ? $e->getMessage() : 'An internal server error occurred.';
+            $detail = config()->boolean('app.debug') ? $e->getMessage() : __('auth.internal_error_detail');
 
             return new ProblemResponse(
                 typeKey: 'internal_error',

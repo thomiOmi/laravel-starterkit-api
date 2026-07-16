@@ -35,7 +35,7 @@ final readonly class UserDeleteController
 
         if ($currentUserId === $user) {
             return new ProblemResponse(
-                title: 'Forbidden',
+                title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: __('general.self_delete_forbidden'),
             );
@@ -43,7 +43,7 @@ final readonly class UserDeleteController
 
         if (! $currentUser->can(PermissionEnum::UserDelete->value)) {
             return new ProblemResponse(
-                title: 'Forbidden',
+                title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: __('general.action_forbidden'),
             );
@@ -53,7 +53,7 @@ final readonly class UserDeleteController
 
         if ($targetUser->hasRole(RoleEnum::SuperAdmin->value) && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
             return new ProblemResponse(
-                title: 'Forbidden',
+                title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: __('general.action_forbidden'),
             );

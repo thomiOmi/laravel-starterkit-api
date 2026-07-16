@@ -34,7 +34,7 @@ final readonly class RoleListController
 
         if (! $currentUser->can(PermissionEnum::RoleView->value)) {
             return new ProblemResponse(
-                title: 'Forbidden',
+                title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,
                 detail: __('general.action_forbidden'),
             );

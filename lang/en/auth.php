@@ -34,13 +34,25 @@ return [
     'social_denied' => 'You have denied the authorization request.',
     'email_verified' => 'Email verified successfully.',
     'email_verification_sent' => 'A new verification link has been sent to your email address.',
+    'email_not_verified' => 'Email Not Verified',
+    'email_verify_required' => 'Please verify your email address before accessing this resource.',
 
     // HTTP status titles (RFC 9457 Problem Details)
     'http_unauthorized' => 'Unauthenticated',
+    'unauthenticated' => 'You must be authenticated to access this resource.',
     'http_bad_request' => 'Bad Request',
     'http_forbidden' => 'Forbidden',
     'http_not_found' => 'Not Found',
     'http_validation_failed' => 'Validation Failed',
     'http_too_many_requests' => 'Too Many Requests',
     'http_internal_error' => 'Internal Server Error',
+
+    // HTTP status detail (fallback for ProblemResponse)
+    'validation_failed' => 'The given data was invalid.',
+    'invalid_signature' => 'The request signature is invalid or has expired.',
+    'access_denied' => 'You are not authorised to perform this action.',
+    'not_found_detail' => 'The requested URL does not exist.',
+    'rate_limited_detail' => 'You have exceeded the request rate limit. Please try again later.',
+    'bad_request_detail' => 'The request could not be understood by the server due to malformed syntax.',
+    'internal_error_detail' => 'An internal server error occurred.',
 ];

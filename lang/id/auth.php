@@ -23,13 +23,25 @@ return [
     'social_denied' => 'Anda telah menolak permintaan otorisasi.',
     'email_verified' => 'Email berhasil diverifikasi.',
     'email_verification_sent' => 'Tautan verifikasi baru telah dikirim ke alamat email Anda.',
+    'email_not_verified' => 'Email Belum Diverifikasi',
+    'email_verify_required' => 'Silakan verifikasi alamat email Anda sebelum mengakses sumber daya ini.',
 
     // HTTP status titles (RFC 9457 Problem Details)
     'http_unauthorized' => 'Tidak terautentikasi',
+    'unauthenticated' => 'Anda harus terautentikasi untuk mengakses sumber daya ini.',
     'http_bad_request' => 'Permintaan Buruk',
     'http_forbidden' => 'Terlarang',
     'http_not_found' => 'Tidak ditemukan',
     'http_validation_failed' => 'Validasi gagal',
     'http_too_many_requests' => 'Terlalu banyak permintaan',
     'http_internal_error' => 'Kesalahan Server Internal',
+
+    // Detail HTTP status (fallback untuk ProblemResponse)
+    'validation_failed' => 'Data yang diberikan tidak valid.',
+    'invalid_signature' => 'Tanda tangan permintaan tidak valid atau telah kedaluwarsa.',
+    'access_denied' => 'Anda tidak diizinkan melakukan tindakan ini.',
+    'not_found_detail' => 'URL yang diminta tidak ditemukan.',
+    'rate_limited_detail' => 'Anda telah melampaui batas permintaan. Silakan coba lagi nanti.',
+    'bad_request_detail' => 'Permintaan tidak dapat dipahami oleh server karena sintaksis yang salah.',
+    'internal_error_detail' => 'Terjadi kesalahan server internal.',
 ];
