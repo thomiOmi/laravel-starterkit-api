@@ -142,12 +142,12 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        // Generic HTTP Exceptions
+        // Generic HTTP Exceptions (preserve the exception's status code)
         $exceptions->render(function (HttpExceptionInterface $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'default',
                 title: __('auth.http_forbidden'),
-                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_FORBIDDEN,
+                status: $e->getStatusCode(),
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.access_denied'),
             );
         });

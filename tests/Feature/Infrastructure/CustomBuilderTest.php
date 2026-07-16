@@ -4,48 +4,27 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Infrastructure;
 
-use App\Query\Builder;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\AllowedSort;
+use Spatie\QueryBuilder\QueryBuilder;
 
 uses(RefreshDatabase::class);
 
-#[UseEloquentBuilder(Builder::class)]
 class MockFilterModel extends Model
 {
     protected $table = 'mock_filter_models';
 
     protected $fillable = ['name', 'email', 'category'];
 
-    public array $allowedFilters = ['category', 'status'];
-
-    public array $allowedSorts = ['name', 'created_at'];
-
-    public array $allowedFields = ['name', 'email'];
-
-    public array $searchable = ['name', 'email'];
-
-    #[Scope]
-    protected function filterCategory(Builder $query, string $value): void
-    {
-        $query->where('category', $value);
-    }
-
-    #[Scope]
-    protected function filterStatus(Builder $query, string $value): void
-    {
-        if ($value === 'active') {
-            $query->whereNotNull('email');
-        }
-    }
+    protected $hidden = ['email'];
 }
 
-test('custom builder handles sparse fields via HTTP', function () {
+test('spatie query builder handles sparse fields via HTTP', function () {
     Schema::create('mock_filter_models', function (Blueprint $table) {
         $table->id();
         $table->string('name');
@@ -56,17 +35,21 @@ test('custom builder handles sparse fields via HTTP', function () {
 
     MockFilterModel::create(['name' => 'Alice', 'email' => 'alice@example.com', 'category' => 'A']);
 
-    Route::get('/test-filter', fn () => response()->json(MockFilterModel::query()->filter(request())->get()));
+    Route::get('/test-filter', fn () => response()->json(
+        QueryBuilder::for(MockFilterModel::query())
+            ->allowedFields('id', 'name', 'email')
+            ->get()
+    ));
 
     $response = $this->get('/test-filter?fields[mock_filter_models]=name');
 
     $data = $response->json();
     expect($data[0])->toHaveKey('name')
         ->and($data[0])->not->toHaveKey('email')
-        ->and($data[0])->toHaveKey('id');
+        ->and($data[0])->not->toHaveKey('id');
 });
 
-test('custom builder applies named filter to local scope', function () {
+test('spatie query builder applies named filter', function () {
     Schema::create('mock_filter_models', function (Blueprint $table) {
         $table->id();
         $table->string('name');
@@ -78,7 +61,11 @@ test('custom builder applies named filter to local scope', function () {
     MockFilterModel::create(['name' => 'Alice', 'email' => 'alice@example.com', 'category' => 'A']);
     MockFilterModel::create(['name' => 'Bob', 'email' => 'bob@example.com', 'category' => 'B']);
 
-    Route::get('/test-filter', fn () => response()->json(MockFilterModel::query()->filter(request())->get()));
+    Route::get('/test-filter', fn () => response()->json(
+        QueryBuilder::for(MockFilterModel::query())
+            ->allowedFilters(AllowedFilter::exact('category'))
+            ->get()
+    ));
 
     $response = $this->get('/test-filter?filter[category]=A');
 
@@ -87,7 +74,7 @@ test('custom builder applies named filter to local scope', function () {
         ->and($data[0]['name'])->toBe('Alice');
 });
 
-test('custom builder ignores filter keys not in allowed list', function () {
+test('spatie query builder rejects unknown filters', function () {
     Schema::create('mock_filter_models', function (Blueprint $table) {
         $table->id();
         $table->string('name');
@@ -99,15 +86,16 @@ test('custom builder ignores filter keys not in allowed list', function () {
     MockFilterModel::create(['name' => 'Alice', 'email' => 'alice@example.com', 'category' => 'A']);
     MockFilterModel::create(['name' => 'Bob', 'email' => 'bob@example.com', 'category' => 'B']);
 
-    Route::get('/test-filter', fn () => response()->json(MockFilterModel::query()->filter(request())->get()));
+    Route::get('/test-filter', fn () => response()->json(
+        QueryBuilder::for(MockFilterModel::query())
+            ->allowedFilters(AllowedFilter::exact('category'))
+            ->get()
+    ));
 
-    $response = $this->get('/test-filter?filter[email]=alice@example.com');
-
-    $data = $response->json();
-    expect($data)->toHaveCount(2);
+    $this->get('/test-filter?filter[email]=alice@example.com')->assertStatus(400);
 });
 
-test('custom builder applies sorting and search', function () {
+test('spatie query builder applies sorting and search', function () {
     Schema::create('mock_filter_models', function (Blueprint $table) {
         $table->id();
         $table->string('name');
@@ -119,12 +107,17 @@ test('custom builder applies sorting and search', function () {
     MockFilterModel::create(['name' => 'Alice', 'email' => 'alice@example.com', 'category' => 'A']);
     MockFilterModel::create(['name' => 'Bob', 'email' => 'bob@example.com', 'category' => 'B']);
 
-    Route::get('/test-filter', fn () => response()->json(MockFilterModel::query()->filter(request())->get()));
+    Route::get('/test-filter', fn () => response()->json(
+        QueryBuilder::for(MockFilterModel::query())
+            ->allowedFilters(AllowedFilter::partial('name'), AllowedFilter::partial('email'))
+            ->allowedSorts(AllowedSort::field('name'))
+            ->get()
+    ));
 
     $asc = $this->get('/test-filter?sort=name')->json();
     expect($asc[0]['name'])->toBe('Alice');
 
-    $search = $this->get('/test-filter?search=bob')->json();
+    $search = $this->get('/test-filter?filter[name]=bob')->json();
     expect($search)->toHaveCount(1)
         ->and($search[0]['name'])->toBe('Bob');
 });
