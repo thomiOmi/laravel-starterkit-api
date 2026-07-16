@@ -76,7 +76,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * Resolve allowed filter keys: model override > model property > builder property.
+     * Resolve allowed filter keys: model property (if declared) > builder property.
      *
      * @return array<int, string>
      */
@@ -84,15 +84,18 @@ class Builder extends EloquentBuilder
     {
         $model = $this->getModel();
 
-        if ($model instanceof FilterConfigurable) {
-            return $model->getAllowedFilters();
+        if (property_exists($model, 'allowedFilters')) {
+            /** @var array<int, string> $value */
+            $value = $model->allowedFilters;
+
+            return $value;
         }
 
         return $this->allowedFilters;
     }
 
     /**
-     * Resolve allowed sort columns: model override > model property > builder property.
+     * Resolve allowed sort columns: model property (if declared) > builder property.
      *
      * @return array<int, string>
      */
@@ -100,15 +103,18 @@ class Builder extends EloquentBuilder
     {
         $model = $this->getModel();
 
-        if ($model instanceof FilterConfigurable) {
-            return $model->getAllowedSorts();
+        if (property_exists($model, 'allowedSorts')) {
+            /** @var array<int, string> $value */
+            $value = $model->allowedSorts;
+
+            return $value;
         }
 
         return $this->allowedSorts;
     }
 
     /**
-     * Resolve allowed fields: model override > model property > builder property.
+     * Resolve allowed fields: model property (if declared) > builder property.
      *
      * @return array<int, string>
      */
@@ -116,15 +122,18 @@ class Builder extends EloquentBuilder
     {
         $model = $this->getModel();
 
-        if ($model instanceof FilterConfigurable) {
-            return $model->getAllowedFields();
+        if (property_exists($model, 'allowedFields')) {
+            /** @var array<int, string> $value */
+            $value = $model->allowedFields;
+
+            return $value;
         }
 
         return $this->allowedFields;
     }
 
     /**
-     * Resolve searchable columns: model override > model property > builder property.
+     * Resolve searchable columns: model property (if declared) > builder property.
      *
      * @return array<int, string>
      */
@@ -132,22 +141,28 @@ class Builder extends EloquentBuilder
     {
         $model = $this->getModel();
 
-        if ($model instanceof FilterConfigurable) {
-            return $model->getSearchable();
+        if (property_exists($model, 'searchable')) {
+            /** @var array<int, string> $value */
+            $value = $model->searchable;
+
+            return $value;
         }
 
         return $this->searchable;
     }
 
     /**
-     * Resolve the fields parameter key: model override > model property > builder property.
+     * Resolve the fields parameter key: model property (if declared) > builder property.
      */
     protected function fieldsKey(): ?string
     {
         $model = $this->getModel();
 
-        if ($model instanceof FilterConfigurable) {
-            return $model->getFieldsKey();
+        if (property_exists($model, 'fieldsKey')) {
+            /** @var string|null $value */
+            $value = $model->fieldsKey;
+
+            return $value;
         }
 
         return $this->fieldsKey;
@@ -251,13 +266,12 @@ class Builder extends EloquentBuilder
                 continue;
             }
 
-            $scope = 'scopeFilter'.Str::studly($name);
+            $method = 'filter'.Str::studly($name);
 
-            if (! method_exists($model, $scope)) {
+            if (! $model->hasNamedScope($method)) {
                 continue;
             }
 
-            $method = 'filter'.Str::studly($name);
             $this->{$method}($value);
         }
 

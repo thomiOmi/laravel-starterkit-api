@@ -9,9 +9,9 @@ use App\Contracts\Identity;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use App\Query\Builder as QueryBuilder;
-use App\Query\FilterConfigurable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Collection;
@@ -46,7 +46,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token', 'provider_id'])]
 #[UseFactory(UserFactory::class)]
 #[UseEloquentBuilder(QueryBuilder::class)]
-class User extends Authenticatable implements FilterConfigurable, Identity
+class User extends Authenticatable implements Identity
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable, SoftDeletes;
@@ -56,7 +56,7 @@ class User extends Authenticatable implements FilterConfigurable, Identity
      *
      * @var array<int, string>
      */
-    protected array $allowedFilters = [
+    public array $allowedFilters = [
         'role',
         'status',
     ];
@@ -66,7 +66,7 @@ class User extends Authenticatable implements FilterConfigurable, Identity
      *
      * @var array<int, string>
      */
-    protected array $allowedSorts = [
+    public array $allowedSorts = [
         'name',
         'email',
         'created_at',
@@ -77,7 +77,7 @@ class User extends Authenticatable implements FilterConfigurable, Identity
      *
      * @var array<int, string>
      */
-    protected array $allowedFields = [
+    public array $allowedFields = [
         'id',
         'name',
         'email',
@@ -93,49 +93,12 @@ class User extends Authenticatable implements FilterConfigurable, Identity
      *
      * @var array<int, string>
      */
-    protected array $searchable = [
+    public array $searchable = [
         'name',
         'email',
     ];
 
-    protected ?string $fieldsKey = null;
-
-    /**
-     * @return array<int, string>
-     */
-    public function getAllowedFilters(): array
-    {
-        return $this->allowedFilters;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getAllowedSorts(): array
-    {
-        return $this->allowedSorts;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getAllowedFields(): array
-    {
-        return $this->allowedFields;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getSearchable(): array
-    {
-        return $this->searchable;
-    }
-
-    public function getFieldsKey(): ?string
-    {
-        return $this->fieldsKey;
-    }
+    public ?string $fieldsKey = null;
 
     /**
      * Send the email verification notification.
@@ -174,7 +137,8 @@ class User extends Authenticatable implements FilterConfigurable, Identity
      *
      * @param  QueryBuilder<User>  $query
      */
-    protected function scopeFilterRole(QueryBuilder $query, string $value): void
+    #[Scope]
+    protected function filterRole(QueryBuilder $query, string $value): void
     {
         $query->whereRelation('roles', 'name', $value);
     }
@@ -184,7 +148,8 @@ class User extends Authenticatable implements FilterConfigurable, Identity
      *
      * @param  QueryBuilder<User>  $query
      */
-    protected function scopeFilterStatus(QueryBuilder $query, string $value): void
+    #[Scope]
+    protected function filterStatus(QueryBuilder $query, string $value): void
     {
         if ($value === 'verified') {
             $query->whereNotNull('email_verified_at');

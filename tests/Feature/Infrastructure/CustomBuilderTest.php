@@ -5,59 +5,39 @@ declare(strict_types=1);
 namespace Tests\Feature\Infrastructure;
 
 use App\Query\Builder;
-use App\Query\FilterConfigurable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 
+uses(RefreshDatabase::class);
+
 #[UseEloquentBuilder(Builder::class)]
-class MockFilterModel extends Model implements FilterConfigurable
+class MockFilterModel extends Model
 {
     protected $table = 'mock_filter_models';
 
     protected $fillable = ['name', 'email', 'category'];
 
-    protected array $allowedFilters = ['category', 'status'];
+    public array $allowedFilters = ['category', 'status'];
 
-    protected array $allowedSorts = ['name', 'created_at'];
+    public array $allowedSorts = ['name', 'created_at'];
 
-    protected array $allowedFields = ['name', 'email'];
+    public array $allowedFields = ['name', 'email'];
 
-    protected array $searchable = ['name', 'email'];
+    public array $searchable = ['name', 'email'];
 
-    public function getAllowedFilters(): array
-    {
-        return $this->allowedFilters;
-    }
-
-    public function getAllowedSorts(): array
-    {
-        return $this->allowedSorts;
-    }
-
-    public function getAllowedFields(): array
-    {
-        return $this->allowedFields;
-    }
-
-    public function getSearchable(): array
-    {
-        return $this->searchable;
-    }
-
-    public function getFieldsKey(): ?string
-    {
-        return $this->fieldsKey;
-    }
-
-    protected function scopeFilterCategory(Builder $query, string $value): void
+    #[Scope]
+    protected function filterCategory(Builder $query, string $value): void
     {
         $query->where('category', $value);
     }
 
-    protected function scopeFilterStatus(Builder $query, string $value): void
+    #[Scope]
+    protected function filterStatus(Builder $query, string $value): void
     {
         if ($value === 'active') {
             $query->whereNotNull('email');

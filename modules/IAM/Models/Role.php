@@ -6,7 +6,6 @@ namespace Modules\IAM\Models;
 
 use App\Concerns\HasDefaultBehavior;
 use App\Query\Builder as QueryBuilder;
-use App\Query\FilterConfigurable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
@@ -35,7 +34,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
 #[Hidden(['guard_name'])]
 #[UseFactory(RoleFactory::class)]
 #[UseEloquentBuilder(QueryBuilder::class)]
-class Role extends SpatieRole implements FilterConfigurable
+class Role extends SpatieRole
 {
     /** @use HasFactory<RoleFactory> */
     use HasDefaultBehavior, HasFactory;
@@ -45,14 +44,14 @@ class Role extends SpatieRole implements FilterConfigurable
      *
      * @var array<int, string>
      */
-    protected array $allowedFilters = [];
+    public array $allowedFilters = [];
 
     /**
      * Columns accepted from the `sort` query parameter.
      *
      * @var array<int, string>
      */
-    protected array $allowedSorts = [
+    public array $allowedSorts = [
         'name',
         'created_at',
     ];
@@ -62,7 +61,7 @@ class Role extends SpatieRole implements FilterConfigurable
      *
      * @var array<int, string>
      */
-    protected array $allowedFields = [
+    public array $allowedFields = [
         'id',
         'name',
         'description',
@@ -75,47 +74,10 @@ class Role extends SpatieRole implements FilterConfigurable
      *
      * @var array<int, string>
      */
-    protected array $searchable = [
+    public array $searchable = [
         'name',
         'description',
     ];
 
-    protected ?string $fieldsKey = null;
-
-    /**
-     * @return array<int, string>
-     */
-    public function getAllowedFilters(): array
-    {
-        return $this->allowedFilters;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getAllowedSorts(): array
-    {
-        return $this->allowedSorts;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getAllowedFields(): array
-    {
-        return $this->allowedFields;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    public function getSearchable(): array
-    {
-        return $this->searchable;
-    }
-
-    public function getFieldsKey(): ?string
-    {
-        return $this->fieldsKey;
-    }
+    public ?string $fieldsKey = null;
 }
