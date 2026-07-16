@@ -43,7 +43,7 @@ final readonly class ProblemResponse implements Responsable
      */
     public function toResponse($request): JsonResponse
     {
-        $title = $this->title ?: (Response::$statusTexts[$this->status] ?? 'Unknown Error');
+        $title = $this->title !== null && $this->title !== '' ? $this->title : (Response::$statusTexts[$this->status] ?? 'Unknown Error');
 
         $payload = [
             'type' => $this->resolveTypeUri(),
@@ -57,7 +57,7 @@ final readonly class ProblemResponse implements Responsable
             $payload['instance'] = $this->instance;
         }
 
-        if (! empty($this->extensions)) {
+        if ($this->extensions !== []) {
             $protectedKeys = ['status', 'title', 'detail', 'type', 'instance', 'timestamp'];
 
             $processedExtensions = array_map(function (mixed $value) {

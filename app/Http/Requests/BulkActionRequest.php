@@ -67,8 +67,9 @@ final class BulkActionRequest extends FormRequest
         $segments = explode('.', $routeName);
 
         $routeAction = null;
-        if (in_array('bulk', $segments, true)) {
-            $index = array_search('bulk', $segments, true);
+        $index = array_search('bulk', $segments, true);
+
+        if ($index !== false) {
             $routeAction = $segments[$index + 1] ?? null;
         }
 
@@ -80,7 +81,9 @@ final class BulkActionRequest extends FormRequest
             }
         }
 
-        return $routeAction ?? ($this->string('action')->toString() ?: null);
+        $bodyAction = $this->string('action')->toString();
+
+        return $routeAction ?? ($bodyAction !== '' ? $bodyAction : null);
     }
 
     /**

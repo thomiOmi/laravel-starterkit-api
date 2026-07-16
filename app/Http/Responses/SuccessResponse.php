@@ -64,7 +64,7 @@ final readonly class SuccessResponse implements Responsable
             $payload['meta'] = $this->formatPaginationMeta($paginator);
         }
 
-        if (! empty($this->extra)) {
+        if ($this->extra !== []) {
             $protectedKeys = ['status', 'title', 'detail', 'data', 'meta'];
             $cleanExtra = array_diff_key($this->extra, array_flip($protectedKeys));
             $payload = array_merge($payload, $cleanExtra);

@@ -66,7 +66,8 @@ final class SetLocaleMiddleware
      */
     private function buildLocales(): void
     {
-        $directories = glob(lang_path('*'), GLOB_ONLYDIR) ?: [];
+        $paths = glob(lang_path('*'), GLOB_ONLYDIR);
+        $directories = $paths !== false ? $paths : [];
 
         $this->availableLocales = array_map('basename', $directories);
         sort($this->availableLocales);

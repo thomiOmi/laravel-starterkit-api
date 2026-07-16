@@ -6,7 +6,9 @@ namespace Modules\IAM\Actions;
 
 use App\Enums\RoleEnum;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Database\Eloquent\Builder;
 use Modules\IAM\Models\User;
+use Spatie\Permission\Models\Role;
 
 final readonly class BulkDeleteUsersAction
 {
@@ -31,7 +33,10 @@ final readonly class BulkDeleteUsersAction
         if ($currentUser === null || ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
             $ids = User::query()
                 ->whereIn('id', $ids)
-                ->whereDoesntHave('roles', fn ($q) => $q->where('name', RoleEnum::SuperAdmin->value))
+                ->whereDoesntHave('roles', function ($q): void {
+                    /** @var Builder<Role> $q */
+                    $q->where('name', RoleEnum::SuperAdmin->value);
+                })
                 ->pluck('id')
                 ->toArray();
         }

@@ -24,7 +24,7 @@ class MakeModule extends Command
             $name = is_string($askedName) ? $askedName : '';
         }
 
-        if (! $name) {
+        if ($name === '') {
             $this->error('Module name is required!');
 
             return;

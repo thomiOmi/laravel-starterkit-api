@@ -82,8 +82,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'validation',
                 title: __('auth.http_validation_failed'),
-                status: $e->getCode() ?: Response::HTTP_UNPROCESSABLE_ENTITY,
-                detail: $e->getMessage() ?: __('auth.validation_failed'),
+                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_UNPROCESSABLE_ENTITY,
+                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.validation_failed'),
                 extensions: [
                     'errors' => $e->errors(),
                 ]
@@ -95,8 +95,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'unauthenticated',
                 title: __('auth.http_unauthorized'),
-                status: $e->getCode() ?: Response::HTTP_UNAUTHORIZED,
-                detail: $e->getMessage() ?: __('auth.unauthenticated'),
+                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_UNAUTHORIZED,
+                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.unauthenticated'),
             );
         });
 
@@ -105,7 +105,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'forbidden',
                 title: __('auth.http_forbidden'),
-                status: $e->getCode() ?: Response::HTTP_FORBIDDEN,
+                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_FORBIDDEN,
                 detail: $e instanceof InvalidSignatureException
                     ? __('auth.invalid_signature')
                     : __('auth.access_denied')
@@ -117,8 +117,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'not_found',
                 title: __('auth.http_not_found'),
-                status: $e->getCode() ?: Response::HTTP_NOT_FOUND,
-                detail: $e->getMessage() ?: __('auth.not_found_detail'),
+                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_NOT_FOUND,
+                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.not_found_detail'),
             );
         });
 
@@ -127,8 +127,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'rate_limited',
                 title: __('auth.http_too_many_requests'),
-                status: $e->getCode() ?: Response::HTTP_TOO_MANY_REQUESTS,
-                detail: $e->getMessage() ?: __('auth.rate_limited_detail'),
+                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_TOO_MANY_REQUESTS,
+                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.rate_limited_detail'),
             );
         });
 
@@ -137,8 +137,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'bad_request',
                 title: __('auth.http_bad_request'),
-                status: $e->getCode() ?: Response::HTTP_BAD_REQUEST,
-                detail: $e->getMessage() ?: __('auth.bad_request_detail'),
+                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_BAD_REQUEST,
+                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.bad_request_detail'),
             );
         });
 
@@ -147,8 +147,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'default',
                 title: __('auth.http_forbidden'),
-                status: $e->getCode() ?: Response::HTTP_FORBIDDEN,
-                detail: $e->getMessage() ?: __('auth.access_denied'),
+                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_FORBIDDEN,
+                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.access_denied'),
             );
         });
 

@@ -1,5 +1,5 @@
 includes:
-	- phar://phpstan.phar/conf/bleedingEdge.neon
+    - phar://phpstan.phar/conf/bleedingEdge.neon
 
 parameters:
     paths:
@@ -16,6 +16,25 @@ parameters:
     level: max
 
     checkConfigTypes: true
+
+    # Larastan optional rules
+    checkModelProperties: true
+    checkModelMethodVisibility: true
+    noUnnecessaryEnumerableToArrayCalls: true
+    generalizeEnvReturnType: true
+    checkMissingTranslations: true
+    parseModelCastsMethod: true
+
+    # Module migration paths for schema inference
+    databaseMigrationsPath:
+        - modules/*/Database/migrations
+
+    # Translation files (Laravel 13 uses lang/, not resources/lang/)
+    translationDirectories:
+        - lang
+
+    # Cache parsed migrations between runs
+    enableMigrationCache: true
 
     tmpDir: storage/framework/cache/phpstan
     parallel:

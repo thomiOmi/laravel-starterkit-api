@@ -17,11 +17,13 @@ final readonly class RegisterPayload
 
     public static function fromRequest(RegisterRequest $request): self
     {
+        $deviceName = $request->safe()->string('device_name')->trim()->toString();
+
         return new self(
             name: $request->safe()->string('name')->trim()->toString(),
             email: $request->safe()->string('email')->trim()->lower()->toString(),
             password: $request->safe()->string('password')->toString(),
-            deviceName: $request->safe()->string('device_name')->trim()->toString() ?: null,
+            deviceName: $deviceName !== '' ? $deviceName : null,
         );
     }
 }

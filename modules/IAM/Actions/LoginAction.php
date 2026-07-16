@@ -39,7 +39,7 @@ final readonly class LoginAction
             ->where('email', $payload->email)
             ->first();
 
-        if (! $user || ! is_string($user->password) || ! Hash::check($payload->password, $user->password)) {
+        if ($user === null || ! is_string($user->password) || ! Hash::check($payload->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
                 'password' => [__('auth.failed')],

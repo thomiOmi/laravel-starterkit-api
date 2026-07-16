@@ -6,7 +6,9 @@ namespace Modules\IAM\Actions;
 
 use App\Enums\RoleEnum;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Database\Eloquent\Builder;
 use Modules\IAM\Models\User;
+use Spatie\Permission\Models\Role;
 
 final readonly class BulkRestoreUsersAction
 {
@@ -26,7 +28,10 @@ final readonly class BulkRestoreUsersAction
             $ids = User::query()
                 ->onlyTrashed()
                 ->whereIn('id', $ids)
-                ->whereDoesntHave('roles', fn ($q) => $q->where('name', RoleEnum::SuperAdmin->value))
+                ->whereDoesntHave('roles', function ($q): void {
+                    /** @var Builder<Role> $q */
+                    $q->where('name', RoleEnum::SuperAdmin->value);
+                })
                 ->pluck('id')
                 ->toArray();
         }
