@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\IAM\Tests\Unit;
 
 use Illuminate\Contracts\Auth\Guard;
-use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Actions\BulkDeleteUsersAction;
 use Modules\IAM\Models\User;
 
@@ -36,20 +35,5 @@ describe('BulkDeleteUsersAction', function () {
 
         expect($count)->toBe(0);
         expect($user->fresh()->trashed())->toBeFalse();
-    });
-
-    it('forgets cache for each deleted user', function () {
-        Cache::spy();
-        $auth = app(Guard::class);
-        $admin = User::factory()->create();
-        $auth->setUser($admin);
-        $target = User::factory()->create();
-        $action = new BulkDeleteUsersAction($auth);
-
-        $action->handle([$target->id]);
-
-        Cache::shouldHaveReceived('deleteMultiple')
-            ->with(["user_{$target->id}"])
-            ->once();
     });
 });

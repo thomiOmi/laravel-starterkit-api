@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Payloads\V1\PermissionPayload;
 
@@ -15,8 +14,6 @@ final readonly class UpdatePermissionAction
         $permission = Permission::query()->findOrFail($id);
 
         $permission->update($payload->toArray());
-
-        Cache::forget("permission_{$permission->id}");
 
         return $permission;
     }

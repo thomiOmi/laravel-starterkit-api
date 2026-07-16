@@ -6,7 +6,6 @@ namespace Modules\IAM\Actions;
 
 use App\Enums\RoleEnum;
 use Illuminate\Contracts\Auth\Guard;
-use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Models\User;
 
 final readonly class BulkDeleteUsersAction
@@ -40,10 +39,6 @@ final readonly class BulkDeleteUsersAction
         if ($ids === []) {
             return 0;
         }
-
-        /** @var array<int, string|int> $ids */
-        $cacheKeys = array_map(fn (string|int $id): string => "user_{$id}", $ids);
-        Cache::deleteMultiple($cacheKeys);
 
         /** @var int $count */
         $count = User::whereIn('id', $ids)->delete();

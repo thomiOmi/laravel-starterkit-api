@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\IAM\Tests\Unit;
 
 use App\Enums\RoleEnum;
-use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Actions\BulkDeleteRolesAction;
 use Modules\IAM\Models\Role;
 
@@ -28,17 +27,5 @@ describe('BulkDeleteRolesAction', function () {
         $count = $action->handle([$saRole->id]);
 
         expect($count)->toBe(0);
-    });
-
-    it('forgets cache for each role', function () {
-        Cache::spy();
-        $role = Role::create(['name' => 'editor', 'guard_name' => 'sanctum']);
-        $action = app(BulkDeleteRolesAction::class);
-
-        $action->handle([$role->id]);
-
-        Cache::shouldHaveReceived('deleteMultiple')
-            ->with(["role_{$role->id}"])
-            ->once();
     });
 });

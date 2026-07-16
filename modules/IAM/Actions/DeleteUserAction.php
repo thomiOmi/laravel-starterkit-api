@@ -6,7 +6,6 @@ namespace Modules\IAM\Actions;
 
 use App\Enums\RoleEnum;
 use Illuminate\Contracts\Auth\Guard;
-use Illuminate\Support\Facades\Cache;
 use Modules\IAM\Models\User;
 
 final readonly class DeleteUserAction
@@ -29,8 +28,6 @@ final readonly class DeleteUserAction
         if ($user->hasRole(RoleEnum::SuperAdmin->value) && ($currentUser === null || ! $currentUser->hasRole(RoleEnum::SuperAdmin->value))) {
             return false;
         }
-
-        Cache::forget("user_{$user->id}");
 
         return $user->delete() ?? false;
     }
