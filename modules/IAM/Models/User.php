@@ -8,8 +8,11 @@ use App\Concerns\HasDefaultBehavior;
 use App\Contracts\Identity;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
+use App\Query\Builder as QueryBuilder;
+use App\Query\FilterConfigurable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,10 +45,97 @@ use Spatie\Permission\Traits\HasRoles;
 #[Fillable(['name', 'email', 'password', 'provider', 'provider_id', 'avatar'])]
 #[Hidden(['password', 'remember_token', 'provider_id'])]
 #[UseFactory(UserFactory::class)]
-class User extends Authenticatable implements Identity
+#[UseEloquentBuilder(QueryBuilder::class)]
+class User extends Authenticatable implements FilterConfigurable, Identity
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable, SoftDeletes;
+
+    /**
+     * Filter keys accepted from the `filter[...]` query parameter.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedFilters = [
+        'role',
+        'status',
+    ];
+
+    /**
+     * Columns accepted from the `sort` query parameter.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedSorts = [
+        'name',
+        'email',
+        'created_at',
+    ];
+
+    /**
+     * Columns accepted from the `fields[users]` query parameter.
+     *
+     * @var array<int, string>
+     */
+    protected array $allowedFields = [
+        'id',
+        'name',
+        'email',
+        'avatar',
+        'email_verified_at',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
+
+    /**
+     * Columns searched by the global `search` query parameter.
+     *
+     * @var array<int, string>
+     */
+    protected array $searchable = [
+        'name',
+        'email',
+    ];
+
+    protected ?string $fieldsKey = null;
+
+    /**
+     * @return array<int, string>
+     */
+    public function getAllowedFilters(): array
+    {
+        return $this->allowedFilters;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getAllowedSorts(): array
+    {
+        return $this->allowedSorts;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getAllowedFields(): array
+    {
+        return $this->allowedFields;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getSearchable(): array
+    {
+        return $this->searchable;
+    }
+
+    public function getFieldsKey(): ?string
+    {
+        return $this->fieldsKey;
+    }
 
     /**
      * Send the email verification notification.
@@ -77,5 +167,35 @@ class User extends Authenticatable implements Identity
             'password' => 'hashed',
             'provider_id' => 'encrypted',
         ];
+    }
+
+    /**
+     * Scope a query to users assigned the given role.
+     *
+     * @param  QueryBuilder<User>  $query
+     */
+    protected function scopeFilterRole(QueryBuilder $query, string $value): void
+    {
+        $query->whereRelation('roles', 'name', $value);
+    }
+
+    /**
+     * Scope a query to users by verification status.
+     *
+     * @param  QueryBuilder<User>  $query
+     */
+    protected function scopeFilterStatus(QueryBuilder $query, string $value): void
+    {
+        if ($value === 'verified') {
+            $query->whereNotNull('email_verified_at');
+
+            return;
+        }
+
+        if ($value === 'unverified') {
+            $query->whereNull('email_verified_at');
+
+            return;
+        }
     }
 }

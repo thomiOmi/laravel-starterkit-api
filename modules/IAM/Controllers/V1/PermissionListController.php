@@ -11,7 +11,6 @@ use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListPermissionsAction;
-use Modules\IAM\Filters\PermissionFilter;
 use Modules\IAM\Models\User;
 use Modules\IAM\Resources\PermissionResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +26,7 @@ final readonly class PermissionListController
      *
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
-    public function __invoke(PaginationRequest $request, PermissionFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(PaginationRequest $request): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
@@ -41,7 +40,6 @@ final readonly class PermissionListController
         }
 
         $permissions = $this->listPermissions->handle(
-            $filter,
             $request->integer('page.size', 20),
             $request->integer('page.number', 1),
         );

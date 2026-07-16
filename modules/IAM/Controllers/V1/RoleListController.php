@@ -11,7 +11,6 @@ use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListRolesAction;
-use Modules\IAM\Filters\RoleFilter;
 use Modules\IAM\Models\User;
 use Modules\IAM\Resources\RoleResource;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +26,7 @@ final readonly class RoleListController
      *
      * @return SuccessResponse<AnonymousResourceCollection>|ProblemResponse
      */
-    public function __invoke(PaginationRequest $request, RoleFilter $filter): SuccessResponse|ProblemResponse
+    public function __invoke(PaginationRequest $request): SuccessResponse|ProblemResponse
     {
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
@@ -41,7 +40,6 @@ final readonly class RoleListController
         }
 
         $roles = $this->listRoles->handle(
-            $filter,
             $request->integer('page.size', 10),
             $request->integer('page.number', 1),
         );
