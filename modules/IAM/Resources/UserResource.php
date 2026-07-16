@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Resources;
 
-use App\Concerns\FormatDates;
+use App\Concerns\FormatDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\IAM\Models\User;
@@ -16,7 +16,7 @@ use Modules\IAM\Models\User;
  */
 class UserResource extends JsonResource
 {
-    use FormatDates;
+    use FormatDate;
 
     /**
      * @return array{id: string, name: string, email: string, avatar: ?string, roles: string[]|null, permissions: string[]|null, email_verified_at: ?string, created_at: ?string, updated_at: ?string, deleted_at: ?string}

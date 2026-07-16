@@ -6,7 +6,7 @@ namespace App\Concerns;
 
 use Illuminate\Support\Carbon;
 
-trait FormatDates
+trait FormatDate
 {
     protected function formatDate(\DateTimeInterface|string|null $date): ?string
     {

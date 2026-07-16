@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Set application locale based on the incoming Accept-Language header.
+ *
+ * Resolves available locales from the lang/ directory, caches them
+ * for 24 hours, and sets the best matching locale on the App facade.
+ */
 final class SetLocaleMiddleware
 {
     /** @var array<int, string> */
@@ -33,6 +39,9 @@ final class SetLocaleMiddleware
         return $next($request);
     }
 
+    /**
+     * Load available locales from cache or fall back to scanning filesystem.
+     */
     private function resolveLocales(): void
     {
         $cached = Cache::get('app.available_locales');
@@ -52,6 +61,9 @@ final class SetLocaleMiddleware
         $this->buildLocales();
     }
 
+    /**
+     * Scan lang/ directories for available locales and cache the result.
+     */
     private function buildLocales(): void
     {
         $directories = glob(lang_path('*'), GLOB_ONLYDIR) ?: [];

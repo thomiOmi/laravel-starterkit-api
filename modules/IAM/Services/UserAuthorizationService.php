@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Services;
 
+use App\Concerns\FormatDate;
 use App\Enums\RoleEnum;
 use App\Models\Sanctum\PersonalAccessToken;
 use Modules\IAM\Models\User;
-use App\Concerns\FormatDates;
 
 final readonly class UserAuthorizationService
 {
-    use FormatDates;
+    use FormatDate;
 
     /**
      * Determine token abilities based on the user's roles.

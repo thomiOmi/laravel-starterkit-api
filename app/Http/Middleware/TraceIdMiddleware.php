@@ -11,11 +11,15 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Generate a ULID trace ID for every request.
+ *
+ * Stores the trace ID in Laravel Context and Monolog for structured
+ * logging, and appends it as the X-Trace-ID response header.
+ */
 final readonly class TraceIdMiddleware
 {
     /**
-     * Handle an incoming request.
-     *
      * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response

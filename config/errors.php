@@ -18,7 +18,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Maps error keys to URL-friendly slugs.
-    | Example: 'validation' => 'https://example.com'
+    | Example: 'validation' => 'https://example.com/problems/validation-failed'
     |
     */
     'types' => [

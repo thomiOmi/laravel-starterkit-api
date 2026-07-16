@@ -36,14 +36,13 @@ final readonly class Sunset
 {
     /**
      * @param  Closure(Request): (Response)  $next
-     * @param  array<int, string>  $params  Variadic params: date as first, then URL and/or 'enforce' in any order
      */
     public function handle(Request $request, Closure $next, string $sunsetAt, string ...$params): Response
     {
         $sunsetDate = CarbonImmutable::parse($sunsetAt);
 
-        $successorUrl = $this->resolveSuccessorUrl($params);
-        $enforce = $this->resolveEnforce($params);
+        $successorUrl = $this->resolveSuccessorUrl(array_values($params));
+        $enforce = $this->resolveEnforce(array_values($params));
 
         if ($enforce && now()->greaterThanOrEqualTo($sunsetDate)) {
             $response = new ProblemResponse(

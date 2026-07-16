@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Resources;
 
-use App\Concerns\FormatDates;
+use App\Concerns\FormatDate;
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,7 +17,7 @@ use Modules\IAM\Models\User;
  */
 class DeviceResource extends JsonResource
 {
-    use FormatDates;
+    use FormatDate;
 
     /**
      * @return array{id: string, name: string, ip_address: ?string, user_agent: ?string, last_used_at: ?string, created_at: ?string, is_current: bool}
