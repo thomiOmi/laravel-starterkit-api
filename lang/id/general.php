@@ -12,4 +12,5 @@ return [
     'not_found' => ':resource tidak ditemukan',
     'bulk_action' => ':resource :action berhasil dilakukan',
     'roles_assigned' => 'Peran berhasil ditetapkan',
+    'sunset_endpoint_unavailable' => 'Endpoint ini tidak lagi tersedia dan telah dihentikan.',
 ];

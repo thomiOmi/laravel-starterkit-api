@@ -8,8 +8,10 @@ use App\Enums\PermissionEnum;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
 use App\Http\Middleware\TraceIdMiddleware;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Route;
+use Laravel\Pennant\Feature;
 
 test('TraceIdMiddleware adds ULID to response and context via HTTP', function () {
     Route::get('/test-trace', fn () => response()->json(['ok' => true]))
@@ -23,14 +25,65 @@ test('TraceIdMiddleware adds ULID to response and context via HTTP', function ()
     expect(Context::get('trace_id'))->toBe($traceId);
 });
 
-test('SunsetMiddleware adds RFC 7231 header via HTTP', function () {
-    $date = '2025-12-31';
-    Route::get('/test-sunset', fn () => response()->json(['ok' => true]))
-        ->middleware(Sunset::class.':'.$date);
+describe('SunsetMiddleware', function () {
+    it('adds RFC 7231 Sunset and RFC 9745 Deprecation headers', function () {
+        $date = '2025-12-31';
+        Route::get('/test-sunset', fn () => response()->json(['ok' => true]))
+            ->middleware(Sunset::class.':'.$date);
 
-    $response = $this->get('/test-sunset');
+        $response = $this->get('/test-sunset');
 
-    expect($response)->toHaveSunsetHeader($date);
+        $sunsetDate = CarbonImmutable::parse($date)->utc();
+        expect($response)
+            ->toHaveSunsetHeader($date)
+            ->and($response->headers->get('Deprecation'))->toBe('@'.$sunsetDate->timestamp);
+    });
+
+    it('adds successor-version Link header when URL is provided', function () {
+        $date = '2025-12-31';
+        $url = 'https://api.example.com/v2/resource';
+        Route::get('/test-sunset-link', fn () => response()->json(['ok' => true]))
+            ->middleware(Sunset::class.':'.$date.','.$url);
+
+        $response = $this->get('/test-sunset-link');
+
+        expect($response->headers->get('Link'))->toBe('<'.$url.'>; rel="successor-version"');
+    });
+
+    it('returns 410 Gone when enforced after sunset', function () {
+        $date = '2024-01-01';
+        Route::get('/test-sunset-enforce', fn () => response()->json(['ok' => true]))
+            ->middleware(Sunset::class.':'.$date.',enforce');
+
+        $response = $this->get('/test-sunset-enforce');
+
+        expect($response)
+            ->toBeProblemResponse(status: 410)
+            ->and($response->headers->has('Sunset'))->toBeTrue()
+            ->and($response->headers->has('Deprecation'))->toBeTrue();
+    });
+});
+
+describe('PlanFeatureMiddleware', function () {
+    it('allows access when feature is active', function () {
+        Feature::activate('test-feature');
+        Route::get('/test-feature-active', fn () => response()->json(['ok' => true]))
+            ->middleware('feature.flag:test-feature');
+
+        $response = $this->get('/test-feature-active');
+
+        expect($response->status())->toBe(200);
+    });
+
+    it('denies access when feature is inactive', function () {
+        Feature::deactivate('test-feature');
+        Route::get('/test-feature-inactive', fn () => response()->json(['ok' => true]))
+            ->middleware('feature.flag:test-feature');
+
+        $response = $this->get('/test-feature-inactive');
+
+        expect($response)->toBeProblemResponse(status: 403);
+    });
 });
 
 test('SpatiePermissionMiddleware denies user without permission', function () {

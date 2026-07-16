@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\PlanFeatureMiddleware;
+use App\Http\Middleware\FeatureFlagMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
 use App\Http\Middleware\TraceIdMiddleware;
@@ -44,7 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
-            'plan.feature' => PlanFeatureMiddleware::class,
+            'feature.flag' => FeatureFlagMiddleware::class,
             'sunset' => Sunset::class,
             'trace.id' => TraceIdMiddleware::class,
         ]);

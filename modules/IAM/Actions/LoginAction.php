@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use Illuminate\Contracts\Hashing\Hasher;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\LoginPayload;
@@ -13,7 +13,6 @@ use Modules\IAM\Services\UserAuthorizationService;
 final readonly class LoginAction
 {
     public function __construct(
-        private Hasher $hasher,
         private UserAuthorizationService $authorization,
     ) {}
 
@@ -40,7 +39,7 @@ final readonly class LoginAction
             ->where('email', $payload->email)
             ->first();
 
-        if (! $user || ! is_string($user->password) || ! $this->hasher->check($payload->password, $user->password)) {
+        if (! $user || ! is_string($user->password) || ! Hash::check($payload->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
                 'password' => [__('auth.failed')],

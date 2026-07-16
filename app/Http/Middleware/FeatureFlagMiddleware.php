@@ -10,12 +10,12 @@ use Laravel\Pennant\Feature;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-final readonly class PlanFeatureMiddleware
+final readonly class FeatureFlagMiddleware
 {
     /**
      * Gate the route behind a Pennant feature flag.
      *
-     * Usage: `Route::get(...)->middleware('plan.feature:beta-feature')`
+     * Usage: `Route::get(...)->middleware('feature.flag:beta-feature')`
      *
      * @param  Closure(Request): (Response)  $next
      */

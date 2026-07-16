@@ -12,4 +12,5 @@ return [
     'not_found' => ':resource not found',
     'bulk_action' => ':resource :action successfully',
     'roles_assigned' => 'Roles assigned successfully',
+    'sunset_endpoint_unavailable' => 'This endpoint is no longer available and has been sunset.',
 ];

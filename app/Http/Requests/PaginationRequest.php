@@ -29,7 +29,7 @@ class PaginationRequest extends FormRequest
                 'sometimes',
                 'integer',
                 'min:1',
-                'max:'.config()->integer('architecture.api.pagination.max_size', 100),
+                'max:100',
             ],
             'page.number' => ['sometimes', 'integer', 'min:1'],
         ];

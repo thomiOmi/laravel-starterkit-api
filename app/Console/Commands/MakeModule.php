@@ -32,7 +32,7 @@ class MakeModule extends Command
 
         $name = Str::studly($name);
         $version = strtoupper((string) $this->option('api-version'));
-        $basePath = config()->string('architecture.module.base_path', base_path('modules'));
+        $basePath = base_path('modules');
         $modulePath = "{$basePath}/{$name}";
 
         if (File::exists($modulePath) && ! $this->option('force')) {

@@ -33,7 +33,7 @@ final readonly class RegisterAction
 
         $token = $this->authorization->createAccessToken(
             $user,
-            $payload->deviceName ?? $userAgent ?? 'register_token',
+            $payload->deviceName ?? $userAgent ?? 'auth_token',
             $ip,
             $userAgent,
         );

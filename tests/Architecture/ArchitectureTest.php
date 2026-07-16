@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 arch('app and tests use strict types', function () {
-    $basePath = config('architecture.module.base_path', base_path('modules'));
+    $basePath = base_path('modules');
     $moduleNs = ucfirst(basename($basePath));
 
     expect([$moduleNs, 'App', 'Tests'])
@@ -27,7 +27,7 @@ arch('tests should not use PHPUnit assertions', function () {
 });
 
 arch('controllers should be final, readonly, and invokable', function () {
-    $moduleNs = ucfirst(basename(config('architecture.module.base_path', base_path('modules'))));
+    $moduleNs = ucfirst(basename(base_path('modules')));
 
     expect($moduleNs.'\*\Controllers')
         ->toBeFinal()
@@ -37,7 +37,7 @@ arch('controllers should be final, readonly, and invokable', function () {
 });
 
 arch('actions should be final, readonly, and have handle', function () {
-    $moduleNs = ucfirst(basename(config('architecture.module.base_path', base_path('modules'))));
+    $moduleNs = ucfirst(basename(base_path('modules')));
 
     expect($moduleNs.'\*\Actions')
         ->toBeFinal()
@@ -46,7 +46,7 @@ arch('actions should be final, readonly, and have handle', function () {
 });
 
 arch('payloads should be final and readonly', function () {
-    $moduleNs = ucfirst(basename(config('architecture.module.base_path', base_path('modules'))));
+    $moduleNs = ucfirst(basename(base_path('modules')));
 
     expect($moduleNs.'\*\Payloads')
         ->toBeFinal()
@@ -54,28 +54,28 @@ arch('payloads should be final and readonly', function () {
 });
 
 arch('models should not be used in form requests', function () {
-    $moduleNs = ucfirst(basename(config('architecture.module.base_path', base_path('modules'))));
+    $moduleNs = ucfirst(basename(base_path('modules')));
 
     expect($moduleNs.'\*\Models')
         ->not->toBeUsedIn($moduleNs.'\*\Requests');
 });
 
 arch('models should not be used in payloads', function () {
-    $moduleNs = ucfirst(basename(config('architecture.module.base_path', base_path('modules'))));
+    $moduleNs = ucfirst(basename(base_path('modules')));
 
     expect($moduleNs.'\*\Models')
         ->not->toBeUsedIn($moduleNs.'\*\Payloads');
 });
 
 arch('actions should not use request directly', function () {
-    $moduleNs = ucfirst(basename(config('architecture.module.base_path', base_path('modules'))));
+    $moduleNs = ucfirst(basename(base_path('modules')));
 
     expect('Illuminate\Http\Request')
         ->not->toBeUsedIn($moduleNs.'\*\Actions');
 });
 
 arch('modules should be isolated', function () {
-    $moduleNs = ucfirst(basename(config('architecture.module.base_path', base_path('modules'))));
+    $moduleNs = ucfirst(basename(base_path('modules')));
 
     expect($moduleNs)
         ->toOnlyBeUsedIn($moduleNs)
