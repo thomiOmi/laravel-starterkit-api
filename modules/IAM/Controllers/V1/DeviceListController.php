@@ -38,7 +38,7 @@ final readonly class DeviceListController
         return new SuccessResponse(
             data: DeviceResource::collection($devices),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Devices']),
+            detail: __('general.resource_retrieved', ['resource' => 'Devices']),
             status: Response::HTTP_OK,
         );
     }

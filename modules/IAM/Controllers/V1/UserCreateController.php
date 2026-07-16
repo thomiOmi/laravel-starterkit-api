@@ -29,7 +29,7 @@ final readonly class UserCreateController
         return new SuccessResponse(
             data: new UserResource($user),
             title: 'Created',
-            detail: __('general.created', ['resource' => 'User']),
+            detail: __('general.resource_created', ['resource' => 'User']),
             status: Response::HTTP_CREATED,
         );
     }

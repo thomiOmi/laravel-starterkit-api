@@ -79,7 +79,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'validation',
-                title: __('auth.validation_failed'),
+                title: __('auth.http_validation_failed'),
                 status: $e->getCode() ?: Response::HTTP_UNPROCESSABLE_ENTITY,
                 detail: $e->getMessage() ?: 'The given data was invalid.',
                 extensions: [
@@ -92,7 +92,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'unauthenticated',
-                title: __('auth.unauthenticated'),
+                title: __('auth.http_unauthorized'),
                 status: $e->getCode() ?: Response::HTTP_UNAUTHORIZED,
                 detail: $e->getMessage() ?: 'You must be authenticated to access this resource.',
             );
@@ -102,7 +102,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AccessDeniedHttpException|InvalidSignatureException|AuthorizationException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'forbidden',
-                title: __('auth.forbidden'),
+                title: __('auth.http_forbidden'),
                 status: $e->getCode() ?: Response::HTTP_FORBIDDEN,
                 detail: $e instanceof InvalidSignatureException
                     ? 'The request signature is invalid or has expired.'
@@ -114,7 +114,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException|ModelNotFoundException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'not_found',
-                title: __('auth.not_found'),
+                title: __('auth.http_not_found'),
                 status: $e->getCode() ?: Response::HTTP_NOT_FOUND,
                 detail: $e->getMessage() ?: 'The requested URL does not exist.',
             );
@@ -124,7 +124,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (TooManyRequestsHttpException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'rate_limited',
-                title: __('auth.too_many_requests'),
+                title: __('auth.http_too_many_requests'),
                 status: $e->getCode() ?: Response::HTTP_TOO_MANY_REQUESTS,
                 detail: $e->getMessage() ?: 'You have exceeded the request rate limit. Please try again later.',
             );
@@ -134,7 +134,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (InvalidArgumentException $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'bad_request',
-                title: __('auth.bad_request'),
+                title: __('auth.http_bad_request'),
                 status: $e->getCode() ?: Response::HTTP_BAD_REQUEST,
                 detail: $e->getMessage() ?: 'The request could not be understood by the server due to malformed syntax.',
             );
@@ -144,7 +144,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (HttpExceptionInterface $e, Request $request): ProblemResponse {
             return new ProblemResponse(
                 typeKey: 'default',
-                title: __('auth.forbidden'),
+                title: __('auth.http_forbidden'),
                 status: $e->getCode() ?: Response::HTTP_FORBIDDEN,
                 detail: $e->getMessage() ?: 'You are not authorised to perform this action.',
             );
@@ -156,7 +156,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return new ProblemResponse(
                 typeKey: 'internal_error',
-                title: __('auth.internal_error'),
+                title: __('auth.http_internal_error'),
                 status: Response::HTTP_INTERNAL_SERVER_ERROR,
                 detail: $detail,
             );

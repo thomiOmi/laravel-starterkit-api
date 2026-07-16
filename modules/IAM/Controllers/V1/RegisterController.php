@@ -34,7 +34,7 @@ final readonly class RegisterController
                 'token_type' => $result['token_type'],
             ],
             title: 'Created',
-            detail: __('auth.registered'),
+            detail: __('auth.register_success'),
             status: Response::HTTP_CREATED,
         );
     }

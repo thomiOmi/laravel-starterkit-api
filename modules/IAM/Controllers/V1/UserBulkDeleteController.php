@@ -29,7 +29,7 @@ final readonly class UserBulkDeleteController
         return new SuccessResponse(
             data: ['count' => $count],
             title: 'OK',
-            detail: __('general.deleted', ['resource' => 'Users']),
+            detail: __('general.resource_deleted', ['resource' => 'Users']),
         );
     }
 }

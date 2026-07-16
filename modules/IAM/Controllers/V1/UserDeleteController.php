@@ -45,7 +45,7 @@ final readonly class UserDeleteController
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
+                detail: __('general.action_forbidden'),
             );
         }
 
@@ -55,7 +55,7 @@ final readonly class UserDeleteController
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
+                detail: __('general.action_forbidden'),
             );
         }
 
@@ -66,7 +66,7 @@ final readonly class UserDeleteController
         return new ProblemResponse(
             title: 'Forbidden',
             status: Response::HTTP_FORBIDDEN,
-            detail: __('general.delete_error', ['resource' => 'User']),
+            detail: __('general.resource_delete_error', ['resource' => 'User']),
         );
     }
 }

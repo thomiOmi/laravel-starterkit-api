@@ -15,7 +15,7 @@ describe('ResendVerificationAction', function () {
 
         $result = $action->handle($user);
 
-        expect($result)->toBe(__('auth.verified'));
+        expect($result)->toBe(__('auth.email_verified'));
     });
 
     it('sends verification notification for unverified user', function () {
@@ -24,6 +24,6 @@ describe('ResendVerificationAction', function () {
 
         $result = $action->handle($user);
 
-        expect($result)->toBe(__('auth.verification_link_sent'));
+        expect($result)->toBe(__('auth.email_verification_sent'));
     });
 });

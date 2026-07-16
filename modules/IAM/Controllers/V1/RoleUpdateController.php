@@ -29,7 +29,7 @@ final readonly class RoleUpdateController
         return new SuccessResponse(
             data: new RoleResource($roleModel),
             title: 'OK',
-            detail: __('general.updated', ['resource' => 'Role']),
+            detail: __('general.resource_updated', ['resource' => 'Role']),
         );
     }
 }

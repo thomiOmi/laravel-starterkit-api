@@ -36,7 +36,7 @@ final readonly class RoleListController
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
+                detail: __('general.action_forbidden'),
             );
         }
 
@@ -49,7 +49,7 @@ final readonly class RoleListController
         return new SuccessResponse(
             data: RoleResource::collection($roles),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Roles']),
+            detail: __('general.resource_retrieved', ['resource' => 'Roles']),
         );
     }
 }

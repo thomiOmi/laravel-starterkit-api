@@ -47,9 +47,9 @@ final readonly class Sunset
         if ($enforce && now()->greaterThanOrEqualTo($sunsetDate)) {
             $response = new ProblemResponse(
                 typeKey: 'gone',
-                title: __('auth.forbidden'),
+                title: __('auth.http_forbidden'),
                 status: Response::HTTP_GONE,
-                detail: __('general.sunset_endpoint_unavailable'),
+                detail: __('general.sunset_unavailable'),
             );
 
             return $this->attachHeaders($response->toResponse($request), $sunsetDate, $successorUrl);

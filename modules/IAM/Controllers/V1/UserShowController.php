@@ -37,7 +37,7 @@ final readonly class UserShowController
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
+                detail: __('general.action_forbidden'),
             );
         }
 
@@ -46,7 +46,7 @@ final readonly class UserShowController
         return new SuccessResponse(
             data: new UserResource($userModel),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'User']),
+            detail: __('general.resource_retrieved', ['resource' => 'User']),
         );
     }
 }

@@ -33,7 +33,7 @@ final readonly class UserListController
         return new SuccessResponse(
             data: UserResource::collection($users),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Users']),
+            detail: __('general.resource_retrieved', ['resource' => 'Users']),
         );
     }
 }

@@ -36,7 +36,7 @@ final readonly class PermissionListController
             return new ProblemResponse(
                 title: 'Forbidden',
                 status: Response::HTTP_FORBIDDEN,
-                detail: __('general.forbidden'),
+                detail: __('general.action_forbidden'),
             );
         }
 
@@ -49,7 +49,7 @@ final readonly class PermissionListController
         return new SuccessResponse(
             data: PermissionResource::collection($permissions),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Permissions']),
+            detail: __('general.resource_retrieved', ['resource' => 'Permissions']),
         );
     }
 }

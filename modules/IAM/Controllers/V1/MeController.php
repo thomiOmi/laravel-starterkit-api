@@ -34,7 +34,7 @@ final readonly class MeController
         return new SuccessResponse(
             data: new UserResource($profile),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'User profile']),
+            detail: __('general.resource_retrieved', ['resource' => 'User profile']),
         );
     }
 }

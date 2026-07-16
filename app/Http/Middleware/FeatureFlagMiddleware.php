@@ -24,7 +24,7 @@ final readonly class FeatureFlagMiddleware
     public function handle(Request $request, Closure $next, string $feature): Response
     {
         if (! Feature::active($feature)) {
-            throw new AccessDeniedHttpException(__('auth.forbidden'));
+            throw new AccessDeniedHttpException(__('auth.http_forbidden'));
         }
 
         return $next($request);

@@ -29,7 +29,7 @@ final readonly class UserUpdateController
         return new SuccessResponse(
             data: new UserResource($userModel),
             title: 'OK',
-            detail: __('general.updated', ['resource' => 'User']),
+            detail: __('general.resource_updated', ['resource' => 'User']),
         );
     }
 }

@@ -29,7 +29,7 @@ final readonly class RoleBulkDeleteController
         return new SuccessResponse(
             data: ['count' => $count],
             title: 'OK',
-            detail: __('general.deleted', ['resource' => 'Roles']),
+            detail: __('general.resource_deleted', ['resource' => 'Roles']),
         );
     }
 }

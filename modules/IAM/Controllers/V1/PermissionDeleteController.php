@@ -31,7 +31,7 @@ final readonly class PermissionDeleteController
         return new ProblemResponse(
             title: 'Forbidden',
             status: SymfonyResponse::HTTP_FORBIDDEN,
-            detail: __('general.delete_error', ['resource' => 'Permission']),
+            detail: __('general.resource_delete_error', ['resource' => 'Permission']),
         );
     }
 }

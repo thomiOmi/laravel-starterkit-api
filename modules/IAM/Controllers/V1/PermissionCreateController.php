@@ -28,7 +28,7 @@ final readonly class PermissionCreateController
         return new SuccessResponse(
             data: new PermissionResource($permission),
             title: 'Created',
-            detail: __('general.created', ['resource' => 'Permission']),
+            detail: __('general.resource_created', ['resource' => 'Permission']),
             status: Response::HTTP_CREATED,
         );
     }

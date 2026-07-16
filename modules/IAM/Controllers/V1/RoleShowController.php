@@ -28,7 +28,7 @@ final readonly class RoleShowController
         return new SuccessResponse(
             data: new RoleResource($roleModel),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Role']),
+            detail: __('general.resource_retrieved', ['resource' => 'Role']),
         );
     }
 }

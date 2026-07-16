@@ -28,7 +28,7 @@ final readonly class PermissionShowController
         return new SuccessResponse(
             data: new PermissionResource($permissionModel),
             title: 'OK',
-            detail: __('general.retrieved', ['resource' => 'Permission']),
+            detail: __('general.resource_retrieved', ['resource' => 'Permission']),
         );
     }
 }

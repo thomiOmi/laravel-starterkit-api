@@ -29,7 +29,7 @@ final readonly class RoleCreateController
         return new SuccessResponse(
             data: new RoleResource($role),
             title: 'Created',
-            detail: __('general.created', ['resource' => 'Role']),
+            detail: __('general.resource_created', ['resource' => 'Role']),
             status: Response::HTTP_CREATED,
         );
     }

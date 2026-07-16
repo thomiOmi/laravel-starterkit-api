@@ -19,7 +19,7 @@ final readonly class VerifyEmailController
         return new SuccessResponse(
             data: ['verified' => true],
             title: 'OK',
-            detail: __('auth.verified'),
+            detail: __('auth.email_verified'),
         );
     }
 }

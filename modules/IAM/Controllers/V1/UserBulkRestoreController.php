@@ -29,7 +29,7 @@ final readonly class UserBulkRestoreController
         return new SuccessResponse(
             data: ['count' => $count],
             title: 'OK',
-            detail: __('general.restored', ['resource' => 'Users']),
+            detail: __('general.resource_restored', ['resource' => 'Users']),
         );
     }
 }
