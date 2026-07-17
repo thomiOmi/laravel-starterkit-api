@@ -24,7 +24,9 @@ final readonly class UserUpdateController
      */
     public function __invoke(UserRequest $request, string $user): SuccessResponse
     {
-        $userModel = $this->updateUser->handle($user, $request->payload());
+        $targetUser = $request->getTargetUser() ?? $user;
+
+        $userModel = $this->updateUser->handle($targetUser, $request->payload());
 
         return new SuccessResponse(
             data: new UserResource($userModel),

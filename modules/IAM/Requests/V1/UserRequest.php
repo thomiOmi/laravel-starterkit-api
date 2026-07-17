@@ -26,6 +26,39 @@ final class UserRequest extends FormRequest
     use PasswordValidationRules, ProfileValidationRules;
 
     /**
+     * @var Identity|null The cached target user instance to prevent duplicate lookups.
+     */
+    private ?Identity $targetUserInstance = null;
+
+    /**
+     * Retrieve the target user instance based on the request route, memoized for performance.
+     *
+     * @return Identity|null The target user model or null if not applicable.
+     */
+    public function getTargetUser(): ?Identity
+    {
+        if ($this->targetUserInstance !== null) {
+            return $this->targetUserInstance;
+        }
+
+        $userId = $this->route('user');
+
+        if (! is_string($userId)) {
+            return null;
+        }
+
+        /** @var class-string<Model> $model */
+        $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
+
+        /** @var Identity $targetUser */
+        $targetUser = $model::query()->findOrFail($userId);
+
+        $this->targetUserInstance = $targetUser;
+
+        return $targetUser;
+    }
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -62,12 +95,9 @@ final class UserRequest extends FormRequest
         }
 
         // If the actor is NOT a SuperAdmin, they cannot edit a SuperAdmin.
-        /** @var class-string<Model> $model */
-        $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
-        /** @var Identity $targetUser */
-        $targetUser = $model::query()->findOrFail($userId);
+        $targetUser = $this->getTargetUser();
 
-        if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
+        if ($targetUser !== null && $targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
             return false;
         }
 

@@ -21,7 +21,8 @@ final readonly class UserAssignRolesController
      */
     public function __invoke(AssignRolesRequest $formRequest, string $user): SuccessResponse
     {
-        $userModel = User::query()->findOrFail($user);
+        /** @var User $userModel */
+        $userModel = $formRequest->getTargetUser() ?? User::query()->findOrFail($user);
 
         /** @var array<int, string> $roles */
         $roles = $formRequest->validated('roles');

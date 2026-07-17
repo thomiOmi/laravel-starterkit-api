@@ -22,6 +22,39 @@ use Spatie\Permission\Contracts\Role;
 final class RoleRequest extends FormRequest
 {
     /**
+     * @var Role|null The cached target role instance to prevent duplicate lookups.
+     */
+    private ?Role $targetRoleInstance = null;
+
+    /**
+     * Retrieve the target role instance based on the request route, memoized for performance.
+     *
+     * @return Role|null The target role model or null if not applicable.
+     */
+    public function getTargetRole(): ?Role
+    {
+        if ($this->targetRoleInstance !== null) {
+            return $this->targetRoleInstance;
+        }
+
+        $roleId = $this->route('role');
+
+        if (! is_string($roleId)) {
+            return null;
+        }
+
+        /** @var class-string<Model> $roleModel */
+        $roleModel = (string) config('permission.models.role', 'Modules\IAM\Models\Role');
+
+        /** @var Role $role */
+        $role = $roleModel::query()->findOrFail($roleId);
+
+        $this->targetRoleInstance = $role;
+
+        return $role;
+    }
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -47,11 +80,8 @@ final class RoleRequest extends FormRequest
 
         $roleId = $this->route('role');
         if (is_string($roleId)) {
-            /** @var class-string<Model> $roleModel */
-            $roleModel = (string) config('permission.models.role', 'Modules\IAM\Models\Role');
-            /** @var Role $role */
-            $role = $roleModel::query()->findOrFail($roleId);
-            if ($role->name === RoleEnum::SuperAdmin->value) {
+            $role = $this->getTargetRole();
+            if ($role !== null && $role->name === RoleEnum::SuperAdmin->value) {
                 return false;
             }
         }
