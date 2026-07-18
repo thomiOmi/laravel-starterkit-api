@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
-use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\IAM\Actions\ListDevicesAction;
 use Modules\IAM\Models\User;
 
@@ -16,7 +16,7 @@ describe('ListDevicesAction', function () {
 
         $result = $action->handle($user);
 
-        expect($result)->toBeInstanceOf(Paginator::class);
+        expect($result)->toBeInstanceOf(LengthAwarePaginator::class);
         expect($result->items())->toHaveCount(1);
     });
 
@@ -26,7 +26,7 @@ describe('ListDevicesAction', function () {
 
         $result = $action->handle($user);
 
-        expect($result)->toBeInstanceOf(Paginator::class);
+        expect($result)->toBeInstanceOf(LengthAwarePaginator::class);
         expect($result->items())->toBeEmpty();
     });
 });

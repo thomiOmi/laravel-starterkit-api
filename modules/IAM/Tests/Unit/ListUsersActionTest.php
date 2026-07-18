@@ -15,7 +15,7 @@ describe('ListUsersAction', function () {
         User::factory()->count(5)->create();
         $action = app(ListUsersAction::class);
 
-        $result = $action->handle(10, 1);
+        $result = $action->handle();
 
         expect($result->total())->toBe(5);
     });
@@ -29,7 +29,7 @@ describe('ListUsersAction', function () {
         Request::merge(['filter' => ['role' => RoleEnum::Admin->value]]);
 
         $action = app(ListUsersAction::class);
-        $result = $action->handle(10, 1);
+        $result = $action->handle();
 
         expect($result->total())->toBe(1)
             ->and($result->first()->id)->toBe($admin->id);
@@ -42,7 +42,7 @@ describe('ListUsersAction', function () {
         Request::merge(['filter' => ['status' => 'verified']]);
 
         $action = app(ListUsersAction::class);
-        $result = $action->handle(10, 1);
+        $result = $action->handle();
 
         expect($result->total())->toBe(1)
             ->and($result->first()->id)->toBe($verified->id);

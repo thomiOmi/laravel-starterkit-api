@@ -14,7 +14,7 @@ describe('ListRolesAction', function () {
         Role::create(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
         $action = app(ListRolesAction::class);
 
-        $result = $action->handle(10, 1);
+        $result = $action->handle();
 
         expect($result->total())->toBeGreaterThanOrEqual(1);
     });
@@ -26,7 +26,7 @@ describe('ListRolesAction', function () {
         Request::merge(['search' => 'edit']);
 
         $action = app(ListRolesAction::class);
-        $result = $action->handle(10, 1);
+        $result = $action->handle();
 
         expect($result->total())->toBe(1)
             ->and($result->first()->name)->toBe('editor');

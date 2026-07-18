@@ -12,6 +12,8 @@ use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 /**
  * @property string $id
  * @property string $name
+ * @property string $tokenable_id
+ * @property string $tokenable_type
  * @property string|null $ip_address
  * @property string|null $user_agent
  * @property Carbon|null $last_used_at

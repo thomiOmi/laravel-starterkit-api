@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Http\Requests\PaginationRequest;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListDevicesAction;
 use Modules\IAM\Models\User;
+use Modules\IAM\Requests\V1\DeviceListRequest;
 use Modules\IAM\Resources\DeviceResource;
-use Symfony\Component\HttpFoundation\Response;
 
 final readonly class DeviceListController
 {
@@ -24,22 +23,17 @@ final readonly class DeviceListController
      *
      * @return SuccessResponse<AnonymousResourceCollection>
      */
-    public function __invoke(PaginationRequest $request): SuccessResponse
+    public function __invoke(DeviceListRequest $request): SuccessResponse
     {
         /** @var (Authenticatable&User) $currentUser */
         $currentUser = $request->user();
 
-        $devices = $this->listDevices->handle(
-            $currentUser,
-            $request->integer('page.size', 10),
-            $request->integer('page.number', 1)
-        );
+        $devices = $this->listDevices->handle($currentUser);
 
         return new SuccessResponse(
             data: DeviceResource::collection($devices),
             title: 'OK',
             detail: __('general.resource_retrieved', ['resource' => 'Devices']),
-            status: Response::HTTP_OK,
         );
     }
 }

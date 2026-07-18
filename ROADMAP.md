@@ -26,8 +26,7 @@
 *Consolidate static analysis, production safeguards, and security hardening.*
 
 - [ ] **PHPStan strict configuration**
-  - Install extensions: `phpstan-strict-rules`, `phpstan-deprecation-rules`, `phpstan-symfony`
-  - Skip `phpstan-phpunit` (Pest, not PHPUnit) — depends on Phase 04 investigation
+  - Install extensions: `phpstan-deprecation-rules`
   - Set memory limit to 512M
   - Audit `phpstan/extension-installer`: remove if manually including in `phpstan.neon`
   - Evaluate need for separate `phpstan.tests.neon` config

@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\IAM\Filters;
+
+use App\Http\Filters\BaseFilter;
+use Modules\IAM\Models\Role;
+
+/**
+ * @extends BaseFilter<Role>
+ */
+class RoleFilter extends BaseFilter
+{
+    /** @var array<int, string> */
+    protected array $allowedFilters = [
+        'name',
+    ];
+
+    /** @var array<int, string> */
+    protected array $allowedSorts = [
+        'name',
+        'created_at',
+    ];
+
+    /** @var array<int, string> */
+    protected array $allowedFields = [
+        'id',
+        'name',
+        'description',
+        'created_at',
+        'updated_at',
+    ];
+
+    /** @var array<int, string> */
+    protected array $allowedIncludes = [
+        'permissions',
+    ];
+
+    /** @var array<int, string> */
+    protected array $searchableColumns = [
+        'name',
+        'description',
+    ];
+}

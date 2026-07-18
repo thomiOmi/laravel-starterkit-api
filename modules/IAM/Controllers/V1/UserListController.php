@@ -23,10 +23,7 @@ final readonly class UserListController
      */
     public function __invoke(UserListRequest $request): SuccessResponse
     {
-        $users = $this->listUsers->handle(
-            $request->integer('page.size', 10),
-            $request->integer('page.number', 1),
-        );
+        $users = $this->listUsers->handle();
 
         return new SuccessResponse(
             data: UserResource::collection($users),

@@ -13,7 +13,7 @@ describe('ListPermissionsAction', function () {
         Permission::create(['name' => 'test.perm', 'guard_name' => 'sanctum']);
         $action = app(ListPermissionsAction::class);
 
-        $result = $action->handle(20, 1);
+        $result = $action->handle();
 
         expect($result->total())->toBeGreaterThanOrEqual(1);
     });
@@ -25,7 +25,7 @@ describe('ListPermissionsAction', function () {
         Request::merge(['search' => 'edit']);
 
         $action = app(ListPermissionsAction::class);
-        $result = $action->handle(20, 1);
+        $result = $action->handle();
 
         expect($result->total())->toBe(1)
             ->and($result->first()->name)->toBe('user.edit');
