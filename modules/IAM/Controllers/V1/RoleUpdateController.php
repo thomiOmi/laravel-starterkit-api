@@ -6,6 +6,7 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\UpdateRoleAction;
+use Modules\IAM\Models\Role;
 use Modules\IAM\Requests\V1\RoleRequest;
 use Modules\IAM\Resources\RoleResource;
 
@@ -19,14 +20,12 @@ final readonly class RoleUpdateController
      * Update the specified role in storage.
      *
      * @param  RoleRequest  $request  The validated role update request.
-     * @param  string  $role  The role ID.
+     * @param  Role  $role  The role model, automatically resolved via Route Model Binding.
      * @return SuccessResponse<RoleResource>
      */
-    public function __invoke(RoleRequest $request, string $role): SuccessResponse
+    public function __invoke(RoleRequest $request, Role $role): SuccessResponse
     {
-        $targetRole = $request->getTargetRole() ?? $role;
-
-        $roleModel = $this->updateRole->handle($targetRole, $request->payload());
+        $roleModel = $this->updateRole->handle($role, $request->payload());
 
         return new SuccessResponse(
             data: new RoleResource($roleModel),

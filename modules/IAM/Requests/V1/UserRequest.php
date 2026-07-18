@@ -26,39 +26,6 @@ final class UserRequest extends FormRequest
     use PasswordValidationRules, ProfileValidationRules;
 
     /**
-     * @var Identity|null The cached target user instance to prevent duplicate lookups.
-     */
-    private ?Identity $targetUserInstance = null;
-
-    /**
-     * Retrieve the target user instance based on the request route, memoized for performance.
-     *
-     * @return Identity|null The target user model or null if not applicable.
-     */
-    public function getTargetUser(): ?Identity
-    {
-        if ($this->targetUserInstance !== null) {
-            return $this->targetUserInstance;
-        }
-
-        $userId = $this->route('user');
-
-        if (! is_string($userId)) {
-            return null;
-        }
-
-        /** @var class-string<Model> $model */
-        $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
-
-        /** @var Identity $targetUser */
-        $targetUser = $model::query()->findOrFail($userId);
-
-        $this->targetUserInstance = $targetUser;
-
-        return $targetUser;
-    }
-
-    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
@@ -76,14 +43,20 @@ final class UserRequest extends FormRequest
 
         $userId = $this->route('user');
 
-        if (! is_string($userId)) {
+        if (! is_string($userId) && ! $userId instanceof Identity) {
             return $user->can(PermissionEnum::UserEdit->value);
         }
 
         /** @var string|int $id */
         $id = $user->getAuthIdentifier();
 
-        $canEdit = (string) $id === $userId || $user->can(PermissionEnum::UserEdit->value);
+        if ($userId instanceof Identity) {
+            $authId = $userId->getAuthIdentifier();
+            $userIdString = is_string($authId) || is_int($authId) ? (string) $authId : '';
+        } else {
+            $userIdString = $userId;
+        }
+        $canEdit = (string) $id === $userIdString || $user->can(PermissionEnum::UserEdit->value);
 
         if (! $canEdit) {
             return false;
@@ -95,9 +68,16 @@ final class UserRequest extends FormRequest
         }
 
         // If the actor is NOT a SuperAdmin, they cannot edit a SuperAdmin.
-        $targetUser = $this->getTargetUser();
+        if ($userId instanceof Identity) {
+            $targetUser = $userId;
+        } else {
+            /** @var class-string<Model> $model */
+            $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
+            /** @var Identity $targetUser */
+            $targetUser = $model::query()->findOrFail($userId);
+        }
 
-        if ($targetUser !== null && $targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
+        if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
             return false;
         }
 
@@ -112,10 +92,15 @@ final class UserRequest extends FormRequest
     public function rules(): array
     {
         $userId = $this->route('user');
-        $userId = is_string($userId) ? $userId : null;
+        if ($userId instanceof Identity) {
+            $authId = $userId->getAuthIdentifier();
+            $userIdString = is_string($authId) || is_int($authId) ? (string) $authId : '';
+        } else {
+            $userIdString = is_string($userId) ? $userId : null;
+        }
 
         return [
-            ...$this->profileRules($userId),
+            ...$this->profileRules($userIdString),
             'password' => $this->passwordRules($this->isMethod('POST')),
         ];
     }
