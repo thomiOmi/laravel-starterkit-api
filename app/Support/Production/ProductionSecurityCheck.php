@@ -26,6 +26,11 @@ final readonly class ProductionSecurityCheck
             $this->checkAppKey(),
             $this->checkCacheStore(),
             $this->checkSessionDriver(),
+            $this->checkQueueConnection(),
+            $this->checkSessionSecureCookie(),
+            $this->checkMailMailer(),
+            $this->checkLogChannel(),
+            $this->checkMailFromAddress(),
         ];
     }
 
@@ -84,12 +89,14 @@ final readonly class ProductionSecurityCheck
     {
         $key = config()->string('app.key');
 
+        $isValid = $key !== '' && str_starts_with($key, 'base64:') && strlen($key) > 7;
+
         return [
             'check' => 'APP_KEY',
-            'status' => $key !== '' && $key !== 'SomeRandomKeyWith32Characters' ? 'pass' : 'fail',
-            'detail' => $key !== '' && $key !== 'SomeRandomKeyWith32Characters'
-                ? 'APP_KEY is set'
-                : 'APP_KEY is missing or is still the default placeholder',
+            'status' => $isValid ? 'pass' : 'fail',
+            'detail' => $isValid
+                ? 'APP_KEY is set and uses base64 format'
+                : 'APP_KEY is missing, is the default placeholder, or is not in base64 format',
         ];
     }
 
@@ -122,6 +129,86 @@ final readonly class ProductionSecurityCheck
             'detail' => $driver !== 'file'
                 ? "SESSION_DRIVER is '{$driver}'"
                 : "SESSION_DRIVER is 'file', use redis or database in production",
+        ];
+    }
+
+    /**
+     * @return array{check: string, status: string, detail: string}
+     */
+    private function checkQueueConnection(): array
+    {
+        $connection = config()->string('queue.default');
+
+        return [
+            'check' => 'QUEUE_CONNECTION',
+            'status' => $connection !== 'sync' ? 'pass' : 'fail',
+            'detail' => $connection !== 'sync'
+                ? "QUEUE_CONNECTION is '{$connection}'"
+                : "QUEUE_CONNECTION is 'sync', use redis or database in production",
+        ];
+    }
+
+    /**
+     * @return array{check: string, status: string, detail: string}
+     */
+    private function checkSessionSecureCookie(): array
+    {
+        $secure = (bool) config()->get('session.secure', false);
+
+        return [
+            'check' => 'SESSION_SECURE_COOKIE',
+            'status' => $secure ? 'pass' : 'fail',
+            'detail' => $secure
+                ? 'SESSION_SECURE_COOKIE is enabled'
+                : 'SESSION_SECURE_COOKIE is disabled, must be true when using HTTPS',
+        ];
+    }
+
+    /**
+     * @return array{check: string, status: string, detail: string}
+     */
+    private function checkMailMailer(): array
+    {
+        $mailer = config()->string('mail.default');
+
+        return [
+            'check' => 'MAIL_MAILER',
+            'status' => ! in_array($mailer, ['log', 'array'], true) ? 'pass' : 'fail',
+            'detail' => ! in_array($mailer, ['log', 'array'], true)
+                ? "MAIL_MAILER is '{$mailer}'"
+                : "MAIL_MAILER is '{$mailer}', use smtp, ses, mailgun, etc. in production",
+        ];
+    }
+
+    /**
+     * @return array{check: string, status: string, detail: string}
+     */
+    private function checkLogChannel(): array
+    {
+        $channel = config()->string('logging.default');
+
+        return [
+            'check' => 'LOG_CHANNEL',
+            'status' => $channel !== 'single' ? 'pass' : 'fail',
+            'detail' => $channel !== 'single'
+                ? "LOG_CHANNEL is '{$channel}'"
+                : "LOG_CHANNEL is 'single', use 'daily' or 'stack' in production to prevent unbounded log files",
+        ];
+    }
+
+    /**
+     * @return array{check: string, status: string, detail: string}
+     */
+    private function checkMailFromAddress(): array
+    {
+        $address = config()->string('mail.from.address');
+
+        return [
+            'check' => 'MAIL_FROM_ADDRESS',
+            'status' => $address !== '' ? 'pass' : 'fail',
+            'detail' => $address !== ''
+                ? "MAIL_FROM_ADDRESS is '{$address}'"
+                : 'MAIL_FROM_ADDRESS is not set',
         ];
     }
 }

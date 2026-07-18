@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Contracts\Identity;
 use App\Enums\RoleEnum;
 use App\Models\Sanctum\PersonalAccessToken;
+use App\Support\Production\ProductionSecurityCheck;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -18,6 +19,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -51,6 +53,8 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureEmailVerification();
         $this->configurePasswordReset();
+
+        $this->monitorProductionSecurity();
 
         // $this->configureScramble();
     }
@@ -168,5 +172,29 @@ class AppServiceProvider extends ServiceProvider
                 ->line('Click the button below to verify your email address.')
                 ->action('Verify Email Address', $url);
         });
+    }
+
+    /**
+     * Log warnings for any production security misconfiguration.
+     *
+     * Does not abort — the app continues serving traffic. Use
+     * the `security:check` Artisan command as a CI/CD gate.
+     */
+    protected function monitorProductionSecurity(): void
+    {
+        if (! app()->isProduction()) {
+            return;
+        }
+
+        $check = new ProductionSecurityCheck;
+
+        foreach ($check() as $result) {
+            if ($result['status'] === 'fail') {
+                Log::warning("Production security check failed: {$result['check']}", [
+                    'check' => $result['check'],
+                    'detail' => $result['detail'],
+                ]);
+            }
+        }
     }
 }
