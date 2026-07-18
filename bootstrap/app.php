@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\FeatureFlagMiddleware;
+use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
 use App\Http\Middleware\TraceIdMiddleware;
@@ -61,6 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->append(SetLocaleMiddleware::class);
         $middleware->prependToGroup('api', TraceIdMiddleware::class);
+        $middleware->prependToGroup('api', SecurityHeadersMiddleware::class);
 
         $middleware->trustHosts(at: function (): array {
             /** @var array<int, string> $hosts */
