@@ -36,6 +36,8 @@ return [
     'email_verification_sent' => 'A new verification link has been sent to your email address.',
     'email_not_verified' => 'Email Not Verified',
     'email_verify_required' => 'Please verify your email address before accessing this resource.',
+    'email_verify_subject' => 'Verify Email Address',
+    'email_verify_line' => 'Click the button below to verify your email address.',
 
     // HTTP status titles (RFC 9457 Problem Details)
     'http_unauthorized' => 'Unauthenticated',

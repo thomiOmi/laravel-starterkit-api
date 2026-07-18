@@ -12,17 +12,17 @@ use Modules\{{Module}}\Payloads\{{Version}}\Update{{Module}}Payload;
  */
 final readonly class Update{{Module}}Action
 {
-    public function __construct() {}
-
     /**
      * Execute the update {{label}} action.
      *
-     * @param  {{Module}}  ${{lowerResource}}  The {{label}} model instance.
+     * @param  string  $id  The {{label}} ID.
      * @param  Update{{Module}}Payload  $payload  The payload.
      * @return {{Module}} The updated {{label}} instance.
      */
-    public function handle({{Module}} ${{lowerResource}}, Update{{Module}}Payload $payload): {{Module}}
+    public function handle(string $id, Update{{Module}}Payload $payload): {{Module}}
     {
+        ${{lowerResource}} = {{Module}}::query()->findOrFail($id);
+
         ${{lowerResource}}->update($payload->toArray());
 
         return ${{lowerResource}};

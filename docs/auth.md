@@ -112,4 +112,4 @@ New users get `email_verified_at = null` by default. Verification uses signed UR
 
 ## Password Reset
 
-Uses Laravel's built-in password broker. Reset link URLs are customized to point at `APP_FRONTEND_URL/reset-password?token=X&email=Y`. Password rules are configured in `AppServiceProvider` via `Password::defaults()` (min 8 chars, mixed case in production).
+Uses Laravel's built-in password broker. Reset link URLs are customized to point at `APP_FRONTEND_URL/reset-password?token=X&email=Y`. Password rules are configured in `AppServiceProvider` via `Password::defaults()` (min 12 chars with mixed case, letters, numbers, symbols in production; no default constraints in development).

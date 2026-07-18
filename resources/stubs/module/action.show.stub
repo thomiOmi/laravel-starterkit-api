@@ -5,17 +5,12 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Actions;
 
 use Modules\{{Module}}\Models\{{Module}};
-use Modules\{{Module}}\Repositories\{{Module}}Repository;
 
 /**
  * Action for retrieving a single {{label}} profile.
  */
 final readonly class Show{{Module}}Action
 {
-    public function __construct(
-        private {{Module}}Repository $repository
-    ) {}
-
     /**
      * Execute the show {{label}} action.
      *
@@ -24,6 +19,6 @@ final readonly class Show{{Module}}Action
      */
     public function handle(string $id): ?{{Module}}
     {
-        return $this->repository->findById($id);
+        return {{Module}}::query()->find($id);
     }
 }

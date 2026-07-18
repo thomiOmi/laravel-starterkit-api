@@ -24,7 +24,7 @@
 
 ## API Convention
 
-| Aspek | Detail |
+| Aspect | Detail |
 | --- | --- |
 | Base URL | `/api/v1/...` (lowercase) |
 | Auth | `Authorization: Bearer {token}` (Sanctum) |

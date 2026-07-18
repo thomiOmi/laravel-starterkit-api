@@ -42,7 +42,7 @@ app/                     # Shared application code
 ├── Contracts/           # Interfaces (Identity)
 ├── Http/
 │   ├── Controllers/     # Base controller
-│   ├── Middleware/      # ForceJsonResponse, Sunset, TraceId, PlanFeature, SetLocale
+│   ├── Middleware/      # ForceJsonResponse, Sunset, TraceId, SetLocale, PlanFeature, SecurityHeaders
 │   └── Responses/       # SuccessResponse, ProblemResponse (RFC 9457)
 ├── Providers/           # AppServiceProvider, ModuleServiceProvider
 └── Notifications/       # Shared notifications
@@ -73,6 +73,6 @@ Handled in `bootstrap/app.php`:
 
 ## Service Providers
 
-- **AppServiceProvider**: Rate limiters, `Password::defaults()`, `Gate::before()` for super-admin, feature flag definitions
+- **AppServiceProvider**: Rate limiters, `Password::defaults()`, `Gate::before()` for super-admin, feature flag definitions, email verification, password reset, production security monitoring
 - **ModuleServiceProvider**: Auto-discovers and registers all module providers by scanning `modules/` directory
 - **Module providers**: Each module has `{Module}ServiceProvider` responsible for registering its own routes

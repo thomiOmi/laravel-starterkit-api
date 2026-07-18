@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
-use Illuminate\Http\JsonResponse;
+use App\Http\Responses\ProblemResponse;
+use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Delete{{Module}}Action;
 use Modules\{{Module}}\Models\{{Module}};
 use Symfony\Component\HttpFoundation\Response;
@@ -22,27 +23,19 @@ final readonly class DeleteController
 
     /**
      * Remove the specified {{lowerResource}} from storage.
+     *
+     * @return SuccessResponse<null>|ProblemResponse
      */
-    public function __invoke({{Module}} ${{lowerResource}}): JsonResponse
+    public function __invoke(string $id): SuccessResponse|ProblemResponse
     {
-        if ($this->delete{{Module}}->handle(${{lowerResource}})) {
-            return new JsonResponse(
-                [
-                    'status' => Response::HTTP_NO_CONTENT,
-                    'message' => __('general.deleted', ['resource' => '{{Module}}']),
-                    'data' => null,
-                ],
-                Response::HTTP_NO_CONTENT,
-            );
+        if ($this->delete{{Module}}->handle($id)) {
+            return new SuccessResponse(null, status: Response::HTTP_NO_CONTENT);
         }
 
-        return new JsonResponse(
-            [
-                'status' => Response::HTTP_FORBIDDEN,
-                'message' => __('general.delete_error', ['resource' => '{{Module}}']),
-                'data' => null,
-            ],
-            Response::HTTP_FORBIDDEN,
+        return new ProblemResponse(
+            title: __('http_forbidden'),
+            status: Response::HTTP_FORBIDDEN,
+            detail: __('general.resource_delete_error', ['resource' => '{{Module}}']),
         );
     }
 }

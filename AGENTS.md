@@ -104,7 +104,7 @@ Use the `skill` tool to load a skill when the task matches its description. List
 
 ## API Convention
 
-| Aspek | Detail |
+| Aspect | Detail |
 | --- | --- |
 | Base URL | `/api/v1/...` (lowercase) |
 | Auth | `Authorization: Bearer {token}` (Sanctum) |

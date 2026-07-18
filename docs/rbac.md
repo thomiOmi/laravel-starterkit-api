@@ -64,10 +64,10 @@ public function authorize(): bool
 
 ## Gate
 
-Super-admin bypass is configured in `AppServiceProvider::boot()`:
+Super-admin bypass is configured in `AppServiceProvider::configureSuperAdminGate()`:
 
 ```php
-Gate::before(function (User $user) {
-    return $user->hasRole('super-admin') ? true : null;
+Gate::before(function (Identity $user) {
+    return $user->hasRole(RoleEnum::SuperAdmin) ? true : null;
 });
 ```

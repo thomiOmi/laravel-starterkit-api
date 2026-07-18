@@ -66,7 +66,7 @@ app/                     # Shared application code
 ├── Concerns/            # Traits (FormatDates, HasDefaultBehavior, etc.)
 ├── Contracts/           # Interfaces (Identity)
 ├── Http/
-│   ├── Middleware/      # ForceJsonResponse, Sunset, TraceId, etc.
+│   ├── Middleware/      # Sunset, TraceId, SetLocale, PlanFeature, SecurityHeaders
 │   └── Responses/       # SuccessResponse, ProblemResponse (RFC 9457)
 ├── Providers/           # AppServiceProvider, ModuleServiceProvider
 └── Notifications/       # Shared notifications (VerifyEmail, ResetPassword)
@@ -80,8 +80,10 @@ routes/
 └── console.php
 tests/                   # Shared tests / global test helpers
 ├── Architecture/        # Architecture tests (N+1, module isolation, etc.)
-├── Feature/
-└── Unit/
+├── Feature/             # Infrastructure tests (middleware, responses, etc.)
+│   └── Infrastructure/
+├── Unit/
+└── Integration/
 ```
 
 ## Testing
@@ -97,14 +99,17 @@ php artisan test --compact --parallel
 php artisan test --compact --filter=UserManagementTest
 
 # Type coverage
-php artisan test --coverage
+php -d memory_limit=2G artisan test --coverage
+
+# Production security check (CI/CD gate)
+php artisan security:check
 ```
 
 ## Code Quality
 
 ```bash
 ./vendor/bin/pint --dirty --format agent
-./vendor/bin/phpstan analyse --memory-limit=2G
+./vendor/bin/phpstan analyse --memory-limit=512M
 ```
 
 ## License

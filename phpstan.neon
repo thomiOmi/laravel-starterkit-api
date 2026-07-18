@@ -15,8 +15,6 @@ parameters:
 
     level: max
 
-    memoryLimit: 512M
-
     checkConfigTypes: true
 
     # Larastan optional rules

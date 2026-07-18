@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
-use Illuminate\Http\JsonResponse;
+use App\Http\Responses\ProblemResponse;
+use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Show{{Module}}Action;
 use Modules\{{Module}}\Models\{{Module}};
 use Modules\{{Module}}\Resources\{{Module}}Resource;
@@ -23,29 +24,25 @@ final readonly class ShowController
 
     /**
      * Display the specified {{lowerResource}}.
+     *
+     * @return SuccessResponse<\Modules\{{Module}}\Resources\{{Module}}Resource>|ProblemResponse
      */
-    public function __invoke({{Module}} ${{lowerResource}}): JsonResponse
+    public function __invoke(string $id): SuccessResponse|ProblemResponse
     {
-        ${{lowerResource}} = $this->show{{Module}}->handle(${{lowerResource}}->id);
+        ${{lowerResource}} = $this->show{{Module}}->handle($id);
 
-        if (! ${{lowerResource}}) {
-            return new JsonResponse(
-                [
-                    'status' => Response::HTTP_NOT_FOUND,
-                    'message' => __('general.not_found', ['resource' => '{{Module}}']),
-                    'data' => null,
-                ],
-                Response::HTTP_NOT_FOUND,
+        if (${{lowerResource}} === null) {
+            return new ProblemResponse(
+                title: __('auth.http_not_found'),
+                status: Response::HTTP_NOT_FOUND,
+                detail: __('general.resource_not_found', ['resource' => '{{Module}}']),
             );
         }
 
-        return new JsonResponse(
-            [
-                'status' => Response::HTTP_OK,
-                'message' => __('general.retrieved', ['resource' => '{{Module}}']),
-                'data' => new {{Module}}Resource(${{lowerResource}}),
-            ],
-            Response::HTTP_OK,
+        return new SuccessResponse(
+            data: new {{Module}}Resource(${{lowerResource}}),
+            title: 'OK',
+            detail: __('general.resource_retrieved', ['resource' => '{{Module}}']),
         );
     }
 }

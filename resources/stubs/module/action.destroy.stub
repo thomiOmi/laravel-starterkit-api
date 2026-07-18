@@ -11,16 +11,20 @@ use Modules\{{Module}}\Models\{{Module}};
  */
 final readonly class Delete{{Module}}Action
 {
-    public function __construct() {}
-
     /**
      * Execute the delete {{label}} action.
      *
-     * @param  {{Module}}  ${{lowerResource}}  The {{label}} model instance.
+     * @param  string  $id  The {{label}} ID.
      * @return bool True if the {{label}} was deleted successfully, false otherwise.
      */
-    public function handle({{Module}} ${{lowerResource}}): bool
+    public function handle(string $id): bool
     {
+        ${{lowerResource}} = {{Module}}::query()->find($id);
+
+        if (${{lowerResource}} === null) {
+            return false;
+        }
+
         return (bool) ${{lowerResource}}->delete();
     }
 }

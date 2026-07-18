@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Responses\SuccessResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\{{Module}}\Actions\List{{pluralModule}}Action;
 use Modules\{{Module}}\Filters\{{Module}}Filter;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @group {{Module}} Management
@@ -24,18 +23,17 @@ final readonly class ListController
 
     /**
      * Display a paginated listing of the {{lowerResource}}s.
+     *
+     * @return SuccessResponse<AnonymousResourceCollection>
      */
-    public function __invoke(Request $request, {{Module}}Filter $filter): JsonResponse
+    public function __invoke({{Module}}Filter $filter): SuccessResponse
     {
-        ${{lowerResource}}s = $this->list{{pluralModule}}->handle($filter, $request->integer('per_page', 10));
+        ${{lowerResource}}s = $this->list{{pluralModule}}->handle($filter, request()->integer('per_page', 10));
 
-        return new JsonResponse(
-            [
-                'status' => Response::HTTP_OK,
-                'message' => __('general.retrieved', ['resource' => '{{Module}}s']),
-                'data' => {{Module}}Resource::collection(${{lowerResource}}s),
-            ],
-            Response::HTTP_OK,
+        return new SuccessResponse(
+            data: {{Module}}Resource::collection(${{lowerResource}}s),
+            title: 'OK',
+            detail: __('general.resource_retrieved', ['resource' => '{{Module}}s']),
         );
     }
 }

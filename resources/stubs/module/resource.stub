@@ -24,17 +24,8 @@ class {{Module}}Resource extends JsonResource
     {
         return [
             'id' => $this->resource->id,
-            'created_at' => $this->formatDate($this->resource->created_at),
-            'updated_at' => $this->formatDate($this->resource->updated_at),
+            'created_at' => $this->resource->created_at,
+            'updated_at' => $this->resource->updated_at,
         ];
-    }
-
-    private function formatDate(?string $date): ?string
-    {
-        if ($date === null) {
-            return null;
-        }
-
-        return \Carbon\Carbon::parse($date)->format('Y-m-d H:i:s');
     }
 }

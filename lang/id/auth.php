@@ -25,6 +25,8 @@ return [
     'email_verification_sent' => 'Tautan verifikasi baru telah dikirim ke alamat email Anda.',
     'email_not_verified' => 'Email Belum Diverifikasi',
     'email_verify_required' => 'Silakan verifikasi alamat email Anda sebelum mengakses sumber daya ini.',
+    'email_verify_subject' => 'Verifikasi Alamat Email',
+    'email_verify_line' => 'Klik tombol di bawah untuk memverifikasi alamat email Anda.',
 
     // HTTP status titles (RFC 9457 Problem Details)
     'http_unauthorized' => 'Tidak terautentikasi',
