@@ -27,16 +27,17 @@ use Illuminate\Validation\Rules\Password;
 use Laravel\Pennant\Feature;
 use Laravel\Sanctum\Sanctum;
 
+/**
+ * Central application configuration hub.
+ *
+ * Registers rate limiters, auth defaults (email verification, password reset),
+ * feature flags, the SuperAdmin gate, production security monitoring, and
+ * immutable date handling.
+ */
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void {}
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
@@ -47,16 +48,15 @@ class AppServiceProvider extends ServiceProvider
 
         $this->defineFeatures();
 
-        Gate::before(function (Identity $user, string $ability) {
-            return $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null;
-        });
+        $this->configureSuperAdminGate();
 
-        $this->configureEmailVerification();
+        $this->configureEmailVerificationUrl();
+
+        $this->configureEmailVerificationMail();
+
         $this->configurePasswordReset();
 
         $this->monitorProductionSecurity();
-
-        // $this->configureScramble();
     }
 
     /**
@@ -85,13 +85,9 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-    protected function defineFeatures(): void
-    {
-        Feature::define('beta-feature', function (Identity $user) {
-            return $user->hasRole(RoleEnum::Admin->value);
-        });
-    }
-
+    /**
+     * Define API rate limiters for the api, auth, and authenticated routes.
+     */
     protected function configureRateLimiting(): void
     {
         RateLimiter::for('api', function (Request $request) {
@@ -121,22 +117,36 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    protected function configurePasswordReset(): void
+    /**
+     * Define Pennant feature flags for the application.
+     */
+    protected function defineFeatures(): void
     {
-        ResetPassword::createUrlUsing(function (mixed $user, string $token): string {
-            $frontendUrl = config()->string('app.frontend_url', 'http://localhost:5173');
-
-            $url = $frontendUrl.'/reset-password?token='.$token;
-
-            if ($user instanceof Identity) {
-                $url .= '&email='.$user->getEmailForPasswordReset();
-            }
-
-            return $url;
+        Feature::define('beta-feature', function (Identity $user) {
+            return $user->hasRole(RoleEnum::Admin->value);
         });
     }
 
-    protected function configureEmailVerification(): void
+    /**
+     * Grant SuperAdmin unrestricted access via Gate::before.
+     *
+     * Returning null allows other policies to decide when the user
+     * does not have the SuperAdmin role.
+     */
+    protected function configureSuperAdminGate(): void
+    {
+        Gate::before(function (Identity $user, string $ability) {
+            return $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null;
+        });
+    }
+
+    /**
+     * Customize the signed email verification URL for the SPA frontend.
+     *
+     * The signed URL is generated with a configurable expiration, then
+     * merged with the user id/hash and forwarded to the frontend app.
+     */
+    protected function configureEmailVerificationUrl(): void
     {
         VerifyEmail::createUrlUsing(function (Identity $notifiable): string {
             $expire = config()->integer('auth.verification.expire', 60);
@@ -165,12 +175,36 @@ class AppServiceProvider extends ServiceProvider
 
             return $frontendUrl.'/verify-email?'.http_build_query($params);
         });
+    }
 
+    /**
+     * Customize the email verification notification message.
+     */
+    protected function configureEmailVerificationMail(): void
+    {
         VerifyEmail::toMailUsing(function (mixed $notifiable, string $url): MailMessage {
             return (new MailMessage)
                 ->subject('Verify Email Address')
                 ->line('Click the button below to verify your email address.')
                 ->action('Verify Email Address', $url);
+        });
+    }
+
+    /**
+     * Customize the password reset URL for the SPA frontend.
+     */
+    protected function configurePasswordReset(): void
+    {
+        ResetPassword::createUrlUsing(function (mixed $user, string $token): string {
+            $frontendUrl = config()->string('app.frontend_url', 'http://localhost:5173');
+
+            $url = $frontendUrl.'/reset-password?token='.$token;
+
+            if ($user instanceof Identity) {
+                $url .= '&email='.$user->getEmailForPasswordReset();
+            }
+
+            return $url;
         });
     }
 

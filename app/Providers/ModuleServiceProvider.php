@@ -68,11 +68,13 @@ class ModuleServiceProvider extends ServiceProvider
     /**
      * Register modular events and listeners.
      *
+     * Reserved for future event discovery. Modules currently register
+     * their own events in their respective service providers.
+     *
      * @param  string  $modulePath  The absolute path to the module directory.
      */
     protected function registerModularEvents(string $modulePath): void
     {
-        // For now, we rely on manual registration in module's own ServiceProvider if needed,
-        // or we can implement a specific event discovery here.
+        //
     }
 }
