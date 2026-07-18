@@ -9,8 +9,6 @@ namespace App\Support\Production;
  *
  * Each check returns a 'pass' or 'fail' verdict so the caller can
  * surface results in a CLI table, monitoring endpoint, or CI gate.
- *
- * @see https://github.com/JustSteveKing/kit for the original reference
  */
 final readonly class ProductionSecurityCheck
 {
