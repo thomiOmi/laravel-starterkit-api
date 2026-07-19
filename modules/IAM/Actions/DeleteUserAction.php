@@ -14,13 +14,19 @@ final readonly class DeleteUserAction
         private Guard $auth,
     ) {}
 
+    /**
+     * Handle the action to delete a user.
+     *
+     * @param  string  $id  The ID of the user to delete.
+     * @return bool True if deleted successfully, false otherwise.
+     */
     public function handle(string $id): bool
     {
         if ($id === $this->auth->id()) {
             return false;
         }
 
-        $user = User::query()->with('roles')->findOrFail($id);
+        $user = User::query()->with(['roles:id,name,guard_name'])->findOrFail($id);
 
         /** @var User|null $currentUser */
         $currentUser = $this->auth->user();

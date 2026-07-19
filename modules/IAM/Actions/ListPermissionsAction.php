@@ -14,11 +14,26 @@ final readonly class ListPermissionsAction
     /**
      * Handle the action to list permissions with filtering, sorting, and sparse fields.
      *
-     * @return LengthAwarePaginator<int, Permission>
+     * Default-select only specific columns if user-requested sparse fields
+     * are not present, to prevent overfetching.
+     *
+     * @return LengthAwarePaginator<int, Permission> The paginated permission list.
      */
     public function handle(): LengthAwarePaginator
     {
-        return Permission::query()
+        $query = Permission::query();
+
+        if (! request()->has('fields.permissions')) {
+            $query->select([
+                'id',
+                'name',
+                'guard_name',
+                'created_at',
+                'updated_at',
+            ]);
+        }
+
+        return $query
             ->tap(new PermissionFilter(request()))
             ->pipe(new BasePaginate(request()));
     }

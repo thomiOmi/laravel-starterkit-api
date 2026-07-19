@@ -14,11 +14,27 @@ final readonly class ListRolesAction
     /**
      * Handle the action to list roles with filtering, sorting, and sparse fields.
      *
-     * @return LengthAwarePaginator<int, Role>
+     * Default-select only specific columns if user-requested sparse fields
+     * are not present, to prevent overfetching.
+     *
+     * @return LengthAwarePaginator<int, Role> The paginated role list.
      */
     public function handle(): LengthAwarePaginator
     {
-        return Role::query()
+        $query = Role::query();
+
+        if (! request()->has('fields.roles')) {
+            $query->select([
+                'id',
+                'name',
+                'description',
+                'guard_name',
+                'created_at',
+                'updated_at',
+            ]);
+        }
+
+        return $query
             ->with(['permissions:id,name'])
             ->tap(new RoleFilter(request()))
             ->pipe(new BasePaginate(request()));
