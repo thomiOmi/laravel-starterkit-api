@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Http\Filters\BasePaginate;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\IAM\Filters\UserFilter;
 use Modules\IAM\Models\User;
@@ -21,6 +20,9 @@ final readonly class ListUsersAction
         return User::query()
             ->with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])
             ->tap(new UserFilter(request()))
-            ->pipe(new BasePaginate(request()));
+            ->paginate(
+                perPage: max(1, min((int) request()->integer('page.size', 15), 100)),
+                page: max(1, (int) request()->integer('page.number', 1)),
+            );
     }
 }

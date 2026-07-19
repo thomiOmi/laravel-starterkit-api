@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\UserStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,6 +18,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->string('name');
             $table->string('email')->unique();
+            $table->enum('status', UserStatus::cases())->default(UserStatus::Pending->value);
             $table->string('password')->nullable();
             $table->string('provider')->nullable();
             $table->string('provider_id')->nullable();

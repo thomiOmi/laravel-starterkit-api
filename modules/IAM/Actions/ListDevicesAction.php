@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Http\Filters\BasePaginate;
 use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\IAM\Filters\DeviceFilter;
@@ -31,6 +30,9 @@ final readonly class ListDevicesAction
                 'user_agent',
             ])
             ->tap(new DeviceFilter(request()))
-            ->pipe(new BasePaginate(request()));
+            ->paginate(
+                perPage: max(1, min((int) request()->integer('page.size', 15), 100)),
+                page: max(1, (int) request()->integer('page.number', 1)),
+            );
     }
 }

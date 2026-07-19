@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Infrastructure;
 
 use App\Http\Filters\BaseFilter;
-use App\Http\Filters\BasePaginate;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
@@ -193,7 +192,10 @@ test('native paginate respects per_page cap', function () {
 
     $request = new Request(['page' => ['size' => 200, 'number' => 1]]);
 
-    $paginator = MockFilterModel::query()->pipe(new BasePaginate($request));
+    $paginator = MockFilterModel::query()->paginate(
+        perPage: max(1, min((int) $request->integer('page.size', 15), 100)),
+        page: max(1, (int) $request->integer('page.number', 1)),
+    );
 
     expect($paginator->perPage())->toBe(100);
 });
@@ -442,41 +444,6 @@ test('native filter uses exact match for columns in $exactMatchColumns', functio
 
     expect($results)->toHaveCount(1)
         ->and($results[0]->name)->toBe('Alice');
-});
-
-test('native filter applies OR logic via __or', function () {
-    Schema::create('mock_filter_models', function (Blueprint $table) {
-        $table->id();
-        $table->string('name');
-        $table->string('email');
-        $table->timestamps();
-    });
-
-    MockFilterModel::create(['name' => 'Alice', 'email' => 'alice@example.com']);
-    MockFilterModel::create(['name' => 'Bob', 'email' => 'bob@example.com']);
-    MockFilterModel::create(['name' => 'Charlie', 'email' => 'charlie@example.com']);
-
-    $request = new Request(['filter' => ['__or' => ['name' => 'Alice', 'email' => 'bob@example.com']]]);
-
-    $results = MockFilterModel::query()->tap(new class($request) extends BaseFilter
-    {
-        protected array $allowedFilters = ['name', 'email'];
-    })->get();
-
-    expect($results)->toHaveCount(2)
-        ->and($results->pluck('name')->toArray())->toEqualCanonicalizing(['Alice', 'Bob']);
-});
-
-test('native filter nested relation throws exception', function () {
-    $request = new Request(['filter' => ['roles.permissions.name' => 'admin']]);
-
-    $filter = new class($request) extends BaseFilter
-    {
-        protected array $allowedFilters = ['roles.permissions.name'];
-    };
-
-    expect(fn () => MockFilterModel::query()->tap($filter)->get())
-        ->toThrow(InvalidArgumentException::class);
 });
 
 test('native filter applies strategy method for complex filters', function () {

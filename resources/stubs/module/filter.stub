@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Filters;
 
-use App\Filters\BaseFilter;
-use Illuminate\Database\Eloquent\Builder;
+use App\Http\Filters\BaseFilter;
 use Modules\{{Module}}\Models\{{Module}};
 
 /**
@@ -13,33 +12,30 @@ use Modules\{{Module}}\Models\{{Module}};
  */
 class {{Module}}Filter extends BaseFilter
 {
-    /**
-     * The list of allowed filters.
-     *
-     * @var array<int, string>
-     */
+    /** @var array<int, string> */
     protected array $allowedFilters = [
-        'search',
+        'name',
     ];
 
-    /**
-     * The list of allowed sorts.
-     *
-     * @var array<int, string>
-     */
+    /** @var array<int, string> */
     protected array $allowedSorts = [
+        'name',
         'created_at',
     ];
 
-    /**
-     * Filter by search term.
-     *
-     * @param  Builder<{{Module}}>  $builder
-     * @param  string  $value  The search term.
-     * @return Builder<{{Module}}>
-     */
-    public function search(Builder $builder, string $value): Builder
-    {
-        return $this->applySearch($builder, $value, ['name']);
-    }
+    /** @var array<int, string> */
+    protected array $allowedFields = [
+        'id',
+        'name',
+        'created_at',
+        'updated_at',
+    ];
+
+    /** @var array<int, string> */
+    protected array $searchableColumns = [
+        'name',
+    ];
+
+    // Strategy methods for complex filters (e.g. relation filters, custom logic)
+    // delegate to Model scopes using #[Scope] attribute (Laravel 13+)
 }

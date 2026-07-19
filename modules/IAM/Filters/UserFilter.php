@@ -19,6 +19,7 @@ class UserFilter extends BaseFilter
         'email',
         'role',
         'status',
+        'created_at',
         'trashed',
     ];
 
@@ -53,31 +54,18 @@ class UserFilter extends BaseFilter
         'email',
     ];
 
+    /** @var array<int, string> */
+    protected array $exactMatchColumns = [
+        'status',
+    ];
+
     /**
      * @param  Builder<User>  $query
      */
     public function role(Builder $query, mixed $value): void
     {
-        if (! is_string($value) || $value === '') {
-            return;
-        }
-
-        $query->role($value);
-    }
-
-    /**
-     * @param  Builder<User>  $query
-     */
-    public function status(Builder $query, mixed $value): void
-    {
-        if (! is_string($value)) {
-            return;
-        }
-
-        if ($value === 'verified') {
-            $query->whereNotNull('email_verified_at');
-        } elseif ($value === 'unverified') {
-            $query->whereNull('email_verified_at');
+        if (is_string($value) && $value !== '') {
+            $query->role($value);
         }
     }
 }

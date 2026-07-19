@@ -20,7 +20,6 @@ use InvalidArgumentException;
  * User::query()
  *     ->with(['roles'])
  *     ->tap(new UserFilter(request()))
- *     ->pipe(new BasePaginate(request()));
  * ```
  *
  * **Query param → SQL:**
@@ -33,7 +32,6 @@ use InvalidArgumentException;
  * ?include=roles,permissions      → ->with(['roles', 'permissions'])
  * ?search=bob                     → WHERE (name LIKE '%bob%' OR email LIKE '%bob%')
  * ?filter[trashed]=only           → only soft-deleted records
- * ?filter[__or][name]=bob&[email]=b → WHERE (name LIKE '%bob%' OR email LIKE '%b%')
  * ```
  *
  * **Extending:**
@@ -43,8 +41,6 @@ use InvalidArgumentException;
  * over `$searchableColumns`).
  *
  * @template TModel of Model
- *
- * @see BasePaginate
  */
 abstract class BaseFilter
 {
@@ -137,15 +133,12 @@ abstract class BaseFilter
 
     /**
      * Iterate `?filter[key]=value` entries and dispatch each to the
-     * appropriate handler: strategy method, relation filter, or simple auto-map.
+     * appropriate handler: strategy method or simple auto-map.
      *
-     * Unknown keys trigger {@see reportWarning()}. Supports `__or` for
-     * OR-grouped simple columns.
+     * Unknown keys trigger {@see reportWarning()}.
      *
      * @example ?filter[name]=bob&filter[age]=gt:18
      *          → WHERE name LIKE '%bob%' AND age > 18
-     * @example ?filter[role.name]=admin
-     *          → WHERE EXISTS (SELECT 1 FROM roles WHERE name LIKE '%admin%')
      *
      * @param  Builder<TModel>  $query
      */
@@ -155,13 +148,6 @@ abstract class BaseFilter
 
         if (! is_array($filters)) {
             return;
-        }
-
-        $orFilters = [];
-
-        if (isset($filters['__or']) && is_array($filters['__or'])) {
-            $orFilters = $filters['__or'];
-            unset($filters['__or']);
         }
 
         foreach ($filters as $key => $value) {
@@ -179,61 +165,8 @@ abstract class BaseFilter
                 continue;
             }
 
-            if (str_contains($key, '.')) {
-                $this->applyRelationFilter($query, $key, $value);
-
-                continue;
-            }
-
             $this->applySimpleFilter($query, $key, $value);
         }
-
-        if ($orFilters !== []) {
-            $this->applyOrFilters($query, $orFilters);
-        }
-    }
-
-    /**
-     * Apply OR-grouped filters inside a single `WHERE (... OR ...)` group.
-     *
-     * Only simple (auto-mapped) columns are supported. Strategy methods and
-     * relation filters are skipped with a warning.
-     *
-     * @example ?filter[__or][name]=bob&filter[__or][email]=bob@test.com
-     *          → WHERE (name LIKE '%bob%' OR email LIKE '%bob@test.com%')
-     *
-     * @param  Builder<TModel>  $query
-     * @param  array<mixed, mixed>  $filters
-     */
-    protected function applyOrFilters(Builder $query, array $filters): void
-    {
-        $query->where(function (Builder $q) use ($filters): void {
-            foreach ($filters as $key => $value) {
-                if (! collect($this->allowedFilters)->containsStrict($key)) {
-                    $this->reportWarning("BaseFilter: unknown OR filter key [{$key}] ignored.");
-
-                    continue;
-                }
-
-                $method = Str::camel($key);
-
-                if (method_exists($this, $method)) {
-                    $this->reportWarning("BaseFilter: OR filter key [{$key}] uses strategy method — skipped in OR context.");
-
-                    continue;
-                }
-
-                if (str_contains($key, '.')) {
-                    $this->reportWarning("BaseFilter: OR filter key [{$key}] is a relation filter — skipped in OR context.");
-
-                    continue;
-                }
-
-                $q->orWhere(function (Builder $sub) use ($key, $value): void {
-                    $this->applyFilterToColumn($sub, $key, $value);
-                });
-            }
-        });
     }
 
     /**
@@ -254,9 +187,8 @@ abstract class BaseFilter
         $sortRaw = $this->request->string('sort')->trim()->toString();
 
         if ($sortRaw === '') {
-            $model = $query->getModel();
-            $query->orderBy($model->getCreatedAtColumn() ?? 'created_at', 'desc')
-                ->orderBy($model->getKeyName(), 'desc');
+            $query->latest($query->getModel()->getCreatedAtColumn() ?? 'created_at')
+                ->latest($query->getModel()->getKeyName());
 
             return;
         }
@@ -273,7 +205,7 @@ abstract class BaseFilter
             }
 
             $column = ltrim($segment, '-');
-            $direction = str_starts_with($segment, '-') ? 'desc' : 'asc';
+            $isDesc = str_starts_with($segment, '-');
 
             if (! collect($this->allowedSorts)->containsStrict($column)) {
                 $this->reportWarning("BaseFilter: unknown sort column [{$column}] ignored.");
@@ -281,7 +213,7 @@ abstract class BaseFilter
                 continue;
             }
 
-            $query->orderBy($column, $direction);
+            $isDesc ? $query->latest($column) : $query->oldest($column);
         }
     }
 
@@ -438,36 +370,6 @@ abstract class BaseFilter
     protected function applySimpleFilter(Builder $query, string $key, mixed $value): void
     {
         $this->applyFilterToColumn($query, $key, $value);
-    }
-
-    /**
-     * Apply a `relation.column` dot-notation filter via `whereHas`.
-     *
-     * Only single-level dot-notation is supported
-     * (`relation.column`, not `relation.sub.column`). Nested paths
-     * trigger a warning and are skipped.
-     *
-     * @example ?filter[roles.name]=admin
-     *          → WHERE EXISTS (SELECT 1 FROM roles WHERE name LIKE '%admin%')
-     *
-     * @param  Builder<TModel>  $query
-     */
-    protected function applyRelationFilter(Builder $query, string $key, mixed $value): void
-    {
-        $segments = explode('.', $key, 2);
-
-        if (str_contains($segments[1] ?? '', '.')) {
-            $this->reportWarning("BaseFilter: nested relation filter [{$key}] is not supported. Use single-level relation.column only.");
-
-            return;
-        }
-
-        $relation = $segments[0];
-        $column = $segments[1];
-
-        $query->whereHas($relation, function (Builder $q) use ($column, $value): void {
-            $this->applyFilterToColumn($q, $column, $value);
-        });
     }
 
     /**

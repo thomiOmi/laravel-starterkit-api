@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Http\Filters\BasePaginate;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\IAM\Filters\RoleFilter;
 use Modules\IAM\Models\Role;
@@ -21,6 +20,9 @@ final readonly class ListRolesAction
         return Role::query()
             ->with(['permissions:id,name'])
             ->tap(new RoleFilter(request()))
-            ->pipe(new BasePaginate(request()));
+            ->paginate(
+                perPage: max(1, min((int) request()->integer('page.size', 15), 100)),
+                page: max(1, (int) request()->integer('page.number', 1)),
+            );
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Actions;
 
-use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\{{Module}}\Filters\{{Module}}Filter;
 use Modules\{{Module}}\Models\{{Module}};
 
@@ -16,13 +16,15 @@ final readonly class List{{pluralModule}}Action
     /**
      * Execute the list {{labelPlural}} action.
      *
-     * @param  {{Module}}Filter  $filter  The {{label}} filter instance.
-     * @param  int  $perPage  Number of items per page.
-     * @return Paginator<int, {{Module}}> The paginated {{labelPlural}}.
+     * @return LengthAwarePaginator<int, {{Module}}>
      */
-    public function handle({{Module}}Filter $filter, int $perPage = 10): Paginator
+    public function handle(): LengthAwarePaginator
     {
-        return $filter->apply({{Module}}::query())
-            ->simplePaginate($perPage);
+        return {{Module}}::query()
+            ->tap(new {{Module}}Filter(request()))
+            ->paginate(
+                perPage: max(1, min((int) request()->integer('page.size', 15), 100)),
+                page: max(1, (int) request()->integer('page.number', 1)),
+            );
     }
 }

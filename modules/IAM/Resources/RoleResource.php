@@ -31,10 +31,16 @@ class RoleResource extends JsonResource
         return [
             'id' => $this->resource->id,
             'name' => $this->resource->name,
-            'description' => $this->resource->description,
+            'description' => array_key_exists('description', $this->resource->getAttributes())
+                ? $this->resource->description
+                : null,
             'permissions' => $permissions,
-            'created_at' => $this->formatDate($this->resource->created_at),
-            'updated_at' => $this->formatDate($this->resource->updated_at),
+            'created_at' => array_key_exists('created_at', $this->resource->getAttributes())
+                ? $this->formatDate($this->resource->created_at)
+                : null,
+            'updated_at' => array_key_exists('updated_at', $this->resource->getAttributes())
+                ? $this->formatDate($this->resource->updated_at)
+                : null,
         ];
     }
 }

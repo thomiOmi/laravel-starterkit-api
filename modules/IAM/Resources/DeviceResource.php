@@ -33,11 +33,19 @@ class DeviceResource extends JsonResource
         return [
             'id' => $this->resource->id,
             'name' => $this->resource->name,
-            'ip_address' => $this->resource->ip_address,
-            'user_agent' => $this->resource->user_agent,
-            'last_used_at' => $this->formatDate($this->resource->last_used_at),
-            'created_at' => $this->formatDate($this->resource->created_at),
-            'is_current' => (string) $userCurrentToken->id === (string) $this->resource->id,
+            'ip_address' => array_key_exists('ip_address', $this->resource->getAttributes())
+                ? $this->resource->ip_address
+                : null,
+            'user_agent' => array_key_exists('user_agent', $this->resource->getAttributes())
+                ? $this->resource->user_agent
+                : null,
+            'last_used_at' => array_key_exists('last_used_at', $this->resource->getAttributes())
+                ? $this->formatDate($this->resource->last_used_at)
+                : null,
+            'created_at' => array_key_exists('created_at', $this->resource->getAttributes())
+                ? $this->formatDate($this->resource->created_at)
+                : null,
+            'is_current' => $userCurrentToken->getKey() === $this->resource->getKey(),
         ];
     }
 }
