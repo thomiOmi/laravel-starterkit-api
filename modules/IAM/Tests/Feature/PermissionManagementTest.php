@@ -93,7 +93,7 @@ describe('Permission Lifecycle', function () {
 
         $response = $this->deleteJson("/api/v1/permissions/{$perm->id}");
 
-        expect($response)->toBeSuccessResponse(status: 204);
+        expect($response)->toBeSuccessResponse(status: 200);
         expect(Permission::where('id', $perm->id)->exists())->toBeFalse();
     })->group('v1');
 

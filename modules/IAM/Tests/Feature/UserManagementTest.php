@@ -79,6 +79,44 @@ describe('User CRUD & IDOR Protection', function () {
         expect($this->deleteJson("/api/v1/users/{$admin->id}"))
             ->toBeProblemResponse(status: 403);
     })->group('v1');
+
+    it('denies deletion without user.delete permission', function () {
+        loginAsUser();
+        $other = User::factory()->create();
+
+        expect($this->deleteJson("/api/v1/users/{$other->id}"))
+            ->toBeProblemResponse(status: 403);
+    })->group('v1');
+
+    it('prevents non-super-admin from deleting a super-admin', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $admin->givePermissionTo(PermissionEnum::UserDelete);
+
+        Role::create(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $superAdmin = User::factory()->create();
+        $superAdmin->assignRole(RoleEnum::SuperAdmin);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        expect($this->deleteJson("/api/v1/users/{$superAdmin->id}"))
+            ->toBeProblemResponse(status: 403);
+    })->group('v1');
+
+    it('successfully deletes another user with proper permission', function () {
+        $admin = loginAsUser();
+        Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $admin->givePermissionTo(PermissionEnum::UserDelete);
+
+        $target = User::factory()->create();
+
+        $response = $this->deleteJson("/api/v1/users/{$target->id}");
+
+        expect($response)->toBeSuccessResponse(status: 200);
+        expect($target->fresh()->trashed())->toBeTrue();
+    })->group('v1');
 });
 
 describe('User Listing', function () {

@@ -19,10 +19,10 @@ final readonly class UserAssignRolesController
     /**
      * @return SuccessResponse<UserResource>
      */
-    public function __invoke(AssignRolesRequest $formRequest, User $user): SuccessResponse
+    public function __invoke(AssignRolesRequest $request, User $user): SuccessResponse
     {
         /** @var array<int, string> $roles */
-        $roles = $formRequest->validated('roles');
+        $roles = $request->validated('roles');
 
         $userModel = $this->assignRoles->handle($user, $roles);
 

@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Show{{Module}}Action;
 use Modules\{{Module}}\Models\{{Module}};
 use Modules\{{Module}}\Resources\{{Module}}Resource;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @group {{Module}} Management
@@ -25,17 +24,15 @@ final readonly class ShowController
     /**
      * Display the specified {{lowerResource}}.
      *
-     * @return SuccessResponse<\Modules\{{Module}}\Resources\{{Module}}Resource>|ProblemResponse
+     * @return SuccessResponse<\Modules\{{Module}}\Resources\{{Module}}Resource>
      */
-    public function __invoke(string $id): SuccessResponse|ProblemResponse
+    public function __invoke(string $id): SuccessResponse
     {
         ${{lowerResource}} = $this->show{{Module}}->handle($id);
 
         if (${{lowerResource}} === null) {
-            return new ProblemResponse(
-                title: __('auth.http_not_found'),
-                status: Response::HTTP_NOT_FOUND,
-                detail: __('general.resource_not_found', ['resource' => '{{Module}}']),
+            throw new NotFoundHttpException(
+                __('general.resource_not_found', ['resource' => '{{Module}}'])
             );
         }
 

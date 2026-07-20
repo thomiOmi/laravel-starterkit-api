@@ -6,12 +6,12 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\DeleteUserAction;
 use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 final readonly class UserDeleteController
 {
@@ -22,42 +22,39 @@ final readonly class UserDeleteController
     /**
      * Remove the specified user from storage.
      *
-     * @return SuccessResponse<null>|ProblemResponse
+     * @return SuccessResponse<null>
      */
-    public function __invoke(#[CurrentUser] User $currentUser, User $user): SuccessResponse|ProblemResponse
+    public function __invoke(#[CurrentUser] User $currentUser, User $user): SuccessResponse
     {
         if ($currentUser->is($user)) {
-            return new ProblemResponse(
-                title: __('auth.http_forbidden'),
-                status: Response::HTTP_FORBIDDEN,
-                detail: __('general.self_delete_forbidden'),
+            throw new AccessDeniedHttpException(
+                __('general.self_delete_forbidden')
             );
         }
 
         if (! $currentUser->can(PermissionEnum::UserDelete->value)) {
-            return new ProblemResponse(
-                title: __('auth.http_forbidden'),
-                status: Response::HTTP_FORBIDDEN,
-                detail: __('general.action_forbidden'),
+            throw new AccessDeniedHttpException(
+                __('general.action_forbidden')
             );
         }
 
         if ($user->hasRole(RoleEnum::SuperAdmin->value) && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
-            return new ProblemResponse(
-                title: __('auth.http_forbidden'),
-                status: Response::HTTP_FORBIDDEN,
-                detail: __('general.action_forbidden'),
+            throw new AccessDeniedHttpException(
+                __('general.action_forbidden')
             );
         }
 
         if ($this->deleteUser->handle($user)) {
-            return new SuccessResponse(null, status: Response::HTTP_NO_CONTENT);
+            return new SuccessResponse(
+                data: null,
+                title: __('general.resource_deleted', ['resource' => 'User']),
+                detail: __('general.resource_deleted', ['resource' => 'User']),
+                status: Response::HTTP_OK,
+            );
         }
 
-        return new ProblemResponse(
-            title: 'Forbidden',
-            status: Response::HTTP_FORBIDDEN,
-            detail: __('general.resource_delete_error', ['resource' => 'User']),
+        throw new AccessDeniedHttpException(
+            __('general.resource_delete_error', ['resource' => 'User'])
         );
     }
 }

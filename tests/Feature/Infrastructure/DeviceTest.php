@@ -35,7 +35,7 @@ describe('Device Delete', function () {
 
         $response = $this->deleteJson("/api/v1/auth/devices/{$deviceId}");
 
-        expect($response)->toBeSuccessResponse(status: 204);
+        expect($response)->toBeSuccessResponse(status: 200, title: 'Device deleted successfully');
         expect(PersonalAccessToken::find($deviceId))->toBeNull();
     })->group('v1');
 
@@ -78,7 +78,7 @@ describe('Logout Other Devices', function () {
             'current_password' => $password,
         ]);
 
-        expect($response)->toBeSuccessResponse(status: 204);
+        expect($response)->toBeSuccessResponse(status: 200, title: 'Other devices logged out successfully.');
         expect($user->tokens()->count())->toBe(1);
     })->group('v1');
 

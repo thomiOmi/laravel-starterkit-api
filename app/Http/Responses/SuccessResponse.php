@@ -43,8 +43,12 @@ final readonly class SuccessResponse implements Responsable
      *
      * @param  Request  $request
      */
-    public function toResponse($request): JsonResponse
+    public function toResponse($request): JsonResponse|\Illuminate\Http\Response
     {
+        if ($this->status === Response::HTTP_NO_CONTENT || $this->status === Response::HTTP_RESET_CONTENT) {
+            return response()->noContent(status: $this->status, headers: $this->headers);
+        }
+
         $payload = [
             'status' => $this->status,
         ];

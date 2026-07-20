@@ -108,9 +108,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 typeKey: 'forbidden',
                 title: __('auth.http_forbidden'),
                 status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_FORBIDDEN,
-                detail: $e instanceof InvalidSignatureException
-                    ? __('auth.invalid_signature')
-                    : __('auth.access_denied')
+                detail: match (true) {
+                    $e instanceof InvalidSignatureException => __('auth.invalid_signature'),
+                    $e->getMessage() !== '' => $e->getMessage(),
+                    default => __('auth.access_denied'),
+                }
             );
         });
 

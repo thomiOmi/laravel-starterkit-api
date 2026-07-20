@@ -26,6 +26,11 @@ final readonly class DeleteDeviceController
     {
         $this->deleteDevice->handle($currentUser, $device);
 
-        return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);
+        return new SuccessResponse(
+            data: null,
+            title: __('general.resource_deleted', ['resource' => 'Device']),
+            detail: __('general.resource_deleted', ['resource' => 'Device']),
+            status: SymfonyResponse::HTTP_OK,
+        );
     }
 }

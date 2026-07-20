@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Infrastructure;
 
 use App\Enums\PermissionEnum;
+use App\Http\Middleware\EnsureEmailIsVerified;
+use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
 use App\Http\Middleware\TraceIdMiddleware;
@@ -103,4 +105,56 @@ test('SetLocaleMiddleware handles Accept-Language via HTTP', function () {
 
     $response = $this->get('/test-locale', ['Accept-Language' => 'en']);
     expect($response->json('locale'))->toBe('en');
+});
+
+describe('SecurityHeadersMiddleware', function () {
+    it('adds standard security headers to response', function () {
+        Route::get('/test-security-headers', fn () => response()->json(['ok' => true]))
+            ->middleware(SecurityHeadersMiddleware::class);
+
+        $response = $this->get('/test-security-headers');
+
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->assertHeader('X-Frame-Options', 'DENY');
+        $response->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    });
+
+    it('adds HSTS header in production environment', function () {
+        app()->useEnvironmentPath(__DIR__);
+        $original = app()->environment();
+        putenv('APP_ENV=production');
+        app()->detectEnvironment(fn () => 'production');
+
+        Route::get('/test-hsts', fn () => response()->json(['ok' => true]))
+            ->middleware(SecurityHeadersMiddleware::class);
+
+        $response = $this->get('/test-hsts');
+
+        expect($response->headers->get('Strict-Transport-Security'))
+            ->toBe('max-age=31536000; includeSubDomains');
+
+        putenv("APP_ENV={$original}");
+        app()->detectEnvironment(fn () => $original);
+    });
+
+    it('does not add HSTS header outside production', function () {
+        Route::get('/test-no-hsts', fn () => response()->json(['ok' => true]))
+            ->middleware(SecurityHeadersMiddleware::class);
+
+        $response = $this->get('/test-no-hsts');
+
+        expect($response->headers->has('Strict-Transport-Security'))->toBeFalse();
+    });
+});
+
+describe('EnsureEmailIsVerified', function () {
+    it('returns 401 when no authenticated user', function () {
+        Route::get('/test-verified-protected', fn () => response()->json(['ok' => true]))
+            ->middleware(EnsureEmailIsVerified::class);
+
+        $response = $this->get('/test-verified-protected');
+
+        expect($response)->toBeProblemResponse(status: 401);
+    });
 });

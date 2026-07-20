@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Tests\Feature;
 
 use App\Enums\PermissionEnum;
+use App\Enums\RoleEnum;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
 
@@ -108,12 +109,20 @@ describe('Role Lifecycle', function () {
 
         $response = $this->deleteJson("/api/v1/roles/{$role->id}");
 
-        expect($response)->toBeSuccessResponse(status: 204);
+        expect($response)->toBeSuccessResponse(status: 200);
         expect($role->fresh())->toBeNull();
     })->group('v1');
 
     it('returns 404 when deleting a non-existent role', function () {
         expect($this->deleteJson('/api/v1/roles/999999'))
             ->toBeProblemResponse(status: 404);
+    })->group('v1');
+
+    it('returns 403 when deleting the super-admin role', function () {
+        $role = Role::create(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
+
+        $response = $this->deleteJson("/api/v1/roles/{$role->id}");
+
+        expect($response)->toBeProblemResponse(status: 403);
     })->group('v1');
 });

@@ -25,7 +25,7 @@ describe('Device Management', function () {
 
         expect($this->withToken($token->plainTextToken)
             ->deleteJson("/api/v1/auth/devices/{$id}"))
-            ->assertStatus(204);
+            ->assertStatus(200);
 
         expect($user->tokens()->where('id', $id)->exists())->toBeFalse();
     })->group('v1');

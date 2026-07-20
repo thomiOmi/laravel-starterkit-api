@@ -22,7 +22,7 @@ describe('Logout Other Devices', function () {
             ->postJson('/api/v1/auth/devices/logout-others', [
                 'current_password' => $password,
             ]))
-            ->assertStatus(204);
+            ->assertStatus(200);
 
         expect($user->tokens()->count())->toBe(1);
     })->group('v1');

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
-use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Delete{{Module}}Action;
 use Modules\{{Module}}\Models\{{Module}};
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * @group {{Module}} Management
@@ -24,18 +24,21 @@ final readonly class DeleteController
     /**
      * Remove the specified {{lowerResource}} from storage.
      *
-     * @return SuccessResponse<null>|ProblemResponse
+     * @return SuccessResponse<null>
      */
-    public function __invoke(string $id): SuccessResponse|ProblemResponse
+    public function __invoke(string $id): SuccessResponse
     {
         if ($this->delete{{Module}}->handle($id)) {
-            return new SuccessResponse(null, status: Response::HTTP_NO_CONTENT);
+            return new SuccessResponse(
+                data: null,
+                title: __('general.resource_deleted', ['resource' => '{{Module}}']),
+                detail: __('general.resource_deleted', ['resource' => '{{Module}}']),
+                status: Response::HTTP_OK,
+            );
         }
 
-        return new ProblemResponse(
-            title: __('http_forbidden'),
-            status: Response::HTTP_FORBIDDEN,
-            detail: __('general.resource_delete_error', ['resource' => '{{Module}}']),
+        throw new AccessDeniedHttpException(
+            __('general.resource_delete_error', ['resource' => '{{Module}}'])
         );
     }
 }
