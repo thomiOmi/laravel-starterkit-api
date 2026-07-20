@@ -13,13 +13,30 @@ final readonly class ListUsersAction
 {
     /**
      * Handle the action to list users with filtering, sorting, and sparse fields.
+     * Conditionally applies default sparse field selection (only when specific fields
+     * are not requested by the user) to reduce database payload and optimize performance.
      *
-     * @return LengthAwarePaginator<int, User>
+     * @return LengthAwarePaginator<int, User> The paginated users list.
      */
     public function handle(): LengthAwarePaginator
     {
-        return User::query()
-            ->with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name'])
+        $query = User::query()
+            ->with(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']);
+
+        if (! request()->has('fields.users')) {
+            $query->select([
+                'id',
+                'name',
+                'email',
+                'avatar',
+                'email_verified_at',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+            ]);
+        }
+
+        return $query
             ->tap(new UserFilter(request()))
             ->pipe(new BasePaginate(request()));
     }
