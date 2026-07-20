@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
+use App\Models\Sanctum\PersonalAccessToken;
+use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\DeleteDeviceAction;
 use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -18,16 +18,12 @@ final readonly class DeleteDeviceController
     ) {}
 
     /**
-     * Delete an authenticated device session.
+     * Delete a specific device (token) of the authenticated user.
      *
-     * @param  string  $device  The device ID.
      * @return SuccessResponse<null>
      */
-    public function __invoke(Request $request, string $device): SuccessResponse
+    public function __invoke(#[CurrentUser] User $currentUser, PersonalAccessToken $device): SuccessResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $request->user();
-
         $this->deleteDevice->handle($currentUser, $device);
 
         return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);

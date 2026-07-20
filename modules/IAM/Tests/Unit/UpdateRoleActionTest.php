@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Tests\Unit;
 
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Modules\IAM\Actions\UpdateRoleAction;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
@@ -15,7 +14,7 @@ describe('UpdateRoleAction', function () {
         $role = Role::create(['name' => 'old-role', 'guard_name' => 'sanctum']);
         $action = app(UpdateRoleAction::class);
 
-        $result = $action->handle($role->id, new RolePayload(
+        $result = $action->handle($role, new RolePayload(
             name: 'new-role',
         ));
 
@@ -28,19 +27,11 @@ describe('UpdateRoleAction', function () {
         $role = Role::create(['name' => 'perm-role', 'guard_name' => 'sanctum']);
         $action = app(UpdateRoleAction::class);
 
-        $result = $action->handle($role->id, new RolePayload(
+        $result = $action->handle($role, new RolePayload(
             name: 'perm-role',
             permissions: [$perm->name],
         ));
 
         expect($result->hasPermissionTo('role.perm'))->toBeTrue();
-    });
-
-    it('throws exception for a non-existent role', function () {
-        $action = app(UpdateRoleAction::class);
-
-        expect(fn () => $action->handle('999999', new RolePayload(
-            name: 'ghost',
-        )))->toThrow(ModelNotFoundException::class);
     });
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Http\Filters\BaseFilter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\IAM\Filters\PermissionFilter;
 use Modules\IAM\Models\Permission;
@@ -13,15 +14,21 @@ final readonly class ListPermissionsAction
     /**
      * Handle the action to list permissions with filtering, sorting, and sparse fields.
      *
+     * @param  BaseFilter<Permission>|null  $filter
      * @return LengthAwarePaginator<int, Permission>
      */
-    public function handle(): LengthAwarePaginator
-    {
-        return Permission::query()
-            ->tap(new PermissionFilter(request()))
-            ->paginate(
-                perPage: max(1, min((int) request()->integer('page.size', 15), 100)),
-                page: max(1, (int) request()->integer('page.number', 1)),
-            );
+    public function handle(
+        ?BaseFilter $filter = null,
+        int $perPage = 15,
+        int $page = 1,
+    ): LengthAwarePaginator {
+        $filter = $filter ?? new PermissionFilter(request());
+        $query = Permission::query();
+        $filter($query);
+
+        return $query->paginate(
+            perPage: max(1, min($perPage, 100)),
+            page: max(1, $page),
+        );
     }
 }

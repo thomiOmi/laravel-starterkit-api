@@ -9,10 +9,8 @@ use Modules\IAM\Models\Role;
 
 final readonly class DeleteRoleAction
 {
-    public function handle(string $id): bool
+    public function handle(Role $role): bool
     {
-        $role = Role::query()->findOrFail($id);
-
         if ($role->name === RoleEnum::SuperAdmin->value) {
             return false;
         }

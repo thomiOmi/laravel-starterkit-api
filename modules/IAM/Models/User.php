@@ -6,7 +6,7 @@ namespace Modules\IAM\Models;
 
 use App\Concerns\HasDefaultBehavior;
 use App\Contracts\Identity;
-use App\Enums\UserStatus;
+use App\Enums\UserStatusEnum;
 use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -28,7 +28,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $id The unique identifier for the user.
  * @property string $name The name of the user.
  * @property string $email The email address of the user.
- * @property UserStatus $status The account status of the user.
+ * @property UserStatusEnum $status The account status of the user.
  * @property string|null $password The hashed password of the user.
  * @property string|null $remember_token The remember token for the user.
  * @property string|null $provider The social auth provider.
@@ -56,7 +56,7 @@ class User extends Authenticatable implements Identity
     {
         static::saved(function (self $user) {
             if ($user->wasChanged('email_verified_at') && $user->email_verified_at !== null) {
-                $user->updateQuietly(['status' => UserStatus::Active]);
+                $user->updateQuietly(['status' => UserStatusEnum::Active]);
             }
         });
     }
@@ -88,7 +88,7 @@ class User extends Authenticatable implements Identity
     {
         return [
             'email_verified_at' => 'datetime',
-            'status' => UserStatus::class,
+            'status' => UserStatusEnum::class,
             'password' => 'hashed',
             'provider_id' => 'encrypted',
         ];

@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\DeletePermissionAction;
+use Modules\IAM\Models\Permission;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class PermissionDeleteController
@@ -19,10 +20,9 @@ final readonly class PermissionDeleteController
     /**
      * Remove the specified permission.
      *
-     * @param  string  $permission  The permission ID.
      * @return SuccessResponse<null>|ProblemResponse
      */
-    public function __invoke(Request $request, string $permission): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, Permission $permission): SuccessResponse|ProblemResponse
     {
         if ($this->deletePermission->handle($permission)) {
             return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);

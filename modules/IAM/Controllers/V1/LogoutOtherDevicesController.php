@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\LogoutOtherDevicesAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\LogoutOtherDevicesRequest;
@@ -22,11 +22,8 @@ final readonly class LogoutOtherDevicesController
      *
      * @return SuccessResponse<null>
      */
-    public function __invoke(LogoutOtherDevicesRequest $request): SuccessResponse
+    public function __invoke(LogoutOtherDevicesRequest $request, #[CurrentUser] User $currentUser): SuccessResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $request->user();
-
         $this->logoutOtherDevices->handle($currentUser);
 
         return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);

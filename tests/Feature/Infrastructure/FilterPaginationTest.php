@@ -6,7 +6,7 @@ namespace Tests\Feature\Infrastructure;
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
-use App\Enums\UserStatus;
+use App\Enums\UserStatusEnum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
@@ -41,7 +41,7 @@ describe('Filtering', function () {
     })->group('v1', 'filter');
 
     it('filters by status using exact match via $exactMatchColumns', function () {
-        User::factory()->count(2)->create(['status' => UserStatus::Active]);
+        User::factory()->count(2)->create(['status' => UserStatusEnum::Active]);
 
         $response = $this->getJson('/api/v1/users?filter[status]=active');
 
@@ -147,9 +147,9 @@ describe('Filtering', function () {
     })->group('v1', 'filter');
 
     it('combines multiple filters with AND logic', function () {
-        User::factory()->create(['name' => 'Alice', 'status' => UserStatus::Active]);
-        User::factory()->create(['name' => 'Alice', 'status' => UserStatus::Inactive]);
-        User::factory()->create(['name' => 'Bob', 'status' => UserStatus::Active]);
+        User::factory()->create(['name' => 'Alice', 'status' => UserStatusEnum::Active]);
+        User::factory()->create(['name' => 'Alice', 'status' => UserStatusEnum::Inactive]);
+        User::factory()->create(['name' => 'Bob', 'status' => UserStatusEnum::Active]);
 
         $response = $this->getJson('/api/v1/users?filter[name]=Alice&filter[status]=active');
 

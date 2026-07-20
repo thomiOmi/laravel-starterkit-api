@@ -7,6 +7,7 @@ namespace Modules\IAM\Controllers\V1;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListUsersAction;
+use Modules\IAM\Filters\UserFilter;
 use Modules\IAM\Requests\V1\UserListRequest;
 use Modules\IAM\Resources\UserResource;
 
@@ -23,7 +24,11 @@ final readonly class UserListController
      */
     public function __invoke(UserListRequest $request): SuccessResponse
     {
-        $users = $this->listUsers->handle();
+        $users = $this->listUsers->handle(
+            filter: new UserFilter($request),
+            perPage: $request->integer('page.size', 15),
+            page: $request->integer('page.number', 1),
+        );
 
         return new SuccessResponse(
             data: UserResource::collection($users),

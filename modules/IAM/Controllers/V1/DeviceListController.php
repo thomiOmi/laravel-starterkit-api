@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListDevicesAction;
+use Modules\IAM\Filters\DeviceFilter;
 use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\DeviceListRequest;
 use Modules\IAM\Resources\DeviceResource;
@@ -23,12 +24,14 @@ final readonly class DeviceListController
      *
      * @return SuccessResponse<AnonymousResourceCollection>
      */
-    public function __invoke(DeviceListRequest $request): SuccessResponse
+    public function __invoke(DeviceListRequest $request, #[CurrentUser] User $currentUser): SuccessResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $request->user();
-
-        $devices = $this->listDevices->handle($currentUser);
+        $devices = $this->listDevices->handle(
+            $currentUser,
+            filter: new DeviceFilter($request),
+            perPage: $request->integer('page.size', 15),
+            page: $request->integer('page.number', 1),
+        );
 
         return new SuccessResponse(
             data: DeviceResource::collection($devices),

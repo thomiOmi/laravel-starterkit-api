@@ -25,8 +25,8 @@ test('listen and show actions call ->with() to eager-load relationships', functi
 
     $source = implode('', array_slice(file($filename), $startLine - 1, $endLine - $startLine + 1));
 
-    $hasWith = str_contains($source, '->with(') || str_contains($source, '::with(');
-    expect($hasWith)->toBeTrue();
+    $hasEagerLoad = str_contains($source, '->with(') || str_contains($source, '::with(') || str_contains($source, 'loadMissing(');
+    expect($hasEagerLoad)->toBeTrue();
 })->with([
     [ShowUserAction::class, 'ShowUserAction'],
     [ShowRoleAction::class, 'ShowRoleAction'],

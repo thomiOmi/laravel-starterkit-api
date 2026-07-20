@@ -22,4 +22,16 @@ final readonly class LoginPayload
             deviceName: $request->safe()->string('device_name')->trim()->toString() ?: null,
         );
     }
+
+    /**
+     * @return array<string, string|null>
+     */
+    public function toArray(): array
+    {
+        return array_filter([
+            'email' => $this->email,
+            'password' => $this->password,
+            'device_name' => $this->deviceName,
+        ], fn (mixed $value) => $value !== null);
+    }
 }

@@ -9,10 +9,8 @@ use Modules\IAM\Payloads\V1\UserPayload;
 
 final readonly class UpdateUserAction
 {
-    public function handle(string $id, UserPayload $payload): User
+    public function handle(User $user, UserPayload $payload): User
     {
-        $user = User::query()->findOrFail($id);
-
         $user->fill($payload->toArray());
         $user->save();
 

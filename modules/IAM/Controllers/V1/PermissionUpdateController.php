@@ -6,6 +6,7 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\UpdatePermissionAction;
+use Modules\IAM\Models\Permission;
 use Modules\IAM\Requests\V1\PermissionRequest;
 use Modules\IAM\Resources\PermissionResource;
 
@@ -19,10 +20,9 @@ final readonly class PermissionUpdateController
      * Update the specified permission.
      *
      * @param  PermissionRequest  $request  The validated permission update request.
-     * @param  string  $permission  The permission ID.
      * @return SuccessResponse<PermissionResource>
      */
-    public function __invoke(PermissionRequest $request, string $permission): SuccessResponse
+    public function __invoke(PermissionRequest $request, Permission $permission): SuccessResponse
     {
         $permissionModel = $this->updatePermission->handle($permission, $request->payload());
 

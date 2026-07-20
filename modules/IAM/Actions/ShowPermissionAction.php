@@ -8,15 +8,8 @@ use Modules\IAM\Models\Permission;
 
 final readonly class ShowPermissionAction
 {
-    public function handle(string $id): Permission
+    public function handle(Permission $permission): Permission
     {
-        return Permission::query()
-            ->select([
-                'id',
-                'name',
-                'created_at',
-                'updated_at',
-            ])
-            ->findOrFail($id);
+        return $permission;
     }
 }

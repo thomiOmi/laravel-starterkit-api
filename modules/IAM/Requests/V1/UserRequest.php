@@ -41,31 +41,22 @@ final class UserRequest extends FormRequest
             return $user->can(PermissionEnum::UserCreate->value);
         }
 
-        $userId = $this->route('user');
+        /** @var Identity|Model|null $targetUser */
+        $targetUser = $this->route('user');
 
-        if (! is_string($userId)) {
+        if (! $targetUser instanceof Identity) {
             return $user->can(PermissionEnum::UserEdit->value);
         }
 
-        /** @var string|int $id */
-        $id = $user->getAuthIdentifier();
-
-        $canEdit = (string) $id === $userId || $user->can(PermissionEnum::UserEdit->value);
+        $canEdit = $targetUser->getAuthIdentifier() == $user->getAuthIdentifier() || $user->can(PermissionEnum::UserEdit->value);
 
         if (! $canEdit) {
             return false;
         }
 
-        // If the actor is already a SuperAdmin, they can edit anything.
         if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
             return true;
         }
-
-        // If the actor is NOT a SuperAdmin, they cannot edit a SuperAdmin.
-        /** @var class-string<Model> $model */
-        $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
-        /** @var Identity $targetUser */
-        $targetUser = $model::query()->findOrFail($userId);
 
         if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
             return false;
@@ -81,8 +72,9 @@ final class UserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('user');
-        $userId = is_string($userId) ? $userId : null;
+        $routeUser = $this->route('user');
+        $userId = $routeUser instanceof Model ? $routeUser->getKey() : (is_string($routeUser) ? $routeUser : null);
+        $userId = is_string($userId) || is_int($userId) ? (string) $userId : null;
 
         return [
             ...$this->profileRules($userId),

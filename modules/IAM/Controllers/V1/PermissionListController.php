@@ -7,6 +7,7 @@ namespace Modules\IAM\Controllers\V1;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListPermissionsAction;
+use Modules\IAM\Filters\PermissionFilter;
 use Modules\IAM\Requests\V1\PermissionListRequest;
 use Modules\IAM\Resources\PermissionResource;
 
@@ -23,7 +24,11 @@ final readonly class PermissionListController
      */
     public function __invoke(PermissionListRequest $request): SuccessResponse
     {
-        $permissions = $this->listPermissions->handle();
+        $permissions = $this->listPermissions->handle(
+            filter: new PermissionFilter($request),
+            perPage: $request->integer('page.size', 15),
+            page: $request->integer('page.number', 1),
+        );
 
         return new SuccessResponse(
             data: PermissionResource::collection($permissions),

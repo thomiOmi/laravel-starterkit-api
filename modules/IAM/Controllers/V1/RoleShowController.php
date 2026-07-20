@@ -7,6 +7,7 @@ namespace Modules\IAM\Controllers\V1;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\ShowRoleAction;
+use Modules\IAM\Models\Role;
 use Modules\IAM\Resources\RoleResource;
 
 final readonly class RoleShowController
@@ -18,10 +19,9 @@ final readonly class RoleShowController
     /**
      * Display the specified role.
      *
-     * @param  string  $role  The role ID.
      * @return SuccessResponse<RoleResource>
      */
-    public function __invoke(Request $request, string $role): SuccessResponse
+    public function __invoke(Request $request, Role $role): SuccessResponse
     {
         $roleModel = $this->showRole->handle($role);
 

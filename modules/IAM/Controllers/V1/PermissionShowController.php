@@ -7,6 +7,7 @@ namespace Modules\IAM\Controllers\V1;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\ShowPermissionAction;
+use Modules\IAM\Models\Permission;
 use Modules\IAM\Resources\PermissionResource;
 
 final readonly class PermissionShowController
@@ -18,10 +19,9 @@ final readonly class PermissionShowController
     /**
      * Display the specified permission.
      *
-     * @param  string  $permission  The permission ID.
      * @return SuccessResponse<PermissionResource>
      */
-    public function __invoke(Request $request, string $permission): SuccessResponse
+    public function __invoke(Request $request, Permission $permission): SuccessResponse
     {
         $permissionModel = $this->showPermission->handle($permission);
 

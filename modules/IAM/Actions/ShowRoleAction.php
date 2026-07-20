@@ -8,14 +8,8 @@ use Modules\IAM\Models\Role;
 
 final readonly class ShowRoleAction
 {
-    public function handle(string $id): Role
+    public function handle(Role $role): Role
     {
-        return Role::select([
-            'id',
-            'name',
-            'description',
-            'created_at',
-            'updated_at',
-        ])->with(['permissions:id,name'])->findOrFail($id);
+        return $role->loadMissing(['permissions:id,name']);
     }
 }

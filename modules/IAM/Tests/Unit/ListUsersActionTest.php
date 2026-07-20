@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Tests\Unit;
 
 use App\Enums\RoleEnum;
-use App\Enums\UserStatus;
+use App\Enums\UserStatusEnum;
 use Illuminate\Support\Facades\Request;
 use Modules\IAM\Actions\ListUsersAction;
 use Modules\IAM\Models\Role;
@@ -37,8 +37,8 @@ describe('ListUsersAction', function () {
     });
 
     it('applies the active status filter', function () {
-        $active = User::factory()->create(['status' => UserStatus::Active]);
-        User::factory()->count(3)->create(['status' => UserStatus::Inactive]);
+        $active = User::factory()->create(['status' => UserStatusEnum::Active]);
+        User::factory()->count(3)->create(['status' => UserStatusEnum::Inactive]);
 
         Request::merge(['filter' => ['status' => 'active']]);
 

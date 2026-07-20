@@ -8,8 +8,7 @@ use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
+use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\DeleteUserAction;
 use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,17 +22,11 @@ final readonly class UserDeleteController
     /**
      * Remove the specified user from storage.
      *
-     * @param  string  $user  The user ID.
      * @return SuccessResponse<null>|ProblemResponse
      */
-    public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
+    public function __invoke(#[CurrentUser] User $currentUser, User $user): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $request->user();
-
-        $currentUserId = $currentUser->id;
-
-        if ($currentUserId === $user) {
+        if ($currentUser->is($user)) {
             return new ProblemResponse(
                 title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,
@@ -49,9 +42,7 @@ final readonly class UserDeleteController
             );
         }
 
-        $targetUser = User::query()->findOrFail($user);
-
-        if ($targetUser->hasRole(RoleEnum::SuperAdmin->value) && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
+        if ($user->hasRole(RoleEnum::SuperAdmin->value) && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
             return new ProblemResponse(
                 title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,

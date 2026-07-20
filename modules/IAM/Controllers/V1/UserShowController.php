@@ -7,8 +7,7 @@ namespace Modules\IAM\Controllers\V1;
 use App\Enums\PermissionEnum;
 use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Http\Request;
+use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\ShowUserAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Resources\UserResource;
@@ -23,17 +22,11 @@ final readonly class UserShowController
     /**
      * Display the specified user.
      *
-     * @param  string  $user  The user ID.
      * @return SuccessResponse<UserResource>|ProblemResponse
      */
-    public function __invoke(Request $request, string $user): SuccessResponse|ProblemResponse
+    public function __invoke(#[CurrentUser] User $currentUser, User $user): SuccessResponse|ProblemResponse
     {
-        /** @var (Authenticatable&User) $currentUser */
-        $currentUser = $request->user();
-
-        $currentUserId = $currentUser->id;
-
-        if ($currentUserId !== $user && ! $currentUser->can(PermissionEnum::UserView->value)) {
+        if (! $currentUser->is($user) && ! $currentUser->can(PermissionEnum::UserView->value)) {
             return new ProblemResponse(
                 title: __('auth.http_forbidden'),
                 status: Response::HTTP_FORBIDDEN,

@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\DeleteRoleAction;
+use Modules\IAM\Models\Role;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class RoleDeleteController
@@ -19,10 +20,9 @@ final readonly class RoleDeleteController
     /**
      * Remove the specified role from storage.
      *
-     * @param  string  $role  The role ID.
      * @return SuccessResponse<null>|ProblemResponse
      */
-    public function __invoke(Request $request, string $role): SuccessResponse|ProblemResponse
+    public function __invoke(Request $request, Role $role): SuccessResponse|ProblemResponse
     {
         if ($this->deleteRole->handle($role)) {
             return new SuccessResponse(null, status: SymfonyResponse::HTTP_NO_CONTENT);

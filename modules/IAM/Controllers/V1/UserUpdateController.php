@@ -6,6 +6,7 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\UpdateUserAction;
+use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\UserRequest;
 use Modules\IAM\Resources\UserResource;
 
@@ -18,11 +19,9 @@ final readonly class UserUpdateController
     /**
      * Update the specified user in storage.
      *
-     * @param  UserRequest  $request  The validated user update request.
-     * @param  string  $user  The user ID.
      * @return SuccessResponse<UserResource>
      */
-    public function __invoke(UserRequest $request, string $user): SuccessResponse
+    public function __invoke(UserRequest $request, User $user): SuccessResponse
     {
         $userModel = $this->updateUser->handle($user, $request->payload());
 

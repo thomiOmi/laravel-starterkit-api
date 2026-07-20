@@ -26,4 +26,16 @@ final readonly class RegisterPayload
             deviceName: $deviceName !== '' ? $deviceName : null,
         );
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'password' => $this->password,
+        ];
+    }
 }

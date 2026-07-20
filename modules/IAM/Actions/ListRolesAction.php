@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Http\Filters\BaseFilter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\IAM\Filters\RoleFilter;
 use Modules\IAM\Models\Role;
@@ -13,16 +14,21 @@ final readonly class ListRolesAction
     /**
      * Handle the action to list roles with filtering, sorting, and sparse fields.
      *
+     * @param  BaseFilter<Role>|null  $filter
      * @return LengthAwarePaginator<int, Role>
      */
-    public function handle(): LengthAwarePaginator
-    {
-        return Role::query()
-            ->with(['permissions:id,name'])
-            ->tap(new RoleFilter(request()))
-            ->paginate(
-                perPage: max(1, min((int) request()->integer('page.size', 15), 100)),
-                page: max(1, (int) request()->integer('page.number', 1)),
-            );
+    public function handle(
+        ?BaseFilter $filter = null,
+        int $perPage = 15,
+        int $page = 1,
+    ): LengthAwarePaginator {
+        $filter = $filter ?? new RoleFilter(request());
+        $query = Role::query()->with(['permissions:id,name']);
+        $filter($query);
+
+        return $query->paginate(
+            perPage: max(1, min($perPage, 100)),
+            page: max(1, $page),
+        );
     }
 }

@@ -9,10 +9,8 @@ use Modules\IAM\Payloads\V1\PermissionPayload;
 
 final readonly class UpdatePermissionAction
 {
-    public function handle(string $id, PermissionPayload $payload): Permission
+    public function handle(Permission $permission, PermissionPayload $payload): Permission
     {
-        $permission = Permission::query()->findOrFail($id);
-
         $permission->update($payload->toArray());
 
         return $permission;
