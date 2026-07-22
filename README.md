@@ -99,7 +99,7 @@ php artisan test --compact --parallel
 php artisan test --compact --filter=UserManagementTest
 
 # Type coverage
-php -d memory_limit=2G artisan test --coverage
+php -d memory_limit=512M artisan test --coverage
 
 # Production security check (CI/CD gate)
 php artisan security:check

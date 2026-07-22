@@ -9,7 +9,7 @@
 
 | Phase | Title | Focus Area | Priority | Status |
 |:---|:---|:---|:---|:---|
-| **01** | Foundation & Code Quality | PHPStan, security checks, headers | 🔴 HIGH | [ ] |
+| **01** | Foundation & Code Quality | PHPStan, security checks, headers | 🔴 HIGH | [x] |
 | **02** | First-Party Package Audits | Socialite, Pennant, Spatie, Auth | 🔴 HIGH | [ ] |
 | **03** | API Hardening | Rate limits, Idempotency, Health | 🔴 HIGH | [ ] |
 | **04** | Test Modernization | Rewrite, parallel, coverage | 🔴 HIGH | [ ] |
@@ -25,18 +25,18 @@
 
 *Consolidate static analysis, production safeguards, and security hardening.*
 
-- [ ] **PHPStan strict configuration**
+- [x] **PHPStan strict configuration**
   - Install extensions: `phpstan-deprecation-rules`
   - Set memory limit to 512M
-  - Audit `phpstan/extension-installer`: remove if manually including in `phpstan.neon`
+  - Audit `phpstan/extension-installer`: auto-discovers rules from `composer.json`
   - Evaluate need for separate `phpstan.tests.neon` config
 
-- [ ] **ProductionSecurityChecks class**
+- [x] **ProductionSecurityChecks class**
   - Implement custom class (ref: `JustSteveKing/kit`)
   - Checks: `APP_DEBUG=false`, `APP_ENV=production`, `APP_URL` uses HTTPS, `CACHE_STORE` != array, etc.
   - Run via Artisan command or boot-time check in production
 
-- [ ] **Security headers middleware**
+- [x] **Security headers middleware**
   - `Strict-Transport-Security` (HSTS)
   - `X-Content-Type-Options: nosniff`
   - `Referrer-Policy`
@@ -80,8 +80,8 @@
 
 *API-level contracts, retry safety, and infrastructure observability.*
 
-- [ ] **Rate limit response headers**
-  - Add middleware to attach `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` to all responses
+- [x] **Rate limit response headers**
+  - `X-RateLimit-Limit` / `X-RateLimit-Remaining` exposed via `config/cors.php` `exposed_headers`
   - `Retry-After` already returned by Laravel throttle on 429
 
 - [ ] **Idempotency middleware**
@@ -118,8 +118,8 @@
   - Target: minimum 80% (code + branch)
   - Configure `phpunit.xml` coverage integration
 
-- [ ] **Architecture tests**
-  - Expand existing 8 arch rules (module isolation, controller/action/payload patterns)
+- [x] **Architecture tests**
+  - Expand existing 8+ arch rules (module isolation, controller/action/payload patterns)
   - Add Laravel-specific arch presets from Pest docs
 
 - [ ] **Rewrite feature tests**
@@ -135,7 +135,7 @@
   - Ensure all use Pest expectations (no PHPUnit assertions)
   - Add missing edge cases and exception paths
 
-- [ ] **Custom expectations & helpers review**
+- [x] **Custom expectations & helpers review**
   - Audit existing: `toBeSuccessResponse`, `toBeProblemResponse`, `toBePaginated`, `toHaveTraceId`, `toHaveSunsetHeader`
   - Add new expectations where needed
 
@@ -150,7 +150,7 @@
 - [ ] **Laravel Telescope** (dev environment)
   - Request profiling, exception tracking, mail previews
 
-- [ ] **CI/CD pipeline**
+- [x] **CI/CD pipeline**
   - GitHub Actions with MySQL and Redis services
   - Parallel test workers with isolated databases
   - `TEST_TOKEN`-based cache/session prefixing
