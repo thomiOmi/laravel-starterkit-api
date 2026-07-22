@@ -17,6 +17,6 @@ final readonly class UpdateRoleAction
             $role->syncPermissions($payload->permissions);
         }
 
-        return $role->loadMissing(['permissions:id,name']);
+        return $role;
     }
 }

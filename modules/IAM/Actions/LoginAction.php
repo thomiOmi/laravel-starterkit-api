@@ -46,8 +46,6 @@ final readonly class LoginAction
             ]);
         }
 
-        $user->loadMissing(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']);
-
         $token = $this->authorization->createAccessToken(
             $user,
             $payload->deviceName ?? $userAgent ?? 'auth_token',

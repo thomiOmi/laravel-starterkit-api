@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature;
+namespace Modules\IAM\Tests\Feature;
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
@@ -21,7 +21,6 @@ beforeEach(function () {
 });
 
 test('Complete System Flow: Register -> Verify -> Login -> Assign Role', function () {
-    // Register
     $password = 'password123';
     $registerPayload = [
         'name' => 'Integration User',
@@ -36,14 +35,12 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
     $user = User::where('email', 'integration@test.com')->first();
     expect($user->email_verified_at)->toBeNull();
 
-    // Verify Email
     $verificationUrl = URL::temporarySignedRoute(
         'v1.auth.verification.verify',
         now()->addMinutes(60),
         ['id' => $user->id, 'hash' => sha1($user->getEmailForVerification())]
     );
 
-    // Verify while logged in as the new user (Sanctum)
     expect($this->actingAs($user)
         ->getJson($verificationUrl))
         ->toBeSuccessResponse();
@@ -58,8 +55,7 @@ test('Complete System Flow: Register -> Verify -> Login -> Assign Role', functio
     expect($loginResponse)->toBeSuccessResponse()
         ->assertJsonStructure(['data' => ['access_token']]);
 
-    // Assign Role (By Admin)
-    $admin = loginAsUser(); // Helper creates verified admin by default if role is assigned
+    $admin = loginAsUser();
     Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
     $admin->givePermissionTo(PermissionEnum::UserEdit);
 

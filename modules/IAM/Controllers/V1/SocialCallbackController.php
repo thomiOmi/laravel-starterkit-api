@@ -25,6 +25,7 @@ final readonly class SocialCallbackController
             ipAddress: $request->ip() ?? '0.0.0.0',
             userAgent: $request->userAgent(),
         );
+        $result['user']->load('roles', 'permissions');
 
         return new SuccessResponse(
             data: [

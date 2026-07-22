@@ -6,16 +6,11 @@ namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
-use Modules\IAM\Actions\GetAuthenticatedUserAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Resources\UserResource;
 
 final readonly class MeController
 {
-    public function __construct(
-        private GetAuthenticatedUserAction $getAuthenticatedUser
-    ) {}
-
     /**
      * Me.
      *
@@ -25,10 +20,10 @@ final readonly class MeController
      */
     public function __invoke(#[CurrentUser] User $currentUser): SuccessResponse
     {
-        $profile = $this->getAuthenticatedUser->handle($currentUser);
+        $currentUser->load('roles', 'permissions');
 
         return new SuccessResponse(
-            data: new UserResource($profile),
+            data: new UserResource($currentUser),
             title: 'OK',
             detail: __('general.resource_retrieved', ['resource' => 'User profile']),
         );

@@ -24,6 +24,7 @@ parameters:
     generalizeEnvReturnType: true
     checkMissingTranslations: true
     parseModelCastsMethod: true
+    checkAuthCallsWhenInRequestScope: true
 
     # Module migration paths for schema inference
     databaseMigrationsPath:

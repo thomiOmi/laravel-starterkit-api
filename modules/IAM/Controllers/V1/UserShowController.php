@@ -7,17 +7,12 @@ namespace Modules\IAM\Controllers\V1;
 use App\Enums\PermissionEnum;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
-use Modules\IAM\Actions\ShowUserAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Resources\UserResource;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 final readonly class UserShowController
 {
-    public function __construct(
-        private ShowUserAction $showUser
-    ) {}
-
     /**
      * Display the specified user.
      *
@@ -31,10 +26,10 @@ final readonly class UserShowController
             );
         }
 
-        $userModel = $this->showUser->handle($user);
+        $user->load('roles', 'permissions');
 
         return new SuccessResponse(
-            data: new UserResource($userModel),
+            data: new UserResource($user),
             title: 'OK',
             detail: __('general.resource_retrieved', ['resource' => 'User']),
         );

@@ -30,19 +30,21 @@ class DeviceResource extends JsonResource
         /** @var PersonalAccessToken $userCurrentToken */
         $userCurrentToken = $user->currentAccessToken();
 
+        $attributes = $this->resource->getAttributes();
+
         return [
             'id' => $this->resource->id,
             'name' => $this->resource->name,
-            'ip_address' => array_key_exists('ip_address', $this->resource->getAttributes())
+            'ip_address' => array_key_exists('ip_address', $attributes)
                 ? $this->resource->ip_address
                 : null,
-            'user_agent' => array_key_exists('user_agent', $this->resource->getAttributes())
+            'user_agent' => array_key_exists('user_agent', $attributes)
                 ? $this->resource->user_agent
                 : null,
-            'last_used_at' => array_key_exists('last_used_at', $this->resource->getAttributes())
+            'last_used_at' => array_key_exists('last_used_at', $attributes)
                 ? $this->formatDate($this->resource->last_used_at)
                 : null,
-            'created_at' => array_key_exists('created_at', $this->resource->getAttributes())
+            'created_at' => array_key_exists('created_at', $attributes)
                 ? $this->formatDate($this->resource->created_at)
                 : null,
             'is_current' => $userCurrentToken->getKey() === $this->resource->getKey(),

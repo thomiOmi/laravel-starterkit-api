@@ -18,7 +18,7 @@ use Modules\IAM\Payloads\V1\LoginPayload;
 describe('LoginAction', function () {
     $password = 'test-password';
 
-    it('authenticates user with valid credentials and eager loads relations', function () use ($password) {
+    it('authenticates user with valid credentials', function () use ($password) {
         $user = User::factory()->create(['password' => Hash::make($password)]);
 
         $action = app(LoginAction::class);
@@ -32,9 +32,7 @@ describe('LoginAction', function () {
 
         expect($result)
             ->toHaveKeys(['user', 'access_token', 'token_type'])
-            ->and($result['token_type'])->toBe('Bearer')
-            ->and($result['user']->relationLoaded('roles'))->toBeTrue()
-            ->and($result['user']->relationLoaded('permissions'))->toBeTrue();
+            ->and($result['token_type'])->toBe('Bearer');
     });
 
     it('assigns wildcard abilities to admins', function () use ($password) {

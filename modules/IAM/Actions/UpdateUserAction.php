@@ -14,6 +14,6 @@ final readonly class UpdateUserAction
         $user->fill($payload->toArray());
         $user->save();
 
-        return $user->loadMissing(['roles:id,name,guard_name', 'roles.permissions:id,name', 'permissions:id,name']);
+        return $user;
     }
 }

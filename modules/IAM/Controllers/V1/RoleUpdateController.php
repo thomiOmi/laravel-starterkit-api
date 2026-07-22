@@ -25,6 +25,7 @@ final readonly class RoleUpdateController
     public function __invoke(RoleRequest $request, Role $role): SuccessResponse
     {
         $roleModel = $this->updateRole->handle($role, $request->payload());
+        $roleModel->load('permissions');
 
         return new SuccessResponse(
             data: new RoleResource($roleModel),

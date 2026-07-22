@@ -18,6 +18,6 @@ final readonly class CreateRoleAction
             $role->syncPermissions($payload->permissions);
         }
 
-        return $role->loadMissing(['permissions:id,name']);
+        return $role;
     }
 }
