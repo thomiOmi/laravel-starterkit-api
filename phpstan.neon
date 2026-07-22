@@ -37,7 +37,6 @@ parameters:
     # Cache parsed migrations between runs
     enableMigrationCache: true
 
-    tmpDir: storage/framework/cache/phpstan
     parallel:
         maximumNumberOfProcesses: 4
         minimumNumberOfJobsPerProcess: 4
