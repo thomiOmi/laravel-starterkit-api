@@ -7,16 +7,8 @@ namespace App\Http\Requests;
 use App\Enums\PermissionEnum;
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Bulk Action Request
- *
- * Validate bulk action requests for any module.
- */
 final class BulkActionRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         $user = $this->user();
@@ -59,9 +51,6 @@ final class BulkActionRequest extends FormRequest
         return false;
     }
 
-    /**
-     * Resolve the bulk action from the route name or request body.
-     */
     private function resolveBulkAction(string $routeName): ?string
     {
         $segments = explode('.', $routeName);
@@ -87,8 +76,6 @@ final class BulkActionRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
      * @return array<string, mixed>
      */
     public function rules(): array

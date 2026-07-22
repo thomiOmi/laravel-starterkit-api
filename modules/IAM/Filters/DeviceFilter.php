@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Filters;
 
-use App\Http\Filters\BaseFilter;
 use App\Models\Sanctum\PersonalAccessToken;
+use App\Support\Filters\BaseFilter;
 
 /**
  * @extends BaseFilter<PersonalAccessToken>

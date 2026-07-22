@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Http\Filters\BaseFilter;
+use App\Support\Filters\BaseFilter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\IAM\Filters\PermissionFilter;
 use Modules\IAM\Models\Permission;

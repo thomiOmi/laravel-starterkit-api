@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\File;
 
 #[Signature('module:list')]
 #[Description('List all modules and their status')]
-class ModuleList extends Command
+class ModuleListCommand extends Command
 {
     /**
      * Execute the console command.

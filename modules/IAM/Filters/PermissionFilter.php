@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Filters;
 
-use App\Http\Filters\BaseFilter;
+use App\Support\Filters\BaseFilter;
 use Modules\IAM\Models\Permission;
 
 /**

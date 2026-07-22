@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Http\Filters\BaseFilter;
 use App\Models\Sanctum\PersonalAccessToken;
+use App\Support\Filters\BaseFilter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Modules\IAM\Filters\DeviceFilter;
 use Modules\IAM\Models\User;

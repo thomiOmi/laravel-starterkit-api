@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 #[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (repository,action,filter,migration,factory,seeder,event)} {--E|event : Create event} {--r|repository : Create concrete repository} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
 #[Description('Create a new module with controllers, model, resource, tests, and optional components. Supports shorthand flags (-Eralmys) and --except to skip components.')]
-class MakeModule extends Command
+class MakeModuleCommand extends Command
 {
     public function handle(): void
     {

@@ -15,19 +15,14 @@ use Illuminate\Pagination\Paginator;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Standard Success Response.
- *
  * @template T
  */
 final readonly class SuccessResponse implements Responsable
 {
     /**
-     * @param  T  $data  The main payload.
-     * @param  string|null  $title  A short summary of the response.
-     * @param  string|null  $detail  Detailed explanation of the response.
-     * @param  int  $status  The HTTP status code.
-     * @param  array<string, mixed>  $extra  Additional top-level JSON fields.
-     * @param  array<string, string>  $headers  Custom HTTP headers.
+     * @param  T  $data
+     * @param  array<string, mixed>  $extra
+     * @param  array<string, string>  $headers
      */
     public function __construct(
         private mixed $data = null,
@@ -39,8 +34,6 @@ final readonly class SuccessResponse implements Responsable
     ) {}
 
     /**
-     * Transform the object into a JsonResponse.
-     *
      * @param  Request  $request
      */
     public function toResponse($request): JsonResponse|\Illuminate\Http\Response
@@ -77,9 +70,6 @@ final readonly class SuccessResponse implements Responsable
         return response()->json($payload, $this->status, $this->headers);
     }
 
-    /**
-     * Resolve the data for the response.
-     */
     private function resolveData(): mixed
     {
         if ($this->data instanceof ResourceCollection) {
@@ -94,8 +84,6 @@ final readonly class SuccessResponse implements Responsable
     }
 
     /**
-     * Resolve the paginator for meta information.
-     *
      * @return LengthAwarePaginator<int|string, mixed>|Paginator<int|string, mixed>|CursorPaginator<int|string, mixed>|null
      */
     private function resolveTargetForMeta(): LengthAwarePaginator|Paginator|CursorPaginator|null
@@ -114,8 +102,6 @@ final readonly class SuccessResponse implements Responsable
     }
 
     /**
-     * Format the pagination meta information.
-     *
      * @param  LengthAwarePaginator<int|string, mixed>|Paginator<int|string, mixed>|CursorPaginator<int|string, mixed>  $paginator
      * @return array<string, mixed>
      */
@@ -133,8 +119,6 @@ final readonly class SuccessResponse implements Responsable
     }
 
     /**
-     * Format the meta information for a LengthAwarePaginator.
-     *
      * @param  LengthAwarePaginator<int|string, mixed>  $paginator
      * @return array{current_page: int, last_page: int, per_page: int, total: int, has_more: bool}
      */
@@ -150,8 +134,6 @@ final readonly class SuccessResponse implements Responsable
     }
 
     /**
-     * Format the meta information for a simple Paginator.
-     *
      * @param  Paginator<int|string, mixed>  $paginator
      * @return array{current_page: int, per_page: int, has_more: bool}
      */
@@ -165,8 +147,6 @@ final readonly class SuccessResponse implements Responsable
     }
 
     /**
-     * Format the meta information for a CursorPaginator.
-     *
      * @param  CursorPaginator<int|string, mixed>  $paginator
      * @return array{per_page: int, next_cursor: ?string, prev_cursor: ?string, has_more: bool}
      */
@@ -176,8 +156,6 @@ final readonly class SuccessResponse implements Responsable
 
         return [
             'per_page' => $paginator->perPage(),
-            // Keys from CursorPaginator array are dynamic and can be missing or non-string at runtime.
-            // Strict checks ensure PHPStan max level passes safely without internal inline type casting.
             'next_cursor' => isset($cursorData['next_cursor']) && is_string($cursorData['next_cursor']) ? $cursorData['next_cursor'] : null,
             'prev_cursor' => isset($cursorData['prev_cursor']) && is_string($cursorData['prev_cursor']) ? $cursorData['prev_cursor'] : null,
             'has_more' => $paginator->hasMorePages(),
