@@ -11,7 +11,7 @@ final readonly class DeleteDeviceAction
 {
     public function handle(User $user, PersonalAccessToken $device): void
     {
-        abort_if($user->getKey() != $device->tokenable_id, 404);
+        abort_if($user->getKey() !== $device->tokenable_id, 404);
 
         $device->delete();
     }
