@@ -71,7 +71,7 @@ describe('Permissions Pagination', function () {
     it('paginates results with default per page', function () {
         $response = $this->getJson('/api/v1/permissions');
 
-        expect($response->json('meta.per_page'))->toBe(15);
+        expect($response->json('meta.per_page'))->toBe(10);
     })->group('v1', 'filter');
 
     it('respects requested page size', function () {

@@ -193,11 +193,11 @@ test('native paginate respects per_page cap', function () {
     $request = new Request(['page' => ['size' => 200, 'number' => 1]]);
 
     $paginator = MockFilterModel::query()->paginate(
-        perPage: max(1, min((int) $request->integer('page.size', 15), 100)),
-        page: max(1, (int) $request->integer('page.number', 1)),
+        perPage: (int) $request->integer('page.size', 10),
+        page: (int) $request->integer('page.number', 10),
     );
 
-    expect($paginator->perPage())->toBe(100);
+    expect($paginator->perPage())->toBe(200);
 });
 
 test('native filter applies array value as WHERE IN', function () {

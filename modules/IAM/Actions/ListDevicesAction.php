@@ -21,7 +21,7 @@ final readonly class ListDevicesAction
     public function handle(
         User $user,
         ?BaseFilter $filter = null,
-        int $perPage = 15,
+        int $perPage = 10,
         int $page = 1,
     ): LengthAwarePaginator {
         $filter = $filter ?? new DeviceFilter(request());
@@ -39,8 +39,8 @@ final readonly class ListDevicesAction
         $filter($query);
 
         return $query->paginate(
-            perPage: max(1, min($perPage, 100)),
-            page: max(1, $page),
+            perPage: $perPage,
+            page: $page,
         );
     }
 }

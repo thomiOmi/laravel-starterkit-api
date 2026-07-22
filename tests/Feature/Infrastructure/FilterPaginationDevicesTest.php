@@ -76,7 +76,7 @@ describe('Devices Pagination', function () {
     it('paginates results with default per page', function () {
         $response = $this->getJson('/api/v1/auth/devices');
 
-        expect($response->json('meta.per_page'))->toBe(15);
+        expect($response->json('meta.per_page'))->toBe(10);
     })->group('v1', 'filter');
 
     it('respects requested page size', function () {

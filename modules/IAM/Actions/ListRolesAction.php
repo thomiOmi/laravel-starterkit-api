@@ -19,7 +19,7 @@ final readonly class ListRolesAction
      */
     public function handle(
         ?BaseFilter $filter = null,
-        int $perPage = 15,
+        int $perPage = 10,
         int $page = 1,
     ): LengthAwarePaginator {
         $filter = $filter ?? new RoleFilter(request());
@@ -27,8 +27,8 @@ final readonly class ListRolesAction
         $filter($query);
 
         return $query->paginate(
-            perPage: max(1, min($perPage, 100)),
-            page: max(1, $page),
+            perPage: $perPage,
+            page: $page,
         );
     }
 }

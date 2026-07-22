@@ -26,8 +26,8 @@ final readonly class UserListController
     {
         $users = $this->listUsers->handle(
             filter: new UserFilter($request),
-            perPage: $request->integer('page.size', 15),
-            page: $request->integer('page.number', 1),
+            perPage: $request->getPerPage(),
+            page: $request->getPage(),
         );
 
         return new SuccessResponse(
