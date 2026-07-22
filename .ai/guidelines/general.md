@@ -63,6 +63,12 @@
 - Do NOT chain migration commands with `&&` or `;` — they may get identical timestamps
 - Use Context7 (`context7_query-docs`) for library docs when Laravel Boost `search-docs` does not have the library
 
+## Architecture Test Rules (`tests/Architecture/ArchitectureTest.php`)
+
+- **DO NOT** modify `ArchitectureTest.php` unless explicitly instructed by the user
+- If architecture tests fail due to code changes, **report the failure to the user** and let them decide how to proceed — do NOT auto-fix or auto-ignore the rule
+- The architecture test file is the project's single source of truth for conventions; changes require deliberate human approval
+
 ## Agentic Development (Laravel Boost & Agent Skills)
 
 - **Laravel Boost**: Accelerates development with framework-specific guidelines and MCP tools (`search-docs`, `database-schema`, etc.).
