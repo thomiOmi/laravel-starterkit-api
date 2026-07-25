@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\{{Module}}\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\{{Module}}\Models\{{Module}};
+use Modules\{{Module}}\Database\Factories\{{Module}}Factory;
 
 class {{Module}}Seeder extends Seeder
 {
@@ -14,6 +14,6 @@ class {{Module}}Seeder extends Seeder
      */
     public function run(): void
     {
-        {{Module}}::factory()->count(10)->create();
+        {{Module}}Factory::new()->count(10)->create();
     }
 }

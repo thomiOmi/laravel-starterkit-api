@@ -13,6 +13,7 @@
         "dedoc/scramble": "^0.13.30",
         "laravel/framework": "^13.6.0",
         "laravel/pennant": "^1.23.0",
+        "laravel/prompts": "^0.3.21",
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.0",
         "laravel/tinker": "^3.0",

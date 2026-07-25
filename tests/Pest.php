@@ -20,7 +20,7 @@ use Tests\TestCase;
 pest()
     ->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in('Feature', 'Unit');
+    ->in('Feature', 'Unit', '../modules/*/Tests');
 
 pest()
     ->extend(TestCase::class)

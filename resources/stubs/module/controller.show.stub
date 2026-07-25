@@ -10,21 +10,16 @@ use Modules\{{Module}}\Models\{{Module}};
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @group {{Module}} Management
- *
- * @authenticated
- */
 final readonly class ShowController
 {
     public function __construct(
-        private Show{{Module}}Action $show{{Module}}
+        private Show{{Module}}Action $show{{Module}},
     ) {}
 
     /**
      * Display the specified {{lowerResource}}.
      *
-     * @return SuccessResponse<\Modules\{{Module}}\Resources\{{Module}}Resource>
+     * @return SuccessResponse<{{Module}}Resource>
      */
     public function __invoke(string $id): SuccessResponse
     {

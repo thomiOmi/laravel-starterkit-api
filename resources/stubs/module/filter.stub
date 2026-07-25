@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Filters;
 
-use App\Http\Filters\BaseFilter;
+use App\Support\Filters\BaseFilter;
 use Modules\{{Module}}\Models\{{Module}};
 
 /**
@@ -14,27 +14,22 @@ class {{Module}}Filter extends BaseFilter
 {
     /** @var array<int, string> */
     protected array $allowedFilters = [
-        'name',
-    ];
+{{filterFields}}    ];
 
     /** @var array<int, string> */
     protected array $allowedSorts = [
-        'name',
-        'created_at',
-    ];
+{{filterSorts}}    ];
 
     /** @var array<int, string> */
     protected array $allowedFields = [
         'id',
-        'name',
-        'created_at',
+{{filterAllowedFields}}        'created_at',
         'updated_at',
     ];
 
     /** @var array<int, string> */
     protected array $searchableColumns = [
-        'name',
-    ];
+{{filterSearchableColumns}}    ];
 
     // Strategy methods for complex filters (e.g. relation filters, custom logic)
     // delegate to Model scopes using #[Scope] attribute (Laravel 13+)

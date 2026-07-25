@@ -9,20 +9,16 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
+{{modelTraits}}
 use Modules\{{Module}}\Database\Factories\{{Module}}Factory;
 
 /**
- * @property string $id The unique identifier (ULID).
- * @property Carbon|null $created_at The timestamp when created.
- * @property Carbon|null $updated_at The timestamp when updated.
- */
+{{modelProperties}} */
 #[Fillable([
-    // Fillable attributes here
-])]
+{{fillableColumns}}])]
 #[UseFactory({{Module}}Factory::class)]
 class {{Module}} extends Model
 {
     /** @use HasFactory<{{Module}}Factory> */
-    use HasDefaultBehavior, HasFactory;
+    use HasDefaultBehavior, HasFactory{{modelTraitsUse}};
 }

@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\{{Module}}\Models\{{Module}};
+use Modules\IAM\Database\Seeders\RoleSeeder;
+use Modules\IAM\Models\User;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->seed(RoleSeeder::class);
+    $this->admin = User::factory()->create();
+    $this->admin->assignRole('super-admin');
+
+    $this->token = $this->admin->createToken('test-token', ['*'])->plainTextToken;
+});
+
+it('lists {{labelPlural}}', function () {
+    {{Module}}::factory()->count(3)->create();
+
+    $response = $this->getJson('/api/{{routePrefix}}/{{slug}}', [
+        'Authorization' => 'Bearer '.$this->token,
+    ]);
+
+    $response->assertOk();
+    expect($response)->toBeSuccessResponse();
+});
+
+it('creates a {{label}}', function () {
+    $response = $this->postJson('/api/{{routePrefix}}/{{slug}}', [
+{{testCreateData}}    ], [
+        'Authorization' => 'Bearer '.$this->token,
+    ]);
+
+    $response->assertCreated();
+    expect($response)->toBeSuccessResponse(201);
+});
+
+it('shows a {{label}}', function () {
+    ${{lowerResource}} = {{Module}}::factory()->create();
+
+    $response = $this->getJson('/api/{{routePrefix}}/{{slug}}/'.${{lowerResource}}->getKey(), [
+        'Authorization' => 'Bearer '.$this->token,
+    ]);
+
+    $response->assertOk();
+    expect($response)->toBeSuccessResponse();
+});
+
+it('updates a {{label}}', function () {
+    ${{lowerResource}} = {{Module}}::factory()->create();
+
+    $response = $this->putJson('/api/{{routePrefix}}/{{slug}}/'.${{lowerResource}}->getKey(), [
+{{testUpdateData}}    ], [
+        'Authorization' => 'Bearer '.$this->token,
+    ]);
+
+    $response->assertOk();
+    expect($response)->toBeSuccessResponse();
+});
+
+it('deletes a {{label}}', function () {
+    ${{lowerResource}} = {{Module}}::factory()->create();
+
+    $response = $this->deleteJson('/api/{{routePrefix}}/{{slug}}/'.${{lowerResource}}->getKey(), headers: [
+        'Authorization' => 'Bearer '.$this->token,
+    ]);
+
+    $response->assertOk();
+    expect($response)->toBeSuccessResponse();
+    expect({{Module}}::query()->count())->toBe(0);
+});

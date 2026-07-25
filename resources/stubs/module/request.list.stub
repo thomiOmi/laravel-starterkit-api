@@ -1,0 +1,14 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{{Module}}\Requests\{{Version}};
+
+use App\Http\Requests\PaginationRequest;
+
+/**
+ * List {{Module}} Request
+ *
+ * Handles pagination and sorting parameters for listing {{labelPlural}}.
+ */
+final class List{{Module}}Request extends PaginationRequest {}

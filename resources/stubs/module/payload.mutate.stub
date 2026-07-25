@@ -11,14 +11,16 @@ use Modules\{{Module}}\Requests\{{Version}}\{{Action}}{{Module}}Request;
  */
 final readonly class {{Action}}{{Module}}Payload
 {
-    public function __construct() {}
+    public function __construct(
+{{payloadFields}}    ) {}
 
     /**
      * Create a payload from the request.
      */
     public static function fromRequest({{Action}}{{Module}}Request $request): self
     {
-        return new self();
+        return new self(
+{{payloadFromRequest}}        );
     }
 
     /**
@@ -28,6 +30,7 @@ final readonly class {{Action}}{{Module}}Payload
      */
     public function toArray(): array
     {
-        return [];
+        return [
+{{payloadToArray}}        ];
     }
 }

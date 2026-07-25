@@ -15,8 +15,6 @@ final class {{Action}}{{Module}}Request extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     *
-     * @return bool
      */
     public function authorize(): bool
     {
@@ -33,14 +31,11 @@ final class {{Action}}{{Module}}Request extends FormRequest
         $id = $this->route('{{lowerResource}}');
 
         return [
-            'name' => ['required', 'string', 'max:255'],
-        ];
+{{validationRules}}        ];
     }
 
     /**
      * Get the request payload.
-     *
-     * @return {{Action}}{{Module}}Payload
      */
     public function payload(): {{Action}}{{Module}}Payload
     {

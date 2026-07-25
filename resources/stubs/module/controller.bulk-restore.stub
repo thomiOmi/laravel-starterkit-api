@@ -9,11 +9,6 @@ use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\BulkRestore{{pluralModule}}Action;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @group {{Module}} Management
- *
- * @authenticated
- */
 final readonly class BulkRestoreController
 {
     public function __construct(
@@ -22,6 +17,8 @@ final readonly class BulkRestoreController
 
     /**
      * Perform bulk restore on {{lowerResource}}s.
+     *
+     * @return SuccessResponse<array{count: int}>
      */
     public function __invoke(BulkActionRequest $request): SuccessResponse
     {

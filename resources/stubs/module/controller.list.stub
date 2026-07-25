@@ -10,11 +10,6 @@ use Modules\{{Module}}\Actions\List{{pluralModule}}Action;
 use Modules\{{Module}}\Requests\{{Version}}\List{{Module}}Request;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 
-/**
- * @group {{Module}} Management
- *
- * @authenticated
- */
 final readonly class ListController
 {
     public function __construct(

@@ -10,11 +10,6 @@ use Modules\{{Module}}\Models\{{Module}};
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-/**
- * @group {{Module}} Management
- *
- * @authenticated
- */
 final readonly class DeleteController
 {
     public function __construct(

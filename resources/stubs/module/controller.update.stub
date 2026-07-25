@@ -10,11 +10,6 @@ use Modules\{{Module}}\Requests\{{Version}}\Update{{Module}}Request;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @group {{Module}} Management
- *
- * @authenticated
- */
 final readonly class UpdateController
 {
     public function __construct(
@@ -24,7 +19,7 @@ final readonly class UpdateController
     /**
      * Update the specified {{lowerResource}} in storage.
      *
-     * @return SuccessResponse<\Modules\{{Module}}\Resources\{{Module}}Resource>
+     * @return SuccessResponse<{{Module}}Resource>
      */
     public function __invoke(Update{{Module}}Request $request, string $id): SuccessResponse
     {

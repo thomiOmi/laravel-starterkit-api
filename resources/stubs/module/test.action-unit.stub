@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Modules\{{Module}}\Database\Factories\{{Module}}Factory;
+use Modules\{{Module}}\Models\{{Module}};
+
+uses(RefreshDatabase::class);
+
+it('creates a {{label}}', function () {
+    ${{lowerResource}} = {{Module}}Factory::new()->create();
+
+    expect(${{lowerResource}})->toBeInstanceOf({{Module}}::class);
+    expect(${{lowerResource}}->exists)->toBeTrue();
+});
+
+it('shows a {{label}}', function () {
+    ${{lowerResource}} = {{Module}}Factory::new()->create();
+
+    $result = {{Module}}::query()->find(${{lowerResource}}->getKey());
+
+    expect($result)->toBeInstanceOf({{Module}}::class);
+    expect($result->getKey())->toBe(${{lowerResource}}->getKey());
+});
+
+it('deletes a {{label}}', function () {
+    ${{lowerResource}} = {{Module}}Factory::new()->create();
+
+    ${{lowerResource}}->delete();
+
+    expect({{Module}}::query()->count())->toBe(0);
+});

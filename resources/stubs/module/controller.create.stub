@@ -10,11 +10,6 @@ use Modules\{{Module}}\Requests\{{Version}}\Create{{Module}}Request;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @group {{Module}} Management
- *
- * @authenticated
- */
 final readonly class CreateController
 {
     public function __construct(
@@ -24,7 +19,7 @@ final readonly class CreateController
     /**
      * Store a newly created {{lowerResource}}.
      *
-     * @return SuccessResponse<\Modules\{{Module}}\Resources\{{Module}}Resource>
+     * @return SuccessResponse<{{Module}}Resource>
      */
     public function __invoke(Create{{Module}}Request $request): SuccessResponse
     {
