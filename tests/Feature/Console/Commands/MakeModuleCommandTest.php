@@ -31,6 +31,12 @@ test('can create a module with name argument', function () {
             ['action', 'filter'],
             ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
         )
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
+        ])
         ->expectsQuestion('Field name?', 'name')
         ->expectsChoice("Field type for 'name'?", 'string', [
             'string' => 'String (varchar)',
@@ -53,8 +59,6 @@ test('can create a module with name argument', function () {
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Controllers/V1/ListController.php');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Requests/V1/List'.MAKE_MODULE.'Request.php');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Resources/'.MAKE_MODULE.'Resource.php');
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Feature/V1/'.MAKE_MODULE.'Test.php');
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('prompts for missing name', function () {
@@ -77,6 +81,12 @@ test('prompts for missing name', function () {
             ['action', 'filter'],
             ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
         )
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
+        ])
         ->expectsQuestion('Field name?', 'name')
         ->expectsChoice("Field type for 'name'?", 'string', [
             'string' => 'String (varchar)',
@@ -93,7 +103,6 @@ test('prompts for missing name', function () {
         ->assertSuccessful();
 
     Storage::disk('modules')->assertExists(MAKE_MODULE);
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('aborts when module exists without force', function () {
@@ -112,6 +121,12 @@ test('aborts when module exists without force', function () {
             'delete' => 'Delete',
             'bulk-delete' => 'Bulk Delete',
             'bulk-restore' => 'Bulk Restore',
+        ])
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
         ])
         ->assertSuccessful();
 
@@ -143,6 +158,12 @@ test('creates module with force flag when exists', function () {
             ['action', 'filter'],
             ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
         )
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
+        ])
         ->expectsQuestion('Field name?', 'name')
         ->expectsChoice("Field type for 'name'?", 'string', [
             'string' => 'String (varchar)',
@@ -159,7 +180,6 @@ test('creates module with force flag when exists', function () {
         ->assertSuccessful();
 
     Storage::disk('modules')->assertExists(MAKE_MODULE);
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('respects --except flag', function () {
@@ -195,7 +215,6 @@ test('creates optional components when flags are passed', function () {
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Factories');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Seeders');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Events/'.MAKE_MODULE.'Created.php');
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('uses api-version option correctly', function () {
@@ -222,6 +241,12 @@ test('uses api-version option correctly', function () {
             ['action', 'filter'],
             ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
         )
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
+        ])
         ->expectsQuestion('Field name?', 'name')
         ->expectsChoice("Field type for 'name'?", 'string', [
             'string' => 'String (varchar)',
@@ -239,7 +264,6 @@ test('uses api-version option correctly', function () {
 
     $provider = Storage::disk('modules')->get(MAKE_MODULE.'/Providers/'.MAKE_MODULE.'ServiceProvider.php');
     expect($provider)->toContain('api/v2');
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('warns about unknown --except components', function () {
@@ -286,6 +310,12 @@ test('accepts lowercase api-version and uppercases it', function () {
             ['action', 'filter'],
             ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
         )
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
+        ])
         ->expectsQuestion('Field name?', 'name')
         ->expectsChoice("Field type for 'name'?", 'string', [
             'string' => 'String (varchar)',
@@ -344,6 +374,12 @@ test('generates route file with correct prefixes', function () {
             ['action', 'filter'],
             ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
         )
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
+        ])
         ->expectsQuestion('Field name?', 'name')
         ->expectsChoice("Field type for 'name'?", 'string', [
             'string' => 'String (varchar)',
@@ -364,7 +400,6 @@ test('generates route file with correct prefixes', function () {
     $slug = Str::kebab(Str::plural(MAKE_MODULE));
     expect($content)->toContain("prefix('{$slug}')");
     expect($content)->toContain("name('{$slug}.')");
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('adds missing filter component to existing module', function () {
@@ -386,6 +421,12 @@ test('adds missing filter component to existing module', function () {
             ['action'],
             ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
         )
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
+        ])
         ->expectsQuestion('Field name?', 'name')
         ->expectsChoice("Field type for 'name'?", 'string', [
             'string' => 'String (varchar)',
@@ -430,6 +471,12 @@ test('--add warns about already-existing components', function () {
             ['action', 'filter'],
             ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
         )
+        ->expectsChoice('Generate test files?', 'none', [
+            'none' => 'None',
+            'unit' => 'Unit Test',
+            'feature' => 'Feature Test',
+            'all' => 'Both',
+        ])
         ->expectsQuestion('Field name?', 'name')
         ->expectsChoice("Field type for 'name'?", 'string', [
             'string' => 'String (varchar)',
@@ -470,4 +517,37 @@ test('--add with unknown component warns', function () {
         'name' => MAKE_MODULE,
         '--add' => 'unknown,filter',
     ])->assertSuccessful();
+});
+
+test('--tests=unit generates only unit test file', function () {
+    $this->artisan('make:module', [
+        'name' => MAKE_MODULE,
+        '--except' => 'action,filter,migration,factory,seeder,event',
+        '--tests' => 'unit',
+    ])->assertSuccessful();
+
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
+    Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Tests/Feature');
+});
+
+test('--tests=feature generates only feature test file', function () {
+    $this->artisan('make:module', [
+        'name' => MAKE_MODULE,
+        '--except' => 'action,filter,migration,factory,seeder,event',
+        '--tests' => 'feature',
+    ])->assertSuccessful();
+
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Feature/V1/'.MAKE_MODULE.'Test.php');
+    Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Tests/Unit');
+});
+
+test('--tests=all generates both test files', function () {
+    $this->artisan('make:module', [
+        'name' => MAKE_MODULE,
+        '--except' => 'action,filter,migration,factory,seeder,event',
+        '--tests' => 'all',
+    ])->assertSuccessful();
+
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Feature/V1/'.MAKE_MODULE.'Test.php');
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });

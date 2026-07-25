@@ -20,11 +20,11 @@ use Tests\TestCase;
 pest()
     ->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in('Feature', 'Unit', '../modules/*/Tests');
+    ->in('Feature', '../modules/*/Tests/Feature');
 
 pest()
     ->extend(TestCase::class)
-    ->in('Architecture');
+    ->in('Unit', '../modules/*/Tests/Unit', 'Architecture');
 
 pest()->beforeEach(function (): void {
     app(PermissionRegistrar::class)->forgetCachedPermissions();

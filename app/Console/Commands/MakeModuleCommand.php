@@ -25,8 +25,8 @@ use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
-#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--A|add= : Comma-separated components to add to an existing module} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
-#[Description('Create a new module with controllers, model, resource, tests, and optional components. Supports shorthand flags (-Ealmys), --except to skip components, and --add to add components to existing modules.')]
+#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--A|add= : Comma-separated components to add to an existing module} {--T|tests=none : Generate test files (none,unit,feature,all)} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
+#[Description('Create a new module with controllers, model, resource, and optional components. Supports shorthand flags (-Talmys), --except to skip components, --add to add components to existing modules, and --tests to generate test stubs.')]
 class MakeModuleCommand extends Command
 {
     private const array COMPONENTS = [
@@ -114,8 +114,10 @@ class MakeModuleCommand extends Command
 
         $options = $this->resolveComponentOptions($except);
         $operations = array_keys(self::ALL_OPERATIONS);
+        $testsUnit = $this->parseTestsOption('unit');
+        $testsFeature = $this->parseTestsOption('feature');
 
-        $this->generate($name, $version, [], $options, $operations, timestamps: true, softDeletes: false);
+        $this->generate($name, $version, [], $options, $operations, $testsUnit, $testsFeature, timestamps: true, softDeletes: false);
     }
 
     private function handleAddMode(string $nameArg, string $add): void
@@ -175,8 +177,20 @@ class MakeModuleCommand extends Command
         $operations = $hasExistingActions
             ? $this->detectExistingOperations($name)
             : array_keys(self::ALL_OPERATIONS);
+        $testsUnit = $this->parseTestsOption('unit');
+        $testsFeature = $this->parseTestsOption('feature');
 
-        $this->generate($name, $version, [], $options, $operations, timestamps: true, softDeletes: false);
+        $this->generate($name, $version, [], $options, $operations, $testsUnit, $testsFeature, timestamps: true, softDeletes: false);
+    }
+
+    private function parseTestsOption(string $type): bool
+    {
+        $value = (string) $this->option('tests');
+
+        return match ($value) {
+            'all' => true,
+            default => $value === $type,
+        };
     }
 
     private function handleInteractive(string $nameArg): void
@@ -243,6 +257,18 @@ class MakeModuleCommand extends Command
                     info: fn (string $key) => self::COMPONENTS_INFO[$key] ?? null,
                 );
             }, name: 'components')
+            ->add(function () {
+                return select(
+                    label: 'Generate test files?',
+                    options: [
+                        'none' => 'None',
+                        'unit' => 'Unit Test',
+                        'feature' => 'Feature Test',
+                        'all' => 'Both',
+                    ],
+                    default: 'none',
+                );
+            }, name: 'tests')
             ->submit();
 
         $name = Str::studly(
@@ -269,9 +295,13 @@ class MakeModuleCommand extends Command
             $options[$key] = in_array($key, $componentKeys, true);
         }
 
+        $testsValue = is_string($responses['tests']) ? $responses['tests'] : 'none';
+        $testsUnit = $testsValue === 'unit' || $testsValue === 'all';
+        $testsFeature = $testsValue === 'feature' || $testsValue === 'all';
+
         $schema = $this->promptForFields();
 
-        $this->generate($name, $version, $schema, $options, $operations, $timestamps, $softDeletes);
+        $this->generate($name, $version, $schema, $options, $operations, $testsUnit, $testsFeature, $timestamps, $softDeletes);
     }
 
     /**
@@ -455,13 +485,15 @@ class MakeModuleCommand extends Command
         array $schema,
         array $options,
         array $operations,
+        bool $testsUnit,
+        bool $testsFeature,
         bool $timestamps,
         bool $softDeletes,
     ): void {
         note("Generating module {$name} ({$version})...");
 
         $dirsOk = task(
-            callback: fn () => $this->createDirectories($name, $version, $options),
+            callback: fn () => $this->createDirectories($name, $version, $options, $testsUnit, $testsFeature),
             label: 'Creating module directories...',
         );
 
@@ -472,7 +504,7 @@ class MakeModuleCommand extends Command
         }
 
         $filesOk = task(
-            callback: fn () => $this->createFiles($name, $version, $schema, $options, $operations, $timestamps, $softDeletes),
+            callback: fn () => $this->createFiles($name, $version, $schema, $options, $operations, $testsUnit, $testsFeature, $timestamps, $softDeletes),
             label: 'Generating module files...',
         );
 
@@ -483,7 +515,7 @@ class MakeModuleCommand extends Command
         }
 
         alert("Module {$name} created successfully!");
-        $this->showSummary($name, $version, $options, $timestamps, $softDeletes);
+        $this->showSummary($name, $version, $options, $testsUnit, $testsFeature, $timestamps, $softDeletes);
     }
 
     /**
@@ -497,6 +529,8 @@ class MakeModuleCommand extends Command
         array $schema,
         array $options,
         array $operations,
+        bool $testsUnit,
+        bool $testsFeature,
         bool $timestamps,
         bool $softDeletes,
     ): bool {
@@ -530,20 +564,21 @@ class MakeModuleCommand extends Command
             'filterSorts' => $this->renderFilterSorts($schema),
             'filterAllowedFields' => $this->renderFilterAllowedFields($schema),
             'filterSearchableColumns' => $this->renderFilterSearchableColumns($schema),
-            'testCreateData' => $this->renderTestCreateData($schema),
-            'testUpdateData' => $this->renderTestUpdateData($schema),
         ];
 
         foreach ([
             'createCoreFiles',
             'createControllerAndResourceFiles',
             'createActionFiles',
-            'createTestFiles',
             'createOptionalFiles',
         ] as $method) {
             if (! $this->{$method}($name, $version, $replacements, $options, $operations, $hasAction)) {
                 return false;
             }
+        }
+
+        if (! $this->createTestFiles($name, $version, $replacements, $options, $operations, $hasAction, $testsUnit, $testsFeature)) {
+            return false;
         }
 
         return true;
@@ -731,12 +766,14 @@ class MakeModuleCommand extends Command
         array $options,
         array $operations,
         bool $hasAction,
+        bool $testsUnit,
+        bool $testsFeature,
     ): bool {
-        if (! $this->putStub("{$name}/Tests/Unit/{$name}UnitTest.php", 'test.unit', $replacements)) {
+        if ($testsUnit && ! $this->putStub("{$name}/Tests/Unit/{$name}UnitTest.php", 'test.unit', $replacements)) {
             return false;
         }
 
-        if (! $this->putStub("{$name}/Tests/Feature/{$version}/{$name}Test.php", 'test.feature', $replacements)) {
+        if ($testsFeature && ! $this->putStub("{$name}/Tests/Feature/{$version}/{$name}Test.php", 'test.feature', $replacements)) {
             return false;
         }
 
@@ -866,7 +903,7 @@ class MakeModuleCommand extends Command
     /**
      * @param  array<string, bool>  $options
      */
-    private function createDirectories(string $name, string $version, array $options): bool
+    private function createDirectories(string $name, string $version, array $options, bool $testsUnit, bool $testsFeature): bool
     {
         $directories = [
             "{$name}/Controllers/{$version}",
@@ -874,11 +911,17 @@ class MakeModuleCommand extends Command
             "{$name}/Providers",
             "{$name}/Resources",
             "{$name}/Routes",
-            "{$name}/Tests/Feature/{$version}",
         ];
 
+        if ($testsFeature) {
+            $directories[] = "{$name}/Tests/Feature/{$version}";
+        }
+
         $directories[] = "{$name}/Requests/{$version}";
-        $directories[] = "{$name}/Tests/Unit";
+
+        if ($testsUnit) {
+            $directories[] = "{$name}/Tests/Unit";
+        }
 
         if ($options['action']) {
             $directories[] = "{$name}/Actions";
@@ -1316,50 +1359,6 @@ PHP;
     /**
      * @param  array<int, array{name: string, type: string, nullable: bool}>  $schema
      */
-    private function renderTestCreateData(array $schema): string
-    {
-        return collect($schema)
-            ->filter(fn (array $f) => ! $f['nullable'])
-            ->map(fn (array $field) => $this->testDataLine($field))
-            ->implode("\n");
-    }
-
-    /**
-     * @param  array<int, array{name: string, type: string, nullable: bool}>  $schema
-     */
-    private function renderTestUpdateData(array $schema): string
-    {
-        $required = collect($schema)->filter(fn (array $f) => ! $f['nullable']);
-
-        if ($required->isEmpty()) {
-            return '';
-        }
-
-        $firstRequired = $required->first();
-
-        return $this->testDataLine($firstRequired, prefix: 'Updated ');
-    }
-
-    /**
-     * @param  array{name: string, type: string, nullable: bool}  $field
-     */
-    private function testDataLine(array $field, string $prefix = ''): string
-    {
-        $value = match ($field['type']) {
-            'string' => "'{$prefix}Test {{Module}}'",
-            'text' => "'{$prefix}Test content for {{Module}}.'",
-            'integer' => '1',
-            'boolean' => 'true',
-            'float' => '9.99',
-            'date' => "'2024-01-01'",
-            'datetime' => "'2024-01-01 00:00:00'",
-            'json' => "['key' => 'value']",
-            default => "'{$prefix}Test'",
-        };
-
-        return "        '{$field['name']}' => {$value},";
-    }
-
     /**
      * @param  array<string, bool>  $options
      */
@@ -1367,6 +1366,8 @@ PHP;
         string $name,
         string $version,
         array $options,
+        bool $testsUnit,
+        bool $testsFeature,
         bool $timestamps,
         bool $softDeletes,
     ): void {
@@ -1387,7 +1388,8 @@ PHP;
                 ['Seeder', $options['seeder'] ? 'Created' : 'Skipped'],
                 ['Resource', 'Created'],
                 ['Event', $options['event'] ? 'Created' : 'Skipped'],
-                ['Tests', 'Created'],
+                ['Unit Test', $testsUnit ? 'Created' : 'Skipped'],
+                ['Feature Test', $testsFeature ? 'Created' : 'Skipped'],
             ]
         );
     }
