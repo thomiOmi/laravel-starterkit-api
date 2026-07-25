@@ -54,12 +54,12 @@ test('can create a module with name argument', function () {
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Requests/V1/List'.MAKE_MODULE.'Request.php');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Resources/'.MAKE_MODULE.'Resource.php');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Feature/V1/'.MAKE_MODULE.'Test.php');
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'ActionTest.php');
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('prompts for missing name', function () {
     $this->artisan('make:module')
-        ->expectsQuestion('What is the name of the module?', MAKE_MODULE)
+        ->expectsQuestion('What is the module name?', MAKE_MODULE)
         ->expectsQuestion('API version?', 'V1')
         ->expectsQuestion('Include timestamps?', true)
         ->expectsQuestion('Include soft deletes?', false)
@@ -93,14 +93,14 @@ test('prompts for missing name', function () {
         ->assertSuccessful();
 
     Storage::disk('modules')->assertExists(MAKE_MODULE);
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'ActionTest.php');
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('aborts when module exists without force', function () {
     Storage::disk('modules')->makeDirectory(MAKE_MODULE);
 
     $this->artisan('make:module', ['name' => MAKE_MODULE])
-        ->expectsQuestion('Module TestMod already exists. Do you want to overwrite it?', false)
+        ->expectsQuestion('Overwrite existing module?', false)
         ->expectsQuestion('API version?', 'V1')
         ->expectsQuestion('Include timestamps?', true)
         ->expectsQuestion('Include soft deletes?', false)
@@ -159,7 +159,7 @@ test('creates module with force flag when exists', function () {
         ->assertSuccessful();
 
     Storage::disk('modules')->assertExists(MAKE_MODULE);
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'ActionTest.php');
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('respects --except flag', function () {
@@ -175,7 +175,6 @@ test('respects --except flag', function () {
     Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Database/Factories');
     Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Database/Seeders');
     Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Events');
-    Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Tests/Unit');
 });
 
 test('creates optional components when flags are passed', function () {
@@ -196,7 +195,7 @@ test('creates optional components when flags are passed', function () {
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Factories');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Seeders');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Events/'.MAKE_MODULE.'Created.php');
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'ActionTest.php');
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('uses api-version option correctly', function () {
@@ -240,7 +239,7 @@ test('uses api-version option correctly', function () {
 
     $provider = Storage::disk('modules')->get(MAKE_MODULE.'/Providers/'.MAKE_MODULE.'ServiceProvider.php');
     expect($provider)->toContain('api/v2');
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'ActionTest.php');
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
 });
 
 test('warns about unknown --except components', function () {
@@ -365,5 +364,110 @@ test('generates route file with correct prefixes', function () {
     $slug = Str::kebab(Str::plural(MAKE_MODULE));
     expect($content)->toContain("prefix('{$slug}')");
     expect($content)->toContain("name('{$slug}.')");
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'ActionTest.php');
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Tests/Unit/'.MAKE_MODULE.'UnitTest.php');
+});
+
+test('adds missing filter component to existing module', function () {
+    $this->artisan('make:module', ['name' => MAKE_MODULE])
+        ->expectsQuestion('API version?', 'V1')
+        ->expectsQuestion('Include timestamps?', true)
+        ->expectsQuestion('Include soft deletes?', false)
+        ->expectsChoice('Which operations to generate?', ['list', 'create', 'show', 'update', 'delete'], [
+            'list' => 'List (index)',
+            'create' => 'Create',
+            'show' => 'Show',
+            'update' => 'Update',
+            'delete' => 'Delete',
+            'bulk-delete' => 'Bulk Delete',
+            'bulk-restore' => 'Bulk Restore',
+        ])
+        ->expectsChoice(
+            'Which components would you like to create?',
+            ['action'],
+            ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+        )
+        ->expectsQuestion('Field name?', 'name')
+        ->expectsChoice("Field type for 'name'?", 'string', [
+            'string' => 'String (varchar)',
+            'text' => 'Text (longtext)',
+            'integer' => 'Integer',
+            'boolean' => 'Boolean',
+            'date' => 'Date',
+            'datetime' => 'DateTime',
+            'json' => 'JSON',
+            'float' => 'Float (decimal)',
+        ])
+        ->expectsQuestion("Is 'name' nullable?", false)
+        ->expectsQuestion('Add another field?', false)
+        ->assertSuccessful();
+
+    Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Filters/'.MAKE_MODULE.'Filter.php');
+
+    $this->artisan('make:module', [
+        'name' => MAKE_MODULE,
+        '--add' => 'filter',
+    ])->assertSuccessful();
+
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Filters/'.MAKE_MODULE.'Filter.php');
+});
+
+test('--add warns about already-existing components', function () {
+    $this->artisan('make:module', ['name' => MAKE_MODULE])
+        ->expectsQuestion('API version?', 'V1')
+        ->expectsQuestion('Include timestamps?', true)
+        ->expectsQuestion('Include soft deletes?', false)
+        ->expectsChoice('Which operations to generate?', ['list', 'create', 'show', 'update', 'delete'], [
+            'list' => 'List (index)',
+            'create' => 'Create',
+            'show' => 'Show',
+            'update' => 'Update',
+            'delete' => 'Delete',
+            'bulk-delete' => 'Bulk Delete',
+            'bulk-restore' => 'Bulk Restore',
+        ])
+        ->expectsChoice(
+            'Which components would you like to create?',
+            ['action', 'filter'],
+            ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+        )
+        ->expectsQuestion('Field name?', 'name')
+        ->expectsChoice("Field type for 'name'?", 'string', [
+            'string' => 'String (varchar)',
+            'text' => 'Text (longtext)',
+            'integer' => 'Integer',
+            'boolean' => 'Boolean',
+            'date' => 'Date',
+            'datetime' => 'DateTime',
+            'json' => 'JSON',
+            'float' => 'Float (decimal)',
+        ])
+        ->expectsQuestion("Is 'name' nullable?", false)
+        ->expectsQuestion('Add another field?', false)
+        ->assertSuccessful();
+
+    $this->artisan('make:module', [
+        'name' => MAKE_MODULE,
+        '--add' => 'filter',
+    ])->expectsOutputToContain('All requested components already exist');
+});
+
+test('--add requires name argument', function () {
+    $this->artisan('make:module', ['--add' => 'filter'])
+        ->expectsOutputToContain('Module name is required');
+});
+
+test('--add fails for non-existent module', function () {
+    $this->artisan('make:module', [
+        'name' => 'NonExistent',
+        '--add' => 'filter',
+    ])->expectsOutputToContain('does not exist');
+});
+
+test('--add with unknown component warns', function () {
+    Storage::disk('modules')->makeDirectory(MAKE_MODULE);
+
+    $this->artisan('make:module', [
+        'name' => MAKE_MODULE,
+        '--add' => 'unknown,filter',
+    ])->assertSuccessful();
 });

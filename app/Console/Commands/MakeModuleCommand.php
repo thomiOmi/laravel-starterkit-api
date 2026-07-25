@@ -23,9 +23,10 @@ use function Laravel\Prompts\suggest;
 use function Laravel\Prompts\table;
 use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
 
-#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
-#[Description('Create a new module with controllers, model, resource, tests, and optional components. Supports shorthand flags (-Ealmys) and --except to skip components.')]
+#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--A|add= : Comma-separated components to add to an existing module} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
+#[Description('Create a new module with controllers, model, resource, tests, and optional components. Supports shorthand flags (-Ealmys), --except to skip components, and --add to add components to existing modules.')]
 class MakeModuleCommand extends Command
 {
     private const array COMPONENTS = [
@@ -75,85 +76,122 @@ class MakeModuleCommand extends Command
     {
         $nameArg = is_string($this->argument('name')) ? $this->argument('name') : '';
         $except = (string) $this->option('except');
-        $hasFlags = $this->hasComponentFlags();
+        $add = (string) $this->option('add');
 
-        if ($except !== '' || $hasFlags) {
-            $name = $nameArg !== '' ? $nameArg : suggest(
-                label: 'What is the name of the module?',
-                options: $this->moduleDirectories(),
-                placeholder: 'E.g. Blog',
-                required: 'Name is required.',
-                validate: fn (string $value) => match (true) {
-                    strlen($value) < 3 => 'The name must be at least 3 characters.',
-                    strlen($value) > 255 => 'The name must not exceed 255 characters.',
-                    ! preg_match('/^[A-Za-z][a-zA-Z0-9]*$/', $value) => 'The name must contain only letters and numbers, and start with a letter.',
-                    default => null
-                },
-                hint: 'Name must start with a letter and contain only alphanumeric characters (e.g., MyName or myName). No spaces or special characters allowed.'
-            );
-
-            if ($name === '') {
-                error('Module name is required!');
-
-                return;
-            }
-
-            $name = Str::studly($name, normalize: true);
-            $version = $this->resolveVersion();
-
-            if ($version === null) {
-                return;
-            }
-
-            if (Storage::disk('modules')->exists($name) && ! $this->option('force')) {
-                if (confirm("Module {$name} already exists. Do you want to overwrite it?", default: false) !== true) {
-                    info('Aborted.');
-
-                    return;
-                }
-            }
-
-            $options = $this->resolveNonInteractiveOptions($except);
-            $schema = [];
-            $operations = array_keys(self::ALL_OPERATIONS);
-
-            $this->generate($name, $version, $schema, $options, $operations, timestamps: true, softDeletes: false);
+        if ($add !== '') {
+            $this->handleAddMode($nameArg, $add);
 
             return;
         }
 
+        if ($except !== '' || $this->hasExplicitComponentFlags()) {
+            $this->handleNonInteractive($nameArg, $except);
+
+            return;
+        }
+
+        $this->handleInteractive($nameArg);
+    }
+
+    private function handleNonInteractive(string $nameArg, string $except): void
+    {
+        $name = $nameArg !== '' ? $nameArg : $this->promptForName($this->existingModuleNames());
+
+        if ($name === '') {
+            return;
+        }
+
+        $name = Str::studly($name, normalize: true);
+        $version = $this->resolveVersion();
+
+        if ($version === null) {
+            return;
+        }
+
+        if (! $this->confirmOverwrite($name)) {
+            return;
+        }
+
+        $options = $this->resolveComponentOptions($except);
+        $operations = array_keys(self::ALL_OPERATIONS);
+
+        $this->generate($name, $version, [], $options, $operations, timestamps: true, softDeletes: false);
+    }
+
+    private function handleAddMode(string $nameArg, string $add): void
+    {
+        $components = array_map('trim', explode(',', $add));
+        $valid = array_keys(self::COMPONENTS);
+
+        $unknown = array_diff($components, $valid);
+        if ($unknown !== []) {
+            note('Unknown --add components: '.implode(', ', $unknown).'. Valid: '.implode(', ', $valid).'.');
+        }
+
+        $components = array_intersect($components, $valid);
+
+        if ($components === []) {
+            error('No valid components to add.');
+
+            return;
+        }
+
+        if ($nameArg === '') {
+            error('Module name is required when using --add.');
+
+            return;
+        }
+
+        $name = Str::studly($nameArg, normalize: true);
+
+        if (! Storage::disk('modules')->exists($name)) {
+            error("Module {$name} does not exist. Use make:module without --add to create a new module.");
+
+            return;
+        }
+
+        $version = $this->resolveVersion();
+
+        if ($version === null) {
+            return;
+        }
+
+        $missing = $this->detectMissingComponents($name, $components);
+
+        if ($missing === []) {
+            info("All requested components already exist in module {$name}.");
+
+            return;
+        }
+
+        note("Adding missing components to module {$name}: ".implode(', ', $missing).'.');
+
+        $options = [];
+        foreach ($valid as $key) {
+            $options[$key] = in_array($key, $missing, true);
+        }
+
+        $hasExistingActions = Storage::disk('modules')->exists("{$name}/Actions");
+        $operations = $hasExistingActions
+            ? $this->detectExistingOperations($name)
+            : array_keys(self::ALL_OPERATIONS);
+
+        $this->generate($name, $version, [], $options, $operations, timestamps: true, softDeletes: false);
+    }
+
+    private function handleInteractive(string $nameArg): void
+    {
         $responses = form()
             ->add(function () use ($nameArg) {
                 if ($nameArg !== '') {
                     return $nameArg;
                 }
 
-                return suggest(
-                    label: 'What is the name of the module?',
-                    options: $this->moduleDirectories(),
-                    placeholder: 'E.g. Blog',
-                    required: 'Name is required.',
-                    validate: fn (string $value) => match (true) {
-                        strlen($value) < 3 => 'The name must be at least 3 characters.',
-                        strlen($value) > 255 => 'The name must not exceed 255 characters.',
-                        ! preg_match('/^[A-Za-z][a-zA-Z0-9]*$/', $value) => 'The name must contain only letters and numbers, and start with a letter.',
-                        default => null
-                    },
-                    hint: 'Name must start with a letter and contain only alphanumeric characters (e.g., MyName or myName). No spaces or special characters allowed.'
-                );
+                return $this->promptForName($this->existingModuleNames());
             }, name: 'name')
             ->add(function (array $responses) {
-                $formName = is_string($responses['name']) ? $responses['name'] : '';
-                $name = Str::studly($formName, normalize: true);
-
-                if (Storage::disk('modules')->exists($name) && ! $this->option('force')) {
-                    return confirm(
-                        label: "Module {$name} already exists. Do you want to overwrite it?",
-                        default: false,
-                    );
-                }
-
-                return true;
+                /** @var array<string, mixed> $responses */
+                return $this->formOverwriteResponse($responses);
             }, name: 'overwrite')
             ->add(function () {
                 $supported = config('apiroute.supported_versions', ['V1']);
@@ -231,15 +269,125 @@ class MakeModuleCommand extends Command
             $options[$key] = in_array($key, $componentKeys, true);
         }
 
-        $schema = $this->promptSchema();
+        $schema = $this->promptForFields();
 
         $this->generate($name, $version, $schema, $options, $operations, $timestamps, $softDeletes);
     }
 
     /**
+     * @return array<int, string>
+     */
+    private function existingModuleNames(): array
+    {
+        /** @var array<int, string> $dirs */
+        $dirs = Storage::disk('modules')->directories();
+
+        return array_values(array_map(fn (string $path) => basename($path), $dirs));
+    }
+
+    /**
+     * @param  array<int, string>  $existing
+     */
+    private function promptForName(array $existing): string
+    {
+        return (string) suggest(
+            label: 'What is the module name?',
+            options: fn (string $value) => $value !== ''
+                ? array_values(array_filter(
+                    $existing,
+                    fn (mixed $name) => str_contains(Str::lower((string) $name), Str::lower($value)),
+                ))
+                : [],
+            placeholder: 'E.g. Partner, Category',
+            required: true,
+            hint: 'Type the module name. Existing modules shown as suggestions.',
+        );
+    }
+
+    private function confirmOverwrite(string $name): bool
+    {
+        if ($this->option('force') || ! Storage::disk('modules')->exists($name)) {
+            return true;
+        }
+
+        info("Module {$name} already exists.");
+
+        return (bool) confirm('Overwrite existing module?', default: false);
+    }
+
+    /**
+     * @param  array<string, mixed>  $responses
+     */
+    private function formOverwriteResponse(array $responses): bool
+    {
+        $name = is_string($responses['name']) ? $responses['name'] : '';
+        $studly = Str::studly($name, normalize: true);
+
+        if ($this->option('force') || ! Storage::disk('modules')->exists($studly)) {
+            return true;
+        }
+
+        warning("Module {$studly} already exists.");
+
+        return (bool) confirm('Overwrite existing module?', default: false);
+    }
+
+    /**
+     * @param  array<int, string>  $components
+     * @return array<int, string>
+     */
+    private function detectMissingComponents(string $name, array $components): array
+    {
+        return array_values(array_filter(
+            $components,
+            fn (string $key) => match ($key) {
+                'action' => ! Storage::disk('modules')->exists("{$name}/Actions"),
+                'filter' => ! Storage::disk('modules')->exists("{$name}/Filters"),
+                'migration' => ! Storage::disk('modules')->exists("{$name}/Database/Migrations"),
+                'factory' => ! Storage::disk('modules')->exists("{$name}/Database/Factories"),
+                'seeder' => ! Storage::disk('modules')->exists("{$name}/Database/Seeders"),
+                'event' => ! Storage::disk('modules')->exists("{$name}/Events"),
+                default => false,
+            },
+        ));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function detectExistingOperations(string $name): array
+    {
+        $existing = [];
+        $actionDir = "{$name}/Actions";
+        /** @var array<int, string> $files */
+        $files = Storage::disk('modules')->files($actionDir);
+
+        $patterns = [
+            'list' => '/List.*Action\.php$/',
+            'create' => '/Create.*Action\.php$/',
+            'show' => '/Show.*Action\.php$/',
+            'update' => '/Update.*Action\.php$/',
+            'delete' => '/Delete.*Action\.php$/',
+            'bulk-delete' => '/BulkDelete.*Action\.php$/',
+            'bulk-restore' => '/BulkRestore.*Action\.php$/',
+        ];
+
+        foreach ($patterns as $operation => $pattern) {
+            foreach ($files as $file) {
+                if (preg_match($pattern, $file)) {
+                    $existing[] = $operation;
+                    break;
+                }
+            }
+        }
+
+        return $existing;
+    }
+
+    /**
      * @return array<int, array{name: string, type: string, nullable: bool}>
      */
-    private function promptSchema(): array
+    private function promptForFields(): array
     {
         $fields = [];
         $first = true;
@@ -353,7 +501,7 @@ class MakeModuleCommand extends Command
         bool $softDeletes,
     ): bool {
         $pluralName = Str::plural($name);
-        $hasAction = $options['action'] && $this->hasMutateOperations($operations);
+        $hasAction = $options['action'] && $this->hasWriteOperations($operations);
 
         $replacements = [
             'Module' => $name,
@@ -386,12 +534,40 @@ class MakeModuleCommand extends Command
             'testUpdateData' => $this->renderTestUpdateData($schema),
         ];
 
+        foreach ([
+            'createCoreFiles',
+            'createControllerAndResourceFiles',
+            'createActionFiles',
+            'createTestFiles',
+            'createOptionalFiles',
+        ] as $method) {
+            if (! $this->{$method}($name, $version, $replacements, $options, $operations, $hasAction)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, string>  $replacements
+     * @param  array<string, bool>  $options
+     * @param  array<int, string>  $operations
+     */
+    private function createCoreFiles(
+        string $name,
+        string $version,
+        array $replacements,
+        array $options,
+        array $operations,
+        bool $hasAction,
+    ): bool {
         if (! $this->putStub("{$name}/Providers/{$name}ServiceProvider.php", 'provider', $replacements)) {
             return false;
         }
 
         if (! $this->putStub("{$name}/Routes/{$version}.php", 'route', array_merge($replacements, [
-            'routesContent' => $this->getRoutesContent($name, $version, $operations),
+            'routesContent' => $this->buildRoutesContent($name, $version, $operations),
         ]))) {
             return false;
         }
@@ -400,6 +576,26 @@ class MakeModuleCommand extends Command
             return false;
         }
 
+        if (! $this->putStub("{$name}/Resources/{$name}Resource.php", 'resource', $replacements)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, string>  $replacements
+     * @param  array<string, bool>  $options
+     * @param  array<int, string>  $operations
+     */
+    private function createControllerAndResourceFiles(
+        string $name,
+        string $version,
+        array $replacements,
+        array $options,
+        array $operations,
+        bool $hasAction,
+    ): bool {
         if (in_array('list', $operations, true)) {
             if (! $this->putStub("{$name}/Controllers/{$version}/ListController.php", 'controller.list', $replacements)) {
                 return false;
@@ -410,95 +606,156 @@ class MakeModuleCommand extends Command
             }
         }
 
-        if (! $this->putStub("{$name}/Resources/{$name}Resource.php", 'resource', $replacements)) {
-            return false;
-        }
-
-        if ($hasAction) {
-            if (in_array('list', $operations, true)) {
-                if (! $this->putStub("{$name}/Actions/List{$pluralName}Action.php", 'action.list', $replacements)) {
-                    return false;
-                }
+        foreach (['create', 'update'] as $action) {
+            if (! in_array($action, $operations, true)) {
+                continue;
             }
 
-            foreach (['create', 'update'] as $action) {
-                if (! in_array($action, $operations, true)) {
-                    continue;
-                }
+            $actionPascal = Str::studly($action);
+            $actionReplacements = array_merge($replacements, ['Action' => $actionPascal]);
 
-                $actionPascal = Str::studly($action);
-                $actionReplacements = array_merge($replacements, ['Action' => $actionPascal]);
-
-                if (! $this->putStub("{$name}/Controllers/{$version}/{$actionPascal}Controller.php", "controller.{$action}", $actionReplacements)) {
-                    return false;
-                }
-
-                if (! $this->putStub("{$name}/Actions/{$actionPascal}{$name}Action.php", "action.{$action}", $actionReplacements)) {
-                    return false;
-                }
-
-                if (! $this->putStub("{$name}/Payloads/{$version}/{$actionPascal}{$name}Payload.php", 'payload.mutate', $actionReplacements)) {
-                    return false;
-                }
-
-                if (! $this->putStub("{$name}/Requests/{$version}/{$actionPascal}{$name}Request.php", 'request.mutate', $actionReplacements)) {
-                    return false;
-                }
-            }
-
-            if (in_array('show', $operations, true)) {
-                if (! $this->putStub("{$name}/Controllers/{$version}/ShowController.php", 'controller.show', $replacements)) {
-                    return false;
-                }
-
-                if (! $this->putStub("{$name}/Actions/Show{$name}Action.php", 'action.show', $replacements)) {
-                    return false;
-                }
-            }
-
-            if (in_array('delete', $operations, true)) {
-                if (! $this->putStub("{$name}/Controllers/{$version}/DeleteController.php", 'controller.destroy', $replacements)) {
-                    return false;
-                }
-
-                if (! $this->putStub("{$name}/Actions/Delete{$name}Action.php", 'action.destroy', $replacements)) {
-                    return false;
-                }
-            }
-
-            if (in_array('bulk-delete', $operations, true)) {
-                if (! $this->putStub("{$name}/Controllers/{$version}/BulkDeleteController.php", 'controller.bulk-delete', $replacements)) {
-                    return false;
-                }
-
-                if (! $this->putStub("{$name}/Actions/BulkDelete{$pluralName}Action.php", 'action.bulk-delete', $replacements)) {
-                    return false;
-                }
-            }
-
-            if (in_array('bulk-restore', $operations, true)) {
-                if (! $this->putStub("{$name}/Controllers/{$version}/BulkRestoreController.php", 'controller.bulk-restore', $replacements)) {
-                    return false;
-                }
-
-                if (! $this->putStub("{$name}/Actions/BulkRestore{$pluralName}Action.php", 'action.bulk-restore', $replacements)) {
-                    return false;
-                }
-            }
-
-            if (! $this->putStub(
-                "{$name}/Tests/Unit/{$name}ActionTest.php",
-                'test.action-unit',
-                $replacements
-            )) {
+            if (! $this->putStub("{$name}/Controllers/{$version}/{$actionPascal}Controller.php", "controller.{$action}", $actionReplacements)) {
                 return false;
             }
+        }
+
+        if (in_array('show', $operations, true)) {
+            if (! $this->putStub("{$name}/Controllers/{$version}/ShowController.php", 'controller.show', $replacements)) {
+                return false;
+            }
+        }
+
+        if (in_array('delete', $operations, true)) {
+            if (! $this->putStub("{$name}/Controllers/{$version}/DeleteController.php", 'controller.destroy', $replacements)) {
+                return false;
+            }
+        }
+
+        if (in_array('bulk-delete', $operations, true)) {
+            if (! $this->putStub("{$name}/Controllers/{$version}/BulkDeleteController.php", 'controller.bulk-delete', $replacements)) {
+                return false;
+            }
+        }
+
+        if (in_array('bulk-restore', $operations, true)) {
+            if (! $this->putStub("{$name}/Controllers/{$version}/BulkRestoreController.php", 'controller.bulk-restore', $replacements)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, string>  $replacements
+     * @param  array<string, bool>  $options
+     * @param  array<int, string>  $operations
+     */
+    private function createActionFiles(
+        string $name,
+        string $version,
+        array $replacements,
+        array $options,
+        array $operations,
+        bool $hasAction,
+    ): bool {
+        if (! $hasAction) {
+            return true;
+        }
+
+        $pluralName = Str::plural($name);
+
+        if (in_array('list', $operations, true)) {
+            if (! $this->putStub("{$name}/Actions/List{$pluralName}Action.php", 'action.list', $replacements)) {
+                return false;
+            }
+        }
+
+        foreach (['create', 'update'] as $action) {
+            if (! in_array($action, $operations, true)) {
+                continue;
+            }
+
+            $actionPascal = Str::studly($action);
+            $actionReplacements = array_merge($replacements, ['Action' => $actionPascal]);
+
+            if (! $this->putStub("{$name}/Actions/{$actionPascal}{$name}Action.php", "action.{$action}", $actionReplacements)) {
+                return false;
+            }
+
+            if (! $this->putStub("{$name}/Payloads/{$version}/{$actionPascal}{$name}Payload.php", 'payload.mutate', $actionReplacements)) {
+                return false;
+            }
+
+            if (! $this->putStub("{$name}/Requests/{$version}/{$actionPascal}{$name}Request.php", 'request.mutate', $actionReplacements)) {
+                return false;
+            }
+        }
+
+        if (in_array('show', $operations, true)) {
+            if (! $this->putStub("{$name}/Actions/Show{$name}Action.php", 'action.show', $replacements)) {
+                return false;
+            }
+        }
+
+        if (in_array('delete', $operations, true)) {
+            if (! $this->putStub("{$name}/Actions/Delete{$name}Action.php", 'action.destroy', $replacements)) {
+                return false;
+            }
+        }
+
+        if (in_array('bulk-delete', $operations, true)) {
+            if (! $this->putStub("{$name}/Actions/BulkDelete{$pluralName}Action.php", 'action.bulk-delete', $replacements)) {
+                return false;
+            }
+        }
+
+        if (in_array('bulk-restore', $operations, true)) {
+            if (! $this->putStub("{$name}/Actions/BulkRestore{$pluralName}Action.php", 'action.bulk-restore', $replacements)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, string>  $replacements
+     * @param  array<string, bool>  $options
+     * @param  array<int, string>  $operations
+     */
+    private function createTestFiles(
+        string $name,
+        string $version,
+        array $replacements,
+        array $options,
+        array $operations,
+        bool $hasAction,
+    ): bool {
+        if (! $this->putStub("{$name}/Tests/Unit/{$name}UnitTest.php", 'test.unit', $replacements)) {
+            return false;
         }
 
         if (! $this->putStub("{$name}/Tests/Feature/{$version}/{$name}Test.php", 'test.feature', $replacements)) {
             return false;
         }
 
+        return true;
+    }
+
+    /**
+     * @param  array<string, string>  $replacements
+     * @param  array<string, bool>  $options
+     * @param  array<int, string>  $operations
+     */
+    private function createOptionalFiles(
+        string $name,
+        string $version,
+        array $replacements,
+        array $options,
+        array $operations,
+        bool $hasAction,
+    ): bool {
         if ($options['filter'] && ! $this->putStub("{$name}/Filters/{$name}Filter.php", 'filter', $replacements)) {
             return false;
         }
@@ -521,7 +778,7 @@ class MakeModuleCommand extends Command
             $fileName = now()->format('Y_m_d_His')."_create_{$tableName}_table.php";
 
             if (! $this->putStub("{$migrationPath}/{$fileName}", 'migration', array_merge($replacements, [
-                'idColumn' => $this->getMigrationIdColumn(),
+                'idColumn' => '$table->ulid(\'id\')->primary();',
             ]))) {
                 return false;
             }
@@ -545,11 +802,11 @@ class MakeModuleCommand extends Command
     /**
      * @param  array<int, string>  $operations
      */
-    private function hasMutateOperations(array $operations): bool
+    private function hasWriteOperations(array $operations): bool
     {
-        $mutateOps = ['create', 'update', 'show', 'delete', 'bulk-delete', 'bulk-restore'];
+        $writeOps = ['create', 'update', 'show', 'delete', 'bulk-delete', 'bulk-restore'];
 
-        return array_intersect($operations, $mutateOps) !== [];
+        return array_intersect($operations, $writeOps) !== [];
     }
 
     private function resolveVersion(): ?string
@@ -567,7 +824,7 @@ class MakeModuleCommand extends Command
         return $version;
     }
 
-    private function hasComponentFlags(): bool
+    private function hasExplicitComponentFlags(): bool
     {
         foreach (array_keys(self::COMPONENTS) as $name) {
             if ($this->option($name) === true) {
@@ -581,7 +838,7 @@ class MakeModuleCommand extends Command
     /**
      * @return array<string, bool>
      */
-    private function resolveNonInteractiveOptions(string $except): array
+    private function resolveComponentOptions(string $except): array
     {
         $excepted = $except !== '' ? array_map('trim', explode(',', $except)) : [];
 
@@ -621,11 +878,11 @@ class MakeModuleCommand extends Command
         ];
 
         $directories[] = "{$name}/Requests/{$version}";
+        $directories[] = "{$name}/Tests/Unit";
 
         if ($options['action']) {
             $directories[] = "{$name}/Actions";
             $directories[] = "{$name}/Payloads/{$version}";
-            $directories[] = "{$name}/Tests/Unit";
         }
 
         if ($options['filter']) {
@@ -679,7 +936,7 @@ class MakeModuleCommand extends Command
     /**
      * @param  array<int, string>  $operations
      */
-    private function getRoutesContent(string $name, string $version, array $operations): string
+    private function buildRoutesContent(string $name, string $version, array $operations): string
     {
         $namespace = "Modules\\{$name}\\Controllers\\{$version}";
         $param = Str::lcfirst($name);
@@ -740,22 +997,6 @@ Route::prefix('{$slug}')->middleware(['auth:sanctum', 'throttle:api'])->name('{$
 {$routeBlock}
 });
 PHP;
-    }
-
-    private function getMigrationIdColumn(): string
-    {
-        return '$table->ulid(\'id\')->primary();';
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function moduleDirectories(): array
-    {
-        /** @var array<int, string> $directories */
-        $directories = Storage::disk('modules')->directories();
-
-        return $directories;
     }
 
     /**
