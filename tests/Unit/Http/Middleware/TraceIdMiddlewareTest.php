@@ -8,46 +8,40 @@ use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
-test('adds X-Trace-ID header to response', function () {
-    $middleware = new TraceIdMiddleware;
+describe('TraceIdMiddleware', function () {
 
-    $response = $middleware->handle(new Request, fn ($req): Response => new Response('OK'));
+    it('adds X-Trace-ID header to response', function () {
+        $response = (new TraceIdMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'));
 
-    expect($response->headers->has('X-Trace-ID'))->toBeTrue();
-    expect($response->headers->get('X-Trace-ID'))->toBeString()->not->toBeEmpty();
-});
+        expect($response->headers->has('X-Trace-ID'))->toBeTrue();
+        expect($response->headers->get('X-Trace-ID'))->toBeString()->not->toBeEmpty();
+    });
 
-test('trace ID is a ULID', function () {
-    $middleware = new TraceIdMiddleware;
+    it('trace ID is a ULID', function () {
+        $response = (new TraceIdMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'));
 
-    $response = $middleware->handle(new Request, fn ($req): Response => new Response('OK'));
+        expect(Str::isUlid($response->headers->get('X-Trace-ID')))->toBeTrue();
+    });
 
-    $traceId = $response->headers->get('X-Trace-ID');
-    expect(Str::isUlid($traceId))->toBeTrue();
-});
+    it('adds trace ID to Laravel Context', function () {
+        $response = (new TraceIdMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'));
 
-test('adds trace ID to Laravel Context', function () {
-    $middleware = new TraceIdMiddleware;
+        $traceId = $response->headers->get('X-Trace-ID');
 
-    $response = $middleware->handle(new Request, fn ($req): Response => new Response('OK'));
+        expect(Context::get('trace_id'))->toBe($traceId);
+    });
 
-    $contextTraceId = Context::get('trace_id');
-    expect($contextTraceId)->toBe($response->headers->get('X-Trace-ID'));
-});
+    it('trace ID is unique per request', function () {
+        $first = (new TraceIdMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'))->headers->get('X-Trace-ID');
+        $second = (new TraceIdMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'))->headers->get('X-Trace-ID');
 
-test('trace ID is unique per request', function () {
-    $middleware = new TraceIdMiddleware;
+        expect($first)->not->toBe($second);
+    });
 
-    $first = $middleware->handle(new Request, fn ($req): Response => new Response('OK'))->headers->get('X-Trace-ID');
-    $second = $middleware->handle(new Request, fn ($req): Response => new Response('OK'))->headers->get('X-Trace-ID');
+    it('does not modify existing response content', function () {
+        $response = (new TraceIdMiddleware)->handle(new Request, fn ($req): Response => new Response('Original body'));
 
-    expect($first)->not->toBe($second);
-});
+        expect($response->getContent())->toBe('Original body');
+    });
 
-test('does not modify existing response content', function () {
-    $middleware = new TraceIdMiddleware;
-
-    $response = $middleware->handle(new Request, fn ($req): Response => new Response('Original body'));
-
-    expect($response->getContent())->toBe('Original body');
 });

@@ -15,28 +15,26 @@ final readonly class FormatDateTester
     }
 }
 
-test('formats DateTimeInterface to Y-m-d H:i:s', function () {
-    $tester = new FormatDateTester;
-    $date = new DateTimeImmutable('2026-07-26 15:30:00');
+describe('FormatDate', function () {
 
-    expect($tester->run($date))->toBe('2026-07-26 15:30:00');
-});
+    it('formats DateTimeInterface to Y-m-d H:i:s', function () {
+        $date = new DateTimeImmutable('2026-07-26 15:30:00');
 
-test('formats date string to Y-m-d H:i:s', function () {
-    $tester = new FormatDateTester;
+        expect((new FormatDateTester)->run($date))->toBe('2026-07-26 15:30:00');
+    });
 
-    expect($tester->run('2026-07-26 15:30:00'))->toBe('2026-07-26 15:30:00');
-});
+    it('formats date string to Y-m-d H:i:s', function () {
+        expect((new FormatDateTester)->run('2026-07-26 15:30:00'))->toBe('2026-07-26 15:30:00');
+    });
 
-test('returns null for null input', function () {
-    $tester = new FormatDateTester;
+    it('returns null for null input', function () {
+        expect((new FormatDateTester)->run(null))->toBeNull();
+    });
 
-    expect($tester->run(null))->toBeNull();
-});
+    it('formats Carbon instance correctly', function () {
+        $carbon = Carbon::parse('2026-07-26 15:30:00');
 
-test('formats Carbon instance correctly', function () {
-    $tester = new FormatDateTester;
-    $carbon = Carbon::parse('2026-07-26 15:30:00');
+        expect((new FormatDateTester)->run($carbon))->toBe('2026-07-26 15:30:00');
+    });
 
-    expect($tester->run($carbon))->toBe('2026-07-26 15:30:00');
 });

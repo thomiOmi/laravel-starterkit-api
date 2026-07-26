@@ -4,17 +4,26 @@ declare(strict_types=1);
 
 use App\Models\Sanctum\PersonalAccessToken;
 
-test('has fillable attributes', function () {
-    $token = new PersonalAccessToken;
+describe('PersonalAccessToken', function () {
 
-    expect($token->getFillable())->toContain('ip_address', 'user_agent');
-});
+    describe('fillable', function () {
+        it('includes ip_address', function () {
+            expect((new PersonalAccessToken)->getFillable())->toContain('ip_address', 'user_agent');
+        });
+    });
 
-test('has casts defined', function () {
-    $token = new PersonalAccessToken;
-    $casts = $token->getCasts();
+    describe('casts', function () {
+        it('casts abilities to json', function () {
+            expect((new PersonalAccessToken)->getCasts()['abilities'])->toBe('json');
+        });
 
-    expect($casts['abilities'])->toBe('json');
-    expect($casts['last_used_at'])->toBe('datetime');
-    expect($casts['expires_at'])->toBe('datetime');
+        it('casts last_used_at to datetime', function () {
+            expect((new PersonalAccessToken)->getCasts()['last_used_at'])->toBe('datetime');
+        });
+
+        it('casts expires_at to datetime', function () {
+            expect((new PersonalAccessToken)->getCasts()['expires_at'])->toBe('datetime');
+        });
+    });
+
 });

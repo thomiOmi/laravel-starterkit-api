@@ -19,38 +19,39 @@ final readonly class PasswordRulesTester
     }
 }
 
-test('password rules include required by default', function () {
-    $rules = (new PasswordRulesTester)->runPasswordRules();
+describe('PasswordValidationRules', function () {
 
-    expect($rules)->toContain('required');
-    expect($rules)->toContain('string');
-    expect($rules)->toContain('confirmed');
-});
+    describe('password rules', function () {
+        it('include required by default', function () {
+            $rules = (new PasswordRulesTester)->runPasswordRules();
 
-test('password rules exclude required when set to false', function () {
-    $rules = (new PasswordRulesTester)->runPasswordRules(required: false);
+            expect($rules)->toContain('required', 'string', 'confirmed');
+        });
 
-    expect($rules)->toContain('nullable');
-    expect($rules)->not->toContain('required');
-});
+        it('exclude required when set to false', function () {
+            $rules = (new PasswordRulesTester)->runPasswordRules(required: false);
 
-test('password rules exclude confirmed when set to false', function () {
-    $rules = (new PasswordRulesTester)->runPasswordRules(confirmed: false);
+            expect($rules)->toContain('nullable');
+            expect($rules)->not->toContain('required');
+        });
 
-    expect($rules)->not->toContain('confirmed');
-});
+        it('exclude confirmed when set to false', function () {
+            $rules = (new PasswordRulesTester)->runPasswordRules(confirmed: false);
 
-test('password rules exclude validation when set to false', function () {
-    $rules = (new PasswordRulesTester)->runPasswordRules(validate: false, confirmed: false);
+            expect($rules)->not->toContain('confirmed');
+        });
 
-    expect($rules)->toHaveCount(3);
-    expect($rules[0])->toBe('required');
-    expect($rules[1])->toBe('string');
-    expect($rules[2])->toBe('max:255');
-});
+        it('exclude validation when set to false', function () {
+            $rules = (new PasswordRulesTester)->runPasswordRules(validate: false, confirmed: false);
 
-test('current password rules are always the same', function () {
-    $rules = (new PasswordRulesTester)->runCurrentPasswordRules();
+            expect($rules)->toBe(['required', 'string', 'max:255']);
+        });
+    });
 
-    expect($rules)->toBe(['required', 'string', 'max:255', 'current_password']);
+    describe('current password rules', function () {
+        it('are always the same', function () {
+            expect((new PasswordRulesTester)->runCurrentPasswordRules())->toBe(['required', 'string', 'max:255', 'current_password']);
+        });
+    });
+
 });

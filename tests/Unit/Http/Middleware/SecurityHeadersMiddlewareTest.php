@@ -8,53 +8,43 @@ use Symfony\Component\HttpFoundation\Response;
 
 function handleMiddleware(Request $request): Response
 {
-    $middleware = new SecurityHeadersMiddleware;
-
-    return $middleware->handle($request, fn ($req): Response => new Response('OK'));
+    return (new SecurityHeadersMiddleware)->handle($request, fn ($req): Response => new Response('OK'));
 }
 
-test('sets X-Content-Type-Options header', function () {
-    $response = handleMiddleware(new Request);
+describe('SecurityHeadersMiddleware', function () {
 
-    expect($response->headers->get('X-Content-Type-Options'))->toBe('nosniff');
-});
+    it('sets X-Content-Type-Options header', function () {
+        expect(handleMiddleware(new Request)->headers->get('X-Content-Type-Options'))->toBe('nosniff');
+    });
 
-test('sets Referrer-Policy header', function () {
-    $response = handleMiddleware(new Request);
+    it('sets Referrer-Policy header', function () {
+        expect(handleMiddleware(new Request)->headers->get('Referrer-Policy'))->toBe('strict-origin-when-cross-origin');
+    });
 
-    expect($response->headers->get('Referrer-Policy'))->toBe('strict-origin-when-cross-origin');
-});
+    it('sets X-Frame-Options header', function () {
+        expect(handleMiddleware(new Request)->headers->get('X-Frame-Options'))->toBe('DENY');
+    });
 
-test('sets X-Frame-Options header', function () {
-    $response = handleMiddleware(new Request);
+    it('sets Permissions-Policy header', function () {
+        expect(handleMiddleware(new Request)->headers->get('Permissions-Policy'))->toBe('camera=(), microphone=(), geolocation=()');
+    });
 
-    expect($response->headers->get('X-Frame-Options'))->toBe('DENY');
-});
+    it('does not add HSTS in non-production environment', function () {
+        expect(handleMiddleware(new Request)->headers->has('Strict-Transport-Security'))->toBeFalse();
+    });
 
-test('sets Permissions-Policy header', function () {
-    $response = handleMiddleware(new Request);
+    it('adds HSTS in production environment', function () {
+        app()->detectEnvironment(fn () => 'production');
 
-    expect($response->headers->get('Permissions-Policy'))->toBe('camera=(), microphone=(), geolocation=()');
-});
+        expect(handleMiddleware(new Request)->headers->get('Strict-Transport-Security'))->toBe('max-age=31536000; includeSubDomains');
+    });
 
-test('does not add HSTS in non-production environment', function () {
-    $response = handleMiddleware(new Request);
+    it('does not modify existing response content', function () {
+        $middleware = new SecurityHeadersMiddleware;
 
-    expect($response->headers->has('Strict-Transport-Security'))->toBeFalse();
-});
+        $response = $middleware->handle(new Request, fn ($req): Response => new Response('Original body'));
 
-test('adds HSTS in production environment', function () {
-    app()->detectEnvironment(fn () => 'production');
+        expect($response->getContent())->toBe('Original body');
+    });
 
-    $response = handleMiddleware(new Request);
-
-    expect($response->headers->get('Strict-Transport-Security'))->toBe('max-age=31536000; includeSubDomains');
-});
-
-test('does not modify existing response content', function () {
-    $middleware = new SecurityHeadersMiddleware;
-
-    $response = $middleware->handle(new Request, fn ($req): Response => new Response('Original body'));
-
-    expect($response->getContent())->toBe('Original body');
 });

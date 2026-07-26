@@ -12,62 +12,61 @@ beforeEach(function () {
     Cache::forget('app.available_locales');
 });
 
-test('sets locale from Accept-Language header when matching available locale', function () {
-    Cache::set('app.available_locales', ['en', 'id'], 86400);
+describe('SetLocaleMiddleware', function () {
 
-    $request = new Request;
-    $request->headers->set('Accept-Language', 'id');
-    $middleware = new SetLocaleMiddleware;
+    describe('locale resolution', function () {
+        it('sets locale from Accept-Language header when matching available locale', function () {
+            Cache::set('app.available_locales', ['en', 'id'], 86400);
 
-    $middleware->handle($request, fn ($req): Response => new Response('OK'));
+            $request = new Request;
+            $request->headers->set('Accept-Language', 'id');
+            (new SetLocaleMiddleware)->handle($request, fn ($req): Response => new Response('OK'));
 
-    expect(App::getLocale())->toBe('id');
-});
+            expect(App::getLocale())->toBe('id');
+        });
 
-test('falls back to default locale when Accept-Language has no match', function () {
-    config()->set('app.locale', 'en');
-    Cache::set('app.available_locales', ['en', 'id'], 86400);
+        it('falls back to default locale when Accept-Language has no match', function () {
+            config()->set('app.locale', 'en');
+            Cache::set('app.available_locales', ['en', 'id'], 86400);
 
-    $request = new Request;
-    $request->headers->set('Accept-Language', 'fr');
-    $middleware = new SetLocaleMiddleware;
+            $request = new Request;
+            $request->headers->set('Accept-Language', 'fr');
+            (new SetLocaleMiddleware)->handle($request, fn ($req): Response => new Response('OK'));
 
-    $middleware->handle($request, fn ($req): Response => new Response('OK'));
+            expect(App::getLocale())->toBe('en');
+        });
 
-    expect(App::getLocale())->toBe('en');
-});
+        it('picks highest quality matching locale', function () {
+            Cache::set('app.available_locales', ['en', 'id', 'de'], 86400);
 
-test('sets app locale from first matching accept language', function () {
-    Cache::set('app.available_locales', ['en', 'id', 'de'], 86400);
+            $request = new Request;
+            $request->headers->set('Accept-Language', 'de-DE,de;q=0.9,id;q=0.8');
+            (new SetLocaleMiddleware)->handle($request, fn ($req): Response => new Response('OK'));
 
-    $request = new Request;
-    $request->headers->set('Accept-Language', 'de-DE,de;q=0.9,id;q=0.8');
-    $middleware = new SetLocaleMiddleware;
+            expect(App::getLocale())->toBe('de');
+        });
 
-    $middleware->handle($request, fn ($req): Response => new Response('OK'));
+        it('persists locale for the rest of the request lifecycle', function () {
+            Cache::set('app.available_locales', ['id'], 86400);
 
-    expect(App::getLocale())->toBe('de');
-});
+            $request = new Request;
+            $request->headers->set('Accept-Language', 'id');
+            (new SetLocaleMiddleware)->handle($request, fn ($req): Response => new Response('OK'));
 
-test('caches locales from lang directory on first request', function () {
-    Cache::forget('app.available_locales');
+            expect(App::getLocale())->toBe('id');
+        });
+    });
 
-    $middleware = new SetLocaleMiddleware;
-    $middleware->handle(new Request, fn ($req): Response => new Response('OK'));
+    describe('caching', function () {
+        it('caches locales from lang directory on first request', function () {
+            Cache::forget('app.available_locales');
 
-    $cached = Cache::get('app.available_locales');
-    expect($cached)->toBeArray();
-    expect($cached)->toContain('en', 'id');
-});
+            (new SetLocaleMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'));
 
-test('persists locale for the rest of the request lifecycle', function () {
-    Cache::set('app.available_locales', ['id'], 86400);
+            $cached = Cache::get('app.available_locales');
+            expect($cached)->toBeArray();
+            expect($cached)->toContain('en', 'id');
+        });
+    });
 
-    $request = new Request;
-    $request->headers->set('Accept-Language', 'id');
-    $middleware = new SetLocaleMiddleware;
-
-    $middleware->handle($request, fn ($req): Response => new Response('OK'));
-
-    expect(App::getLocale())->toBe('id');
 });

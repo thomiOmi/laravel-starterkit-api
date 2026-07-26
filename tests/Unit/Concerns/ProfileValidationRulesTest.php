@@ -25,40 +25,44 @@ final readonly class ProfileRulesTester
     }
 }
 
-test('profile rules include name and email', function () {
-    $rules = (new ProfileRulesTester)->runProfileRules();
+describe('ProfileValidationRules', function () {
 
-    expect($rules)->toHaveKeys(['name', 'email']);
-});
+    describe('profile rules', function () {
+        it('include name and email', function () {
+            expect((new ProfileRulesTester)->runProfileRules())->toHaveKeys(['name', 'email']);
+        });
+    });
 
-test('name rules are required string max 255', function () {
-    expect((new ProfileRulesTester)->runNameRules())->toBe(['required', 'string', 'max:255']);
-});
+    describe('name rules', function () {
+        it('are required string max 255', function () {
+            expect((new ProfileRulesTester)->runNameRules())->toBe(['required', 'string', 'max:255']);
+        });
+    });
 
-test('email rules include required string email max 255', function () {
-    $rules = (new ProfileRulesTester)->runEmailRules();
+    describe('email rules', function () {
+        it('include required string email max 255', function () {
+            $rules = (new ProfileRulesTester)->runEmailRules();
 
-    expect($rules)->toContain('required', 'string', 'email', 'max:255');
-});
+            expect($rules)->toContain('required', 'string', 'email', 'max:255');
+        });
 
-test('email rules include unique rule when unique is true', function () {
-    $rules = (new ProfileRulesTester)->runEmailRules();
+        it('include unique rule when unique is true', function () {
+            $rules = (new ProfileRulesTester)->runEmailRules();
 
-    $hasUnique = collect($rules)->contains(fn (mixed $rule): bool => $rule instanceof Unique);
+            expect(collect($rules)->contains(fn (mixed $rule): bool => $rule instanceof Unique))->toBeTrue();
+        });
 
-    expect($hasUnique)->toBeTrue();
-});
+        it('exclude unique rule when unique is false', function () {
+            $rules = (new ProfileRulesTester)->runEmailRules(unique: false);
 
-test('email rules exclude unique rule when unique is false', function () {
-    $rules = (new ProfileRulesTester)->runEmailRules(unique: false);
+            expect(collect($rules)->contains(fn (mixed $rule): bool => $rule instanceof Unique))->toBeFalse();
+        });
 
-    $hasUnique = collect($rules)->contains(fn (mixed $rule): bool => $rule instanceof Unique);
+        it('ignores userId without unique', function () {
+            $rules = (new ProfileRulesTester)->runEmailRules(userId: '01ARZ3NDEKTSV4RRFFQ69G5FAV', unique: false);
 
-    expect($hasUnique)->toBeFalse();
-});
+            expect($rules)->toBe(['required', 'string', 'email', 'max:255']);
+        });
+    });
 
-test('email rules ignores userId without unique', function () {
-    $rules = (new ProfileRulesTester)->runEmailRules(userId: '01ARZ3NDEKTSV4RRFFQ69G5FAV', unique: false);
-
-    expect($rules)->toBe(['required', 'string', 'email', 'max:255']);
 });

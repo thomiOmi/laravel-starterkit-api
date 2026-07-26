@@ -4,27 +4,17 @@ declare(strict_types=1);
 
 use App\Enums\UserStatusEnum;
 
-test('has active status', function () {
-    expect(UserStatusEnum::Active->value)->toBe('active');
-});
+describe('UserStatusEnum', function () {
 
-test('has inactive status', function () {
-    expect(UserStatusEnum::Inactive->value)->toBe('inactive');
-});
+    it('has Active', fn () => expect(UserStatusEnum::Active->value)->toBe('active'));
+    it('has Inactive', fn () => expect(UserStatusEnum::Inactive->value)->toBe('inactive'));
+    it('has Pending', fn () => expect(UserStatusEnum::Pending->value)->toBe('pending'));
+    it('has Suspended', fn () => expect(UserStatusEnum::Suspended->value)->toBe('suspended'));
+    it('has Banned', fn () => expect(UserStatusEnum::Banned->value)->toBe('banned'));
 
-test('has pending status', function () {
-    expect(UserStatusEnum::Pending->value)->toBe('pending');
-});
+    it('is backed by string', function () {
+        expect(UserStatusEnum::tryFrom('pending'))->toBe(UserStatusEnum::Pending);
+        expect(UserStatusEnum::tryFrom('invalid'))->toBeNull();
+    });
 
-test('has suspended status', function () {
-    expect(UserStatusEnum::Suspended->value)->toBe('suspended');
-});
-
-test('has banned status', function () {
-    expect(UserStatusEnum::Banned->value)->toBe('banned');
-});
-
-test('is backed by string', function () {
-    expect(UserStatusEnum::tryFrom('pending'))->toBe(UserStatusEnum::Pending);
-    expect(UserStatusEnum::tryFrom('invalid'))->toBeNull();
 });

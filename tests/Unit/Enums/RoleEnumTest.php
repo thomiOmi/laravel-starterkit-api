@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 use App\Enums\RoleEnum;
 
-test('has super admin role', function () {
-    expect(RoleEnum::SuperAdmin->value)->toBe('super-admin');
-});
+describe('RoleEnum', function () {
 
-test('has admin role', function () {
-    expect(RoleEnum::Admin->value)->toBe('admin');
-});
+    it('has SuperAdmin', fn () => expect(RoleEnum::SuperAdmin->value)->toBe('super-admin'));
+    it('has Admin', fn () => expect(RoleEnum::Admin->value)->toBe('admin'));
+    it('has User', fn () => expect(RoleEnum::User->value)->toBe('user'));
 
-test('has user role', function () {
-    expect(RoleEnum::User->value)->toBe('user');
-});
+    it('is backed by string', function () {
+        expect(RoleEnum::tryFrom('admin'))->toBe(RoleEnum::Admin);
+        expect(RoleEnum::tryFrom('invalid'))->toBeNull();
+    });
 
-test('is backed by string', function () {
-    expect(RoleEnum::tryFrom('admin'))->toBe(RoleEnum::Admin);
-    expect(RoleEnum::tryFrom('invalid'))->toBeNull();
 });
