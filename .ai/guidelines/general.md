@@ -103,6 +103,6 @@
 | File/Dir | Managed by | Edit via |
 |---|---|---|
 | `AGENTS.md` | Laravel Boost (auto-generated) | **DO NOT** edit directly — edit `.ai/guidelines/` or `.ai/skills/` instead |
-| `.ai/guidelines/` | You (survives `boost:install`) | Edit directly — source files for AGENTS.md guidelines section |
-| `.ai/skills/` | You (survives `boost:install`) | Edit directly — Boost-managed agent skills |
+| `.ai/guidelines/` | You (survives `boost:update`) | Edit directly — source files for AGENTS.md guidelines section |
+| `.ai/skills/` | You (survives `boost:update`) | Edit directly — Boost-managed agent skills |
 | `.agents/` | AI agent's skill/rules system | **DO NOT** edit directly — let the AI agent manage it |
