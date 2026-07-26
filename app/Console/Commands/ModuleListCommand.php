@@ -9,6 +9,9 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
+use function Laravel\Prompts\error;
+use function Laravel\Prompts\table;
+
 #[Signature('module:list')]
 #[Description('List all modules and their status')]
 class ModuleListCommand extends Command
@@ -21,7 +24,7 @@ class ModuleListCommand extends Command
         $modulesPath = base_path('modules');
 
         if (! File::isDirectory($modulesPath)) {
-            $this->error('Modules directory not found.');
+            error('Modules directory not found.');
 
             return;
         }
@@ -51,17 +54,17 @@ class ModuleListCommand extends Command
 
             $data[] = [
                 $name,
-                $hasProvider ? '<fg=green>Active</>' : '<fg=red>Inactive</>',
-                $controllers,
-                $actions,
-                $payloads,
-                $filters,
-                $migrations,
-                $hasRoutes ? '<fg=green>Yes</>' : '<fg=red>No</>',
+                $hasProvider ? 'Active' : 'Inactive',
+                (string) $controllers,
+                (string) $actions,
+                (string) $payloads,
+                (string) $filters,
+                (string) $migrations,
+                $hasRoutes ? 'Yes' : 'No',
             ];
         }
 
-        $this->table(
+        table(
             ['Module Name', 'Status', 'Ctlr', 'Actn', 'Pld', 'Flt', 'Migr', 'Rte'],
             $data
         );
