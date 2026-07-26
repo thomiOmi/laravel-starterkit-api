@@ -33,7 +33,7 @@ final readonly class BulkDeleteUsersAction
         if ($currentUser === null || ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
             $ids = User::query()
                 ->whereIn('id', $ids)
-                ->whereDoesntHave('roles', function ($q): void {
+                ->whereDoesntHave('roles', function (Builder $q): void {
                     /** @var Builder<Role> $q */
                     $q->where('name', RoleEnum::SuperAdmin->value);
                 })

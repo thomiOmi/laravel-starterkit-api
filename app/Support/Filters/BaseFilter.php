@@ -405,7 +405,7 @@ abstract class BaseFilter
     {
         if (is_array($value)) {
             $values = collect($value)
-                ->filter(fn ($v): bool => is_string($v) && $v !== '')
+                ->filter(fn (mixed $v): bool => is_string($v) && $v !== '')
                 ->values()
                 ->all();
 

@@ -28,7 +28,7 @@ final readonly class BulkRestoreUsersAction
             $ids = User::query()
                 ->onlyTrashed()
                 ->whereIn('id', $ids)
-                ->whereDoesntHave('roles', function ($q): void {
+                ->whereDoesntHave('roles', function (Builder $q): void {
                     /** @var Builder<Role> $q */
                     $q->where('name', RoleEnum::SuperAdmin->value);
                 })

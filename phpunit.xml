@@ -5,8 +5,10 @@
     colors="true"
     cacheDirectory=".phpunit.cache"
     beStrictAboutOutputDuringTests="true"
+    beStrictAboutCoverageMetadata="true"
     failOnWarning="true"
     failOnRisky="true"
+    pathCoverage="true"
 >
     <testsuites>
         <testsuite name="Architecture">
@@ -24,8 +26,8 @@
     </testsuites>
     <source>
         <include>
-            <directory>app</directory>
-            <directory>modules</directory>
+            <directory suffix=".php">app</directory>
+            <directory suffix=".php">modules</directory>
         </include>
         <exclude>
             <directory>app/Providers</directory>
