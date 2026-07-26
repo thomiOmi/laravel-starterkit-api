@@ -8,7 +8,6 @@
     beStrictAboutCoverageMetadata="true"
     failOnWarning="true"
     failOnRisky="true"
-    pathCoverage="true"
 >
     <testsuites>
         <testsuite name="Architecture">
