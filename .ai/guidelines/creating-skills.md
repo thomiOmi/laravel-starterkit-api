@@ -8,18 +8,19 @@ This project uses the [Agent Skills](https://agentskills.io) format for domain-s
 |---|---|---|
 | Location | `.ai/guidelines/*.md` | `.ai/skills/{name}/SKILL.md` |
 | Loaded | Upfront, always present | On-demand, when task matches description |
-| Scope | Broad conventions (coding standards, architecture) | Focused domain knowledge (testing, permissions, social auth) |
+| Scope | Broad conventions (e.g, coding standards, architecture) | Focused domain knowledge (e.g, testing, permissions, social auth) |
 
 ## Creating a Skill
 
 ### 1. Directory structure
 
-```
+```text
 .ai/skills/{skill-name}/
-  SKILL.md       -- Required: YAML frontmatter + instructions
-  references/    -- Optional: detailed docs loaded on-demand
-  scripts/       -- Optional: executable code
-  assets/        -- Optional: templates, resources
+├── SKILL.md          # Required: YAML frontmatter + metadata + instructions
+├── scripts/          # Optional: executable code
+├── references/       # Optional: documentation
+├── assets/           # Optional: templates, resources
+└── ...               # Any additional files or directories
 ```
 
 ### 2. SKILL.md format
@@ -50,14 +51,17 @@ Keep SKILL.md under 500 lines. Move detailed reference material to `references/`
 See [the reference guide](references/detail.md) for full documentation.
 ```
 
+More details. See [specification](https://agentskills.io/specification), [best practices](https://agentskills.io/skill-creation/best-practices), [optimizing descriptions](https://agentskills.io/skill-creation/optimizing-descriptions), [using scripts](https://agentskills.io/skill-creation/using-scripts)
+
 ## Creating a Guideline
 
 Add `.md` files to `.ai/guidelines/`. Guidelines are loaded upfront, so keep them concise (under 100 lines).
 
-```
+```text
 .ai/guidelines/
-  general.md           -- Project conventions (tech stack, API, testing, code quality)
-  creating-skills.md   -- This file
+├── general.md           # Project conventions (tech stack, API, testing, code quality)
+├── creating-skills.md   # This file
+└── ...                  # Any additional guidelines
 ```
 
 ## Managing with Boost
