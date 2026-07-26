@@ -25,8 +25,8 @@ use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
-#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--A|add= : Comma-separated components to add to an existing module} {--T|tests=none : Generate test files (none,unit,feature,all)} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
-#[Description('Create a new module with controllers, model, resource, and optional components. Supports shorthand flags (-Talmys), --except to skip components, --add to add components to existing modules, and --tests to generate test stubs.')]
+#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--A|add= : Comma-separated components to add to an existing module} {--no-timestamps : Exclude timestamps columns (created_at, updated_at)} {--soft-deletes : Include soft deletes column (deleted_at)} {--T|tests=none : Generate test files (none,unit,feature,all)} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
+#[Description('Create a new module with controllers, model, resource, and optional components. Supports shorthand flags (-Talmys), --except to skip components, --add to add components to existing modules, --tests to generate test stubs, --no-timestamps, and --soft-deletes.')]
 class MakeModuleCommand extends Command
 {
     private const array COMPONENTS = [
@@ -117,7 +117,7 @@ class MakeModuleCommand extends Command
         $testsUnit = $this->parseTestsOption('unit');
         $testsFeature = $this->parseTestsOption('feature');
 
-        $this->generate($name, $version, [], $options, $operations, $testsUnit, $testsFeature, timestamps: true, softDeletes: false);
+        $this->generate($name, $version, [], $options, $operations, $testsUnit, $testsFeature, timestamps: ! $this->option('no-timestamps'), softDeletes: (bool) $this->option('soft-deletes'));
     }
 
     private function handleAddMode(string $nameArg, string $add): void
@@ -180,7 +180,7 @@ class MakeModuleCommand extends Command
         $testsUnit = $this->parseTestsOption('unit');
         $testsFeature = $this->parseTestsOption('feature');
 
-        $this->generate($name, $version, [], $options, $operations, $testsUnit, $testsFeature, timestamps: true, softDeletes: false);
+        $this->generate($name, $version, [], $options, $operations, $testsUnit, $testsFeature, timestamps: ! $this->option('no-timestamps'), softDeletes: (bool) $this->option('soft-deletes'));
     }
 
     private function parseTestsOption(string $type): bool
@@ -535,7 +535,7 @@ class MakeModuleCommand extends Command
         bool $softDeletes,
     ): bool {
         $pluralName = Str::plural($name);
-        $hasAction = $options['action'] && $this->hasWriteOperations($operations);
+        $hasAction = $options['action'] && $this->hasActionableOperations($operations);
 
         $replacements = [
             'Module' => $name,
@@ -564,12 +564,25 @@ class MakeModuleCommand extends Command
             'filterSorts' => $this->renderFilterSorts($schema),
             'filterAllowedFields' => $this->renderFilterAllowedFields($schema),
             'filterSearchableColumns' => $this->renderFilterSearchableColumns($schema),
+            'resourceTimestamps' => $timestamps
+                ? "            'created_at' => \$this->resource->created_at,\n            'updated_at' => \$this->resource->updated_at,\n"
+                : '',
+            'filterTimestamps' => $timestamps
+                ? "        'created_at',\n        'updated_at',\n"
+                : '',
         ];
+
+        if (! $softDeletes) {
+            $operations = array_values(array_filter(
+                $operations,
+                fn (string $op) => $op !== 'bulk-restore',
+            ));
+        }
 
         foreach ([
             'createCoreFiles',
-            'createControllerAndResourceFiles',
             'createActionFiles',
+            'createControllerAndResourceFiles',
             'createOptionalFiles',
         ] as $method) {
             if (! $this->{$method}($name, $version, $replacements, $options, $operations, $hasAction)) {
@@ -602,7 +615,7 @@ class MakeModuleCommand extends Command
         }
 
         if (! $this->putStub("{$name}/Routes/{$version}.php", 'route', array_merge($replacements, [
-            'routesContent' => $this->buildRoutesContent($name, $version, $operations),
+            'routesContent' => $this->buildRoutesContent($name, $version, $operations, $hasAction),
         ]))) {
             return false;
         }
@@ -631,6 +644,10 @@ class MakeModuleCommand extends Command
         array $operations,
         bool $hasAction,
     ): bool {
+        if (! $hasAction) {
+            return true;
+        }
+
         if (in_array('list', $operations, true)) {
             if (! $this->putStub("{$name}/Controllers/{$version}/ListController.php", 'controller.list', $replacements)) {
                 return false;
@@ -829,7 +846,7 @@ class MakeModuleCommand extends Command
             return false;
         }
 
-        if ($options['event'] && ! $this->putStub("{$name}/Events/{$name}Created.php", 'event', $replacements)) {
+        if ($options['event'] && ! $this->putStub("{$name}/Events/{$name}Event.php", 'event', $replacements)) {
             return false;
         }
 
@@ -839,7 +856,7 @@ class MakeModuleCommand extends Command
     /**
      * @param  array<int, string>  $operations
      */
-    private function hasWriteOperations(array $operations): bool
+    private function hasActionableOperations(array $operations): bool
     {
         $writeOps = ['create', 'update', 'show', 'delete', 'bulk-delete', 'bulk-restore'];
 
@@ -979,8 +996,12 @@ class MakeModuleCommand extends Command
     /**
      * @param  array<int, string>  $operations
      */
-    private function buildRoutesContent(string $name, string $version, array $operations): string
+    private function buildRoutesContent(string $name, string $version, array $operations, bool $hasAction): string
     {
+        if (! $hasAction) {
+            return '';
+        }
+
         $namespace = "Modules\\{$name}\\Controllers\\{$version}";
         $param = Str::lcfirst($name);
         $slug = Str::kebab(Str::plural($name));
@@ -1378,7 +1399,7 @@ PHP;
                 ['API Version', $version],
                 ['Timestamps', $timestamps ? 'Yes' : 'No'],
                 ['Soft Deletes', $softDeletes ? 'Yes' : 'No'],
-                ['Controllers', 'Created'],
+                ['Controllers', $options['action'] ? 'Created' : 'Skipped'],
                 ['Model', 'Created'],
                 ['Actions', $options['action'] ? 'Created' : 'Skipped'],
                 ['Payloads', $options['action'] ? 'Created' : 'Skipped'],

@@ -6,9 +6,7 @@ namespace Modules\{{Module}}\Controllers\{{Version}};
 
 use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Show{{Module}}Action;
-use Modules\{{Module}}\Models\{{Module}};
 use Modules\{{Module}}\Resources\{{Module}}Resource;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final readonly class ShowController
 {
@@ -24,12 +22,6 @@ final readonly class ShowController
     public function __invoke(string $id): SuccessResponse
     {
         ${{lowerResource}} = $this->show{{Module}}->handle($id);
-
-        if (${{lowerResource}} === null) {
-            throw new NotFoundHttpException(
-                __('general.resource_not_found', ['resource' => '{{Module}}'])
-            );
-        }
 
         return new SuccessResponse(
             data: new {{Module}}Resource(${{lowerResource}}),

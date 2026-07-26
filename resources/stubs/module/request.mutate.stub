@@ -18,6 +18,9 @@ final class {{Action}}{{Module}}Request extends FormRequest
      */
     public function authorize(): bool
     {
+        // TODO: Add authorization, e.g.:
+        // return auth()->user()?->can('{{Action}}', Model::class) ?? false;
+
         return true;
     }
 

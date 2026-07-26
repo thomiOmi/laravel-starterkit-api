@@ -190,6 +190,7 @@ test('respects --except flag', function () {
         ->assertSuccessful();
 
     Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Actions');
+    Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Controllers/V1/ListController.php');
     Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Filters');
     Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Database/Migrations');
     Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Database/Factories');
@@ -214,7 +215,7 @@ test('creates optional components when flags are passed', function () {
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Migrations');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Factories');
     Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Seeders');
-    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Events/'.MAKE_MODULE.'Created.php');
+    Storage::disk('modules')->assertExists(MAKE_MODULE.'/Events/'.MAKE_MODULE.'Event.php');
 });
 
 test('uses api-version option correctly', function () {

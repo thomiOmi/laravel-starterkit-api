@@ -15,10 +15,10 @@ final readonly class Show{{Module}}Action
      * Execute the show {{label}} action.
      *
      * @param  string  $id  The {{label}} ID.
-     * @return {{Module}}|null The {{label}} instance or null if not found.
+     * @return {{Module}} The {{label}} instance.
      */
-    public function handle(string $id): ?{{Module}}
+    public function handle(string $id): {{Module}}
     {
-        return {{Module}}::query()->find($id);
+        return {{Module}}::query()->findOrFail($id);
     }
 }

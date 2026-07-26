@@ -8,7 +8,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Modules\{{Module}}\Models\{{Module}};
 
-class {{Module}}Created
+class {{Module}}Event
 {
     use Dispatchable, SerializesModels;
 

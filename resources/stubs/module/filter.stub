@@ -23,9 +23,7 @@ class {{Module}}Filter extends BaseFilter
     /** @var array<int, string> */
     protected array $allowedFields = [
         'id',
-{{filterAllowedFields}}        'created_at',
-        'updated_at',
-    ];
+{{filterAllowedFields}}{{filterTimestamps}}    ];
 
     /** @var array<int, string> */
     protected array $searchableColumns = [

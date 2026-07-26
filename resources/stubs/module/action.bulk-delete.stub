@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Actions;
 
-use Illuminate\Contracts\Auth\Guard;
 use Modules\{{Module}}\Models\{{Module}};
 
 /**
@@ -12,10 +11,6 @@ use Modules\{{Module}}\Models\{{Module}};
  */
 final readonly class BulkDelete{{pluralModule}}Action
 {
-    public function __construct(
-        private Guard $auth,
-    ) {}
-
     /**
      * Execute the bulk delete {{labelPlural}} action.
      *
@@ -24,12 +19,6 @@ final readonly class BulkDelete{{pluralModule}}Action
      */
     public function handle(array $ids): int
     {
-        $ids = array_filter($ids, fn (string|int $id): bool => $id !== $this->auth->id());
-
-        if ($ids === []) {
-            return 0;
-        }
-
         /** @var int $count */
         $count = {{Module}}::whereIn('id', $ids)->delete();
 
