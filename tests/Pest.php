@@ -29,15 +29,3 @@ pest()
 pest()->beforeEach(function (): void {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
-
-expect()->pipe('toMatchSnapshot', function (Closure $next) {
-    if (is_string($this->value)) {
-        $this->value = preg_replace(
-            '/"timestamp":"[^"]+"/',
-            '"timestamp":"[dynamic]"',
-            $this->value,
-        );
-    }
-
-    return $next();
-});

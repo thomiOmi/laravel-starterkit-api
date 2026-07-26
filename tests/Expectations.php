@@ -102,3 +102,15 @@ expect()->extend('toHaveSunsetHeader', function (string $date) {
 
     return $this;
 });
+
+expect()->pipe('toMatchSnapshot', function (Closure $next) {
+    if (is_string($this->value)) {
+        $this->value = preg_replace(
+            '/"timestamp":"[^"]+"/',
+            '"timestamp":"[dynamic]"',
+            $this->value,
+        );
+    }
+
+    return $next();
+});

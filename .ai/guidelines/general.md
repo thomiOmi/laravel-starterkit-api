@@ -42,6 +42,27 @@
 - Use custom expectations: `toBeSuccessResponse(status)`, `toBeProblemResponse(status)`, `toBePaginated()`
 - Parallel test: `php artisan test --compact --parallel`
 
+### Testing Organization
+
+| Concern | Location | When |
+|---|---|---|
+| Custom expectations | `tests/Expectations.php` | Reusable `expect()->extend()` / `expect()->pipe()` |
+| Global helpers | `tests/Helpers.php` | Functions reused in 3+ test files |
+| File helpers | Inline in test file | Single-file use only |
+| Named datasets | `tests/Datasets/{Name}.php` | Used via `->with('name')` in 2+ tests |
+| Inline datasets | Inside `dataset()` in test file | Single `->with()` usage only |
+
+### describe() / it() / group()
+
+- **`describe()`** — Every test file MUST use `describe()` blocks to group logical concerns. Nesting is allowed for sub-grouping (e.g., `describe('fillable')` inside `describe('PersonalAccessToken')`). Description describes the unit under test or the behavior.
+- **`it()`** — All test cases use `it()` (never bare `test()`). Name describes expected behavior, not implementation — e.g., `it('returns 422 when email is missing')`.
+- **`group()`** — Use `->group('name', ...)` for cross-cutting categorization:
+  - `'smoke'` — critical-path tests for deployment validation
+  - `'slow'` — tests that take >5s
+  - `'integration'` — tests that hit external services
+  - `'module:{name}'` — e.g., `module:iam`, `module:billing`
+  - Add new groups sparingly; prefer `describe()` + `--filter` for most filtering needs
+
 ## Code Quality Rules
 
 - After writing PHP code, run: `./vendor/bin/pint --dirty --format agent`
