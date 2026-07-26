@@ -63,6 +63,18 @@
             "@php artisan serve",
             "@php artisan queue:listen --tries=1 --timeout=0"
         ],
+        "lint": "pint --parallel",
+        "lint:check": "pint --parallel --test",
+        "types:check": [
+            "phpstan analyse --memory-limit=512M",
+            "php -d memory_limit=512M artisan test --coverage --min=100"
+        ],
+        "ci:check": [
+            "@lint:check",
+            "@types:check",
+            "@test",
+            "@test:profanity"
+        ],
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
