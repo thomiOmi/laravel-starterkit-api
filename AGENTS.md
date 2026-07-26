@@ -65,7 +65,7 @@ Add `.md` files to `.ai/guidelines/`. Guidelines are loaded upfront, so keep the
 
 ## Managing with Boost
 
-Run `php artisan boost:install -n` to install Boost-provided guidelines and skills. All custom files in `.ai/` are preserved.
+Run `php artisan boost:update --discover` to install Boost-provided guidelines and skills. All custom files in `.ai/` are preserved.
 
 ## Existing Skills
 
@@ -122,6 +122,27 @@ Use the `skill` tool to load a skill when the task matches its description. List
 - Use custom expectations: `toBeSuccessResponse(status)`, `toBeProblemResponse(status)`, `toBePaginated()`
 - Parallel test: `php artisan test --compact --parallel`
 
+### Testing Organization
+
+| Concern | Location | When |
+|---|---|---|
+| Custom expectations | `tests/Expectations.php` | Reusable `expect()->extend()` / `expect()->pipe()` |
+| Global helpers | `tests/Helpers.php` | Functions reused in 3+ test files |
+| File helpers | Inline in test file | Single-file use only |
+| Named datasets | `tests/Datasets/{Name}.php` | Used via `->with('name')` in 2+ tests |
+| Inline datasets | Inside `dataset()` in test file | Single `->with()` usage only |
+
+### describe() / it() / group()
+
+- **`describe()`** — Every test file MUST use `describe()` blocks to group logical concerns. Nesting is allowed for sub-grouping (e.g., `describe('fillable')` inside `describe('PersonalAccessToken')`). Description describes the unit under test or the behavior.
+- **`it()`** — All test cases use `it()` (never bare `test()`). Name describes expected behavior, not implementation — e.g., `it('returns 422 when email is missing')`.
+- **`group()`** — Use `->group('name', ...)` for cross-cutting categorization:
+  - `'smoke'` — critical-path tests for deployment validation
+  - `'slow'` — tests that take >5s
+  - `'integration'` — tests that hit external services
+  - `'module:{name}'` — e.g., `module:iam`, `module:billing`
+  - Add new groups sparingly; prefer `describe()` + `--filter` for most filtering needs
+
 ## Code Quality Rules
 
 - After writing PHP code, run: `./vendor/bin/pint --dirty --format agent`
@@ -155,7 +176,7 @@ Use the `skill` tool to load a skill when the task matches its description. List
 - **Agent Skills**: Uses the [agentskills.io](https://agentskills.io) format for domain-specific expertise.
 - **Location**: Guidelines in `.ai/guidelines/`, Skills in `.ai/skills/`.
 - **Activation**: Guidelines are loaded upfront; Skills are activated on-demand via triggers (`skill` tool).
-- **Update**: Run `php artisan boost:install -n` to sync/re-apply all guidelines and skills.
+- **Update**: Run `php artisan boost:update --discover` to sync/re-apply all guidelines and skills.
 
 ## File Ownership Rules
 

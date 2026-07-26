@@ -62,7 +62,7 @@ Add `.md` files to `.ai/guidelines/`. Guidelines are loaded upfront, so keep the
 
 ## Managing with Boost
 
-Run `php artisan boost:install -n` to install Boost-provided guidelines and skills. All custom files in `.ai/` are preserved.
+Run `php artisan boost:update --discover` to install Boost-provided guidelines and skills. All custom files in `.ai/` are preserved.
 
 ## Existing Skills
 
