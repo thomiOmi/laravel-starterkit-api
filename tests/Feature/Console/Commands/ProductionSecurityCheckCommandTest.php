@@ -15,8 +15,10 @@ beforeEach(function () {
     config()->set('logging.default', 'daily');
 });
 
-test('runs security check and shows table', function () {
-    $this->artisan('security:check')
-        ->expectsOutputToContain('All production security checks passed')
-        ->assertSuccessful();
+describe('security:check command', function () {
+    it('runs security check and shows table', function () {
+        $this->artisan('security:check')
+            ->expectsOutputToContain('All production security checks passed')
+            ->assertSuccessful();
+    });
 });

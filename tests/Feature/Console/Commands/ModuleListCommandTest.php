@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-test('runs successfully', function () {
-    $this->artisan('module:list')
-        ->assertSuccessful();
+describe('module:list command', function () {
+    it('runs successfully', function () {
+        $this->artisan('module:list')
+            ->assertSuccessful();
+    });
 });
