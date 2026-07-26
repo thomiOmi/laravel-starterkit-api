@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\ProductionSecurityCheckCommand;
+
+covers(ProductionSecurityCheckCommand::class);
+
 beforeEach(function () {
     config()->set('app.debug', false);
     config()->set('app.env', 'production');

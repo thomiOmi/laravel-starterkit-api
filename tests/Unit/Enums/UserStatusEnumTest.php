@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\UserStatusEnum;
 
+covers(UserStatusEnum::class);
+
 describe('UserStatusEnum', function () {
 
     it('has Active', fn () => expect(UserStatusEnum::Active->value)->toBe('active'));

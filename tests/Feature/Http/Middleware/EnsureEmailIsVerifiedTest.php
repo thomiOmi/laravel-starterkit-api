@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\EnsureEmailIsVerified;
+
+covers(EnsureEmailIsVerified::class);
+
 use Illuminate\Http\Request;
 use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;

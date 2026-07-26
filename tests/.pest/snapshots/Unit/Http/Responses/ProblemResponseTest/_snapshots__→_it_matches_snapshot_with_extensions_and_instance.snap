@@ -1,0 +1,1 @@
+{"type":"https:\/\/docs.example.com\/problems\/validation-failed","title":"Validation Failed","status":422,"detail":"The given data was invalid.","timestamp":"[dynamic]","instance":"\/api\/v1\/users","errors":{"email":["The email field is required."]}}

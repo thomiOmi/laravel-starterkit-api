@@ -9,6 +9,8 @@ use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 
+covers(SuccessResponse::class);
+
 describe('basic response structure', function () {
     it('returns basic data without title or detail', function () {
         $response = (new SuccessResponse(data: ['id' => 1]))->toResponse(new Request);
@@ -156,5 +158,32 @@ describe('extra features', function () {
         ))->toResponse(new Request);
 
         expect($response->headers->get('X-Custom'))->toBe('test-value');
+    });
+});
+
+describe('snapshots', function () {
+    it('matches snapshot for basic response', function () {
+        $response = (new SuccessResponse(data: ['id' => 1]))->toResponse(new Request);
+
+        expect($response->getContent())->toMatchSnapshot();
+    });
+
+    it('matches snapshot for paginated response', function () {
+        $items = [['id' => 1], ['id' => 2]];
+        $paginator = new LengthAwarePaginator($items, 10, 2, 1);
+
+        $response = (new SuccessResponse(data: $paginator))->toResponse(new Request);
+
+        expect($response->getContent())->toMatchSnapshot();
+    });
+
+    it('matches snapshot with title and detail', function () {
+        $response = (new SuccessResponse(
+            data: ['id' => 1],
+            title: 'Created',
+            detail: 'Resource created successfully',
+        ))->toResponse(new Request);
+
+        expect($response->getContent())->toMatchSnapshot();
     });
 });

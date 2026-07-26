@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\TraceIdMiddleware;
+
+covers(TraceIdMiddleware::class);
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Str;

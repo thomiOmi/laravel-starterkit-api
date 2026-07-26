@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 
+covers(PermissionEnum::class);
+
 describe('PermissionEnum', function () {
 
     describe('user permissions', function () {

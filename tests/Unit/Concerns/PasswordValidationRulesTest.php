@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Concerns\PasswordValidationRules;
 
+covers(PasswordValidationRules::class);
+
 final readonly class PasswordRulesTester
 {
     use PasswordValidationRules;

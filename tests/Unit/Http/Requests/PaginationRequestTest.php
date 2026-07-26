@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Http\Requests\PaginationRequest;
 
+covers(PaginationRequest::class);
+
 beforeEach(function () {
     config()->set('pagination.default_per_page', 10);
     config()->set('pagination.min_per_page', 1);

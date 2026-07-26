@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Concerns\FormatDate;
+
+covers(FormatDate::class);
+
 use Carbon\Carbon;
 
 final readonly class FormatDateTester

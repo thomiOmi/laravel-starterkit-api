@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Concerns\ProfileValidationRules;
+
+covers(ProfileValidationRules::class);
+
 use Illuminate\Validation\Rules\Unique;
 
 final readonly class ProfileRulesTester

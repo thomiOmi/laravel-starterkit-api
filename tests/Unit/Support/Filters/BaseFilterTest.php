@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Modules\IAM\Models\User;
 
+covers(BaseFilter::class);
+
 function makeFilter(array $query = [], array $config = []): TestFilter
 {
     return new TestFilter(new Request($query), $config);
@@ -93,82 +95,16 @@ describe('filter', function () {
         expect($sql)->toContain('in');
     });
 
-    it('handles operator prefix eq:', function () {
+    it('handles operator prefix', function (string $prefix, string $column, string $value, string $expectSql) {
         $filter = makeFilter(
-            query: ['filter' => ['name' => 'eq:John']],
-            config: ['allowedFilters' => ['name']],
+            query: ['filter' => [$column => $prefix.$value]],
+            config: ['allowedFilters' => [$column]],
         );
 
         $sql = User::query()->tap($filter)->toSql();
 
-        expect($sql)->toContain('= ?');
-    });
-
-    it('handles operator prefix neq:', function () {
-        $filter = makeFilter(
-            query: ['filter' => ['name' => 'neq:John']],
-            config: ['allowedFilters' => ['name']],
-        );
-
-        $sql = User::query()->tap($filter)->toSql();
-
-        expect($sql)->toContain('!= ?');
-    });
-
-    it('handles operator prefix gt:', function () {
-        $filter = makeFilter(
-            query: ['filter' => ['age' => 'gt:18']],
-            config: ['allowedFilters' => ['age']],
-        );
-
-        $sql = User::query()->tap($filter)->toSql();
-
-        expect($sql)->toContain('> ?');
-    });
-
-    it('handles operator prefix gte:', function () {
-        $filter = makeFilter(
-            query: ['filter' => ['age' => 'gte:18']],
-            config: ['allowedFilters' => ['age']],
-        );
-
-        $sql = User::query()->tap($filter)->toSql();
-
-        expect($sql)->toContain('>= ?');
-    });
-
-    it('handles operator prefix lt:', function () {
-        $filter = makeFilter(
-            query: ['filter' => ['age' => 'lt:18']],
-            config: ['allowedFilters' => ['age']],
-        );
-
-        $sql = User::query()->tap($filter)->toSql();
-
-        expect($sql)->toContain('< ?');
-    });
-
-    it('handles operator prefix lte:', function () {
-        $filter = makeFilter(
-            query: ['filter' => ['age' => 'lte:18']],
-            config: ['allowedFilters' => ['age']],
-        );
-
-        $sql = User::query()->tap($filter)->toSql();
-
-        expect($sql)->toContain('<= ?');
-    });
-
-    it('handles operator prefix like:', function () {
-        $filter = makeFilter(
-            query: ['filter' => ['name' => 'like:Al%']],
-            config: ['allowedFilters' => ['name']],
-        );
-
-        $sql = User::query()->tap($filter)->toSql();
-
-        expect($sql)->toContain('like ?');
-    });
+        expect($sql)->toContain($expectSql);
+    })->with('filterOperators');
 
     it('handles null value', function () {
         $filter = makeFilter(

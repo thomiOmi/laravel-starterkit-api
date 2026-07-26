@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\MakeModuleCommand;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
+covers(MakeModuleCommand::class);
 
 const MAKE_MODULE = 'TestMod';
 

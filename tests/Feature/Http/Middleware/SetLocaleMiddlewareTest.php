@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\SetLocaleMiddleware;
+
+covers(SetLocaleMiddleware::class);
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;

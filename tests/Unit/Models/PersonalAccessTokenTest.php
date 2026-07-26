@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Models\Sanctum\PersonalAccessToken;
 
+covers(PersonalAccessToken::class);
+
 describe('PersonalAccessToken', function () {
 
     describe('fillable', function () {

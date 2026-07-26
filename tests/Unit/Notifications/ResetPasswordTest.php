@@ -6,6 +6,8 @@ use App\Notifications\ResetPassword;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+covers(ResetPassword::class);
+
 describe('ResetPassword notification', function () {
 
     it('implements ShouldQueue', function () {

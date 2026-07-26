@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Support\Production\ProductionSecurityCheck;
 
+covers(ProductionSecurityCheck::class);
+
 beforeEach(function () {
     config()->set('app.debug', false);
     config()->set('app.env', 'production');
@@ -29,134 +31,15 @@ describe('production config', function () {
     });
 });
 
-describe('app configuration', function () {
-    it('fails when app debug is on', function () {
-        config()->set('app.debug', true);
+describe('failure cases', function () {
+    it('fails when misconfigured', function (string $configKey, string|bool $configValue, string $checkName) {
+        config()->set($configKey, $configValue);
 
         $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'APP_DEBUG');
+        $check = findCheck($result, $checkName);
 
         expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when app env is not production', function () {
-        config()->set('app.env', 'local');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'APP_ENV');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when app url is not https', function () {
-        config()->set('app.url', 'http://example.com');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'APP_URL');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when app url is empty', function () {
-        config()->set('app.url', '');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'APP_URL');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when app key is missing', function () {
-        config()->set('app.key', '');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'APP_KEY');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when app key is not base64', function () {
-        config()->set('app.key', 'some-invalid-key');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'APP_KEY');
-
-        expect($check['status'])->toBe('fail');
-    });
-});
-
-describe('service drivers', function () {
-    it('fails when cache store is array', function () {
-        config()->set('cache.default', 'array');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'CACHE_STORE');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when session driver is file', function () {
-        config()->set('session.driver', 'file');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'SESSION_DRIVER');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when queue connection is sync', function () {
-        config()->set('queue.default', 'sync');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'QUEUE_CONNECTION');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when session secure cookie is disabled', function () {
-        config()->set('session.secure', false);
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'SESSION_SECURE_COOKIE');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when mail mailer is log', function () {
-        config()->set('mail.default', 'log');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'MAIL_MAILER');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when mail mailer is array', function () {
-        config()->set('mail.default', 'array');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'MAIL_MAILER');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when log channel is single', function () {
-        config()->set('logging.default', 'single');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'LOG_CHANNEL');
-
-        expect($check['status'])->toBe('fail');
-    });
-
-    it('fails when mail from address is empty', function () {
-        config()->set('mail.from.address', '');
-
-        $result = (new ProductionSecurityCheck)();
-        $check = findCheck($result, 'MAIL_FROM_ADDRESS');
-
-        expect($check['status'])->toBe('fail');
-    });
+    })->with('securityFailCases');
 });
 
 describe('multiple failures', function () {

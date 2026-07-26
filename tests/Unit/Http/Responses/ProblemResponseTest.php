@@ -6,6 +6,8 @@ use App\Http\Responses\ProblemResponse;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\Request;
 
+covers(ProblemResponse::class);
+
 beforeEach(function () {
     config()->set('errors.docs_url', 'https://docs.example.com/problems');
     config()->set('errors.types.default', 'general-error');
@@ -155,5 +157,26 @@ describe('headers', function () {
 
         expect($response->headers->get('X-Request-ID'))->toBe('abc-123');
         expect($response->headers->get('Content-Type'))->toBe('application/problem+json');
+    });
+});
+
+describe('snapshots', function () {
+    it('matches snapshot for default error', function () {
+        $response = (new ProblemResponse(detail: 'Something went wrong'))->toResponse(new Request);
+
+        expect($response->getContent())->toMatchSnapshot();
+    });
+
+    it('matches snapshot with extensions and instance', function () {
+        $response = (new ProblemResponse(
+            typeKey: 'validation',
+            title: 'Validation Failed',
+            status: 422,
+            detail: 'The given data was invalid.',
+            instance: '/api/v1/users',
+            extensions: ['errors' => ['email' => ['The email field is required.']]],
+        ))->toResponse(new Request);
+
+        expect($response->getContent())->toMatchSnapshot();
     });
 });

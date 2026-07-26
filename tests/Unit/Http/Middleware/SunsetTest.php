@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\Sunset;
+
+covers(Sunset::class);
+
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\RoleEnum;
 
+covers(RoleEnum::class);
+
 describe('RoleEnum', function () {
 
     it('has SuperAdmin', fn () => expect(RoleEnum::SuperAdmin->value)->toBe('super-admin'));

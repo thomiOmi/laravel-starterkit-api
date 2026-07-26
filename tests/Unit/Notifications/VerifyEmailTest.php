@@ -6,6 +6,8 @@ use App\Notifications\VerifyEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+covers(VerifyEmail::class);
+
 describe('VerifyEmail notification', function () {
 
     it('implements ShouldQueue', function () {
