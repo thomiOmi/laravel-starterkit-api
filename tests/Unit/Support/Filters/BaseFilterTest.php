@@ -9,9 +9,48 @@ use Modules\IAM\Models\User;
 
 covers(BaseFilter::class);
 
-function makeFilter(array $query = [], array $config = []): TestFilter
+function makeFilter(array $query = [], array $config = []): BaseFilter
 {
-    return new TestFilter(new Request($query), $config);
+    return new class(new Request($query), $config) extends BaseFilter
+    {
+        private array $config;
+
+        public function __construct(Request $request, array $config = [])
+        {
+            $this->config = $config;
+
+            parent::__construct($request);
+        }
+
+        public function __invoke($query): void
+        {
+            if (array_key_exists('allowedFilters', $this->config)) {
+                $this->allowedFilters = $this->config['allowedFilters'];
+            }
+
+            if (array_key_exists('allowedSorts', $this->config)) {
+                $this->allowedSorts = $this->config['allowedSorts'];
+            }
+
+            if (array_key_exists('allowedFields', $this->config)) {
+                $this->allowedFields = $this->config['allowedFields'];
+            }
+
+            if (array_key_exists('allowedIncludes', $this->config)) {
+                $this->allowedIncludes = $this->config['allowedIncludes'];
+            }
+
+            if (array_key_exists('searchableColumns', $this->config)) {
+                $this->searchableColumns = $this->config['searchableColumns'];
+            }
+
+            if (array_key_exists('exactMatchColumns', $this->config)) {
+                $this->exactMatchColumns = $this->config['exactMatchColumns'];
+            }
+
+            parent::__invoke($query);
+        }
+    };
 }
 
 beforeEach(function () {
@@ -360,44 +399,3 @@ describe('value truncation', function () {
         expect($sql)->toContain('like');
     });
 });
-
-class TestFilter extends BaseFilter
-{
-    private array $config;
-
-    public function __construct(Request $request, array $config = [])
-    {
-        $this->config = $config;
-
-        parent::__construct($request);
-    }
-
-    public function __invoke($query): void
-    {
-        if (array_key_exists('allowedFilters', $this->config)) {
-            $this->allowedFilters = $this->config['allowedFilters'];
-        }
-
-        if (array_key_exists('allowedSorts', $this->config)) {
-            $this->allowedSorts = $this->config['allowedSorts'];
-        }
-
-        if (array_key_exists('allowedFields', $this->config)) {
-            $this->allowedFields = $this->config['allowedFields'];
-        }
-
-        if (array_key_exists('allowedIncludes', $this->config)) {
-            $this->allowedIncludes = $this->config['allowedIncludes'];
-        }
-
-        if (array_key_exists('searchableColumns', $this->config)) {
-            $this->searchableColumns = $this->config['searchableColumns'];
-        }
-
-        if (array_key_exists('exactMatchColumns', $this->config)) {
-            $this->exactMatchColumns = $this->config['exactMatchColumns'];
-        }
-
-        parent::__invoke($query);
-    }
-}

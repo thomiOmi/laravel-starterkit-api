@@ -6,7 +6,7 @@ use App\Concerns\PasswordValidationRules;
 
 covers(PasswordValidationRules::class);
 
-final readonly class PasswordRulesTester
+$tester = new readonly class
 {
     use PasswordValidationRules;
 
@@ -19,40 +19,40 @@ final readonly class PasswordRulesTester
     {
         return $this->currentPasswordRules();
     }
-}
+};
 
-describe('PasswordValidationRules', function () {
+describe('PasswordValidationRules', function () use ($tester) {
 
-    describe('password rules', function () {
-        it('include required by default', function () {
-            $rules = (new PasswordRulesTester)->runPasswordRules();
+    describe('password rules', function () use ($tester) {
+        it('include required by default', function () use ($tester) {
+            $rules = $tester->runPasswordRules();
 
             expect($rules)->toContain('required', 'string', 'confirmed');
         });
 
-        it('exclude required when set to false', function () {
-            $rules = (new PasswordRulesTester)->runPasswordRules(required: false);
+        it('exclude required when set to false', function () use ($tester) {
+            $rules = $tester->runPasswordRules(required: false);
 
             expect($rules)->toContain('nullable');
             expect($rules)->not->toContain('required');
         });
 
-        it('exclude confirmed when set to false', function () {
-            $rules = (new PasswordRulesTester)->runPasswordRules(confirmed: false);
+        it('exclude confirmed when set to false', function () use ($tester) {
+            $rules = $tester->runPasswordRules(confirmed: false);
 
             expect($rules)->not->toContain('confirmed');
         });
 
-        it('exclude validation when set to false', function () {
-            $rules = (new PasswordRulesTester)->runPasswordRules(validate: false, confirmed: false);
+        it('exclude validation when set to false', function () use ($tester) {
+            $rules = $tester->runPasswordRules(validate: false, confirmed: false);
 
             expect($rules)->toBe(['required', 'string', 'max:255']);
         });
     });
 
-    describe('current password rules', function () {
-        it('are always the same', function () {
-            expect((new PasswordRulesTester)->runCurrentPasswordRules())->toBe(['required', 'string', 'max:255', 'current_password']);
+    describe('current password rules', function () use ($tester) {
+        it('are always the same', function () use ($tester) {
+            expect($tester->runCurrentPasswordRules())->toBe(['required', 'string', 'max:255', 'current_password']);
         });
     });
 
