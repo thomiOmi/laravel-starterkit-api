@@ -89,27 +89,30 @@ tests/                   # Shared tests / global test helpers
 ## Testing
 
 ```bash
-# Full suite
-php artisan test --compact
+# Full suite (lint + static analysis + tests)
+composer test
 
-# Parallel
-php artisan test --compact --parallel
+# Quality gate (lint + static analysis + tests + coverage)
+composer test:quality
 
-# Single module
-php artisan test --compact --filter=UserManagementTest
+# Mutation testing
+composer test:mutation
 
-# Type coverage
-php -d memory_limit=512M artisan test --coverage
-
-# Production security check (CI/CD gate)
-php artisan security:check
+# Profanity check
+composer test:profanity
 ```
 
 ## Code Quality
 
 ```bash
-./vendor/bin/pint --dirty --format agent
-./vendor/bin/phpstan analyse --memory-limit=512M
+# Auto-fix code style
+composer lint
+
+# Static analysis
+composer types:check
+
+# Full CI pipeline
+composer ci:check
 ```
 
 ## License

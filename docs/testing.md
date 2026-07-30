@@ -1,5 +1,25 @@
 # Testing Conventions
 
+## Composer Scripts
+
+| Command | Description |
+|---|---|
+| `composer lint` | Auto-fix code style (`pint --parallel`) |
+| `composer lint:check` | Check code style without modifications |
+| `composer types:check` | Run PHPStan static analysis |
+| `composer test` | Run lint:check + types:check + `php artisan test` |
+| `composer test:quality` | Run lint:check + types:check + tests with `--coverage --type-coverage --min=100` |
+| `composer test:mutation` | Run mutation testing (`--mutate --min=100`) |
+| `composer test:profanity` | Run profanity checks on test files |
+| `composer ci:check` | Full CI pipeline — runs `test:quality` then `test:profanity` |
+
+The recommended pre-push workflow:
+
+```bash
+composer lint          # fix code style
+composer test:quality  # types + coverage + tests
+```
+
 ## Expectations (`tests/Expectations.php`)
 
 Custom expectations reusable across all test files.

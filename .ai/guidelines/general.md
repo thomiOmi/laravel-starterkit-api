@@ -42,6 +42,19 @@
 - Use custom expectations: `toBeSuccessResponse(status)`, `toBeProblemResponse(status)`, `toBePaginated()`
 - Parallel test: `php artisan test --compact --parallel`
 
+### Composer Scripts
+
+| Command | Description |
+|---|---|
+| `composer lint` | Auto-fix code style with Pint |
+| `composer lint:check` | Check code style without modifications |
+| `composer types:check` | Run PHPStan static analysis |
+| `composer test` | Run lint:check + types:check + test suite |
+| `composer test:quality` | Run lint:check + types:check + tests with code & type coverage (min 100%) |
+| `composer test:mutation` | Run mutation testing |
+| `composer test:profanity` | Run profanity checks on test files |
+| `composer ci:check` | Full CI pipeline (quality + profanity) |
+
 ### Testing Organization
 
 | Concern | Location | When |
@@ -65,10 +78,11 @@
 
 ## Code Quality Rules
 
-- After writing PHP code, run: `./vendor/bin/pint --dirty --format agent`
-- Then run: `vendor/bin/phpstan analyse --memory-limit=512M`
-- Then run type coverage: `php -d memory_limit=512M artisan test --coverage`
-- Run tests: `php artisan test --compact`
+- After writing PHP code, run: `composer lint` (or `./vendor/bin/pint --dirty --format agent` for dirty-only)
+- Then run: `composer types:check`
+- Then run type coverage: `composer test:quality`
+- Run tests: `composer test` (includes lint:check + types:check + test suite)
+- Before pushing: run `composer ci:check` (full quality gate)
 - Fix all errors in code (do NOT modify `phpstan.neon`)
 - Do NOT use `@phpstan-ignore` comments — fix the root cause instead
 - All datetime fields in API responses **MUST** use `Y-m-d H:i:s` format
