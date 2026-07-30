@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Help;
 use Illuminate\Console\Attributes\Signature;
+use Illuminate\Console\Attributes\Usage;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -27,6 +29,12 @@ use function Laravel\Prompts\warning;
 
 #[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--A|add= : Comma-separated components to add to an existing module} {--no-timestamps : Exclude timestamps columns (created_at, updated_at)} {--soft-deletes : Include soft deletes column (deleted_at)} {--T|tests=none : Generate test files (none,unit,feature,all)} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
 #[Description('Create a new module with controllers, model, resource, and optional components. Supports shorthand flags (-Talmys), --except to skip components, --add to add components to existing modules, --tests to generate test stubs, --no-timestamps, and --soft-deletes.')]
+#[Help('Scaffold a new module with controllers, model, resource, actions, payloads, filter, migration, factory, seeder, event, and tests. Supports interactive and non-interactive modes.')]
+#[Usage('make:module Partner')]
+#[Usage('make:module Partner --action --filter')]
+#[Usage('make:module Partner --except=action,filter')]
+#[Usage('make:module Partner --add=migration --no-timestamps')]
+#[Usage('make:module Partner -Talmys --api-version=V1')]
 class MakeModuleCommand extends Command
 {
     private const array COMPONENTS = [
