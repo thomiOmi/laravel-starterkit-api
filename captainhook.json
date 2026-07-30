@@ -14,7 +14,7 @@
         "action": "CaptainHook.Message.MustMatchRegex",
         "options": {
           "regex": "#^(feat|fix|build|chore|ci|docs|perf|refactor|revert|style|test)(\\(.+\\))?!?:\\s.{1,}#",
-          "error": "Commit message must follow conventional commit format: type(scope?): description"
+          "error": "Commit message must follow conventional commit format: type(scope?): description. See https://www.conventionalcommits.org/en/v1.0.0/#specification"
         }
       }
     ]

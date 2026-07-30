@@ -57,6 +57,12 @@
             "@php artisan key:generate",
             "@php artisan migrate --force"
         ],
+        "setup:ci": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --force"
+        ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan serve",
@@ -125,16 +131,17 @@
     },
     "scripts-descriptions": {
         "setup": "Install dependencies and prepare the application",
+        "setup:ci": "Prepare the application for CI (copy .env, key:generate, create sqlite, migrate)",
         "dev": "Start the local development server",
         "lint": "Automatically fix code style using Laravel Pint",
         "lint:staged": "Auto-fix code style for staged files (pre-commit)",
         "lint:check": "Check code style without modifications",
         "types:check": "Run PHPStan static analysis and type coverage",
         "test": "Run lint, static analysis, and the test suite",
-        "test:quality": "Run lint, static analysis, and tests with code + type coverage (min 100%)",
+        "test:quality": "Run lint, static analysis, and tests with code and type coverage",
         "test:mutation": "Run mutation testing to validate test suite quality",
         "test:profanity": "Check tests for prohibited words",
-        "ci:check": "Run the full CI pipeline (quality + profanity)",
+        "ci:check": "Run the full CI pipeline (quality and profanity)",
         "release": "Create a new release changelog",
         "release:dry": "Preview the next release changelog without committing"
     },

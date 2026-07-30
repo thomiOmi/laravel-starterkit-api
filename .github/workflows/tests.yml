@@ -62,11 +62,7 @@ jobs:
       run: composer audit
 
     - name: Prepare Application
-      run: |
-        php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
-        php artisan key:generate --env=testing
-        touch database/database.sqlite
-        php artisan migrate --env=testing
+      run: composer setup:ci
 
     - name: Run CI Checks
       run: composer ci:check

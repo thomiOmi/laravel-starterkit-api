@@ -3,8 +3,11 @@
 ## Composer Scripts
 
 | Command | Description |
-|---|---|
+|---|---|---|
+| `composer setup` | Install dependencies and prepare the application |
+| `composer setup:ci` | Prepare the application for CI (copy .env, key:generate, sqlite, migrate) |
 | `composer lint` | Auto-fix code style (`pint --parallel`) |
+| `composer lint:staged` | Auto-fix code style for staged files only (`pint --parallel --dirty`) |
 | `composer lint:check` | Check code style without modifications |
 | `composer types:check` | Run PHPStan static analysis |
 | `composer test` | Run lint:check + types:check + `php artisan test` |

@@ -105,7 +105,10 @@ composer test:profanity
 ## Code Quality
 
 ```bash
-# Auto-fix code style
+# Auto-fix staged files (pre-commit)
+composer lint:staged
+
+# Auto-fix all files
 composer lint
 
 # Static analysis
@@ -113,6 +116,16 @@ composer types:check
 
 # Full CI pipeline
 composer ci:check
+```
+
+## Project Setup
+
+```bash
+# Install dependencies and prepare the application
+composer setup
+
+# Prepare for CI (no composer install, uses SQLite)
+composer setup:ci
 ```
 
 ## License

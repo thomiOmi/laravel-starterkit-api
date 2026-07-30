@@ -137,8 +137,9 @@ Use the `skill` tool to load a skill when the task matches its description. List
 ### Composer Scripts
 
 | Command | Description |
-|---|---|
+|---|---|---|
 | `composer lint` | Auto-fix code style with Pint |
+| `composer lint:staged` | Auto-fix code style for staged files only (pre-commit hook) |
 | `composer lint:check` | Check code style without modifications |
 | `composer types:check` | Run PHPStan static analysis |
 | `composer test` | Run lint:check + types:check + test suite |
@@ -170,7 +171,7 @@ Use the `skill` tool to load a skill when the task matches its description. List
 
 ## Code Quality Rules
 
-- After writing PHP code, run: `composer lint` (or `./vendor/bin/pint --dirty --format agent` for dirty-only)
+- After writing PHP code, run: `composer lint:staged` (pre-commit) or `composer lint` (all files)
 - Then run: `composer types:check`
 - Then run type coverage: `composer test:quality`
 - Run tests: `composer test` (includes lint:check + types:check + test suite)
