@@ -1,0 +1,22 @@
+{
+  "pre-commit": {
+    "enabled": true,
+    "actions": [
+      {
+        "action": "php vendor/bin/pint --dirty --format agent"
+      }
+    ]
+  },
+  "commit-msg": {
+    "enabled": true,
+    "actions": [
+      {
+        "action": "CaptainHook.Message.MustMatchRegex",
+        "options": {
+          "regex": "#^(feat|fix|build|chore|ci|docs|perf|refactor|revert|style|test)(\\(.+\\))?!?:\\s.{1,}#",
+          "error": "Commit message must follow conventional commit format: type(scope?): description"
+        }
+      }
+    ]
+  }
+}

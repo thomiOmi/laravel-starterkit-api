@@ -40,8 +40,33 @@ jobs:
           xdebug.mode=coverage
           xdebug.start_with_request=yes
 
-    - name: Setup Application
-      run: composer setup
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      shell: bash
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache Composer Dependencies
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
+    - name: Validate composer.json
+      run: composer validate --strict
+
+    - name: Install Composer Dependencies
+      run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+    - name: Check for Known Vulnerabilities
+      run: composer audit
+
+    - name: Prepare Application
+      run: |
+        php -r "file_exists('.env.testing') || copy('.env.example', '.env.testing');"
+        php artisan key:generate --env=testing
+        touch database/database.sqlite
+        php artisan migrate --env=testing
 
     - name: Run CI Checks
       run: composer ci:check
