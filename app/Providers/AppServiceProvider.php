@@ -9,10 +9,12 @@ use App\Enums\RoleEnum;
 use App\Models\Sanctum\PersonalAccessToken;
 use App\Support\Production\ProductionSecurityCheck;
 use Carbon\CarbonImmutable;
+use Composer\InstalledVersions;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\DevCommands;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -36,11 +38,22 @@ use Laravel\Sanctum\Sanctum;
  */
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
 
+    /**
+     * Bootstrap any application services.
+     */
     public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
+        $this->configureDevCommands();
 
         $this->configureDefaults();
 
@@ -57,6 +70,28 @@ class AppServiceProvider extends ServiceProvider
         $this->configurePasswordReset();
 
         $this->monitorProductionSecurity();
+    }
+
+    /**
+     * @see https://laravel.com/docs/13.x/artisan#customizing-dev-processes
+     * @see https://github.com/laravel/framework/blob/13.x/src/Illuminate/Foundation/DevCommands.php
+     */
+    protected function configureDevCommands(): void
+    {
+        // TODO: fix issue cannot customize default `php artisan dev` and change `composer.json` on script `dev` with `php artisan dev`. Investigation laravel version with lastest version 13
+
+        // $url = config()->string('app.url', 'http://localhost');
+
+        // DevCommands::artisan(sprintf(
+        //     'serve --host=%s --port=%s',
+        //     parse_url($url, PHP_URL_HOST) ?? 'localhost',
+        //     parse_url($url, PHP_URL_PORT) ?? '8000'
+        // ), 'server');
+        // DevCommands::artisan('queue:listen --tries=1 --timeout=0', 'queue');
+
+        // if (function_exists('pcntl_fork') && InstalledVersions::isInstalled('laravel/pail')) {
+        //     DevCommands::artisan('pail --timeout=0', 'logs');
+        // }
     }
 
     /**
