@@ -56,34 +56,49 @@
             "@php artisan key:generate",
             "@php artisan migrate --force"
         ],
-        "release": "npx @grazulex/shipmark release",
-        "release:dry": "npx @grazulex/shipmark release --ci auto --dry-run",
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "@php artisan serve",
             "@php artisan queue:listen --tries=1 --timeout=0"
         ],
-        "lint": "pint --parallel",
-        "lint:check": "pint --parallel --test",
+        "lint": [
+            "pint --parallel"
+        ],
+        "lint:check": [
+            "pint --parallel --test"
+        ],
         "types:check": [
-            "phpstan analyse --memory-limit=512M",
-            "php -d memory_limit=512M artisan test --coverage --min=100"
+            "phpstan analyse --memory-limit=512M"
         ],
         "ci:check": [
+            "Composer\\Config::disableProcessTimeout",
             "@lint:check",
             "@types:check",
             "@test",
+            "@test:coverage",
             "@test:profanity"
         ],
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
-        "test:mutation": "php artisan test --compact --min=100 --mutate",
-        "test:profanity": "php artisan test --compact --profanity",
+        "test:mutation": [
+            "@php artisan test --mutate --min=100"
+        ],
+        "test:profanity": [
+            "@php artisan test --profanity"
+        ],
+        "test:type-coverage": [
+            "@php -d memory_limit=512M artisan test --type-coverage --min=100"
+        ],
         "test:coverage": [
-            "@php artisan config:clear --ansi",
-            "@php artisan test --coverage --min=100"
+            "@php -d memory_limit=512M artisan test --coverage --min=100"
+        ],
+        "release": [
+            "npx @grazulex/shipmark release"
+        ],
+        "release:dry": [
+            "npx @grazulex/shipmark release --ci auto --dry-run"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -104,6 +119,21 @@
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
+    },
+    "scripts-descriptions": {
+        "setup": "Set up the project for local development",
+        "dev": "Start the local development server",
+        "lint": "Automatically fix code style using Laravel Pint",
+        "lint:check": "Check code style without modifications",
+        "types:check": "Run PHPStan static analysis and type coverage",
+        "ci:check": "Run the full CI pipeline (lint, types, test, coverage, profanity)",
+        "test": "Run the test suite",
+        "test:mutation": "Run mutation testing to validate test suite quality",
+        "test:profanity": "Check tests for prohibited words",
+        "test:type-coverage": "Measure PHP type coverage with Pest",
+        "test:coverage": "Run tests with code coverage report (min 100%)",
+        "release": "Create a new release changelog",
+        "release:dry": "Preview the next release changelog without committing"
     },
     "extra": {
         "laravel": {
