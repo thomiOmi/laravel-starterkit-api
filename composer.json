@@ -121,7 +121,7 @@
         ]
     },
     "scripts-descriptions": {
-        "setup": "Set up the project for local development",
+        "setup": "Install dependencies and prepare the application",
         "dev": "Start the local development server",
         "lint": "Automatically fix code style using Laravel Pint",
         "lint:check": "Check code style without modifications",
