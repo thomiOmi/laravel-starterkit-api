@@ -138,6 +138,8 @@ Use the `skill` tool to load a skill when the task matches its description. List
 
 | Command | Description |
 |---|---|---|
+| `composer setup` | Install dependencies and prepare the application |
+| `composer setup:ci` | Prepare the application for CI (copy .env, key:generate, sqlite, migrate) |
 | `composer lint` | Auto-fix code style with Pint |
 | `composer lint:staged` | Auto-fix code style for staged files only (pre-commit hook) |
 | `composer lint:check` | Check code style without modifications |
@@ -147,6 +149,7 @@ Use the `skill` tool to load a skill when the task matches its description. List
 | `composer test:mutation` | Run mutation testing |
 | `composer test:profanity` | Run profanity checks on test files |
 | `composer ci:check` | Full CI pipeline (quality + profanity) |
+| `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 
 ### Testing Organization
 

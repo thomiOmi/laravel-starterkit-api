@@ -89,6 +89,9 @@ tests/                   # Shared tests / global test helpers
 ## Testing
 
 ```bash
+# Run all dev processes concurrently (server, queue, logs)
+composer dev
+
 # Full suite (lint + static analysis + tests)
 composer test
 

@@ -65,8 +65,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "@php artisan serve",
-            "@php artisan queue:listen --tries=1 --timeout=0"
+            "@php artisan dev"
         ],
         "lint": [
             "pint --parallel"
@@ -132,7 +131,7 @@
     "scripts-descriptions": {
         "setup": "Install dependencies and prepare the application",
         "setup:ci": "Prepare the application for CI (copy .env, key:generate, create sqlite, migrate)",
-        "dev": "Start the local development server",
+        "dev": "Run all dev processes concurrently (server, queue, logs)",
         "lint": "Automatically fix code style using Laravel Pint",
         "lint:staged": "Auto-fix code style for staged files (pre-commit)",
         "lint:check": "Check code style without modifications",

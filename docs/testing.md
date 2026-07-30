@@ -15,6 +15,7 @@
 | `composer test:mutation` | Run mutation testing (`--mutate --min=100`) |
 | `composer test:profanity` | Run profanity checks on test files |
 | `composer ci:check` | Full CI pipeline — runs `test:quality` then `test:profanity` |
+| `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 
 The recommended pre-push workflow:
 

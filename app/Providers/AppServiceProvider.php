@@ -73,25 +73,30 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * Customize the default dev processes (server, queue, logs) via DevCommands.
+     *
      * @see https://laravel.com/docs/13.x/artisan#customizing-dev-processes
      * @see https://github.com/laravel/framework/blob/13.x/src/Illuminate/Foundation/DevCommands.php
+     *
+     * Uses the host/port from `app.url` for the server. On Windows the `logs`
+     * process (Pail) is automatically excluded because pcntl_fork is unavailable.
      */
     protected function configureDevCommands(): void
     {
-        // TODO: fix issue cannot customize default `php artisan dev` and change `composer.json` on script `dev` with `php artisan dev`. Investigation laravel version with lastest version 13
+        DevCommands::except('vite');
 
-        // $url = config()->string('app.url', 'http://localhost');
+        $url = config()->string('app.url', 'http://localhost');
 
-        // DevCommands::artisan(sprintf(
-        //     'serve --host=%s --port=%s',
-        //     parse_url($url, PHP_URL_HOST) ?? 'localhost',
-        //     parse_url($url, PHP_URL_PORT) ?? '8000'
-        // ), 'server');
-        // DevCommands::artisan('queue:listen --tries=1 --timeout=0', 'queue');
+        DevCommands::artisan(sprintf(
+            'serve --host=%s --port=%s',
+            parse_url($url, PHP_URL_HOST) ?? 'localhost',
+            parse_url($url, PHP_URL_PORT) ?? '8000'
+        ), 'server');
+        DevCommands::artisan('queue:listen --tries=1 --timeout=0', 'queue');
 
-        // if (function_exists('pcntl_fork') && InstalledVersions::isInstalled('laravel/pail')) {
-        //     DevCommands::artisan('pail --timeout=0', 'logs');
-        // }
+        if (function_exists('pcntl_fork') && InstalledVersions::isInstalled('laravel/pail')) {
+            DevCommands::artisan('pail --timeout=0', 'logs');
+        }
     }
 
     /**

@@ -57,6 +57,7 @@
 | `composer test:mutation` | Run mutation testing |
 | `composer test:profanity` | Run profanity checks on test files |
 | `composer ci:check` | Full CI pipeline (quality + profanity) |
+| `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 
 ### Testing Organization
 
