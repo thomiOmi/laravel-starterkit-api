@@ -65,6 +65,9 @@
         "lint": [
             "pint --parallel"
         ],
+        "lint:staged": [
+            "pint --parallel --dirty"
+        ],
         "lint:check": [
             "pint --parallel --test"
         ],
@@ -124,6 +127,7 @@
         "setup": "Install dependencies and prepare the application",
         "dev": "Start the local development server",
         "lint": "Automatically fix code style using Laravel Pint",
+        "lint:staged": "Auto-fix code style for staged files (pre-commit)",
         "lint:check": "Check code style without modifications",
         "types:check": "Run PHPStan static analysis and type coverage",
         "test": "Run lint, static analysis, and the test suite",
