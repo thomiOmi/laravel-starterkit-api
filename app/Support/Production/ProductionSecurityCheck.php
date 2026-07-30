@@ -37,7 +37,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkAppDebug(): array
     {
-        $debug = config()->boolean('app.debug');
+        $debug = config()->get('app.debug', true);
 
         return [
             'check' => 'APP_DEBUG',
@@ -53,7 +53,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkAppEnv(): array
     {
-        $env = config()->string('app.env');
+        $env = config()->get('app.env', 'production');
 
         return [
             'check' => 'APP_ENV',
@@ -69,7 +69,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkAppUrl(): array
     {
-        $url = config()->string('app.url');
+        $url = (string) config()->get('app.url', '');
 
         return [
             'check' => 'APP_URL',
@@ -85,9 +85,9 @@ final readonly class ProductionSecurityCheck
      */
     private function checkAppKey(): array
     {
-        $key = config()->string('app.key');
+        $key = config()->get('app.key');
 
-        $isValid = $key !== '' && str_starts_with($key, 'base64:') && strlen($key) > 7;
+        $isValid = is_string($key) && $key !== '' && str_starts_with($key, 'base64:') && strlen($key) > 7;
 
         return [
             'check' => 'APP_KEY',
@@ -103,7 +103,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkCacheStore(): array
     {
-        $store = config()->string('cache.default');
+        $store = (string) config()->get('cache.default', 'file');
 
         return [
             'check' => 'CACHE_STORE',
@@ -119,7 +119,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkSessionDriver(): array
     {
-        $driver = config()->string('session.driver');
+        $driver = (string) config()->get('session.driver', 'file');
 
         return [
             'check' => 'SESSION_DRIVER',
@@ -135,7 +135,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkQueueConnection(): array
     {
-        $connection = config()->string('queue.default');
+        $connection = (string) config()->get('queue.default', 'sync');
 
         return [
             'check' => 'QUEUE_CONNECTION',
@@ -167,7 +167,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkMailMailer(): array
     {
-        $mailer = config()->string('mail.default');
+        $mailer = (string) config()->get('mail.default', 'log');
 
         return [
             'check' => 'MAIL_MAILER',
@@ -183,7 +183,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkLogChannel(): array
     {
-        $channel = config()->string('logging.default');
+        $channel = (string) config()->get('logging.default', 'stack');
 
         return [
             'check' => 'LOG_CHANNEL',
@@ -199,7 +199,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkMailFromAddress(): array
     {
-        $address = config()->string('mail.from.address');
+        $address = (string) config()->get('mail.from.address', '');
 
         return [
             'check' => 'MAIL_FROM_ADDRESS',
