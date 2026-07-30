@@ -70,17 +70,17 @@
         "types:check": [
             "phpstan analyse --memory-limit=512M"
         ],
-        "ci:check": [
-            "Composer\\Config::disableProcessTimeout",
-            "@lint:check",
-            "@types:check",
-            "@test",
-            "@test:coverage",
-            "@test:profanity"
-        ],
         "test": [
             "@php artisan config:clear --ansi",
+            "@lint:check",
+            "@types:check",
             "@php artisan test"
+        ],
+        "test:quality": [
+            "@php artisan config:clear --ansi",
+            "@lint:check",
+            "@types:check",
+            "@php -d memory_limit=512M artisan test --coverage --type-coverage --min=100"
         ],
         "test:mutation": [
             "@php artisan test --mutate --min=100"
@@ -88,11 +88,10 @@
         "test:profanity": [
             "@php artisan test --profanity"
         ],
-        "test:type-coverage": [
-            "@php -d memory_limit=512M artisan test --type-coverage --min=100"
-        ],
-        "test:coverage": [
-            "@php -d memory_limit=512M artisan test --coverage --min=100"
+        "ci:check": [
+            "Composer\\Config::disableProcessTimeout",
+            "@test:quality",
+            "@test:profanity"
         ],
         "release": [
             "npx @grazulex/shipmark release"
@@ -126,12 +125,11 @@
         "lint": "Automatically fix code style using Laravel Pint",
         "lint:check": "Check code style without modifications",
         "types:check": "Run PHPStan static analysis and type coverage",
-        "ci:check": "Run the full CI pipeline (lint, types, test, coverage, profanity)",
-        "test": "Run the test suite",
+        "test": "Run lint, static analysis, and the test suite",
+        "test:quality": "Run lint, static analysis, and tests with code + type coverage (min 100%)",
         "test:mutation": "Run mutation testing to validate test suite quality",
         "test:profanity": "Check tests for prohibited words",
-        "test:type-coverage": "Measure PHP type coverage with Pest",
-        "test:coverage": "Run tests with code coverage report (min 100%)",
+        "ci:check": "Run the full CI pipeline (quality + profanity)",
         "release": "Create a new release changelog",
         "release:dry": "Preview the next release changelog without committing"
     },

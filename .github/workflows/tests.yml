@@ -1,0 +1,46 @@
+name: tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Laravel (PHP ${{ matrix.php-versions }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-versions: ['8.4', '8.5']
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-versions }}
+        extensions: mbstring, dom, fileinfo, pdo_sqlite, xml, curl, zip, pcntl
+        coverage: xdebug
+        ini-values: |
+          memory_limit=-1
+          xdebug.mode=coverage
+          xdebug.start_with_request=yes
+
+    - name: Setup Application
+      run: composer setup
+
+    - name: Run CI Checks
+      run: composer ci:check
