@@ -24,5 +24,5 @@ describe('security:check command', function () {
         artisanCommand($this, 'security:check')
             ->expectsOutputToContain('All production security checks passed')
             ->assertSuccessful();
-    });
+    })->group('smoke');
 });

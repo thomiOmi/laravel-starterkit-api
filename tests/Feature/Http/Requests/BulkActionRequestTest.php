@@ -26,36 +26,38 @@ dataset('mismatched bulk actions', [
     'role delete with restore action' => ['api/v1/roles', 'delete', 'restore'],
 ]);
 
-it('authorizes bulk action when the user has the matching permission', function (string $prefix, string $action): void {
-    $this->user->assignRole(RoleEnum::Admin->value);
+describe('bulk authorization', function () {
+    it('authorizes bulk action when the user has the matching permission', function (string $prefix, string $action): void {
+        $this->user->assignRole(RoleEnum::Admin->value);
 
-    $response = $this->postJson("/{$prefix}/bulk/{$action}", [
-        'ids' => ['01ARZ3NDEKTSV4RRFFQ69G5FAV'],
-        'action' => $action,
-    ]);
+        $response = $this->postJson("/{$prefix}/bulk/{$action}", [
+            'ids' => ['01ARZ3NDEKTSV4RRFFQ69G5FAV'],
+            'action' => $action,
+        ]);
 
-    assertSuccessResponse($response, 200);
-})->with('authorized bulk actions');
+        assertSuccessResponse($response, 200);
+    })->with('authorized bulk actions')->group('module:iam');
 
-it('denies bulk action when the user lacks the permission', function (string $prefix, string $action): void {
-    $response = $this->postJson("/{$prefix}/bulk/{$action}", [
-        'ids' => ['01ARZ3NDEKTSV4RRFFQ69G5FAV'],
-        'action' => $action,
-    ]);
+    it('denies bulk action when the user lacks the permission', function (string $prefix, string $action): void {
+        $response = $this->postJson("/{$prefix}/bulk/{$action}", [
+            'ids' => ['01ARZ3NDEKTSV4RRFFQ69G5FAV'],
+            'action' => $action,
+        ]);
 
-    assertProblemResponse($response, 403);
-})->with('bulk actions without permission');
+        assertProblemResponse($response, 403);
+    })->with('bulk actions without permission')->group('module:iam');
 
-it('denies bulk action when the action does not match the route action', function (string $prefix, string $routeAction, string $bodyAction): void {
-    $this->user->assignRole(RoleEnum::Admin->value);
+    it('denies bulk action when the action does not match the route action', function (string $prefix, string $routeAction, string $bodyAction): void {
+        $this->user->assignRole(RoleEnum::Admin->value);
 
-    $response = $this->postJson("/{$prefix}/bulk/{$routeAction}", [
-        'ids' => ['01ARZ3NDEKTSV4RRFFQ69G5FAV'],
-        'action' => $bodyAction,
-    ]);
+        $response = $this->postJson("/{$prefix}/bulk/{$routeAction}", [
+            'ids' => ['01ARZ3NDEKTSV4RRFFQ69G5FAV'],
+            'action' => $bodyAction,
+        ]);
 
-    assertProblemResponse($response, 403);
-})->with('mismatched bulk actions');
+        assertProblemResponse($response, 403);
+    })->with('mismatched bulk actions')->group('module:iam');
+});
 
 describe('bulk action validation', function () {
 
@@ -65,7 +67,7 @@ describe('bulk action validation', function () {
         $response = $this->postJson('/api/v1/users/bulk/delete', ['ids' => []]);
 
         assertProblemResponse($response, 422);
-    });
+    })->group('module:iam');
 
     it('requires each id to be a ulid string', function () {
         $this->user->assignRole(RoleEnum::Admin->value);
@@ -75,6 +77,6 @@ describe('bulk action validation', function () {
         ]);
 
         assertProblemResponse($response, 422);
-    });
+    })->group('module:iam');
 
 });

@@ -3,13 +3,12 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\FeatureFlagMiddleware;
-
-covers(FeatureFlagMiddleware::class);
-
 use Illuminate\Http\Request;
 use Laravel\Pennant\Feature;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+
+covers(FeatureFlagMiddleware::class);
 
 describe('FeatureFlagMiddleware', function () {
 

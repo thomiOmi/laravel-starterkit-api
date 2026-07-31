@@ -3,12 +3,11 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\EnsureEmailIsVerified;
-
-covers(EnsureEmailIsVerified::class);
-
 use Illuminate\Http\Request;
 use Illuminate\Testing\TestResponse;
 use Symfony\Component\HttpFoundation\Response;
+
+covers(EnsureEmailIsVerified::class);
 
 describe('EnsureEmailIsVerified', function () {
 
