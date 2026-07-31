@@ -183,6 +183,34 @@ php artisan test --update-snapshots
 
 Commit the updated `.snap` files — they are the baseline and must be tracked in git.
 
+## Agent Probe (`--agent`)
+
+`pestphp/pest-plugin-agent` runs a one-off verification snippet inside a full Pest test — `RefreshDatabase`, factories, Laravel fakes, and authentication all work exactly as in a feature test:
+
+```bash
+vendor/bin/pest --agent='$user = \Modules\IAM\Database\Factories\UserFactory::new()->create(); $this->actingAs($user)->getJson("/api/v1/me")->assertOk();'
+```
+
+Rules:
+
+- Every class must be fully qualified (the generated test file contains no `use` imports)
+- Directory-scoped `beforeEach()` hooks do not run for the snippet — inline required setup at the top
+- Keep each snippet focused on one behavior; pass `--agent` multiple times for several probes
+- A probe is a verification tool, not a substitute for your test suite — write a real test in `tests/Feature` when the behavior deserves a lasting regression guard
+
+## TIA (`--tia`)
+
+Test Impact Analysis (built-in Pest 5) re-runs only the tests affected by your changes and replays the rest from cache:
+
+```bash
+composer test:tia
+```
+
+- The first run records the dependency graph and requires a coverage driver: `XDEBUG_MODE=coverage vendor/bin/pest --tia` (about 2x slower than a normal run). The graph is stored in `~/.pest/tia/{project}`
+- Subsequent runs replay cached results: the 291-test suite drops from ~55s to ~4s
+- After a large refactor, re-record the graph with `vendor/bin/pest --tia --fresh`
+- `ci:check` never uses TIA — CI always runs the full suite
+
 ## Test Placement & Isolation
 
 | Location | Contains |

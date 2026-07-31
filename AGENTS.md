@@ -131,7 +131,8 @@ Use the `skill` tool to load a skill when the task matches its description. List
 - `beforeEach`: seeds roles (web + sanctum guards), calls `forgetCachedPermissions()`, creates admin with `loginAsUser()`
 - Test each CRUD operation: list, create, view, update, delete, unauthorized access
 - Unit test per Action class (test business logic in isolation)
-- Use custom expectations: `toBeSuccessResponse(status)`, `toBeProblemResponse(status)`, `toBePaginated()`
+- Use response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`
+- AI agent verification probe: `vendor/bin/pest --agent='...'` (see docs/testing.md; probes are not a substitute for permanent tests)
 - Parallel test: `php artisan test --compact --parallel`
 
 ### Composer Scripts
@@ -148,7 +149,8 @@ Use the `skill` tool to load a skill when the task matches its description. List
 | `composer test:quality` | Run lint:check + types:check + tests with code & type coverage (min 100%) |
 | `composer test:mutation` | Run mutation testing |
 | `composer test:profanity` | Run profanity checks on test files |
-| `composer ci:check` | Full CI pipeline (quality + profanity) |
+| `composer test:tia` | Re-run only tests affected by your changes (test impact analysis) |
+| `composer ci:check` | Full CI pipeline (quality + rector + profanity) |
 | `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 
 ### Testing Organization

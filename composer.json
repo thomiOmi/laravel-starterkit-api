@@ -30,6 +30,7 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "5.0.2",
+        "pestphp/pest-plugin-agent": "5.0",
         "pestphp/pest-plugin-laravel": "5.0.1",
         "pestphp/pest-plugin-phpstan": "^5.0",
         "pestphp/pest-plugin-profanity": "5.0",
@@ -100,6 +101,9 @@
         "test:profanity": [
             "@php artisan test --profanity"
         ],
+        "test:tia": [
+            "@php artisan test --tia"
+        ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
             "@test:quality",
@@ -150,6 +154,7 @@
         "test:quality": "Run lint, static analysis, and tests with code and type coverage",
         "test:mutation": "Run mutation testing to validate test suite quality",
         "test:profanity": "Check tests for prohibited words",
+        "test:tia": "Re-run only tests affected by your changes (test impact analysis)",
         "ci:check": "Run the full CI pipeline (quality, refactoring, and profanity)",
         "release": "Create a new release changelog",
         "release:dry": "Preview the next release changelog without committing"

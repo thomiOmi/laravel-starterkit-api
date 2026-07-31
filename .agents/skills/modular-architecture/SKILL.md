@@ -298,7 +298,7 @@ class {Module}ServiceProvider extends ServiceProvider
 
 ### Tests
 
-Unit test per Action (test business logic in isolation). Feature test per endpoint (test the full HTTP request/response cycle). Use custom expectations: `toBeSuccessResponse(status)`, `toBeProblemResponse(status)`, `toBePaginated()`.
+Unit test per Action (test business logic in isolation). Feature test per endpoint (test the full HTTP request/response cycle). Use response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`.
 
 ## Project-Specific Rules (Must Do)
 
