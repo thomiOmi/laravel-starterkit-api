@@ -50,7 +50,7 @@ Three tiers:
 - `beforeEach` seeds roles (web + sanctum), calls `forgetCachedPermissions()`, creates admin with `loginAsUser()`
 - Feature tests for each CRUD + auth flow
 - Unit tests for each action class
-- Custom expectations: `toBeSuccessResponse(status)`, `toBeProblemResponse(status)`, `toBePaginated()`
+- Response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`
 - Every change must have a corresponding test
 ## Code Quality
 

@@ -31,40 +31,47 @@ composer test:quality  # types + coverage + tests
 
 ## Expectations (`tests/Expectations.php`)
 
-Custom expectations reusable across all test files.
+Custom expectation API extensions. Only `expect()->pipe()` customizations live here — custom `expect()->extend()` methods are **not** recognized by PHPStan (`pest-plugin-phpstan` only understands built-in matchers), so response-level assertions are typed functions in `tests/Helpers.php` instead.
 
-| Expectation | Parameters | Description |
+| Expectation | Description |
+|---|---|
+| `toMatchSnapshot()` | (pipe) Strip dynamic `timestamp` before comparing against stored `.snap` file |
+
+## Response assertion helpers (`tests/Helpers.php`)
+
+Typed functions for asserting API response envelopes (PHPStan-safe, unlike custom expectations).
+
+| Function | Parameters | Description |
 |---|---|---|
-| `toBeSuccessResponse()` | `int $status = 200, ?string $title = null` | Assert JSON: `status`, `title`, `detail`, `data` — skips body check for 204/205 |
-| `toBeProblemResponse()` | `int $status = 422, ?string $type = null` | Assert `Content-Type: application/problem+json`, JSON structure: `type`, `title`, `status`, `detail`, `timestamp` |
-| `toBePaginated()` | — | Assert JSON structure: `status`, `data`, `meta` with `per_page` and `has_more` |
-| `toHaveTraceId()` | — | Assert `X-Trace-ID` header present and non-empty |
-| `toHaveSunsetHeader()` | `string $date` | Assert `Sunset` header matches RFC 7231 format |
-| `toMatchSnapshot()` | (pipe) | Strip dynamic `timestamp` before comparing against stored `.snap` file |
+| `assertSuccessResponse()` | `int $status = 200, ?string $title = null` | Assert JSON: `status`, `title`, `detail`, `data` — skips body check for 204/205 |
+| `assertProblemResponse()` | `int $status = 422, ?string $type = null` | Assert `Content-Type: application/problem+json`, JSON structure: `type`, `title`, `status`, `detail`, `timestamp` |
+| `assertPaginatedResponse()` | — | Assert JSON structure: `status`, `data`, `meta` with `per_page` and `has_more` |
+| `assertHasTraceId()` | — | Assert `X-Trace-ID` header present and non-empty |
+| `assertSunsetHeader()` | `string $date` | Assert `Sunset` header matches RFC 7231 format |
 
-### Adding a new expectation
+Each helper takes a `TestResponse` and returns it, so assertions can be chained:
 
 ```php
-expect()->extend('toBeFoo', function (int $bar = 1): Expectation {
-    /** @var Expectation<mixed> $this */
-    /** @var TestResponse $response */
-    $response = $this->value;
+$response = $this->postJson('/api/v1/users', $payload);
 
-    $response->assertStatus($bar);
-
-    return $this;
-});
+assertSuccessResponse($response, 201);
+assertProblemResponse($response, 422, 'validation-error');
 ```
 
 ## Helpers (`tests/Helpers.php`)
 
-Global helper functions for authentication.
+Global helper functions for authentication and API responses.
 
 | Function | Returns | Description |
 |---|---|---|
 | `loginAsUser(?User $user, array $abilities)` | `User` | Authenticate with Sanctum (verified user). Default abilities: `['*']` |
 | `loginAsUnverifiedUser(?User $user, array $abilities)` | `User` | Authenticate with Sanctum (unverified user). Default abilities: `['*']` |
 | `responseData(Response $response)` | `array` | Decode JSON response content — use instead of `$response->getData(true)` (satisfies PHPStan) |
+| `assertSuccessResponse()` | `TestResponse` | Assert the success envelope (see table above) |
+| `assertProblemResponse()` | `TestResponse` | Assert the RFC 9457 problem details envelope (see table above) |
+| `assertPaginatedResponse()` | `TestResponse` | Assert the paginated envelope (see table above) |
+| `assertHasTraceId()` | `TestResponse` | Assert the `X-Trace-ID` header (see table above) |
+| `assertSunsetHeader()` | `TestResponse` | Assert the `Sunset` header (see table above) |
 | `artisanCommand(TestCase $test, string $command, array $parameters = [])` | `PendingCommand` | Run an artisan command from a feature test — use instead of `$this->artisan()` (resolves the `PendingCommand\|int` union) |
 
 ### File-level helpers
@@ -160,9 +167,7 @@ Add new groups sparingly. Prefer `describe()` + `--filter` for most filtering ne
 
 ## Snapshot Testing
 
-Snapshots are stored in `tests/.pest/snapshots/**/*.snap`. The Expectation Pipe in `Expectations.php` strips dynamic `timestamp` fields before comparison so snapshots are stable.
-
-```php
+Snapshots are stored in `tests/.pest/snapshots/**/*.snap`. The Expectation Pipe in `Expectations.php` strips dynamic `timestamp` fields before comparison so snapshots are stable.```php
 it('matches snapshot for basic response', function () {
     $response = (new SuccessResponse(data: ['id' => 1]))->toResponse(new Request);
 
@@ -177,3 +182,16 @@ php artisan test --update-snapshots
 ```
 
 Commit the updated `.snap` files — they are the baseline and must be tracked in git.
+
+## Test Placement & Isolation
+
+| Location | Contains |
+|---|---|
+| `tests/` | App-layer tests (middleware, filters, requests, responses, console commands) and shared suites (`Unit`, `Feature`, `Architecture`) |
+| `modules/*/Tests/` | Module-internal tests (controllers, actions, resources). Registered as the `Modules` testsuite in `phpunit.xml`; excluded from PHPStan paths |
+
+Rules:
+
+- App-layer tests may only import the module **User model/factory** (the app's auth model) — and must route it through the `tests/Helpers.php` seam (`loginAsUser()`, `loginAsUnverifiedUser()`), never through `Modules\*\...` imports directly.
+- Module-internal tests must stay self-contained in their module and must not import other modules.
+- Test fixtures shared across files go in `tests/Helpers.php`; parameterized cases use Datasets (inline when used by a single file, named when reused).

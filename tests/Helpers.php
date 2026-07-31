@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Testing\PendingCommand;
+use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Models\User;
@@ -59,6 +60,106 @@ function responseData(Response $response): array
     $decoded = json_decode($response->getContent() ?: '{}', true);
 
     return is_array($decoded) ? $decoded : [];
+}
+
+/**
+ * Assert the response matches the RFC 9457 problem details shape.
+ *
+ * @param  TestResponse<Response>  $response
+ * @param  string|null  $type  Expected "type" value (contains match).
+ * @return TestResponse<Response>
+ */
+function assertProblemResponse(TestResponse $response, int $status = 422, ?string $type = null): TestResponse
+{
+    $response->assertHeader('Content-Type', 'application/problem+json')
+        ->assertStatus($status)
+        ->assertJsonStructure([
+            'type',
+            'title',
+            'status',
+            'detail',
+            'timestamp',
+        ]);
+
+    if ($type !== null) {
+        $typeValue = $response->json('type');
+        expect(is_string($typeValue) ? $typeValue : '')->toContain($type);
+    }
+
+    return $response;
+}
+
+/**
+ * Assert the response matches the API success envelope.
+ *
+ * @param  TestResponse<Response>  $response
+ * @param  string|null  $title  Expected "title" value (exact match).
+ * @return TestResponse<Response>
+ */
+function assertSuccessResponse(TestResponse $response, int $status = 200, ?string $title = null): TestResponse
+{
+    $response->assertStatus($status);
+
+    if ($status >= 200 && $status < 300 && $status !== 204 && $status !== 205) {
+        $response->assertJsonStructure([
+            'status',
+            'title',
+            'detail',
+            'data',
+        ]);
+
+        if ($title !== null) {
+            expect($response->json('title'))->toBe($title);
+        }
+    }
+
+    return $response;
+}
+
+/**
+ * Assert the response is a paginated success envelope.
+ *
+ * @param  TestResponse<Response>  $response
+ * @return TestResponse<Response>
+ */
+function assertPaginatedResponse(TestResponse $response): TestResponse
+{
+    $response->assertJsonStructure(['status', 'data', 'meta']);
+
+    $meta = $response->json('meta');
+    expect($meta)
+        ->toBeArray()
+        ->toHaveKeys(['per_page', 'has_more']);
+
+    return $response;
+}
+
+/**
+ * Assert the response carries the X-Trace-ID header.
+ *
+ * @param  TestResponse<Response>  $response
+ * @return TestResponse<Response>
+ */
+function assertHasTraceId(TestResponse $response): TestResponse
+{
+    $response->assertHeader('X-Trace-ID');
+    expect($response->headers->get('X-Trace-ID'))->not->toBeEmpty();
+
+    return $response;
+}
+
+/**
+ * Assert the response carries the Sunset header in RFC 7231 format.
+ *
+ * @param  TestResponse<Response>  $response
+ * @return TestResponse<Response>
+ */
+function assertSunsetHeader(TestResponse $response, string $date): TestResponse
+{
+    $response->assertHeader('Sunset');
+    expect($response->headers->get('Sunset'))->toBe(new DateTimeImmutable($date)->format(DateTimeInterface::RFC7231));
+
+    return $response;
 }
 
 /**

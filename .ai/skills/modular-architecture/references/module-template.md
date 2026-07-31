@@ -356,7 +356,7 @@ describe('{Resource} Lifecycle', function () {
             'name' => 'Test {Resource}',
         ]);
 
-        expect($response)->toBeSuccessResponse(status: 201);
+        assertSuccessResponse($response, 201);
     })->group('v1');
 
     it('lists {resources} with pagination', function () {
@@ -364,8 +364,7 @@ describe('{Resource} Lifecycle', function () {
 
         $response = $this->getJson('/api/v1/{resources}');
 
-        expect($response)->toBeSuccessResponse()
-            ->toBePaginated();
+        assertPaginatedResponse($response);
     })->group('v1');
 });
 ```

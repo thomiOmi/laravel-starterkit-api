@@ -39,7 +39,7 @@
 - `beforeEach`: seeds roles (web + sanctum guards), calls `forgetCachedPermissions()`, creates admin with `loginAsUser()`
 - Test each CRUD operation: list, create, view, update, delete, unauthorized access
 - Unit test per Action class (test business logic in isolation)
-- Use custom expectations: `toBeSuccessResponse(status)`, `toBeProblemResponse(status)`, `toBePaginated()`
+- Use response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`
 - Parallel test: `php artisan test --compact --parallel`
 
 ### Composer Scripts

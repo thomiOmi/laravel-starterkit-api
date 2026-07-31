@@ -22,9 +22,6 @@ parameters:
         - tests/.phpstan/Pipeable.stub
 
     ignoreErrors:
-        # Pest arch describe() blocks with arch() expectations are valid patterns
-        - identifier: pest.describe.withoutTests
-
         # Pest arch internal API (ignoring()) used intentionally
         - identifier: method.internalInterface
 
