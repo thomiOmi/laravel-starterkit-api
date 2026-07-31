@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Enums\RoleEnum;
+use App\Http\Requests\BulkActionRequest;
 use Modules\IAM\Database\Seeders\RoleSeeder;
+
+covers(BulkActionRequest::class);
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -28,7 +30,7 @@ dataset('mismatched bulk actions', [
 
 describe('bulk authorization', function () {
     it('authorizes bulk action when the user has the matching permission', function (string $prefix, string $action): void {
-        $this->user->assignRole(RoleEnum::Admin->value);
+        $this->user = loginAsAdmin();
 
         $response = $this->postJson("/{$prefix}/bulk/{$action}", [
             'ids' => ['01ARZ3NDEKTSV4RRFFQ69G5FAV'],
@@ -48,7 +50,7 @@ describe('bulk authorization', function () {
     })->with('bulk actions without permission')->group('module:iam');
 
     it('denies bulk action when the action does not match the route action', function (string $prefix, string $routeAction, string $bodyAction): void {
-        $this->user->assignRole(RoleEnum::Admin->value);
+        $this->user = loginAsAdmin();
 
         $response = $this->postJson("/{$prefix}/bulk/{$routeAction}", [
             'ids' => ['01ARZ3NDEKTSV4RRFFQ69G5FAV'],
@@ -62,7 +64,7 @@ describe('bulk authorization', function () {
 describe('bulk action validation', function () {
 
     it('requires ids as array with min 1 max 50 items', function () {
-        $this->user->assignRole(RoleEnum::Admin->value);
+        $this->user = loginAsAdmin();
 
         $response = $this->postJson('/api/v1/users/bulk/delete', ['ids' => []]);
 
@@ -70,7 +72,7 @@ describe('bulk action validation', function () {
     })->group('module:iam');
 
     it('requires each id to be a ulid string', function () {
-        $this->user->assignRole(RoleEnum::Admin->value);
+        $this->user = loginAsAdmin();
 
         $response = $this->postJson('/api/v1/users/bulk/delete', [
             'ids' => ['invalid-id'],

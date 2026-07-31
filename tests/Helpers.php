@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\RoleEnum;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Testing\PendingCommand;
 use Illuminate\Testing\TestResponse;
@@ -48,6 +49,52 @@ function loginAsUnverifiedUser(?User $user = null, array $abilities = ['*']): Us
     Sanctum::actingAs($authenticatedUser, $abilities);
 
     return $authenticatedUser;
+}
+
+/**
+ * Authenticate a verified user and assign the given role.
+ *
+ * The role must already exist in the database (seed `RoleSeeder` in the test).
+ *
+ * @param  array<int, string>  $abilities
+ */
+function loginAsRole(RoleEnum $role, ?User $user = null, array $abilities = ['*']): User
+{
+    $authenticatedUser = loginAsUser($user, $abilities);
+
+    $authenticatedUser->assignRole($role->value);
+
+    return $authenticatedUser;
+}
+
+/**
+ * Authenticate a verified super-admin user.
+ *
+ * @param  array<int, string>  $abilities
+ */
+function loginAsSuperAdmin(?User $user = null, array $abilities = ['*']): User
+{
+    return loginAsRole(RoleEnum::SuperAdmin, $user, $abilities);
+}
+
+/**
+ * Authenticate a verified admin user.
+ *
+ * @param  array<int, string>  $abilities
+ */
+function loginAsAdmin(?User $user = null, array $abilities = ['*']): User
+{
+    return loginAsRole(RoleEnum::Admin, $user, $abilities);
+}
+
+/**
+ * Authenticate a verified user with the basic "user" role.
+ *
+ * @param  array<int, string>  $abilities
+ */
+function loginAsUserRole(?User $user = null, array $abilities = ['*']): User
+{
+    return loginAsRole(RoleEnum::User, $user, $abilities);
 }
 
 /**
