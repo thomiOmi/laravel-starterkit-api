@@ -7,6 +7,7 @@
     "mcp": true,
     "nightwatch": false,
     "packages": [
+        "pestphp/pest-plugin-agent",
         "spatie/laravel-permission"
     ],
     "sail": false,
@@ -16,6 +17,7 @@
         "socialite-development",
         "pest-testing",
         "laravel-permission-development",
+        "pest-plugin-agent",
         "laravel-attributes",
         "modular-architecture"
     ]
