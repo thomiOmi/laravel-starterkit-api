@@ -67,8 +67,8 @@ describe('SetLocaleMiddleware', function () {
             (new SetLocaleMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'));
 
             $cached = Cache::get('app.available_locales');
-            expect($cached)->toBeArray();
-            expect($cached)->toContain('en', 'id');
+            expect($cached)->toBeArray()
+                ->toContain('en', 'id');
         });
     });
 

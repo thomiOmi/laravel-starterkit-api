@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 dataset('securityFailCases', [
     'APP_DEBUG' => ['app.debug', true, 'APP_DEBUG'],
     'APP_ENV' => ['app.env', 'local', 'APP_ENV'],

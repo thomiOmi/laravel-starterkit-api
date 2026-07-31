@@ -16,7 +16,10 @@ describe('UserStatusEnum', function () {
 
     it('is backed by string', function () {
         expect(UserStatusEnum::tryFrom('pending'))->toBe(UserStatusEnum::Pending);
-        expect(UserStatusEnum::tryFrom('invalid'))->toBeNull();
     });
+
+    it('returns null for unknown values', function (string $unknownValue) {
+        expect(UserStatusEnum::tryFrom($unknownValue))->toBeNull();
+    })->with(['invalid', 'unknown', 'pending-extra']);
 
 });

@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Concerns\PasswordValidationRules;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Validation\Rules\Password;
 
 covers(PasswordValidationRules::class);
 
@@ -10,11 +12,13 @@ $tester = new readonly class
 {
     use PasswordValidationRules;
 
+    /** @return array<int, ValidationRule|Password|string> */
     public function runPasswordRules(bool $required = true, bool $confirmed = true, bool $validate = true): array
     {
         return $this->passwordRules($required, $confirmed, $validate);
     }
 
+    /** @return array<int, string> */
     public function runCurrentPasswordRules(): array
     {
         return $this->currentPasswordRules();
@@ -33,8 +37,7 @@ describe('PasswordValidationRules', function () use ($tester) {
         it('exclude required when set to false', function () use ($tester) {
             $rules = $tester->runPasswordRules(required: false);
 
-            expect($rules)->toContain('nullable');
-            expect($rules)->not->toContain('required');
+            expect($rules)->toContain('nullable')->not->toContain('required');
         });
 
         it('exclude confirmed when set to false', function () use ($tester) {
@@ -44,7 +47,7 @@ describe('PasswordValidationRules', function () use ($tester) {
         });
 
         it('exclude validation when set to false', function () use ($tester) {
-            $rules = $tester->runPasswordRules(validate: false, confirmed: false);
+            $rules = $tester->runPasswordRules(confirmed: false, validate: false);
 
             expect($rules)->toBe(['required', 'string', 'max:255']);
         });

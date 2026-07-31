@@ -12,16 +12,19 @@ $tester = new readonly class
 {
     use ProfileValidationRules;
 
+    /** @return array<string, array<int, Unique|string>> */
     public function runProfileRules(?string $userId = null, bool $unique = true): array
     {
         return $this->profileRules($userId, $unique);
     }
 
+    /** @return array<int, string> */
     public function runNameRules(): array
     {
         return $this->nameRules();
     }
 
+    /** @return array<int, Unique|string> */
     public function runEmailRules(?string $userId = null, bool $unique = true): array
     {
         return $this->emailRules($userId, $unique);

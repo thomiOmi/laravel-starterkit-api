@@ -7,7 +7,7 @@ use App\Http\Middleware\EnsureEmailIsVerified;
 covers(EnsureEmailIsVerified::class);
 
 use Illuminate\Http\Request;
-use Modules\IAM\Models\User;
+use Modules\IAM\Database\Factories\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 
 describe('EnsureEmailIsVerified', function () {
@@ -18,12 +18,12 @@ describe('EnsureEmailIsVerified', function () {
             fn ($req): Response => new Response('OK'),
         );
 
-        expect($response->getStatusCode())->toBe(401);
-        expect($response->getContent())->toContain('Unauthenticated');
+        expect($response->getStatusCode())->toBe(401)
+            ->and($response->getContent())->toContain('Unauthenticated');
     });
 
     it('returns forbidden ProblemResponse when email is not verified', function () {
-        $user = User::factory()->unverified()->create();
+        $user = UserFactory::new()->unverified()->createOne();
         $request = new Request;
         $request->setUserResolver(fn () => $user);
 
@@ -32,12 +32,12 @@ describe('EnsureEmailIsVerified', function () {
             fn ($req): Response => new Response('OK'),
         );
 
-        expect($response->getStatusCode())->toBe(403);
-        expect($response->getContent())->toContain('Email Not Verified');
+        expect($response->getStatusCode())->toBe(403)
+            ->and($response->getContent())->toContain('Email Not Verified');
     });
 
     it('passes request through when user email is verified', function () {
-        $user = User::factory()->create();
+        $user = UserFactory::new()->createOne();
         $user->markEmailAsVerified();
         $request = new Request;
         $request->setUserResolver(fn () => $user);
@@ -47,8 +47,8 @@ describe('EnsureEmailIsVerified', function () {
             fn ($req): Response => new Response('OK'),
         );
 
-        expect($response->getStatusCode())->toBe(200);
-        expect($response->getContent())->toBe('OK');
+        expect($response->getStatusCode())->toBe(200)
+            ->and($response->getContent())->toBe('OK');
     });
 
 });

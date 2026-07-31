@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Route;
+use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Database\Seeders\RoleSeeder;
-use Modules\IAM\Models\User;
 
 beforeEach(function () {
     $this->seed(RoleSeeder::class);
@@ -13,9 +13,7 @@ beforeEach(function () {
 
 function createBulkRoute(string $name, string $prefix): void
 {
-    Route::post("{$prefix}/bulk/{action}", function () {
-        return response()->json(['status' => 200]);
-    })->name($name);
+    Route::post("{$prefix}/bulk/{action}", fn () => response()->json(['status' => 200]))->name($name);
 }
 
 describe('user bulk actions', function () {
@@ -23,7 +21,7 @@ describe('user bulk actions', function () {
     describe('delete', function () {
         it('authorizes with UserDelete permission', function () {
             createBulkRoute('v1.user.bulk.delete', 'api/v1/users');
-            $user = User::factory()->create();
+            $user = UserFactory::new()->createOne();
             $user->assignRole(RoleEnum::Admin->value);
 
             $response = $this->actingAs($user)
@@ -37,7 +35,7 @@ describe('user bulk actions', function () {
 
         it('denies without UserDelete permission', function () {
             createBulkRoute('v1.user.bulk.delete', 'api/v1/users');
-            $user = User::factory()->create();
+            $user = UserFactory::new()->createOne();
 
             $response = $this->actingAs($user)
                 ->postJson('/api/v1/users/bulk/delete', [
@@ -51,7 +49,7 @@ describe('user bulk actions', function () {
     describe('restore', function () {
         it('authorizes with UserRestore permission', function () {
             createBulkRoute('v1.user.bulk.restore', 'api/v1/users');
-            $user = User::factory()->create();
+            $user = UserFactory::new()->createOne();
             $user->assignRole(RoleEnum::Admin->value);
 
             $response = $this->actingAs($user)
@@ -65,7 +63,7 @@ describe('user bulk actions', function () {
 
         it('denies without UserRestore permission', function () {
             createBulkRoute('v1.user.bulk.restore', 'api/v1/users');
-            $user = User::factory()->create();
+            $user = UserFactory::new()->createOne();
 
             $response = $this->actingAs($user)
                 ->postJson('/api/v1/users/bulk/restore', [
@@ -82,7 +80,7 @@ describe('role bulk actions', function () {
 
     it('authorizes role bulk delete with RoleDelete permission', function () {
         createBulkRoute('v1.role.bulk.delete', 'api/v1/roles');
-        $user = User::factory()->create();
+        $user = UserFactory::new()->createOne();
         $user->assignRole(RoleEnum::Admin->value);
 
         $response = $this->actingAs($user)
@@ -96,7 +94,7 @@ describe('role bulk actions', function () {
 
     it('denies role bulk delete when action is restore', function () {
         createBulkRoute('v1.role.bulk.delete', 'api/v1/roles');
-        $user = User::factory()->create();
+        $user = UserFactory::new()->createOne();
         $user->assignRole(RoleEnum::Admin->value);
 
         $response = $this->actingAs($user)
@@ -114,7 +112,7 @@ describe('bulk action validation', function () {
 
     it('requires ids as array with min 1 max 50 items', function () {
         createBulkRoute('v1.user.bulk.delete', 'api/v1/users');
-        $user = User::factory()->create();
+        $user = UserFactory::new()->createOne();
         $user->assignRole(RoleEnum::Admin->value);
 
         $response = $this->actingAs($user)
@@ -125,7 +123,7 @@ describe('bulk action validation', function () {
 
     it('requires each id to be a ulid string', function () {
         createBulkRoute('v1.user.bulk.delete', 'api/v1/users');
-        $user = User::factory()->create();
+        $user = UserFactory::new()->createOne();
         $user->assignRole(RoleEnum::Admin->value);
 
         $response = $this->actingAs($user)
@@ -138,7 +136,7 @@ describe('bulk action validation', function () {
 
     it('denies when action does not match route action', function () {
         createBulkRoute('v1.user.bulk.delete', 'api/v1/users');
-        $user = User::factory()->create();
+        $user = UserFactory::new()->createOne();
         $user->assignRole(RoleEnum::Admin->value);
 
         $response = $this->actingAs($user)

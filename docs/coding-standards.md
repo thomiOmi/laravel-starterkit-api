@@ -46,7 +46,7 @@ Three tiers:
 - `api`: 60/min
 
 ## Testing
-- Pest 4 with `RefreshDatabase`
+- Pest 5 with `RefreshDatabase`
 - `beforeEach` seeds roles (web + sanctum), calls `forgetCachedPermissions()`, creates admin with `loginAsUser()`
 - Feature tests for each CRUD + auth flow
 - Unit tests for each action class
@@ -55,8 +55,10 @@ Three tiers:
 ## Code Quality
 
 - Format: `./vendor/bin/pint --dirty --format agent`
-- Static analysis: `./vendor/bin/phpstan analyse --memory-limit=512M`
-  - Type coverage: `php -d memory_limit=512M artisan test --coverage`
-- Do not use `@phpstan-ignore` comments
+- Static analysis: `./vendor/bin/phpstan analyse --memory-limit=512M` (level max, test files included via `pest-plugin-phpstan`; no baseline, no `@phpstan-ignore`)
+- Type coverage: `php artisan test --coverage --type-coverage --min=100 --memory-limit=512M`
+  - `--memory-limit=512M` is required: phpunit runs as a child process that ignores `-d memory_limit`; the type-coverage plugin applies it via `ini_set` in-process
+- Rector dry run: `composer rector:dry` (`PestSetList::CODING_STYLE`), part of `composer ci:check`
+- Clear PHPStan cache with `phpstan clear-result-cache` (prefix `PAO_DISABLE=1` — the `laravel/pao` wrapper breaks non-analyse commands)
 - No `dd()`, `dump()`, `console.log()` in committed code
 - Production security gate: `php artisan security:check`

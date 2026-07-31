@@ -9,6 +9,7 @@ parameters:
         - database
         - routes
         - modules
+        - tests
 
     excludePaths:
         - modules/*/Tests/*
@@ -16,6 +17,19 @@ parameters:
     level: max
 
     checkConfigTypes: true
+
+    stubFiles:
+        - tests/.phpstan/Pipeable.stub
+
+    ignoreErrors:
+        # Pest arch describe() blocks with arch() expectations are valid patterns
+        - identifier: pest.describe.withoutTests
+
+        # Pest arch internal API (ignoring()) used intentionally
+        - identifier: method.internalInterface
+
+        # Type coverage is enforced by php artisan test --type-coverage
+        - identifier: typeCoverage.paramTypeCoverage
 
     # Larastan optional rules
     checkModelProperties: true

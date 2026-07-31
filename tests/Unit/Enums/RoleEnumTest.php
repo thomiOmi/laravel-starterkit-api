@@ -14,7 +14,10 @@ describe('RoleEnum', function () {
 
     it('is backed by string', function () {
         expect(RoleEnum::tryFrom('admin'))->toBe(RoleEnum::Admin);
-        expect(RoleEnum::tryFrom('invalid'))->toBeNull();
     });
+
+    it('returns null for unknown values', function (string $unknownValue) {
+        expect(RoleEnum::tryFrom($unknownValue))->toBeNull();
+    })->with(['invalid', 'moderator', 'super']);
 
 });

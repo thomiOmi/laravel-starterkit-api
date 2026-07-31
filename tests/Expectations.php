@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 use Pest\Expectation;
 
@@ -23,7 +24,7 @@ expect()->extend('toBeOne', function () {
 });
 
 expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $type = null): Expectation {
-    /** @var Expectation<TestResponse> $this */
+    /** @var Expectation<TestResponse<Response>> $this */
     $response = $this->value;
 
     $response->assertHeader('Content-Type', 'application/problem+json')
@@ -45,7 +46,7 @@ expect()->extend('toBeProblemResponse', function (int $status = 422, ?string $ty
 });
 
 expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $title = null): Expectation {
-    /** @var Expectation<TestResponse> $this */
+    /** @var Expectation<TestResponse<Response>> $this */
     $response = $this->value;
 
     $response->assertStatus($status);
@@ -68,7 +69,7 @@ expect()->extend('toBeSuccessResponse', function (int $status = 200, ?string $ti
 
 expect()->extend('toBePaginated', function () {
     /** @var Expectation<mixed> $this */
-    /** @var TestResponse $response */
+    /** @var TestResponse<Response> $response */
     $response = $this->value;
 
     $response->assertJsonStructure(['status', 'data', 'meta']);
@@ -83,7 +84,7 @@ expect()->extend('toBePaginated', function () {
 
 expect()->extend('toHaveTraceId', function () {
     /** @var Expectation<mixed> $this */
-    /** @var TestResponse $response */
+    /** @var TestResponse<Response> $response */
     $response = $this->value;
 
     $response->assertHeader('X-Trace-ID');
@@ -94,11 +95,11 @@ expect()->extend('toHaveTraceId', function () {
 
 expect()->extend('toHaveSunsetHeader', function (string $date) {
     /** @var Expectation<mixed> $this */
-    /** @var TestResponse $response */
+    /** @var TestResponse<Response> $response */
     $response = $this->value;
 
     $response->assertHeader('Sunset');
-    expect($response->headers->get('Sunset'))->toBe((new DateTimeImmutable($date))->format(DateTimeInterface::RFC7231));
+    expect($response->headers->get('Sunset'))->toBe(new DateTimeImmutable($date)->format(DateTimeInterface::RFC7231));
 
     return $this;
 });

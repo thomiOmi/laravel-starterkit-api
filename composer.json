@@ -29,13 +29,16 @@
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
-        "pestphp/pest": "^4.6",
-        "pestphp/pest-plugin-laravel": "^4.1",
-        "pestphp/pest-plugin-profanity": "^4.2",
-        "pestphp/pest-plugin-type-coverage": "^4.0",
+        "pestphp/pest": "5.0.2",
+        "pestphp/pest-plugin-laravel": "5.0.1",
+        "pestphp/pest-plugin-phpstan": "^5.0",
+        "pestphp/pest-plugin-profanity": "5.0",
+        "pestphp/pest-plugin-rector": "^5.0",
+        "pestphp/pest-plugin-type-coverage": "5.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "phpstan/phpstan-mockery": "^2.0"
+        "phpstan/phpstan-mockery": "^2.0",
+        "rector/rector": "^2.5"
     },
     "autoload": {
         "psr-4": {
@@ -89,7 +92,7 @@
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php -d memory_limit=512M artisan test --coverage --type-coverage --min=100"
+            "@php artisan test --coverage --type-coverage --min=100 --memory-limit=512M"
         ],
         "test:mutation": [
             "@php artisan test --mutate --min=100"
@@ -100,7 +103,14 @@
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
             "@test:quality",
+            "@rector:dry",
             "@test:profanity"
+        ],
+        "rector:dry": [
+            "rector --dry-run"
+        ],
+        "rector": [
+            "rector"
         ],
         "release": [
             "npx @grazulex/shipmark release"
@@ -140,7 +150,7 @@
         "test:quality": "Run lint, static analysis, and tests with code and type coverage",
         "test:mutation": "Run mutation testing to validate test suite quality",
         "test:profanity": "Check tests for prohibited words",
-        "ci:check": "Run the full CI pipeline (quality and profanity)",
+        "ci:check": "Run the full CI pipeline (quality, refactoring, and profanity)",
         "release": "Create a new release changelog",
         "release:dry": "Preview the next release changelog without committing"
     },

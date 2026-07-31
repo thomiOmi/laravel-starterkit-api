@@ -8,7 +8,7 @@ covers(ModuleListCommand::class);
 
 describe('module:list command', function () {
     it('runs successfully', function () {
-        $this->artisan('module:list')
+        artisanCommand($this, 'module:list')
             ->assertSuccessful();
     });
 });

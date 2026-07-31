@@ -9,48 +9,70 @@ use Modules\IAM\Models\User;
 
 covers(BaseFilter::class);
 
+/**
+ * @extends BaseFilter<User>
+ */
+final class BaseFilterTestFilter extends BaseFilter
+{
+    /**
+     * @param  array{allowedFilters?: array<int, string>, allowedSorts?: array<int, string>, allowedFields?: array<int, string>, allowedIncludes?: array<int, string>, searchableColumns?: array<int, string>, exactMatchColumns?: array<int, string>}  $config
+     */
+    public function __construct(Request $request, private array $config = [])
+    {
+        parent::__construct($request);
+    }
+
+    #[Override]
+    public function __invoke($query): void
+    {
+        if (array_key_exists('allowedFilters', $this->config)) {
+            /** @var array<int, string> $allowedFilters */
+            $allowedFilters = $this->config['allowedFilters'];
+            $this->allowedFilters = $allowedFilters;
+        }
+
+        if (array_key_exists('allowedSorts', $this->config)) {
+            /** @var array<int, string> $allowedSorts */
+            $allowedSorts = $this->config['allowedSorts'];
+            $this->allowedSorts = $allowedSorts;
+        }
+
+        if (array_key_exists('allowedFields', $this->config)) {
+            /** @var array<int, string> $allowedFields */
+            $allowedFields = $this->config['allowedFields'];
+            $this->allowedFields = $allowedFields;
+        }
+
+        if (array_key_exists('allowedIncludes', $this->config)) {
+            /** @var array<int, string> $allowedIncludes */
+            $allowedIncludes = $this->config['allowedIncludes'];
+            $this->allowedIncludes = $allowedIncludes;
+        }
+
+        if (array_key_exists('searchableColumns', $this->config)) {
+            /** @var array<int, string> $searchableColumns */
+            $searchableColumns = $this->config['searchableColumns'];
+            $this->searchableColumns = $searchableColumns;
+        }
+
+        if (array_key_exists('exactMatchColumns', $this->config)) {
+            /** @var array<int, string> $exactMatchColumns */
+            $exactMatchColumns = $this->config['exactMatchColumns'];
+            $this->exactMatchColumns = $exactMatchColumns;
+        }
+
+        parent::__invoke($query);
+    }
+}
+
+/**
+ * @param  array<string, mixed>  $query
+ * @param  array{allowedFilters?: array<int, string>, allowedSorts?: array<int, string>, allowedFields?: array<int, string>, allowedIncludes?: array<int, string>, searchableColumns?: array<int, string>, exactMatchColumns?: array<int, string>}  $config
+ * @return BaseFilter<User>
+ */
 function makeFilter(array $query = [], array $config = []): BaseFilter
 {
-    return new class(new Request($query), $config) extends BaseFilter
-    {
-        private array $config;
-
-        public function __construct(Request $request, array $config = [])
-        {
-            $this->config = $config;
-
-            parent::__construct($request);
-        }
-
-        public function __invoke($query): void
-        {
-            if (array_key_exists('allowedFilters', $this->config)) {
-                $this->allowedFilters = $this->config['allowedFilters'];
-            }
-
-            if (array_key_exists('allowedSorts', $this->config)) {
-                $this->allowedSorts = $this->config['allowedSorts'];
-            }
-
-            if (array_key_exists('allowedFields', $this->config)) {
-                $this->allowedFields = $this->config['allowedFields'];
-            }
-
-            if (array_key_exists('allowedIncludes', $this->config)) {
-                $this->allowedIncludes = $this->config['allowedIncludes'];
-            }
-
-            if (array_key_exists('searchableColumns', $this->config)) {
-                $this->searchableColumns = $this->config['searchableColumns'];
-            }
-
-            if (array_key_exists('exactMatchColumns', $this->config)) {
-                $this->exactMatchColumns = $this->config['exactMatchColumns'];
-            }
-
-            parent::__invoke($query);
-        }
-    };
+    return new BaseFilterTestFilter(new Request($query), $config);
 }
 
 beforeEach(function () {
@@ -66,8 +88,8 @@ describe('search', function () {
 
         $sql = User::query()->tap($filter)->toSql();
 
-        expect($sql)->toContain('like');
-        expect($sql)->toContain('?');
+        expect($sql)->toContain('like')
+            ->toContain('?');
     });
 
     it('is skipped when param is empty', function () {
@@ -96,8 +118,8 @@ describe('filter', function () {
 
         $sql = User::query()->tap($filter)->toSql();
 
-        expect($sql)->toContain('where');
-        expect($sql)->toContain('like');
+        expect($sql)->toContain('where')
+            ->toContain('like');
     });
 
     it('applies exact match for exactMatchColumns', function () {
@@ -108,8 +130,8 @@ describe('filter', function () {
 
         $sql = User::query()->tap($filter)->toSql();
 
-        expect($sql)->toContain('where');
-        expect($sql)->toContain('= ?');
+        expect($sql)->toContain('where')
+            ->toContain('= ?');
     });
 
     it('applies numeric exact match', function () {
@@ -223,8 +245,8 @@ describe('sort', function () {
 
         $sql = User::query()->tap($filter)->toSql();
 
-        expect($sql)->toContain('order by');
-        expect($sql)->toContain('asc');
+        expect($sql)->toContain('order by')
+            ->toContain('asc');
     });
 
     it('applies descending order', function () {
@@ -235,8 +257,8 @@ describe('sort', function () {
 
         $sql = User::query()->tap($filter)->toSql();
 
-        expect($sql)->toContain('order by');
-        expect($sql)->toContain('desc');
+        expect($sql)->toContain('order by')
+            ->toContain('desc');
     });
 
     it('handles multiple columns', function () {
@@ -247,8 +269,8 @@ describe('sort', function () {
 
         $sql = User::query()->tap($filter)->toSql();
 
-        expect($sql)->toContain('desc');
-        expect($sql)->toContain('asc');
+        expect($sql)->toContain('desc')
+            ->toContain('asc');
     });
 
     it('throws for unknown column in non-production', function () {
@@ -271,9 +293,9 @@ describe('fields', function () {
 
         $sql = User::query()->tap($filter)->toSql();
 
-        expect($sql)->toContain('select');
-        expect($sql)->toContain('name');
-        expect($sql)->toContain('email');
+        expect($sql)->toContain('select')
+            ->toContain('name')
+            ->toContain('email');
     });
 
     it('always includes primary key', function () {
@@ -372,7 +394,6 @@ describe('report warning', function () {
         $filter = makeFilter();
 
         $reflection = new ReflectionMethod(BaseFilter::class, 'reportWarning');
-        $reflection->setAccessible(true);
 
         expect(fn () => $reflection->invoke($filter, 'test warning'))
             ->toThrow(InvalidArgumentException::class, 'test warning');

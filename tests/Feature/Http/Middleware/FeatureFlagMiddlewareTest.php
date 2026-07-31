@@ -22,8 +22,8 @@ describe('FeatureFlagMiddleware', function () {
             'beta-feature',
         );
 
-        expect($response->getStatusCode())->toBe(200);
-        expect($response->getContent())->toBe('OK');
+        expect($response->getStatusCode())->toBe(200)
+            ->and($response->getContent())->toBe('OK');
     });
 
     it('throws AccessDeniedHttpException when feature is inactive', function () {

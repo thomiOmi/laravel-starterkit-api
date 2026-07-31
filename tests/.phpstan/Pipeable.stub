@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Pest\Concerns;
+
+use Closure;
+
+trait Pipeable
+{
+    /**
+     * Register a pipe to be applied before an expectation is checked.
+     *
+     * @param-closure-this \Pest\Expectation<mixed> $pipe
+     */
+    public function pipe(string $name, Closure $pipe): void;
+}

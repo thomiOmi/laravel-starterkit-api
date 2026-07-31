@@ -17,7 +17,7 @@ beforeEach(function () {
 
 describe('basic creation', function () {
     it('can create a module with name argument', function () {
-        $this->artisan('make:module', ['name' => MAKE_MODULE])
+        artisanCommand($this, 'make:module', ['name' => MAKE_MODULE])
             ->expectsQuestion('API version?', 'V1')
             ->expectsQuestion('Include timestamps?', true)
             ->expectsQuestion('Include soft deletes?', false)
@@ -66,7 +66,7 @@ describe('basic creation', function () {
     });
 
     it('prompts for missing name', function () {
-        $this->artisan('make:module')
+        artisanCommand($this, 'make:module')
             ->expectsQuestion('What is the module name?', MAKE_MODULE)
             ->expectsQuestion('API version?', 'V1')
             ->expectsQuestion('Include timestamps?', true)
@@ -114,7 +114,7 @@ describe('existing module', function () {
     it('aborts when module exists without force', function () {
         Storage::disk('modules')->makeDirectory(MAKE_MODULE);
 
-        $this->artisan('make:module', ['name' => MAKE_MODULE])
+        artisanCommand($this, 'make:module', ['name' => MAKE_MODULE])
             ->expectsQuestion('Overwrite existing module?', false)
             ->expectsQuestion('API version?', 'V1')
             ->expectsQuestion('Include timestamps?', true)
@@ -143,7 +143,7 @@ describe('existing module', function () {
         Storage::disk('modules')->makeDirectory(MAKE_MODULE.'/Models');
         Storage::disk('modules')->put(MAKE_MODULE.'/Models/'.MAKE_MODULE.'.php', '<?php // old content');
 
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--force' => true,
         ])
@@ -191,7 +191,7 @@ describe('existing module', function () {
 
 describe('component options', function () {
     it('respects --except flag', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--except' => 'action,filter,migration,factory,seeder,event',
         ])
@@ -207,7 +207,7 @@ describe('component options', function () {
     });
 
     it('creates optional components when flags are passed', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--action' => true,
             '--filter' => true,
@@ -227,7 +227,7 @@ describe('component options', function () {
     });
 
     it('warns about unknown --except components', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--except' => 'unknown,action',
         ])
@@ -240,7 +240,7 @@ describe('component options', function () {
 
 describe('--add component', function () {
     it('adds missing filter component to existing module', function () {
-        $this->artisan('make:module', ['name' => MAKE_MODULE])
+        artisanCommand($this, 'make:module', ['name' => MAKE_MODULE])
             ->expectsQuestion('API version?', 'V1')
             ->expectsQuestion('Include timestamps?', true)
             ->expectsQuestion('Include soft deletes?', false)
@@ -281,7 +281,7 @@ describe('--add component', function () {
 
         Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Filters/'.MAKE_MODULE.'Filter.php');
 
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--add' => 'filter',
         ])->assertSuccessful();
@@ -290,7 +290,7 @@ describe('--add component', function () {
     });
 
     it('warns about already-existing components', function () {
-        $this->artisan('make:module', ['name' => MAKE_MODULE])
+        artisanCommand($this, 'make:module', ['name' => MAKE_MODULE])
             ->expectsQuestion('API version?', 'V1')
             ->expectsQuestion('Include timestamps?', true)
             ->expectsQuestion('Include soft deletes?', false)
@@ -329,19 +329,19 @@ describe('--add component', function () {
             ->expectsQuestion('Add another field?', false)
             ->assertSuccessful();
 
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--add' => 'filter',
         ])->expectsOutputToContain('All requested components already exist');
     });
 
     it('requires name argument', function () {
-        $this->artisan('make:module', ['--add' => 'filter'])
+        artisanCommand($this, 'make:module', ['--add' => 'filter'])
             ->expectsOutputToContain('Module name is required');
     });
 
     it('fails for non-existent module', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => 'NonExistent',
             '--add' => 'filter',
         ])->expectsOutputToContain('does not exist');
@@ -350,7 +350,7 @@ describe('--add component', function () {
     it('warns about unknown component', function () {
         Storage::disk('modules')->makeDirectory(MAKE_MODULE);
 
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--add' => 'unknown,filter',
         ])->assertSuccessful();
@@ -361,7 +361,7 @@ describe('api version', function () {
     it('uses api-version option correctly', function () {
         Config::set('apiroute.supported_versions', ['V1', 'V2']);
 
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--api-version' => 'V2',
         ])
@@ -408,7 +408,7 @@ describe('api version', function () {
     });
 
     it('rejects invalid api-version format', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => 'VersionTest',
             '--except' => 'action,filter,migration,factory,seeder,event',
             '--api-version' => 'v_1',
@@ -419,7 +419,7 @@ describe('api version', function () {
     });
 
     it('accepts lowercase api-version and uppercases it', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--api-version' => 'v1',
         ])
@@ -468,7 +468,7 @@ describe('api version', function () {
 
 describe('migration', function () {
     it('replaces existing migration on force', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--migration' => true,
         ])
@@ -477,7 +477,7 @@ describe('migration', function () {
         $migrationDir = MAKE_MODULE.'/Database/Migrations';
         expect(Storage::disk('modules')->files($migrationDir))->toHaveCount(1);
 
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--migration' => true,
             '--force' => true,
@@ -490,7 +490,7 @@ describe('migration', function () {
 
 describe('route file', function () {
     it('generates route file with correct prefixes', function () {
-        $this->artisan('make:module', ['name' => MAKE_MODULE])
+        artisanCommand($this, 'make:module', ['name' => MAKE_MODULE])
             ->expectsQuestion('API version?', 'V1')
             ->expectsQuestion('Include timestamps?', true)
             ->expectsQuestion('Include soft deletes?', false)
@@ -532,14 +532,14 @@ describe('route file', function () {
         $content = Storage::disk('modules')->get(MAKE_MODULE.'/Routes/V1.php');
 
         $slug = Str::kebab(Str::plural(MAKE_MODULE));
-        expect($content)->toContain("prefix('{$slug}')");
-        expect($content)->toContain("name('{$slug}.')");
+        expect($content)->toContain("prefix('{$slug}')")
+            ->toContain("name('{$slug}.')");
     });
 });
 
 describe('test generation', function () {
     it('--tests=unit generates only unit test file', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--except' => 'action,filter,migration,factory,seeder,event',
             '--tests' => 'unit',
@@ -550,7 +550,7 @@ describe('test generation', function () {
     });
 
     it('--tests=feature generates only feature test file', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--except' => 'action,filter,migration,factory,seeder,event',
             '--tests' => 'feature',
@@ -561,7 +561,7 @@ describe('test generation', function () {
     });
 
     it('--tests=all generates both test files', function () {
-        $this->artisan('make:module', [
+        artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--except' => 'action,filter,migration,factory,seeder,event',
             '--tests' => 'all',

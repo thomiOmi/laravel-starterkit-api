@@ -10,10 +10,12 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Mail\Mailable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\ServiceProvider;
+use PHPUnit\Framework\Assert;
 
 describe('coding standards', function () {
     arch('app uses strict types')
@@ -66,7 +68,7 @@ describe('coding standards', function () {
 
     arch('tests should not use PHPUnit assertions')
         ->expect('Tests')
-        ->not->toUse('PHPUnit\Framework\Assert');
+        ->not->toUse(Assert::class);
 });
 
 describe('app namespace boundaries', function () {
@@ -220,10 +222,14 @@ describe('app notifications', function () {
 });
 
 describe('app providers', function () {
-    arch('providers should extend ServiceProvider and not be used')
+    arch('providers should extend ServiceProvider')
         ->expect('App\Providers')
         ->classes()
-        ->toExtend(ServiceProvider::class)
+        ->toExtend(ServiceProvider::class);
+
+    arch('providers should not be used')
+        ->expect('App\Providers')
+        ->classes()
         ->not->toBeUsed();
 
     arch('providers should have ServiceProvider suffix')
@@ -326,10 +332,14 @@ describe('module models', function () {
 });
 
 describe('module controllers', function () {
-    arch('module controllers should be invokable and not use Model')
+    arch('module controllers should be invokable')
         ->expect('Modules\*\Controllers')
         ->classes()
-        ->toBeInvokable()
+        ->toBeInvokable();
+
+    arch('module controllers should not use Model')
+        ->expect('Modules\*\Controllers')
+        ->classes()
         ->not->toUse(Model::class);
 
     arch('module controllers should have Controller suffix')
@@ -358,7 +368,7 @@ describe('module actions', function () {
         ->not->toHavePublicMethodsBesides(['__construct', 'handle']);
 
     arch('module actions should not use HTTP Request')
-        ->expect('Illuminate\Http\Request')
+        ->expect(Request::class)
         ->not->toBeUsedIn('Modules\*\Actions');
 });
 
@@ -368,7 +378,7 @@ describe('module services', function () {
         ->toHaveSuffix('Service');
 
     arch('module services should not use HTTP Request')
-        ->expect('Illuminate\Http\Request')
+        ->expect(Request::class)
         ->not->toBeUsedIn('Modules\*\Services');
 });
 

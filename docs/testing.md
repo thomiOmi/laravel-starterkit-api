@@ -9,12 +9,17 @@
 | `composer lint` | Auto-fix code style (`pint --parallel`) |
 | `composer lint:staged` | Auto-fix code style for staged files only (`pint --parallel --dirty`) |
 | `composer lint:check` | Check code style without modifications |
-| `composer types:check` | Run PHPStan static analysis |
+| `composer types:check` | Run PHPStan static analysis (level max, includes test files via `pest-plugin-phpstan`) |
 | `composer test` | Run lint:check + types:check + `php artisan test` |
-| `composer test:quality` | Run lint:check + types:check + tests with `--coverage --type-coverage --min=100` |
+| `composer test:quality` | Run lint:check + types:check + tests with `--coverage --type-coverage --min=100 --memory-limit=512M` |
 | `composer test:mutation` | Run mutation testing (`--mutate --min=100`) |
 | `composer test:profanity` | Run profanity checks on test files |
-| `composer ci:check` | Full CI pipeline — runs `test:quality` then `test:profanity` |
+| `composer ci:check` | Full CI pipeline — runs `test:quality`, `rector:dry`, then `test:profanity` |
+
+### Tooling notes
+
+- `php artisan test` spawns phpunit as a child process that does not inherit `-d memory_limit` flags; the type-coverage plugin applies its own limit from `--memory-limit=` passed to artisan.
+- PHPStan output is wrapped by `laravel/pao` in a JSON envelope when an AI agent is detected. Set `PAO_DISABLE=1` to see raw output; use `phpstan clear-result-cache` (with `PAO_DISABLE=1`) to clear the result cache.
 | `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 
 The recommended pre-push workflow:
@@ -59,6 +64,8 @@ Global helper functions for authentication.
 |---|---|---|
 | `loginAsUser(?User $user, array $abilities)` | `User` | Authenticate with Sanctum (verified user). Default abilities: `['*']` |
 | `loginAsUnverifiedUser(?User $user, array $abilities)` | `User` | Authenticate with Sanctum (unverified user). Default abilities: `['*']` |
+| `responseData(Response $response)` | `array` | Decode JSON response content — use instead of `$response->getData(true)` (satisfies PHPStan) |
+| `artisanCommand(TestCase $test, string $command, array $parameters = [])` | `PendingCommand` | Run an artisan command from a feature test — use instead of `$this->artisan()` (resolves the `PendingCommand\|int` union) |
 
 ### File-level helpers
 

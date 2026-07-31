@@ -56,7 +56,7 @@
 | `composer test:quality` | Run lint:check + types:check + tests with code & type coverage (min 100%) |
 | `composer test:mutation` | Run mutation testing |
 | `composer test:profanity` | Run profanity checks on test files |
-| `composer ci:check` | Full CI pipeline (quality + profanity) |
+| `composer ci:check` | Full CI pipeline (quality + rector + profanity) |
 | `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 
 ### Testing Organization

@@ -28,8 +28,8 @@ describe('Sunset Middleware', function () {
         it('adds Deprecation header with unix timestamp', function () {
             $response = handleSunset('+30 days');
 
-            expect($response->headers->has('Deprecation'))->toBeTrue();
-            expect($response->headers->get('Deprecation'))->toMatch('/^@\d+$/');
+            expect($response->headers->has('Deprecation'))->toBeTrue()
+                ->and($response->headers->get('Deprecation'))->toMatch('/^@\d+$/');
         });
 
         it('adds Sunset header with RFC 1123 date', function () {
@@ -43,7 +43,7 @@ describe('Sunset Middleware', function () {
             $date = '2027-06-15';
             $response = handleSunset($date);
 
-            $deprecation = (int) str_replace('@', '', $response->headers->get('Deprecation'));
+            $deprecation = (int) str_replace('@', '', $response->headers->get('Deprecation') ?? '');
             $expected = CarbonImmutable::parse($date)->timestamp;
 
             expect($deprecation)->toBe($expected);
@@ -54,8 +54,8 @@ describe('Sunset Middleware', function () {
         it('adds Link header with successor-version when URL is provided', function () {
             $response = handleSunset('2027-01-01', 'https://v2.example.com/resource');
 
-            expect($response->headers->get('Link'))->toContain('rel="successor-version"');
-            expect($response->headers->get('Link'))->toContain('https://v2.example.com/resource');
+            expect($response->headers->get('Link'))->toContain('rel="successor-version"')
+                ->toContain('https://v2.example.com/resource');
         });
 
         it('does not add Link header without successor URL', function () {
@@ -76,24 +76,24 @@ describe('Sunset Middleware', function () {
             $past = CarbonImmutable::now()->subDay()->format('Y-m-d');
             $response = handleSunset($past, 'enforce');
 
-            expect($response->getStatusCode())->toBe(Response::HTTP_GONE);
-            expect($response->getContent())->toContain('sunset');
+            expect($response->getStatusCode())->toBe(Response::HTTP_GONE)
+                ->and($response->getContent())->toContain('sunset');
         });
 
         it('passes through when enforce but before sunset', function () {
             $future = CarbonImmutable::now()->addYear()->format('Y-m-d');
             $response = handleSunset($future, 'enforce');
 
-            expect($response->getStatusCode())->toBe(200);
-            expect($response->getContent())->toBe('OK');
+            expect($response->getStatusCode())->toBe(200)
+                ->and($response->getContent())->toBe('OK');
         });
 
         it('passes through without enforce even when past sunset', function () {
             $past = CarbonImmutable::now()->subDay()->format('Y-m-d');
             $response = handleSunset($past);
 
-            expect($response->getStatusCode())->toBe(200);
-            expect($response->getContent())->toBe('OK');
+            expect($response->getStatusCode())->toBe(200)
+                ->and($response->getContent())->toBe('OK');
         });
     });
 
@@ -101,9 +101,9 @@ describe('Sunset Middleware', function () {
         $past = CarbonImmutable::now()->subDay()->format('Y-m-d');
         $response = handleSunset($past, 'enforce', 'https://v2.example.com');
 
-        expect($response->headers->has('Deprecation'))->toBeTrue();
-        expect($response->headers->has('Sunset'))->toBeTrue();
-        expect($response->headers->has('Link'))->toBeTrue();
+        expect($response->headers->has('Deprecation'))->toBeTrue()
+            ->and($response->headers->has('Sunset'))->toBeTrue()
+            ->and($response->headers->has('Link'))->toBeTrue();
     });
 
     it('passes request through to next handler when not enforcing', function () {

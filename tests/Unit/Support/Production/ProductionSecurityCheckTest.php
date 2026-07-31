@@ -26,8 +26,8 @@ describe('production config', function () {
 
         $failed = array_filter($result, fn (array $r): bool => $r['status'] === 'fail');
 
-        expect($failed)->toBeEmpty();
-        expect($result)->toHaveCount(11);
+        expect($failed)->toBeEmpty()
+            ->and($result)->toHaveCount(11);
     });
 });
 
@@ -55,6 +55,10 @@ describe('multiple failures', function () {
     });
 });
 
+/**
+ * @param  array<int, array{check: string, status: string, detail?: string}>  $results
+ * @return array{check: string, status: string, detail?: string}
+ */
 function findCheck(array $results, string $name): array
 {
     foreach ($results as $result) {

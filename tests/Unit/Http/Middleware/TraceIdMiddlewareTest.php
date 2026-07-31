@@ -16,8 +16,8 @@ describe('TraceIdMiddleware', function () {
     it('adds X-Trace-ID header to response', function () {
         $response = (new TraceIdMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'));
 
-        expect($response->headers->has('X-Trace-ID'))->toBeTrue();
-        expect($response->headers->get('X-Trace-ID'))->toBeString()->not->toBeEmpty();
+        expect($response->headers->has('X-Trace-ID'))->toBeTrue()
+            ->and($response->headers->get('X-Trace-ID'))->toBeString()->not->toBeEmpty();
     });
 
     it('trace ID is a ULID', function () {

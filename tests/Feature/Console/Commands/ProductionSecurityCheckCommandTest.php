@@ -21,7 +21,7 @@ beforeEach(function () {
 
 describe('security:check command', function () {
     it('runs security check and shows table', function () {
-        $this->artisan('security:check')
+        artisanCommand($this, 'security:check')
             ->expectsOutputToContain('All production security checks passed')
             ->assertSuccessful();
     });

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 dataset('filterOperators', [
     'eq' => ['eq:', 'name', 'John',  '= ?'],
     'neq' => ['neq:', 'name', 'John', '!= ?'],
