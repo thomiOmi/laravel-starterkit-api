@@ -40,6 +40,9 @@
 - Test each CRUD operation: list, create, view, update, delete, unauthorized access
 - Unit test per Action class (test business logic in isolation)
 - Use response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`
+- Prefer specific assertions over generic status checks: `assertOk()`, `assertNoContent()`, `assertUnprocessable()`, `assertForbidden()`, `assertNotFound()` — use `assertStatus()`/`getStatusCode()` only for dynamic statuses
+- Test exceptions with `expect(fn () => ...)->toThrow(Exception::class, 'message')` — never manual try/catch
+- Use specific expectations (`toBeUlid()`, `toBeInstanceOf()`, `toMatch()`) instead of wrapping predicates in `toBeTrue()`/`toBeFalse()`
 - AI agent verification probe: `vendor/bin/pest --agent='...'` (see docs/testing.md; probes are not a substitute for permanent tests)
 - Parallel test: `php artisan test --compact --parallel`
 
@@ -57,7 +60,8 @@
 | `composer test:quality` | Run lint:check + types:check + tests with code & type coverage (min 100%) |
 | `composer test:mutation` | Run mutation testing |
 | `composer test:profanity` | Run profanity checks on test files |
-| `composer test:tia` | Re-run only tests affected by your changes (test impact analysis) |
+| `composer test:tia` | Re-run only tests affected by your changes (test impact analysis); also enabled automatically on local machines |
+| `composer test:snapshot` | Update stored snapshots (`tests/.pest/snapshots`) |
 | `composer ci:check` | Full CI pipeline (quality + rector + profanity) |
 | `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 

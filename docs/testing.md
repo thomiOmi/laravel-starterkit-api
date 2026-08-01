@@ -194,7 +194,7 @@ it('matches snapshot for basic response', function () {
 ### Updating snapshots
 
 ```bash
-php artisan test --update-snapshots
+composer test:snapshot
 ```
 
 Commit the updated `.snap` files — they are the baseline and must be tracked in git.
@@ -216,14 +216,17 @@ Rules:
 
 ## TIA (`--tia`)
 
-Test Impact Analysis (built-in Pest 5) re-runs only the tests affected by your changes and replays the rest from cache:
+Test Impact Analysis (built-in Pest 5) re-runs only the tests affected by your changes and replays the rest from cache. It is enabled automatically on local machines via `pest()->tia()->locally()` in `tests/Pest.php`:
 
 ```bash
-composer test:tia
+php artisan test          # TIA replay on local machines
+composer test:tia         # explicit TIA run
+php artisan test --no-tia # force a full run
 ```
 
+- `locally()` is skipped automatically when `--ci` is passed, so `composer test:quality` and `ci:check` always run the full suite
 - The first run records the dependency graph and requires a coverage driver: `XDEBUG_MODE=coverage vendor/bin/pest --tia` (about 2x slower than a normal run). The graph is stored in `~/.pest/tia/{project}`
-- Subsequent runs replay cached results: the 291-test suite drops from ~55s to ~4s
+- Subsequent runs replay cached results: the 310-test suite drops from ~50s to ~3s
 - After a large refactor, re-record the graph with `vendor/bin/pest --tia --fresh`
 - `ci:check` never uses TIA — CI always runs the full suite
 
