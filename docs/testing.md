@@ -19,7 +19,7 @@
 ### Tooling notes
 
 - Test scripts run `vendor/bin/pest` directly (not `php artisan test`), so the process runs in a single PHP context: `--memory-limit=` is consumed by the type-coverage plugin (a plugin flag, not part of the Pest CLI API reference), and `--configuration` can point at any XML file without Collision overriding it.
-- `test`, `test:quality`, and `test:tia` pass `--use-baseline=.phpunit-baseline.xml`. The baseline whitelists known deprecations/notices so they do not fail the run; only **new** deprecations/notices fail. Regenerate it with `vendor/bin/pest --no-tia --generate-baseline=.phpunit-baseline.xml` after a `composer update` brings in vendor deprecations (or when you intentionally fix/accept them). The file is committed.
+- The baseline is declared in `phpunit.xml` via `<source baseline="phpunit.baseline.xml">`, so it applies to every Pest run (including `test:snapshot` and `test:profanity`). It whitelists known deprecations/notices so they do not fail the run; only **new** deprecations/notices fail. Regenerate it with `vendor/bin/pest --no-tia --generate-baseline=phpunit.baseline.xml` after a `composer update` brings in vendor deprecations (or when you intentionally fix/accept them). The file is committed.
 - `phpunit.xml` is strict: `failOnDeprecation`, `failOnNotice`, `failOnPhpunitDeprecation`, `failOnPhpunitNotice`, `failOnEmptyTestSuite`, `failOnWarning`, `failOnRisky`, and `beStrictAbout*` are all enabled. `database/` and `modules/*/Database` stay excluded from the coverage `<source>` (migration `down()` methods and unused seeders/factory states are not exercised by tests; revisit when module tests land).
 - PHPStan output is wrapped by `laravel/pao` in a JSON envelope when an AI agent is detected. Set `PAO_DISABLE=1` to see raw output; use `phpstan clear-result-cache` (with `PAO_DISABLE=1`) to clear the result cache.
 | `composer dev` | Run all dev processes concurrently (server, queue, logs) |
@@ -218,15 +218,14 @@ Rules:
 
 ## TIA (`--tia`)
 
-Test Impact Analysis (built-in Pest 5) re-runs only the tests affected by your changes and replays the rest from cache. It is enabled automatically on local machines via `pest()->tia()->locally()` in `tests/Pest.php`:
+Test Impact Analysis (built-in Pest 5) re-runs only the tests affected by your changes and replays the rest from cache. It is opt-in and runs only when the flag is passed explicitly (it is not auto-enabled in `tests/Pest.php`):
 
 ```bash
-php artisan test          # TIA replay on local machines
 composer test:tia         # explicit TIA run
-php artisan test --no-tia # force a full run
+php artisan test --tia    # explicit TIA run
+php artisan test          # always a full run
 ```
 
-- `locally()` is skipped automatically when `--ci` is passed, so `composer test:quality` and `ci:check` always run the full suite
 - The first run records the dependency graph and requires a coverage driver: `XDEBUG_MODE=coverage vendor/bin/pest --tia` (about 2x slower than a normal run). The graph is stored in `~/.pest/tia/{project}`
 - Subsequent runs replay cached results: the 310-test suite drops from ~50s to ~3s
 - After a large refactor, re-record the graph with `vendor/bin/pest --tia --fresh`

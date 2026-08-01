@@ -56,7 +56,7 @@
     },
     "scripts": {
         "setup": [
-            "composer install",
+            "@composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
             "@php artisan migrate --force"
@@ -87,13 +87,13 @@
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php vendor/bin/pest --use-baseline=.phpunit-baseline.xml"
+            "@php vendor/bin/pest"
         ],
         "test:quality": [
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php vendor/bin/pest --ci --coverage --type-coverage --min=100 --memory-limit=512M --use-baseline=.phpunit-baseline.xml"
+            "@php vendor/bin/pest --ci --coverage --type-coverage --min=100 --memory-limit=512M"
         ],
         "test:mutation": [
             "@php vendor/bin/pest --mutate --min=100"
@@ -105,7 +105,7 @@
             "@php vendor/bin/pest --no-tia --update-snapshots"
         ],
         "test:tia": [
-            "@php vendor/bin/pest --tia --use-baseline=.phpunit-baseline.xml"
+            "@php vendor/bin/pest --tia"
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",

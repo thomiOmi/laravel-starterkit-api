@@ -28,7 +28,7 @@
             <directory>modules/*/Tests</directory>
         </testsuite>
     </testsuites>
-    <source>
+    <source baseline="phpunit.baseline.xml">
         <include>
             <directory suffix=".php">app</directory>
             <directory suffix=".php">modules</directory>
