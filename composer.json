@@ -102,7 +102,7 @@
             "@php artisan test --profanity"
         ],
         "test:snapshot": [
-            "@php artisan test --update-snapshots"
+            "@php artisan test --no-tia --update-snapshots"
         ],
         "test:tia": [
             "@php artisan test --tia"
