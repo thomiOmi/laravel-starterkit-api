@@ -66,6 +66,10 @@ Global helper functions for authentication and API responses.
 |---|---|---|
 | `loginAsUser(?User $user, array $abilities)` | `User` | Authenticate with Sanctum (verified user). Default abilities: `['*']` |
 | `loginAsUnverifiedUser(?User $user, array $abilities)` | `User` | Authenticate with Sanctum (unverified user). Default abilities: `['*']` |
+| `loginAsRole(RoleEnum $role, ?User $user, array $abilities)` | `User` | Authenticate a verified user and assign a role. Requires the role to exist (seed `RoleSeeder` in the test) |
+| `loginAsSuperAdmin(?User $user, array $abilities)` | `User` | Authenticate a verified user with the `super-admin` role |
+| `loginAsAdmin(?User $user, array $abilities)` | `User` | Authenticate a verified user with the `admin` role |
+| `loginAsUserRole(?User $user, array $abilities)` | `User` | Authenticate a verified user with the basic `user` role |
 | `responseData(Response $response)` | `array` | Decode JSON response content — use instead of `$response->getData(true)` (satisfies PHPStan) |
 | `assertSuccessResponse()` | `TestResponse` | Assert the success envelope (see table above) |
 | `assertProblemResponse()` | `TestResponse` | Assert the RFC 9457 problem details envelope (see table above) |
@@ -85,6 +89,18 @@ function makeFilter(array $query = [], array $config = []): TestFilter
     return new TestFilter($query, $config);
 }
 ```
+
+## Global behavior coverage
+
+Shared, app-wide behavior is covered in dedicated files so every global pipeline change is tested:
+
+| File | Covers |
+|---|---|
+| `tests/Unit/Concerns/HasDefaultBehaviorTest.php` | Model default behavior: ULID keys, string key type, `Y-m-d H:i:s` date serialization |
+| `tests/Unit/Http/Exceptions/ExceptionHandlerTest.php` | All 8 exception handler render rules (validation, auth, forbidden, not found, rate limit, bad request, generic HTTP, internal error) — `smoke` group |
+| `tests/Feature/Http/Middleware/GlobalApiMiddlewareTest.php` | Global API pipeline: 404 problem responses, `X-Trace-ID`, security headers on error responses — `smoke` group |
+
+Exception responses are decorated with `X-Trace-ID` and security headers via `$exceptions->respond(...)` in `bootstrap/app.php`, because middleware that sets headers after `$next()` never runs when a request throws.
 
 ## Datasets (`tests/Datasets/`)
 
@@ -220,6 +236,6 @@ composer test:tia
 
 Rules:
 
-- App-layer tests may only import the module **User model/factory** (the app's auth model) — and must route it through the `tests/Helpers.php` seam (`loginAsUser()`, `loginAsUnverifiedUser()`), never through `Modules\*\...` imports directly.
+- App-layer tests may only import the module **User model/factory** (the app's auth model) — and must route it through the `tests/Helpers.php` seam (`loginAsUser()`, `loginAsUnverifiedUser()`, `loginAsRole()`, `loginAsSuperAdmin()`, `loginAsAdmin()`, `loginAsUserRole()`), never through `Modules\*\...` imports directly.
 - Module-internal tests must stay self-contained in their module and must not import other modules.
 - Test fixtures shared across files go in `tests/Helpers.php`; parameterized cases use Datasets (inline when used by a single file, named when reused).
