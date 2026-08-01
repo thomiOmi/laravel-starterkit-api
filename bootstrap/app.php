@@ -19,6 +19,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
+use Illuminate\Routing\Router;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
@@ -166,6 +167,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 status: Response::HTTP_INTERNAL_SERVER_ERROR,
                 detail: $detail,
             );
+        });
+
+        // Attach trace and security headers to exception responses.
+        // Middleware that sets headers after `$next()` never runs when the
+        // request throws, so re-apply the same headers here.
+        $exceptions->respond(function ($response, Throwable $e, Request $request): Response {
+            $response = Router::toResponse($request, $response);
+
+            return (new TraceIdMiddleware)->handle($request, function () use ($response, $request): Response {
+                return (new SecurityHeadersMiddleware)->handle($request, function () use ($response): Response {
+                    return $response;
+                });
+            });
         });
     })
     ->create();
