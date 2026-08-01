@@ -26,6 +26,9 @@ pest()
     ->extend(TestCase::class)
     ->in('Unit', '../modules/*/Tests/Unit', 'Architecture');
 
+// Re-run only tests affected by local changes; skipped when `--ci` is passed.
+pest()->tia()->locally();
+
 pest()->beforeEach(function (): void {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
