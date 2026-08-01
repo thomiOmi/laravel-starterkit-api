@@ -84,7 +84,7 @@ describe('Sunset Middleware', function () {
             $future = CarbonImmutable::now()->addYear()->format('Y-m-d');
             $response = handleSunset($future, 'enforce');
 
-            expect($response->getStatusCode())->toBe(200)
+            expect($response->getStatusCode())->toBe(Response::HTTP_OK)
                 ->and($response->getContent())->toBe('OK');
         });
 
@@ -92,7 +92,7 @@ describe('Sunset Middleware', function () {
             $past = CarbonImmutable::now()->subDay()->format('Y-m-d');
             $response = handleSunset($past);
 
-            expect($response->getStatusCode())->toBe(200)
+            expect($response->getStatusCode())->toBe(Response::HTTP_OK)
                 ->and($response->getContent())->toBe('OK');
         });
     });

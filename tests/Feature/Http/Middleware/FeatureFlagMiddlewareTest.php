@@ -21,7 +21,7 @@ describe('FeatureFlagMiddleware', function () {
             'beta-feature',
         );
 
-        expect($response->getStatusCode())->toBe(200)
+        expect($response->getStatusCode())->toBe(Response::HTTP_OK)
             ->and($response->getContent())->toBe('OK');
     });
 

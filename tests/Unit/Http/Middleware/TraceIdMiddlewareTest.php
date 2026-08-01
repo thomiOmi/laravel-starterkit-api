@@ -8,7 +8,6 @@ covers(TraceIdMiddleware::class);
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 describe('TraceIdMiddleware', function () {
@@ -23,7 +22,7 @@ describe('TraceIdMiddleware', function () {
     it('trace ID is a ULID', function () {
         $response = (new TraceIdMiddleware)->handle(new Request, fn ($req): Response => new Response('OK'));
 
-        expect(Str::isUlid($response->headers->get('X-Trace-ID')))->toBeTrue();
+        expect($response->headers->get('X-Trace-ID'))->toBeUlid();
     });
 
     it('adds trace ID to Laravel Context', function () {

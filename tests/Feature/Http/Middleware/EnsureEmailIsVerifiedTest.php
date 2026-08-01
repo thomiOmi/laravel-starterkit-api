@@ -39,8 +39,8 @@ describe('EnsureEmailIsVerified', function () {
                 )
             );
 
-            expect($response->getStatusCode())->toBe(200)
-                ->and($response->getContent())->toBe('OK');
+            $response->assertOk()
+                ->assertContent('OK');
         });
 
     });
