@@ -6,19 +6,21 @@
 |---|---|---|
 | `composer setup` | Install dependencies and prepare the application |
 | `composer setup:ci` | Prepare the application for CI (copy .env, key:generate, sqlite, migrate) |
-| `composer lint` | Auto-fix code style (`pint --parallel`) |
-| `composer lint:staged` | Auto-fix code style for staged files only (`pint --parallel --dirty`) |
+| `composer lint` | Auto-fix code style (`@php vendor/bin/pint --parallel`) |
+| `composer lint:staged` | Auto-fix code style for staged files only (`@php vendor/bin/pint --parallel --dirty`) |
 | `composer lint:check` | Check code style without modifications |
 | `composer types:check` | Run PHPStan static analysis (level max, includes test files via `pest-plugin-phpstan`) |
-| `composer test` | Run lint:check + types:check + `php artisan test` |
-| `composer test:quality` | Run lint:check + types:check + tests with `--coverage --type-coverage --min=100 --memory-limit=512M` |
-| `composer test:mutation` | Run mutation testing (`--mutate --min=100`) |
+| `composer test` | Run lint:check + types:check + `vendor/bin/pest` (with baseline) |
+| `composer test:quality` | Run lint:check + types:check + tests with `--coverage --type-coverage --min=100 --memory-limit=512M` (with baseline) |
+| `composer test:mutation` | Run mutation testing (`vendor/bin/pest --mutate --min=100`) |
 | `composer test:profanity` | Run profanity checks on test files |
 | `composer ci:check` | Full CI pipeline — runs `test:quality`, `rector:dry`, then `test:profanity` |
 
 ### Tooling notes
 
-- `php artisan test` spawns phpunit as a child process that does not inherit `-d memory_limit` flags; the type-coverage plugin applies its own limit from `--memory-limit=` passed to artisan.
+- Test scripts run `vendor/bin/pest` directly (not `php artisan test`), so the process runs in a single PHP context: `--memory-limit=` is consumed by the type-coverage plugin (a plugin flag, not part of the Pest CLI API reference), and `--configuration` can point at any XML file without Collision overriding it.
+- `test`, `test:quality`, and `test:tia` pass `--use-baseline=.phpunit-baseline.xml`. The baseline whitelists known deprecations/notices so they do not fail the run; only **new** deprecations/notices fail. Regenerate it with `vendor/bin/pest --no-tia --generate-baseline=.phpunit-baseline.xml` after a `composer update` brings in vendor deprecations (or when you intentionally fix/accept them). The file is committed.
+- `phpunit.xml` is strict: `failOnDeprecation`, `failOnNotice`, `failOnPhpunitDeprecation`, `failOnPhpunitNotice`, `failOnEmptyTestSuite`, `failOnWarning`, `failOnRisky`, and `beStrictAbout*` are all enabled. `database/` and `modules/*/Database` stay excluded from the coverage `<source>` (migration `down()` methods and unused seeders/factory states are not exercised by tests; revisit when module tests land).
 - PHPStan output is wrapped by `laravel/pao` in a JSON envelope when an AI agent is detected. Set `PAO_DISABLE=1` to see raw output; use `phpstan clear-result-cache` (with `PAO_DISABLE=1`) to clear the result cache.
 | `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 

@@ -8,6 +8,11 @@
     beStrictAboutCoverageMetadata="true"
     failOnWarning="true"
     failOnRisky="true"
+    failOnDeprecation="true"
+    failOnNotice="true"
+    failOnPhpunitDeprecation="true"
+    failOnPhpunitNotice="true"
+    failOnEmptyTestSuite="true"
 >
     <testsuites>
         <testsuite name="Architecture">
@@ -30,7 +35,6 @@
         </include>
         <exclude>
             <directory>app/Providers</directory>
-            <directory>app/Console/Commands</directory>
             <directory>database</directory>
             <directory>modules/*/Tests</directory>
             <directory>modules/*/Database</directory>

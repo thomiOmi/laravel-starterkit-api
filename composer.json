@@ -72,40 +72,40 @@
             "@php artisan dev"
         ],
         "lint": [
-            "pint --parallel"
+            "@php vendor/bin/pint --parallel"
         ],
         "lint:staged": [
-            "pint --parallel --dirty"
+            "@php vendor/bin/pint --parallel --dirty"
         ],
         "lint:check": [
-            "pint --parallel --test"
+            "@php vendor/bin/pint --parallel --test"
         ],
         "types:check": [
-            "phpstan analyse --memory-limit=512M"
+            "@php vendor/bin/phpstan analyse --memory-limit=512M"
         ],
         "test": [
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php artisan test"
+            "@php vendor/bin/pest --use-baseline=.phpunit-baseline.xml"
         ],
         "test:quality": [
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php artisan test --ci --coverage --type-coverage --min=100 --memory-limit=512M"
+            "@php vendor/bin/pest --ci --coverage --type-coverage --min=100 --memory-limit=512M --use-baseline=.phpunit-baseline.xml"
         ],
         "test:mutation": [
-            "@php artisan test --mutate --min=100"
+            "@php vendor/bin/pest --mutate --min=100"
         ],
         "test:profanity": [
-            "@php artisan test --profanity"
+            "@php vendor/bin/pest --profanity"
         ],
         "test:snapshot": [
-            "@php artisan test --no-tia --update-snapshots"
+            "@php vendor/bin/pest --no-tia --update-snapshots"
         ],
         "test:tia": [
-            "@php artisan test --tia"
+            "@php vendor/bin/pest --tia --use-baseline=.phpunit-baseline.xml"
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
@@ -114,10 +114,10 @@
             "@test:profanity"
         ],
         "rector:dry": [
-            "rector --dry-run"
+            "@php vendor/bin/rector --dry-run"
         ],
         "rector": [
-            "rector"
+            "@php vendor/bin/rector"
         ],
         "release": [
             "npx @grazulex/shipmark release"
