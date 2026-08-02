@@ -7,81 +7,109 @@ namespace App\Console\Commands;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\table;
 
 #[Signature('module:list')]
 #[Description('List all modules and their status')]
 class ModuleListCommand extends Command
 {
-    /**
-     * Execute the console command.
-     */
+    protected const array TRACKED_DIRS = [
+        'controllers' => ['path' => 'Controllers', 'recursive' => true],
+        'actions' => ['path' => 'Actions', 'recursive' => false],
+        'payloads' => ['path' => 'Payloads', 'recursive' => true],
+        'filters' => ['path' => 'Filters', 'recursive' => false],
+        'migrations' => ['path' => 'Database/Migrations', 'recursive' => false],
+    ];
+
     public function handle(): void
     {
-        if (! File::isDirectory(config()->string('filesystems.disks.modules.root'))) {
-            error('Modules directory not found.');
+        try {
+            $disk = Storage::disk('modules');
+
+            /** @var list<string> $modules */
+            $modules = $disk->directories('');
+        } catch (\Throwable $e) {
+            error("Modules directory not accessible: {$e->getMessage()}");
 
             return;
         }
 
-        $modules = Storage::disk('modules')->directories('');
+        if ($modules === []) {
+            info('No modules found.');
+
+            return;
+        }
+
+        sort($modules, SORT_NATURAL | SORT_FLAG_CASE);
+
+        try {
+            /** @var list<string> $allFiles */
+            $allFiles = $disk->allFiles('');
+        } catch (\Throwable $e) {
+            error("Failed to read module files: {$e->getMessage()}");
+
+            return;
+        }
+
         $data = [];
 
-        foreach ($modules as $module) {
-            if (! is_string($module)) {
-                continue;
+        foreach ($modules as $name) {
+            $files = array_values(array_filter(
+                $allFiles,
+                fn (string $file): bool => Str::startsWith($file, "{$name}/")
+            ));
+
+            $hasProvider = in_array("{$name}/Providers/{$name}ServiceProvider.php", $files, true);
+
+            $hasRoutes = in_array("{$name}/Routes/V1.php", $files, true)
+                || in_array("{$name}/Routes/api.php", $files, true);
+
+            $counts = [];
+            foreach (self::TRACKED_DIRS as $key => $config) {
+                $counts[$key] = $this->countIn($files, "{$name}/{$config['path']}/", $config['recursive']);
             }
-
-            $name = $module;
-
-            // Check for ServiceProvider
-            $hasProvider = Storage::disk('modules')->exists("{$name}/Providers/{$name}ServiceProvider.php");
-
-            // Counts
-            $controllers = $this->countFilesRecursive("{$name}/Controllers");
-            $actions = $this->countFiles("{$name}/Actions");
-            $payloads = $this->countFilesRecursive("{$name}/Payloads");
-            $filters = $this->countFiles("{$name}/Filters");
-            $migrations = $this->countFiles("{$name}/Database/Migrations");
-
-            $hasRoutes = Storage::disk('modules')->exists("{$name}/Routes/V1.php")
-                || Storage::disk('modules')->exists("{$name}/Routes/api.php");
 
             $data[] = [
                 $name,
                 $hasProvider ? 'Active' : 'Inactive',
-                (string) $controllers,
-                (string) $actions,
-                (string) $payloads,
-                (string) $filters,
-                (string) $migrations,
+                (string) $counts['controllers'],
+                (string) $counts['actions'],
+                (string) $counts['payloads'],
+                (string) $counts['filters'],
+                (string) $counts['migrations'],
                 $hasRoutes ? 'Yes' : 'No',
             ];
         }
 
+        /** @var array<int, array<int, string>> $data */
         table(
-            ['Module Name', 'Status', 'Ctlr', 'Actn', 'Pld', 'Flt', 'Migr', 'Rte'],
+            ['Module Name', 'Status', 'Controllers', 'Actions', 'Payloads', 'Filters', 'Migrations', 'Routes'],
             $data
         );
     }
 
     /**
-     * Helper to count files in a directory.
+     * Count files under $prefix from an already-fetched file list.
+     * When $recursive is false, only counts files directly inside $prefix (no subfolders).
+     *
+     * @param  list<string>  $files
      */
-    protected function countFiles(string $path): int
+    protected function countIn(array $files, string $prefix, bool $recursive): int
     {
-        return Storage::disk('modules')->directoryExists($path) ? count(Storage::disk('modules')->files($path)) : 0;
-    }
+        $matches = array_filter($files, fn (string $file) => Str::startsWith($file, $prefix));
 
-    /**
-     * Helper to count files recursively in a directory.
-     */
-    protected function countFilesRecursive(string $path): int
-    {
-        return Storage::disk('modules')->directoryExists($path) ? count(Storage::disk('modules')->allFiles($path)) : 0;
+        if ($recursive) {
+            return count($matches);
+        }
+
+        return count(array_filter(
+            $matches,
+            fn (string $file) => ! str_contains(Str::after($file, $prefix), '/')
+        ));
     }
 }
