@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Pest\Expectation;
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
@@ -18,12 +20,15 @@ declare(strict_types=1);
 */
 
 expect()->pipe('toMatchSnapshot', function (Closure $next) {
+    /** @var Expectation<mixed> $this */
+    // @phpstan-ignore-next-line
     if (is_string($this->value)) {
+        // @phpstan-ignore-next-line
         $this->value = preg_replace(
             '/"timestamp":"[^"]+"/',
             '"timestamp":"[dynamic]"',
-            $this->value,
-        );
+            $this->value, // @phpstan-ignore-line
+        ) ?? $this->value; // @phpstan-ignore-line
     }
 
     return $next();

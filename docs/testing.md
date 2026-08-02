@@ -32,6 +32,37 @@ composer lint          # fix code style
 composer test:quality  # types + coverage + tests
 ```
 
+## Directory Structure
+
+```text
+tests/
+├── .pest/                    # Pest snapshot storage + shard state (generated, do not edit)
+├── Architecture/
+│   └── ArchitectureTest.php  # arch() suite - source of truth for code conventions
+├── Datasets/                 # Named datasets for ->with('name') used in 2+ tests
+├── Feature/                  # HTTP feature tests (RefreshDatabase)
+│   ├── Console/              # Artisan command tests
+│   └── Http/                 # Middleware and form request tests
+├── Unit/                     # Unit tests (no RefreshDatabase)
+│   ├── Concerns/
+│   ├── Enums/
+│   ├── Http/                 # Middleware, responses, exceptions, requests
+│   ├── Models/
+│   ├── Notifications/
+│   └── Support/
+├── Expectations.php          # Pest expectation pipes (snapshot timestamp stripping)
+├── Helpers.php               # Typed assertion helpers (assertSuccessResponse, etc.)
+├── Pest.php                  # TestCase binding per directory + global beforeEach
+└── TestCase.php              # Base test case (abstract)
+phpunit.xml                   # Strict PHPUnit configuration + coverage baseline
+phpunit.baseline.xml          # Whitelisted deprecations/notices
+```
+
+Notes:
+
+- `Pest.php` also registers module test paths: `modules/*/Tests/{Feature,Unit}`. `modules/IAM/Tests/` is currently empty.
+- `phpunit.xml` is strict (`failOnDeprecation`, `failOnNotice`, etc.) and declares the baseline — see Tooling notes above.
+
 ## Expectations (`tests/Expectations.php`)
 
 Custom expectation API extensions. Only `expect()->pipe()` customizations live here — custom `expect()->extend()` methods are **not** recognized by PHPStan (`pest-plugin-phpstan` only understands built-in matchers), so response-level assertions are typed functions in `tests/Helpers.php` instead.
@@ -39,6 +70,8 @@ Custom expectation API extensions. Only `expect()->pipe()` customizations live h
 | Expectation | Description |
 |---|---|
 | `toMatchSnapshot()` | (pipe) Strip dynamic `timestamp` before comparing against stored `.snap` file |
+
+Pest re-binds the pipe closure to the expectation at runtime, so `$this` refers to `Pest\Expectation` inside it (documented with a `@var Expectation<mixed> $this` docblock). `pest-plugin-phpstan` only types `$this` for test closures, not pipe closures, so the `$this->value` accesses carry `@phpstan-ignore-next-line` — the same pattern Pest core itself uses in `src/Concerns/Pipeable.php`.
 
 ## Response assertion helpers (`tests/Helpers.php`)
 
@@ -186,7 +219,9 @@ Add new groups sparingly. Prefer `describe()` + `--filter` for most filtering ne
 
 ## Snapshot Testing
 
-Snapshots are stored in `tests/.pest/snapshots/**/*.snap`. The Expectation Pipe in `Expectations.php` strips dynamic `timestamp` fields before comparison so snapshots are stable.```php
+Snapshots are stored in `tests/.pest/snapshots/**/*.snap`. The Expectation Pipe in `Expectations.php` strips dynamic `timestamp` fields before comparison so snapshots are stable.
+
+```php
 it('matches snapshot for basic response', function () {
     $response = (new SuccessResponse(data: ['id' => 1]))->toResponse(new Request);
 

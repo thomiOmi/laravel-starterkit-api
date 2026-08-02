@@ -18,9 +18,6 @@ parameters:
 
     checkConfigTypes: true
 
-    stubFiles:
-        - tests/.phpstan/Pipeable.stub
-
     # Larastan optional rules
     checkModelProperties: true
     checkModelMethodVisibility: true
