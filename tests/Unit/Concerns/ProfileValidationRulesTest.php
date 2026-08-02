@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 use App\Concerns\ProfileValidationRules;
+use Illuminate\Validation\Rules\Unique;
 
 covers(ProfileValidationRules::class);
-
-use Illuminate\Validation\Rules\Unique;
 
 $tester = new readonly class
 {

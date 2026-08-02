@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 use App\Concerns\FormatDate;
+use Carbon\Carbon;
 
 covers(FormatDate::class);
-
-use Carbon\Carbon;
 
 $tester = new readonly class
 {

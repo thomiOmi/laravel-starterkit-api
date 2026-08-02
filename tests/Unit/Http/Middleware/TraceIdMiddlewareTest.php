@@ -3,12 +3,11 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\TraceIdMiddleware;
-
-covers(TraceIdMiddleware::class);
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Symfony\Component\HttpFoundation\Response;
+
+covers(TraceIdMiddleware::class);
 
 describe('TraceIdMiddleware', function () {
 

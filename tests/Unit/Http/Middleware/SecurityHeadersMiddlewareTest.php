@@ -3,11 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\SecurityHeadersMiddleware;
-
-covers(SecurityHeadersMiddleware::class);
-
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+
+covers(SecurityHeadersMiddleware::class);
 
 function handleMiddleware(Request $request): Response
 {
