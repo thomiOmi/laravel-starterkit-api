@@ -8,6 +8,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\table;
@@ -21,36 +22,34 @@ class ModuleListCommand extends Command
      */
     public function handle(): void
     {
-        $modulesPath = base_path('modules');
-
-        if (! File::isDirectory($modulesPath)) {
+        if (! File::isDirectory(config()->string('filesystems.disks.modules.root'))) {
             error('Modules directory not found.');
 
             return;
         }
 
-        $modules = File::directories($modulesPath);
+        $modules = Storage::disk('modules')->directories('');
         $data = [];
 
-        foreach ($modules as $modulePath) {
-            $modulePathString = is_string($modulePath) ? $modulePath : '';
-            if ($modulePathString === '') {
+        foreach ($modules as $module) {
+            if (! is_string($module)) {
                 continue;
             }
-            $name = basename($modulePathString);
+
+            $name = $module;
 
             // Check for ServiceProvider
-            $hasProvider = File::exists("{$modulePathString}/Providers/{$name}ServiceProvider.php");
+            $hasProvider = Storage::disk('modules')->exists("{$name}/Providers/{$name}ServiceProvider.php");
 
             // Counts
-            $controllers = $this->countFilesRecursive("{$modulePathString}/Controllers");
-            $actions = $this->countFiles("{$modulePathString}/Actions");
-            $payloads = $this->countFilesRecursive("{$modulePathString}/Payloads");
-            $filters = $this->countFiles("{$modulePathString}/Filters");
-            $migrations = $this->countFiles("{$modulePathString}/Database/Migrations");
+            $controllers = $this->countFilesRecursive("{$name}/Controllers");
+            $actions = $this->countFiles("{$name}/Actions");
+            $payloads = $this->countFilesRecursive("{$name}/Payloads");
+            $filters = $this->countFiles("{$name}/Filters");
+            $migrations = $this->countFiles("{$name}/Database/Migrations");
 
-            $hasRoutes = File::exists("{$modulePathString}/Routes/V1.php")
-                || File::exists("{$modulePathString}/Routes/api.php");
+            $hasRoutes = Storage::disk('modules')->exists("{$name}/Routes/V1.php")
+                || Storage::disk('modules')->exists("{$name}/Routes/api.php");
 
             $data[] = [
                 $name,
@@ -75,7 +74,7 @@ class ModuleListCommand extends Command
      */
     protected function countFiles(string $path): int
     {
-        return File::exists($path) ? count(File::files($path)) : 0;
+        return Storage::disk('modules')->directoryExists($path) ? count(Storage::disk('modules')->files($path)) : 0;
     }
 
     /**
@@ -83,10 +82,6 @@ class ModuleListCommand extends Command
      */
     protected function countFilesRecursive(string $path): int
     {
-        if (! File::exists($path)) {
-            return 0;
-        }
-
-        return count(File::allFiles($path));
+        return Storage::disk('modules')->directoryExists($path) ? count(Storage::disk('modules')->allFiles($path)) : 0;
     }
 }

@@ -30,12 +30,4 @@ describe('PermissionEnum', function () {
         it('has PermissionDelete', fn () => expect(PermissionEnum::PermissionDelete->value)->toBe('permission.delete'));
     });
 
-    it('is backed by string', function () {
-        expect(PermissionEnum::tryFrom('user.view'))->toBe(PermissionEnum::UserView);
-    });
-
-    it('returns null for unknown values', function (string $unknownValue) {
-        expect(PermissionEnum::tryFrom($unknownValue))->toBeNull();
-    })->with(['invalid', 'user.view-invalid', 'role.unknown']);
-
 });

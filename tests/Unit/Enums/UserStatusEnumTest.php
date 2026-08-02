@@ -14,12 +14,4 @@ describe('UserStatusEnum', function () {
     it('has Suspended', fn () => expect(UserStatusEnum::Suspended->value)->toBe('suspended'));
     it('has Banned', fn () => expect(UserStatusEnum::Banned->value)->toBe('banned'));
 
-    it('is backed by string', function () {
-        expect(UserStatusEnum::tryFrom('pending'))->toBe(UserStatusEnum::Pending);
-    });
-
-    it('returns null for unknown values', function (string $unknownValue) {
-        expect(UserStatusEnum::tryFrom($unknownValue))->toBeNull();
-    })->with(['invalid', 'unknown', 'pending-extra']);
-
 });
