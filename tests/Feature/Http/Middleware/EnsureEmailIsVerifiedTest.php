@@ -15,7 +15,7 @@ describe('EnsureEmailIsVerified', function () {
         $response = TestResponse::fromBaseResponse(
             (new EnsureEmailIsVerified)->handle(
                 new Request,
-                fn ($req): Response => new Response('OK'),
+                fn (Request $req): Response => new Response('OK'),
             )
         );
 
@@ -35,7 +35,7 @@ describe('EnsureEmailIsVerified', function () {
             $response = TestResponse::fromBaseResponse(
                 (new EnsureEmailIsVerified)->handle(
                     $request,
-                    fn ($req): Response => new Response('OK'),
+                    fn (Request $req): Response => new Response('OK'),
                 )
             );
 
@@ -58,7 +58,7 @@ describe('EnsureEmailIsVerified', function () {
             $response = TestResponse::fromBaseResponse(
                 (new EnsureEmailIsVerified)->handle(
                     $request,
-                    fn ($req): Response => new Response('OK'),
+                    fn (Request $req): Response => new Response('OK'),
                 )
             );
 

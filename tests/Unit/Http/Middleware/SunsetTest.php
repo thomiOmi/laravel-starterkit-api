@@ -16,7 +16,7 @@ function handleSunset(string $sunsetAt, string ...$params): Response
 
     return $middleware->handle(
         new Request,
-        fn ($req): Response => new Response('OK'),
+        fn (Request $req): Response => new Response('OK'),
         $sunsetAt,
         ...$params,
     );

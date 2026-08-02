@@ -17,7 +17,7 @@ describe('FeatureFlagMiddleware', function () {
 
         $response = (new FeatureFlagMiddleware)->handle(
             new Request,
-            fn ($req): Response => new Response('OK'),
+            fn (Request $req): Response => new Response('OK'),
             'beta-feature',
         );
 
@@ -30,7 +30,7 @@ describe('FeatureFlagMiddleware', function () {
 
         (new FeatureFlagMiddleware)->handle(
             new Request,
-            fn ($req): Response => new Response('OK'),
+            fn (Request $req): Response => new Response('OK'),
             'beta-feature',
         );
     })->throws(AccessDeniedHttpException::class, 'Forbidden');

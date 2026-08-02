@@ -172,7 +172,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Attach trace and security headers to exception responses.
         // Middleware that sets headers after `$next()` never runs when the
         // request throws, so re-apply the same headers here.
-        $exceptions->respond(function ($response, Throwable $e, Request $request): Response {
+        $exceptions->respond(function (ProblemResponse|Response $response, Throwable $e, Request $request): Response {
             $response = Router::toResponse($request, $response);
 
             return (new TraceIdMiddleware)->handle($request, function () use ($response, $request): Response {

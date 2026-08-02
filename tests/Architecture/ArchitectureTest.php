@@ -3,23 +3,27 @@
 declare(strict_types=1);
 
 use App\Support\Filters\BaseFilter;
-use Illuminate\Console\Command;
-use Illuminate\Contracts\Container\ContextualAttribute;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Mail\Mailable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Support\ServiceProvider;
 use PHPUnit\Framework\Assert;
 
 /*
 |--------------------------------------------------------------------------
-| Coding standards
+| Presets
+|--------------------------------------------------------------------------
+*/
+
+arch()->preset()->laravel()
+    ->ignoring(['Modules', 'Tests', 'bootstrap/app.php']);
+
+/*
+|--------------------------------------------------------------------------
+| Strictness
 |--------------------------------------------------------------------------
 */
 
@@ -31,28 +35,31 @@ arch('app uses strict equality')
     ->expect(['App', 'Modules', 'Tests'])
     ->toUseStrictEquality();
 
-arch('avoid debugging functions')
-    ->expect(['dd', 'ddd', 'dump', 'ray', 'var_dump', 'print_r', 'exit'])
-    ->not->toBeUsed();
+/*
+|--------------------------------------------------------------------------
+| Coding standards
+|--------------------------------------------------------------------------
+*/
 
 arch('avoid insecure functions')
-    ->expect(['md5', 'sha1', 'uniqid', 'tempnam', 'str_shuffle', 'shuffle', 'array_rand'])
-    ->not->toBeUsed()
-    ->ignoring('App\Providers');
+    ->expect(['md5', 'uniqid', 'tempnam', 'str_shuffle', 'shuffle', 'array_rand'])
+    ->not->toBeUsed();
+
+arch('avoid sha1 and parse_str outside app')
+    ->expect(['sha1', 'parse_str'])
+    ->not->toBeUsedIn(['Modules', 'Database', 'Routes', 'Bootstrap', 'Tests']);
 
 arch('avoid insecure random functions')
     ->expect(['rand', 'mt_rand'])
-    ->not->toBeUsed()
-    ->ignoring(['Database\Factories', 'Tests', 'Modules\*\Database\Factories']);
+    ->not->toBeUsed();
 
 arch('avoid code execution functions')
     ->expect(['eval', 'exec', 'shell_exec', 'system', 'passthru', 'create_function', 'unserialize', 'dl', 'assert'])
     ->not->toBeUsed();
 
 arch('avoid variable injection functions')
-    ->expect(['extract', 'parse_str', 'mb_parse_str'])
-    ->not->toBeUsed()
-    ->ignoring('App\Providers');
+    ->expect(['extract', 'mb_parse_str'])
+    ->not->toBeUsed();
 
 arch('avoid deprecated PHP functions')
     ->expect(['ereg', 'eregi', 'mysql_connect', 'mysql_pconnect', 'mysql_query', 'mysql_select_db', 'mysql_fetch_array', 'mysql_fetch_assoc', 'mysql_fetch_object', 'mysql_fetch_row', 'mysql_num_rows', 'mysql_affected_rows', 'mysql_free_result', 'mysql_insert_id', 'mysql_error', 'mysql_real_escape_string'])
@@ -62,14 +69,17 @@ arch('avoid debug tracing in production')
     ->expect(['debug_backtrace', 'debug_print_backtrace', 'debug_zval_dump', 'phpinfo'])
     ->not->toBeUsed();
 
+arch('avoid remaining debug functions')
+    ->expect(['var_dump', 'print_r'])
+    ->not->toBeUsed();
+
 arch('avoid sleep in application code')
     ->expect(['sleep', 'usleep'])
     ->not->toBeUsed();
 
-arch('avoid env() outside of config')
+arch('env should only be used in config')
     ->expect('env')
-    ->not->toBeUsed()
-    ->ignoring('config');
+    ->not->toBeUsedIn(['App', 'Modules', 'Database', 'Routes', 'Bootstrap', 'Tests']);
 
 arch('tests should not use PHPUnit assertions')
     ->expect('Tests')
@@ -77,253 +87,18 @@ arch('tests should not use PHPUnit assertions')
 
 /*
 |--------------------------------------------------------------------------
-| App namespace boundaries
-|--------------------------------------------------------------------------
-*/
-
-arch('app classes should not be enums outside App\Enums')
-    ->expect('App')
-    ->not->toBeEnums()
-    ->ignoring('App\Enums');
-
-arch('app classes should not implement Throwable outside App\Exceptions')
-    ->expect('App')
-    ->not->toImplement(Throwable::class)
-    ->ignoring('App\Exceptions');
-
-arch('app classes should not extend Model outside App\Models')
-    ->expect('App')
-    ->not->toExtend(Model::class)
-    ->ignoring('App\Models');
-
-arch('app classes should not extend FormRequest outside App\Http\Requests')
-    ->expect('App')
-    ->not->toExtend(FormRequest::class)
-    ->ignoring('App\Http\Requests');
-
-arch('app classes should not extend Command outside App\Console\Commands')
-    ->expect('App')
-    ->not->toExtend(Command::class)
-    ->ignoring('App\Console\Commands');
-
-arch('app classes should not extend Notification outside App\Notifications')
-    ->expect('App')
-    ->not->toExtend(Notification::class)
-    ->ignoring('App\Notifications');
-
-arch('app classes should not extend ServiceProvider outside App\Providers')
-    ->expect('App')
-    ->not->toExtend(ServiceProvider::class)
-    ->ignoring('App\Providers');
-
-arch('app classes should not extend Mailable outside App\Mail')
-    ->expect('App')
-    ->not->toExtend(Mailable::class)
-    ->ignoring('App\Mail');
-
-arch('app ServiceProvider suffix should only be used in App\Providers')
-    ->expect('App')
-    ->not->toHaveSuffix('ServiceProvider')
-    ->ignoring('App\Providers');
-
-arch('app Controller suffix should only be used in App\Http\Controllers')
-    ->expect('App')
-    ->not->toHaveSuffix('Controller')
-    ->ignoring('App\Http\Controllers');
-
-/*
-|--------------------------------------------------------------------------
 | App shared layer
 |--------------------------------------------------------------------------
 */
-
-arch('app traits should be traits')
-    ->expect('App\Traits')
-    ->toBeTraits();
-
-arch('app concerns should be traits')
-    ->expect('App\Concerns')
-    ->toBeTraits();
-
-arch('app enums should be enums')
-    ->expect('App\Enums')
-    ->toBeEnums()
-    ->ignoring('App\Enums\Concerns');
 
 arch('app contracts should be interfaces')
     ->expect('App\Contracts')
     ->toBeInterfaces();
 
-/*
-|--------------------------------------------------------------------------
-| App features
-|--------------------------------------------------------------------------
-*/
-
-arch('app features should be classes')
-    ->expect('App\Features')
-    ->toBeClasses()
-    ->ignoring('App\Features\Concerns');
-
-arch('app features should have resolve method')
-    ->expect('App\Features')
-    ->toHaveMethod('resolve')
-    ->ignoring('App\Features\Concerns');
-
-/*
-|--------------------------------------------------------------------------
-| App exceptions
-|--------------------------------------------------------------------------
-*/
-
-arch('app exceptions should implement Throwable')
-    ->expect('App\Exceptions')
-    ->classes()
-    ->toImplement(Throwable::class)
-    ->ignoring('App\Exceptions\Handler');
-
-/*
-|--------------------------------------------------------------------------
-| App http layer
-|--------------------------------------------------------------------------
-*/
-
-arch('app http should only be used in allowed layers')
-    ->expect('App\Http')
-    ->toOnlyBeUsedIn(['App\Http', 'App\Providers', 'Modules', 'Tests'])
-    ->ignoring('bootstrap/app.php');
-
-arch('app http controllers should have Controller suffix')
-    ->expect('App\Http\Controllers')
-    ->classes()
-    ->toHaveSuffix('Controller');
-
-arch('app http controllers should only have conventional methods')
-    ->expect('App\Http\Controllers')
-    ->not->toHavePublicMethodsBesides([
-        '__construct', '__invoke', 'index', 'show', 'create',
-        'store', 'edit', 'update', 'destroy', 'middleware',
-    ]);
-
-arch('app http middleware should have handle method')
-    ->expect('App\Http\Middleware')
-    ->classes()
-    ->toHaveMethod('handle');
-
-arch('app http requests should extend FormRequest and have rules')
-    ->expect('App\Http\Requests')
-    ->classes()
-    ->toExtend(FormRequest::class)
-    ->toHaveMethod('rules');
-
-arch('app http requests should have Request suffix')
-    ->expect('App\Http\Requests')
-    ->toHaveSuffix('Request');
-
 arch('app http responses should implement Responsable')
     ->expect('App\Http\Responses')
     ->classes()
     ->toImplement(Responsable::class);
-
-/*
-|--------------------------------------------------------------------------
-| App console
-|--------------------------------------------------------------------------
-*/
-
-arch('commands should have Command suffix')
-    ->expect('App\Console\Commands')
-    ->classes()
-    ->toHaveSuffix('Command');
-
-arch('commands should extend Command and have handle')
-    ->expect('App\Console\Commands')
-    ->classes()
-    ->toExtend(Command::class)
-    ->toHaveMethod('handle');
-
-/*
-|--------------------------------------------------------------------------
-| App notifications
-|--------------------------------------------------------------------------
-*/
-
-arch('notifications should extend Notification')
-    ->expect('App\Notifications')
-    ->classes()
-    ->toExtend(Notification::class);
-
-/*
-|--------------------------------------------------------------------------
-| App providers
-|--------------------------------------------------------------------------
-*/
-
-arch('providers should extend ServiceProvider')
-    ->expect('App\Providers')
-    ->classes()
-    ->toExtend(ServiceProvider::class);
-
-arch('providers should not be used')
-    ->expect('App\Providers')
-    ->classes()
-    ->not->toBeUsed();
-
-arch('providers should have ServiceProvider suffix')
-    ->expect('App\Providers')
-    ->toHaveSuffix('ServiceProvider');
-
-/*
-|--------------------------------------------------------------------------
-| App models, mail, jobs, policies and attributes
-|--------------------------------------------------------------------------
-*/
-
-arch('app models should extend Eloquent Model')
-    ->expect('App\Models')
-    ->classes()
-    ->toExtend(Model::class);
-
-arch('app models should not have Model suffix')
-    ->expect('App\Models')
-    ->classes()
-    ->not->toHaveSuffix('Model');
-
-arch('app mail should extend Mailable')
-    ->expect('App\Mail')
-    ->classes()
-    ->toExtend(Mailable::class);
-
-arch('app mail should implement ShouldQueue')
-    ->expect('App\Mail')
-    ->classes()
-    ->toImplement(ShouldQueue::class);
-
-arch('app jobs should implement ShouldQueue')
-    ->expect('App\Jobs')
-    ->classes()
-    ->toImplement(ShouldQueue::class);
-
-arch('app jobs should have handle method')
-    ->expect('App\Jobs')
-    ->classes()
-    ->toHaveMethod('handle');
-
-arch('app listeners should have handle method')
-    ->expect('App\Listeners')
-    ->toHaveMethod('handle');
-
-arch('app policies should have Policy suffix')
-    ->expect('App\Policies')
-    ->classes()
-    ->toHaveSuffix('Policy');
-
-arch('app attributes should be contextual attributes')
-    ->expect('App\Attributes')
-    ->classes()
-    ->toImplement(ContextualAttribute::class)
-    ->toHaveAttribute(Attribute::class)
-    ->toHaveMethod('resolve');
 
 /*
 |--------------------------------------------------------------------------
@@ -517,16 +292,6 @@ arch('module factories should have definition method')
 
 /*
 |--------------------------------------------------------------------------
-| Module environment isolation
-|--------------------------------------------------------------------------
-*/
-
-arch('modules should not use env() directly')
-    ->expect('env')
-    ->not->toBeUsedIn('Modules\*\*');
-
-/*
-|--------------------------------------------------------------------------
 | Database
 |--------------------------------------------------------------------------
 */
@@ -544,8 +309,8 @@ arch('seeders should have run method')
 
 arch('modules should be isolated')
     ->expect('Modules\*\*')
-    ->toOnlyBeUsedIn('Modules\*\*')
-    ->ignoring([
+    ->toOnlyBeUsedIn([
+        'Modules\*\*',
         'App\Providers',
         'App\Console',
         'App\Filters',

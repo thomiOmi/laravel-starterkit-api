@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 function handleMiddleware(Request $request): Response
 {
-    return (new SecurityHeadersMiddleware)->handle($request, fn ($req): Response => new Response('OK'));
+    return (new SecurityHeadersMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
 }
 
 describe('SecurityHeadersMiddleware', function () {
@@ -45,7 +45,7 @@ describe('SecurityHeadersMiddleware', function () {
     it('does not modify existing response content', function () {
         $middleware = new SecurityHeadersMiddleware;
 
-        $response = $middleware->handle(new Request, fn ($req): Response => new Response('Original body'));
+        $response = $middleware->handle(new Request, fn (Request $req): Response => new Response('Original body'));
 
         expect($response->getContent())->toBe('Original body');
     });

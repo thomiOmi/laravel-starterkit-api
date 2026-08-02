@@ -21,13 +21,6 @@ parameters:
     stubFiles:
         - tests/.phpstan/Pipeable.stub
 
-    ignoreErrors:
-        # Pest arch internal API (ignoring()) used intentionally
-        - identifier: method.internalInterface
-
-        # Type coverage is enforced by php artisan test --type-coverage
-        - identifier: typeCoverage.paramTypeCoverage
-
     # Larastan optional rules
     checkModelProperties: true
     checkModelMethodVisibility: true
