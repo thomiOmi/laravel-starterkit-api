@@ -87,19 +87,22 @@
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php vendor/bin/pest"
+            "@php vendor/bin/pest --parallel"
         ],
         "test:quality": [
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php vendor/bin/pest --ci --coverage --type-coverage --min=100 --memory-limit=512M"
+            "@php vendor/bin/pest --ci --compact --coverage --type-coverage --min=100 --memory-limit=512M"
         ],
         "test:mutation": [
             "@php vendor/bin/pest --mutate --min=100"
         ],
         "test:profanity": [
             "@php vendor/bin/pest --profanity"
+        ],
+        "test:profile": [
+            "@php vendor/bin/pest --profile"
         ],
         "test:snapshot": [
             "@php vendor/bin/pest --no-tia --update-snapshots"
@@ -157,6 +160,7 @@
         "test:quality": "Run lint, static analysis, and tests with code and type coverage (full suite, TIA skipped)",
         "test:mutation": "Run mutation testing to validate test suite quality",
         "test:profanity": "Check tests for prohibited words",
+        "test:profile": "Run the test suite and report the slowest tests",
         "test:snapshot": "Update stored snapshots (tests/.pest/snapshots)",
         "test:tia": "Re-run only tests affected by your changes (test impact analysis); also enabled automatically on local machines",
         "ci:check": "Run the full CI pipeline (quality, refactoring, and profanity)",

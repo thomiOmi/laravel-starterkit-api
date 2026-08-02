@@ -10,10 +10,11 @@
 | `composer lint:staged` | Auto-fix code style for staged files only (`@php vendor/bin/pint --parallel --dirty`) |
 | `composer lint:check` | Check code style without modifications |
 | `composer types:check` | Run PHPStan static analysis (level max, includes test files via `pest-plugin-phpstan`) |
-| `composer test` | Run lint:check + types:check + `vendor/bin/pest` (with baseline) |
-| `composer test:quality` | Run lint:check + types:check + tests with `--coverage --type-coverage --min=100 --memory-limit=512M` (with baseline) |
+| `composer test` | Run lint:check + types:check + `vendor/bin/pest --parallel` (with baseline) |
+| `composer test:quality` | Run lint:check + types:check + tests with `--ci --compact --coverage --type-coverage --min=100 --memory-limit=512M` (with baseline) |
 | `composer test:mutation` | Run mutation testing (`vendor/bin/pest --mutate --min=100`) |
 | `composer test:profanity` | Run profanity checks on test files |
+| `composer test:profile` | Run the suite and report the slowest tests (`vendor/bin/pest --profile`) |
 | `composer ci:check` | Full CI pipeline — runs `test:quality`, `rector:dry`, then `test:profanity` |
 
 ### Tooling notes
@@ -230,6 +231,13 @@ php artisan test          # always a full run
 - Subsequent runs replay cached results: the 310-test suite drops from ~50s to ~3s
 - After a large refactor, re-record the graph with `vendor/bin/pest --tia --fresh`
 - `ci:check` never uses TIA — CI always runs the full suite
+
+## Optimizing Tests
+
+- **Parallel**: `composer test` runs `vendor/bin/pest --parallel` — one process per CPU core. Each worker gets its own SQLite `:memory:` database, so tests stay isolated; do not rely on shared files or global state between tests.
+- **Compact printer**: `--compact` is used only in CI (`test:quality`), not in `tests/Pest.php`, so local runs keep the full per-test output. It prints only failures and reduces I/O.
+- **Profiling**: `composer test:profile` runs `vendor/bin/pest --profile` to list the slowest tests — use it before optimizing specific tests.
+- **Sharding**: `vendor/bin/pest --parallel --update-shards` records per-class timings into `tests/.pest/shards.json` (committed). CI jobs can then run `vendor/bin/pest --ci --shard=N/TOTAL` with time-balanced distribution. Re-run `--update-shards` after adding or renaming test files, and commit the refreshed file.
 
 ## Test Placement & Isolation
 
