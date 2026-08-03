@@ -129,11 +129,19 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Too Many Requests Exception (429)
         $exceptions->render(function (TooManyRequestsHttpException $e, Request $request): ProblemResponse {
+            $headers = [];
+            foreach ($e->getHeaders() as $key => $value) {
+                if (is_string($key) && (is_string($value) || is_int($value))) {
+                    $headers[$key] = strval($value);
+                }
+            }
+
             return new ProblemResponse(
                 typeKey: 'rate_limited',
                 title: __('auth.http_too_many_requests'),
                 status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_TOO_MANY_REQUESTS,
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.rate_limited_detail'),
+                headers: $headers,
             );
         });
 

@@ -108,6 +108,8 @@ describe('ExceptionHandler', function () {
 
             assertProblemResponse($response, Response::HTTP_TOO_MANY_REQUESTS, 'rate-limit-exceeded');
 
+            $response->assertHeader('Retry-After', '60');
+
             expect($response->json('detail'))->toBe(__('auth.rate_limited_detail'));
         })->group('smoke');
 
