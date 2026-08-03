@@ -135,3 +135,10 @@ None - no external service configuration required.
 
 *Phase: 1-quality-foundation*
 *Completed: 2026-08-03*
+
+## Self-Check: PASSED
+
+- FOUND: `.planning/phases/01-quality-foundation/01-02-SUMMARY.md`
+- FOUND: `8ee2324` (Task 1 chore commit), `441d8c9` (plan docs commit)
+- Gate re-confirmed post-summary: `composer types:check` exits 0 (0 errors)
+- Working tree clean apart from orchestrator-owned `.planning/config.json`

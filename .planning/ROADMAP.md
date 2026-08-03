@@ -34,16 +34,20 @@ A production-ready Laravel 13 API starterkit. The journey consolidates the parti
   2. `composer test:quality` reports 100% type coverage
   3. Existing contract tests confirm SuccessResponse/ProblemResponse shape and rate-limit headers on auth routes
 
-**Plans**: 2 plans
+**Plans**: 2/2 plans executed
 
 Plans:
+
+- [x] 01-01-PLAN.md
+- [x] 01-02-PLAN.md
+
 **Wave 1**
 
 - [x] 01-01: Rate-limit contract verification (TDD) - AuthRateLimitTest for all 4 throttle:auth routes, 429 header fix in bootstrap/app.php
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 01-02: PHPStan module-test scope + quality gates - phpstan.neon exclude removal, types:check/test:quality/ci:check green
+- [x] 01-02: PHPStan module-test scope + quality gates - phpstan.neon exclude removal, types:check/test:quality/ci:check green
 
 ### Phase 2: Authentication
 
@@ -189,7 +193,7 @@ Phases execute in numeric order: 1 to 8.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Quality Foundation | 0/1 | Not started | - |
+| 1. Quality Foundation | 2/2 | In Progress|  |
 | 2. Authentication | 0/2 | Not started | - |
 | 3. Social Auth & Profile | 0/2 | Not started | - |
 | 4. IAM Admin | 0/2 | Not started | - |

@@ -60,8 +60,8 @@
 
 ### Quality
 
-- [ ] **QLTY-01**: PHPStan runs at max level on production code with zero errors
-- [ ] **QLTY-02**: 100% type coverage achieved
+- [x] **QLTY-01**: PHPStan runs at max level on production code with zero errors
+- [x] **QLTY-02**: 100% type coverage achieved
 
 ## v2 Requirements
 
@@ -120,7 +120,7 @@
 | API-01..03 | Phase 1 | Complete (already shipped) |
 | API-04..05 | Phase 6 | Pending |
 | OBS-01..02 | Phase 7 | Pending |
-| QLTY-01..02 | Phase 1 | Pending |
+| QLTY-01..02 | Phase 1 | Complete |
 
 **Coverage:**
 
