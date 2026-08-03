@@ -112,21 +112,21 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01..08 | (filled by roadmap) | Pending |
-| SOCL-01..03 | (filled by roadmap) | Pending |
-| PROF-01..03 | (filled by roadmap) | Pending |
-| IAM-01..09 | (filled by roadmap) | Pending |
-| FLAG-01..02 | (filled by roadmap) | Pending |
-| API-01..03 | (filled by roadmap) | Complete (already shipped) |
-| API-04..05 | (filled by roadmap) | Pending |
-| OBS-01..02 | (filled by roadmap) | Pending |
-| QLTY-01..02 | (filled by roadmap) | Pending |
+| AUTH-01..08 | Phase 2 | Pending |
+| SOCL-01..03 | Phase 3 | Pending |
+| PROF-01..03 | Phase 3 | Pending |
+| IAM-01..09 | Phase 4 | Pending |
+| FLAG-01..02 | Phase 5 | Pending |
+| API-01..03 | Phase 1 | Complete (already shipped) |
+| API-04..05 | Phase 6 | Pending |
+| OBS-01..02 | Phase 7 | Pending |
+| QLTY-01..02 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 34 total
-- Mapped to phases: 0 (pending roadmap creation)
-- Unmapped: 34
+- Mapped to phases: 34
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-08-03*
-*Last updated: 2026-08-03 after initial definition*
+*Last updated: 2026-08-03 after roadmap creation*
