@@ -351,22 +351,27 @@ Verified: with the exclude removed, `php vendor/bin/phpstan analyse --memory-lim
 | A3 | The generic `HttpExceptionInterface` render closure (bootstrap/app.php:151-158) also drops exception headers, but no phase requirement asserts headers on those paths | Architecture Patterns | LOW - out of scope for D-01..D-07; a consistency follow-up could forward headers there too, but nothing in this phase depends on it |
 | A4 | Module test files need no namespace declaration to be discovered | Code Examples | LOW - `tests/Pest.php` binding and phpunit.xml "Modules" testsuite are path-based; root `tests/Feature` files are namespace-less. If a namespace is used, it should be `Modules\IAM\Tests\Feature` (matches PSR-4 `Modules\` -> modules/) |
 
-## Open Questions
+## Open Questions (RESOLVED)
+
+All three questions were resolved during planning; each recommendation was adopted and is implemented by the cited task.
 
 1. **Should the fix also extend the generic `HttpExceptionInterface` render closure (bootstrap/app.php:151-158)?**
    - What we know: it also constructs ProblemResponse without headers; a 429 never reaches it (429 has its own closure first), so this phase's assertions don't need it.
    - What's unclear: whether the user wants uniform header forwarding for all HTTP exceptions (403 Retry-After, 503 Retry-After, etc.).
    - Recommendation: fix only the 429 closure (D-03 scope). Leave the generic closure untouched; note it in the plan as an intentional non-change.
+   - **RESOLVED:** Adopted. 01-01 Task 3 (01-01-03) adds `headers: $e->getHeaders()` only to the TooManyRequestsHttpException closure and leaves the generic HttpExceptionInterface renderer byte-identical, noting the non-change in the commit message.
 
 2. **Assertion style for `X-RateLimit-Reset`/`Retry-After` values on 429**
    - What we know: values are wall-clock derived (`availableIn()` seconds, `availableAt()` unix ts); exact equality is flaky (59 vs 60 depending on elapsed ms).
    - What's unclear: preferred strictness (presence-only vs. range vs. `>= now`).
    - Recommendation: presence + numeric sanity (Retry-After >= 1, Reset > now). The planner may assert exact values if determinism is preferred - not recommended.
+   - **RESOLVED:** Adopted. 01-01 Tasks 1-2 (01-01-01/01-01-02) assert header presence plus numeric sanity on every 429 scenario - `Retry-After` cast to int >= 1, `X-RateLimit-Reset` cast to int > `time()` - never exact equality.
 
 3. **Should the existing `ExceptionHandlerTest` 429 case gain header assertions?**
    - What we know: after the fix, `new TooManyRequestsHttpException(60)` renders with `Retry-After: '60'` (Symfony sets it when retryAfter is truthy).
    - What's unclear: whether the phase's unit-test scope may touch this file (D-05 says response-shape unit tests stay unchanged; ExceptionHandlerTest is a rendering test, not a shape test).
    - Recommendation: yes - one `assertHeader('Retry-After', '60')` line closes the unit-level regression risk and is consistent with D-10. Confirm with user if strict reading of D-05 is preferred.
+   - **RESOLVED:** Adopted. 01-01 Task 3 (01-01-03) adds `$response->assertHeader('Retry-After', '60')` to the ExceptionHandlerTest rate-limit block - consistent with D-05 because that file is a rendering test, not a response-shape test (tests/Unit/Http/Responses/ stays untouched).
 
 ## Environment Availability
 
