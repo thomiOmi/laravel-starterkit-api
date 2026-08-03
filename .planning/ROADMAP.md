@@ -30,10 +30,11 @@ A production-ready Laravel 13 API starterkit. The journey consolidates the parti
   1. `composer types:check` exits zero at PHPStan level max with no errors
   2. `composer test:quality` reports 100% type coverage
   3. Existing contract tests confirm SuccessResponse/ProblemResponse shape and rate-limit headers on auth routes
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: <TBD during planning>
+- [ ] 01-01: Rate-limit contract verification (TDD) - AuthRateLimitTest for all 4 throttle:auth routes, 429 header fix in bootstrap/app.php
+- [ ] 01-02: PHPStan module-test scope + quality gates - phpstan.neon exclude removal, types:check/test:quality/ci:check green
 
 ### Phase 2: Authentication
 **Goal**: Users can manage the complete account lifecycle: register, login, per-device tokens, email verification, password reset, change password, and account deletion.

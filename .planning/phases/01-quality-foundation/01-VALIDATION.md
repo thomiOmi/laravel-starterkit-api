@@ -40,12 +40,12 @@ created: 2026-08-03
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 01-01-01 | 01 | 1 | API-03 | T-1-01 / — | 429 responses expose Retry-After/X-RateLimit-Reset via `headers: $e->getHeaders()` | feature | `pest modules/IAM/Tests/Feature/AuthRateLimitTest.php --compact --no-tia` | ❌ W0 | ⬜ pending |
-| 01-01-02 | 01 | 1 | API-02, API-03 | T-1-01 / — | 200 login success carries X-RateLimit-Limit/Remaining + SuccessResponse shape | feature | `pest modules/IAM/Tests/Feature/AuthRateLimitTest.php --compact --no-tia` | ❌ W0 | ⬜ pending |
-| 01-01-03 | 01 | 1 | API-03 | T-1-02 / — | Per-email limit (limit_per_email=2) 429s 3rd attempt from same email | feature | `pest modules/IAM/Tests/Feature/AuthRateLimitTest.php --compact --no-tia` | ❌ W0 | ⬜ pending |
-| 01-01-04 | 01 | 1 | API-03 | T-1-01 / — | Per-IP limit (limit_per_ip=2) 429s 3rd distinct email from same IP | feature | `pest modules/IAM/Tests/Feature/AuthRateLimitTest.php --compact --no-tia` | ❌ W0 | ⬜ pending |
-| 01-01-05 | 01 | 1 | QLTY-01 | N/A | phpstan.neon excludePaths removed (D-11) — module tests analyzed, 0 errors | static | `composer types:check` | ✅ existing | ⬜ pending |
-| 01-01-06 | 01 | 1 | QLTY-02 | N/A | 100% type coverage incl. new module test file | static | `composer test:quality` | ❌ W0 | ⬜ pending |
+| 01-01-01 | 01 | 1 | API-02, API-03 | T-1-01 | Login per-email 429 contract + success-flow: 429 exposes X-RateLimit-Limit/Remaining/Retry-After/Reset (RED before fix); 200 carries Limit/Remaining + SuccessResponse shape (D-02/D-07) | feature | `pest modules/IAM/Tests/Feature/AuthRateLimitTest.php --compact --no-tia` | ❌ W0 | ⬜ pending |
+| 01-01-02 | 01 | 1 | API-03 | T-1-02 | Per-IP limit (limit_per_ip=2) 429s 3rd distinct email; register/forgot-password/reset-password per-email + per-IP scenarios (D-01/D-03/D-04) | feature | `pest modules/IAM/Tests/Feature/AuthRateLimitTest.php --compact --no-tia` | ❌ W0 | ⬜ pending |
+| 01-01-03 | 01 | 1 | API-03 | T-1-01 | 429 render closure forwards `headers: $e->getHeaders()` (D-10); unit guard `assertHeader('Retry-After', '60')` in ExceptionHandlerTest | feature + unit | `pest modules/IAM/Tests/Feature/AuthRateLimitTest.php --compact --no-tia` + `pest tests/Unit/Http/Exceptions/ExceptionHandlerTest.php --compact --no-tia` | ❌ W0 / ✅ existing | ⬜ pending |
+| 01-02-01 | 02 | 2 | QLTY-01 | T-2-01 | phpstan.neon excludePaths removed (D-11/D-12) - module tests analyzed at max, 0 errors | static | `composer types:check` | ✅ existing | ⬜ pending |
+| 01-02-02 | 02 | 2 | QLTY-02 | T-2-02 | 100% type coverage incl. new module test file (strict_types, typed closures) | static | `composer test:quality` | ❌ W0 | ⬜ pending |
+| 01-02-03 | 02 | 2 | QLTY-01, QLTY-02 | — | Full CI gate green (lint + types + coverage + rector + profanity) - D-09 phase completion | static | `composer ci:check` | ✅ existing | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
