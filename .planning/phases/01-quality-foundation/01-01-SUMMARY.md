@@ -97,7 +97,7 @@ Each task was committed atomically:
 2. **Task 2: extend rate-limit contract to all auth routes and per-IP** - `092ea4c` (test / RED)
 3. **Task 3: forward throttle headers into 429 problem response** - `9366ac4` (feat / GREEN)
 
-**Plan metadata:** pending final docs commit (SUMMARY, STATE, ROADMAP, REQUIREMENTS).
+**Plan metadata:** `2cdf2bd` (docs: complete rate-limit contract plan)
 
 ## Files Created/Modified
 

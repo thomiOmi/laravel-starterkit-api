@@ -39,7 +39,7 @@ A production-ready Laravel 13 API starterkit. The journey consolidates the parti
 Plans:
 **Wave 1**
 
-- [ ] 01-01: Rate-limit contract verification (TDD) - AuthRateLimitTest for all 4 throttle:auth routes, 429 header fix in bootstrap/app.php
+- [x] 01-01: Rate-limit contract verification (TDD) - AuthRateLimitTest for all 4 throttle:auth routes, 429 header fix in bootstrap/app.php
 
 **Wave 2** *(blocked on Wave 1 completion)*
 

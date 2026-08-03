@@ -47,9 +47,9 @@
 
 ### API Infrastructure
 
-- [ ] **API-01**: All routes are versioned under `/api/v1` (already shipped)
-- [ ] **API-02**: Responses use SuccessResponse/ProblemResponse RFC 9457 contract (already shipped)
-- [ ] **API-03**: Auth routes enforce rate limiting with rate limit headers (already shipped)
+- [x] **API-01**: All routes are versioned under `/api/v1` (already shipped)
+- [x] **API-02**: Responses use SuccessResponse/ProblemResponse RFC 9457 contract (already shipped)
+- [x] **API-03**: Auth routes enforce rate limiting with rate limit headers (already shipped)
 - [ ] **API-04**: Mutating endpoints support idempotency keys (Idempotency-Key header, replay + Idempotency-Replayed)
 - [ ] **API-05**: API is documented via Scramble OpenAPI
 
@@ -123,6 +123,7 @@
 | QLTY-01..02 | Phase 1 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 34 total
 - Mapped to phases: 34
 - Unmapped: 0
