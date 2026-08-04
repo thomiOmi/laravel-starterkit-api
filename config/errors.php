@@ -10,7 +10,7 @@ return [
     | Fallback to APP_URL/problems if not set.
     |
     */
-    'docs_url' => env('ERROR_DOCS_URL', config('app.url', 'http://localhost') . '/problems'),
+    'docs_url' => env('ERROR_DOCS_URL', config('app.url', 'http://localhost').'/problems'),
 
     /*
     |--------------------------------------------------------------------------
