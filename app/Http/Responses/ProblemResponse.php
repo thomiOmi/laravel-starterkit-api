@@ -81,7 +81,10 @@ final readonly class ProblemResponse implements Responsable
 
         $base = rtrim(config()->string('errors.docs_url', ''), '/');
 
-        $slug = config()->string("errors.types.{$this->typeKey}", 'general-error');
+        $slug = config()->string(
+            "errors.types.{$this->typeKey}",
+            config()->string('errors.types.default')
+        );
 
         return "{$base}/{$slug}";
     }
