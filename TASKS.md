@@ -38,10 +38,11 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] Tes baru (24): enum unit, login block/allow (dataset), middleware (401/403/allow), admin update status, invalid status, prohibited tanpa permission, resource expose status.
 - [x] Gate hijau: pint, phpstan 0 errors, 309 tes / 1149 assertions, type coverage 100%.
 
-### P0-C. URL generation pakai helper `url()`
-- [ ] `AppServiceProvider::configureEmailVerificationUrl()` — ganti string concat/parse_url dengan `Uri`/`url()->query()`; pastikan id/hash/expires/signature benar.
-- [ ] `configurePasswordReset()` — `Uri::of($frontendUrl)->withQuery([...])` dengan encoding benar.
-- [ ] Tes unit VerifyEmail/ResetPassword tetap hijau + tambah asersi format URL.
+### P0-C. URL generation pakai helper `url()` — DONE (2026-08-07)
+- [x] `configureEmailVerificationUrl()` — ganti `http_build_query` string concat dengan `url()->query($frontendUrl.'/verify-email', $params)` (encoding aman); merge signed params tetap.
+- [x] `configurePasswordReset()` — `url()->query(...)` dengan token + email encoded (`%2B`, `%40`), memperbaiki bug email tidak di-encode.
+- [x] Tes baru: URL verifikasi berisi id/hash/expires/signature; URL reset berisi token + email ter-encode (unit, `makeOne` + id ULID eksplisit; `hash('sha1')` karena `sha1()` dilarang di namespace Tests).
+- [x] Gate hijau: pint, phpstan 0 errors, 311 tes / 1157 assertions, type coverage 100%.
 
 ### P1-D. Model Policies (Spatie permission)
 - [ ] Buat `UserPolicy`, `RolePolicy`, `PermissionPolicy` di `Modules\IAM\Policies`.

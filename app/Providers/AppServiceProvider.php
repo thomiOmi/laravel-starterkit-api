@@ -213,7 +213,7 @@ class AppServiceProvider extends ServiceProvider
 
             $frontendUrl = config()->string('app.frontend_url', 'http://localhost:5173');
 
-            return $frontendUrl.'/verify-email?'.http_build_query($params);
+            return url()->query($frontendUrl.'/verify-email', $params);
         });
     }
 
@@ -238,13 +238,13 @@ class AppServiceProvider extends ServiceProvider
         ResetPassword::createUrlUsing(function (mixed $user, string $token): string {
             $frontendUrl = config()->string('app.frontend_url', 'http://localhost:5173');
 
-            $url = $frontendUrl.'/reset-password?token='.$token;
+            $params = ['token' => $token];
 
             if ($user instanceof Identity) {
-                $url .= '&email='.$user->getEmailForPasswordReset();
+                $params['email'] = $user->getEmailForPasswordReset();
             }
 
-            return $url;
+            return url()->query($frontendUrl.'/reset-password', $params);
         });
     }
 
