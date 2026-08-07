@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Enums\PermissionEnum;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Models\User;
@@ -20,7 +19,7 @@ final readonly class UserShowController
      */
     public function __invoke(#[CurrentUser] User $currentUser, User $user): SuccessResponse
     {
-        if (! $currentUser->is($user) && ! $currentUser->can(PermissionEnum::UserView->value)) {
+        if (! $currentUser->can('view', $user)) {
             throw new AccessDeniedHttpException(
                 __('general.action_forbidden')
             );

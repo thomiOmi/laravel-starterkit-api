@@ -44,11 +44,13 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] Tes baru: URL verifikasi berisi id/hash/expires/signature; URL reset berisi token + email ter-encode (unit, `makeOne` + id ULID eksplisit; `hash('sha1')` karena `sha1()` dilarang di namespace Tests).
 - [x] Gate hijau: pint, phpstan 0 errors, 311 tes / 1157 assertions, type coverage 100%.
 
-### P1-D. Model Policies (Spatie permission)
-- [ ] Buat `UserPolicy`, `RolePolicy`, `PermissionPolicy` di `Modules\IAM\Policies`.
-- [ ] Registrasi eksplisit via `Gate::policy()` di `IAMServiceProvider` (auto-discovery tidak mencakup model modul).
-- [ ] Pindahkan logic `UserRequest::authorize()` ke policy; FormRequest pakai `Gate::authorize`.
-- [ ] Tes: ability tiap policy (view/create/update/delete), super-admin bypass, guard mismatch 403.
+### P1-D. Model Policies (Spatie permission) — DONE (2026-08-08)
+- [x] `UserPolicy` (view: self atau UserView; create: UserCreate; update: self atau UserEdit, non-SA dilarang edit target SuperAdmin; delete: bukan diri sendiri + UserDelete, non-SA dilarang delete target SuperAdmin), `RolePolicy` (view/create/update/delete, update+delete dilarang pada role SuperAdmin untuk non-SA), `PermissionPolicy` (view/create/update/delete) di `Modules\IAM\Policies`.
+- [x] Registrasi eksplisit via `Gate::policy()` di `boot()` `IAMServiceProvider` (`configurePolicies()`; auto-discovery Laravel hanya mencakup `App\Models`).
+- [x] `UserRequest`/`RoleRequest`/`PermissionRequest` `authorize()` pakai policy via `$user->can()`; model class diambil dari `config('auth.providers.users.model')` / `config('permission.models.role|permission')` (arch test melarang import `Modules\*\Models` di Requests).
+- [x] Controller DELETE/Show pakai policy: `UserDeleteController` (self-delete tetap `self_delete_forbidden`, sisanya policy), `UserShowController` (view), `RoleDeleteController` + `PermissionDeleteController` (delete) — RoleDeleteController kini juga memblokir delete role SuperAdmin untuk non-SA.
+- [x] Tes baru (45): ability tiap policy (view/create/update/delete) per policy, super-admin bypass via Gate::before, guard mismatch (role web guard vs sanctum route = 403), route enforcement 403.
+- [x] Gate hijau: pint, phpstan 0 errors, 356 tes / 1268 assertions, type coverage 100%.
 
 ### P1-E. Gap Phase 2 (Authentication) — audit & lengkapi
 - [ ] AUTH-07 Change password (current password confirmation) — baru.

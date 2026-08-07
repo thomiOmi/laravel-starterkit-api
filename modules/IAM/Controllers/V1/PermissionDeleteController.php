@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Modules\IAM\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
-use Illuminate\Http\Request;
+use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\DeletePermissionAction;
 use Modules\IAM\Models\Permission;
+use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -22,8 +23,14 @@ final readonly class PermissionDeleteController
      *
      * @return SuccessResponse<null>
      */
-    public function __invoke(Request $request, Permission $permission): SuccessResponse
+    public function __invoke(#[CurrentUser] User $currentUser, Permission $permission): SuccessResponse
     {
+        if (! $currentUser->can('delete', $permission)) {
+            throw new AccessDeniedHttpException(
+                __('general.action_forbidden')
+            );
+        }
+
         if ($this->deletePermission->handle($permission)) {
             return new SuccessResponse(
                 data: null,

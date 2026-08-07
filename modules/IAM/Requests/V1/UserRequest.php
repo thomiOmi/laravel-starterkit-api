@@ -8,7 +8,6 @@ use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Contracts\Identity;
 use App\Enums\PermissionEnum;
-use App\Enums\RoleEnum;
 use App\Enums\UserStatusEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
@@ -41,31 +40,20 @@ final class UserRequest extends FormRequest
 
         /** @var Identity $user */
         if ($this->isMethod('POST')) {
-            return $user->can(PermissionEnum::UserCreate->value);
+            /** @var class-string<Model> $userModel */
+            $userModel = (string) config('auth.providers.users.model');
+
+            return $user->can('create', $userModel);
         }
 
         /** @var Identity|Model|null $targetUser */
         $targetUser = $this->route('user');
 
-        if (! $targetUser instanceof Identity) {
+        if (! $targetUser instanceof Model) {
             return $user->can(PermissionEnum::UserEdit->value);
         }
 
-        $canEdit = $targetUser->getAuthIdentifier() === $user->getAuthIdentifier() || $user->can(PermissionEnum::UserEdit->value);
-
-        if (! $canEdit) {
-            return false;
-        }
-
-        if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
-            return true;
-        }
-
-        if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
-            return false;
-        }
-
-        return true;
+        return $user->can('update', $targetUser);
     }
 
     /**

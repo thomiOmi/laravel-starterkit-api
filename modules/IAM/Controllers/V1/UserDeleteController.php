@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
-use App\Enums\PermissionEnum;
-use App\Enums\RoleEnum;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\DeleteUserAction;
@@ -32,13 +30,7 @@ final readonly class UserDeleteController
             );
         }
 
-        if (! $currentUser->can(PermissionEnum::UserDelete->value)) {
-            throw new AccessDeniedHttpException(
-                __('general.action_forbidden')
-            );
-        }
-
-        if ($user->hasRole(RoleEnum::SuperAdmin->value) && ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
+        if (! $currentUser->can('delete', $user)) {
             throw new AccessDeniedHttpException(
                 __('general.action_forbidden')
             );

@@ -6,13 +6,11 @@ namespace Modules\IAM\Requests\V1;
 
 use App\Contracts\Identity;
 use App\Enums\PermissionEnum;
-use App\Enums\RoleEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Unique;
 use Modules\IAM\Payloads\V1\RolePayload;
-use Spatie\Permission\Contracts\Role;
 
 /**
  * Role Request
@@ -33,30 +31,29 @@ final class RoleRequest extends FormRequest
         }
 
         /** @var Identity $user */
-        $isAuthorized = $this->isMethod('POST')
-            ? $user->can(PermissionEnum::RoleCreate->value)
-            : $user->can(PermissionEnum::RoleEdit->value);
+        if ($this->isMethod('POST')) {
+            /** @var class-string<Model> $roleModel */
+            $roleModel = (string) config('permission.models.role');
 
-        if (! $isAuthorized) {
-            return false;
-        }
-
-        if ($user->hasRole(RoleEnum::SuperAdmin->value)) {
-            return true;
+            return $user->can('create', $roleModel);
         }
 
         $roleId = $this->route('role');
+
         if (is_string($roleId)) {
             /** @var class-string<Model> $roleModel */
-            $roleModel = (string) config('permission.models.role', 'Modules\IAM\Models\Role');
-            /** @var Role $role */
+            $roleModel = (string) config('permission.models.role');
+            /** @var Model $role */
             $role = $roleModel::query()->findOrFail($roleId);
-            if ($role->name === RoleEnum::SuperAdmin->value) {
-                return false;
-            }
+
+            return $user->can('update', $role);
         }
 
-        return true;
+        if ($roleId instanceof Model) {
+            return $user->can('update', $roleId);
+        }
+
+        return $user->can(PermissionEnum::RoleEdit->value);
     }
 
     /**
