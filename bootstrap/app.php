@@ -11,7 +11,6 @@ use App\Http\Middleware\TraceIdMiddleware;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -53,17 +52,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'trace.id' => TraceIdMiddleware::class,
         ]);
 
-        $middleware->priority([
-            EnsureFrontendRequestsAreStateful::class,
-            Authenticate::class,
-            AuthenticatesRequests::class,
-        ]);
-
-        $middleware->redirectGuestsTo(null);
+        $middleware->prependToPriorityList(
+            before: AuthenticatesRequests::class,
+            prepend: EnsureFrontendRequestsAreStateful::class,
+        );
 
         $middleware->append(SetLocaleMiddleware::class);
         $middleware->prependToGroup('api', TraceIdMiddleware::class);
         $middleware->prependToGroup('api', SecurityHeadersMiddleware::class);
+
+        $middleware->redirectGuestsTo(null);
 
         $middleware->trustHosts(at: function (): array {
             /** @var array<int, string> $hosts */
@@ -85,11 +83,9 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'validation',
                 title: __('auth.http_validation_failed'),
-                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_UNPROCESSABLE_ENTITY,
+                status: Response::HTTP_UNPROCESSABLE_ENTITY,
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.validation_failed'),
-                extensions: [
-                    'errors' => $e->errors(),
-                ]
+                extensions: ['errors' => $e->errors()],
             );
         });
 
@@ -98,7 +94,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'unauthenticated',
                 title: __('auth.http_unauthorized'),
-                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_UNAUTHORIZED,
+                status: Response::HTTP_UNAUTHORIZED,
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.unauthenticated'),
             );
         });
@@ -108,7 +104,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'forbidden',
                 title: __('auth.http_forbidden'),
-                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_FORBIDDEN,
+                status: Response::HTTP_FORBIDDEN,
                 detail: match (true) {
                     $e instanceof InvalidSignatureException => __('auth.invalid_signature'),
                     $e->getMessage() !== '' => $e->getMessage(),
@@ -122,24 +118,20 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'not_found',
                 title: __('auth.http_not_found'),
-                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_NOT_FOUND,
+                status: Response::HTTP_NOT_FOUND,
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.not_found_detail'),
             );
         });
 
         // Too Many Requests Exception (429)
         $exceptions->render(function (TooManyRequestsHttpException $e, Request $request): ProblemResponse {
-            $headers = [];
-            foreach ($e->getHeaders() as $key => $value) {
-                if (is_string($key) && (is_string($value) || is_int($value))) {
-                    $headers[$key] = strval($value);
-                }
-            }
+            /** @var array<string, string|int|array<int, string>|null> $headers */
+            $headers = $e->getHeaders();
 
             return new ProblemResponse(
                 typeKey: 'rate_limited',
                 title: __('auth.http_too_many_requests'),
-                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_TOO_MANY_REQUESTS,
+                status: Response::HTTP_TOO_MANY_REQUESTS,
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.rate_limited_detail'),
                 headers: $headers,
             );
@@ -150,18 +142,22 @@ return Application::configure(basePath: dirname(__DIR__))
             return new ProblemResponse(
                 typeKey: 'bad_request',
                 title: __('auth.http_bad_request'),
-                status: $e->getCode() !== 0 ? $e->getCode() : Response::HTTP_BAD_REQUEST,
+                status: Response::HTTP_BAD_REQUEST,
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.bad_request_detail'),
             );
         });
 
         // Generic HTTP Exceptions (preserve the exception's status code)
         $exceptions->render(function (HttpExceptionInterface $e, Request $request): ProblemResponse {
+            /** @var array<string, string|int|array<int, string>|null> $headers */
+            $headers = $e->getHeaders();
+
             return new ProblemResponse(
                 typeKey: 'default',
-                title: __('auth.http_forbidden'),
+                title: Response::$statusTexts[$e->getStatusCode()] ?? __('auth.access_denied'),
                 status: $e->getStatusCode(),
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.access_denied'),
+                headers: $headers,
             );
         });
 
@@ -183,8 +179,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->respond(function (ProblemResponse|Response $response, Throwable $e, Request $request): Response {
             $response = Router::toResponse($request, $response);
 
-            return (new TraceIdMiddleware)->handle($request, function () use ($response, $request): Response {
-                return (new SecurityHeadersMiddleware)->handle($request, function () use ($response): Response {
+            return app(TraceIdMiddleware::class)->handle($request, function () use ($response, $request): Response {
+                return app(SecurityHeadersMiddleware::class)->handle($request, function () use ($response): Response {
                     return $response;
                 });
             });

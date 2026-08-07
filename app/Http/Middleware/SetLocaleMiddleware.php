@@ -44,38 +44,17 @@ final class SetLocaleMiddleware
      */
     private function resolveLocales(): void
     {
-        $cached = Cache::get('app.available_locales');
+        /** @var array<int, string> $locales */
+        $locales = Cache::remember('app.available_locales', 86400, function (): array {
+            $paths = glob(lang_path('*'), GLOB_ONLYDIR);
+            $directories = $paths !== false ? $paths : [];
 
-        if (is_array($cached)) {
-            $this->availableLocales = [];
-            foreach ($cached as $locale) {
-                if (is_string($locale)) {
-                    $this->availableLocales[] = $locale;
-                }
-            }
-            if ($this->availableLocales !== []) {
-                return;
-            }
-        }
+            $locales = array_map('basename', $directories);
+            sort($locales);
 
-        $this->buildLocales();
-    }
+            return $locales !== [] ? $locales : ['en'];
+        });
 
-    /**
-     * Scan lang/ directories for available locales and cache the result.
-     */
-    private function buildLocales(): void
-    {
-        $paths = glob(lang_path('*'), GLOB_ONLYDIR);
-        $directories = $paths !== false ? $paths : [];
-
-        $this->availableLocales = array_map('basename', $directories);
-        sort($this->availableLocales);
-
-        if ($this->availableLocales === []) {
-            $this->availableLocales = ['en'];
-        }
-
-        Cache::set('app.available_locales', $this->availableLocales, 86400);
+        $this->availableLocales = $locales;
     }
 }

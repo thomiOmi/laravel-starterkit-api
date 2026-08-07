@@ -149,6 +149,39 @@ describe('headers', function () {
         expect($response->headers->get('X-Request-ID'))->toBe('abc-123')
             ->and($response->headers->get('Content-Type'))->toBe('application/problem+json');
     });
+
+    it('stringifies integer header values', function () {
+        $response = new ProblemResponse(
+            detail: 'Error',
+            headers: ['Retry-After' => 60],
+        )->toResponse(new Request);
+
+        expect($response->headers->get('Retry-After'))->toBe('60');
+    });
+
+    it('supports multi-value headers', function () {
+        $response = new ProblemResponse(
+            detail: 'Error',
+            headers: ['Link' => [
+                '<https://v2.example.com>; rel="successor-version"',
+                '<https://v3.example.com>; rel="successor-version"',
+            ]],
+        )->toResponse(new Request);
+
+        expect($response->headers->all('Link'))->toBe([
+            '<https://v2.example.com>; rel="successor-version"',
+            '<https://v3.example.com>; rel="successor-version"',
+        ]);
+    });
+
+    it('drops null header values', function () {
+        $response = new ProblemResponse(
+            detail: 'Error',
+            headers: ['X-Null-Header' => null],
+        )->toResponse(new Request);
+
+        expect($response->headers->has('X-Null-Header'))->toBeFalse();
+    });
 });
 
 describe('snapshots', function () {

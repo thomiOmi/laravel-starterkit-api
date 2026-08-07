@@ -24,7 +24,10 @@ final readonly class TraceIdMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $traceId = Str::ulid()->toString();
+        $incoming = $request->header('X-Trace-ID');
+        $traceId = is_string($incoming) && Str::isUlid($incoming)
+            ? $incoming
+            : Str::ulid()->toString();
 
         // Store in Laravel Context for logging and tracing
         Context::add('trace_id', $traceId);

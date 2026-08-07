@@ -8,6 +8,7 @@ use App\Http\Responses\ProblemResponse;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -39,7 +40,17 @@ final readonly class Sunset
      */
     public function handle(Request $request, Closure $next, string $sunsetAt, string ...$params): Response
     {
-        $sunsetDate = CarbonImmutable::parse($sunsetAt);
+        try {
+            $sunsetDate = CarbonImmutable::createFromFormat('!Y-m-d', $sunsetAt);
+        } catch (InvalidArgumentException) {
+            $sunsetDate = null;
+        }
+
+        if ($sunsetDate === null) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid sunset date "%s" - expected format Y-m-d.', $sunsetAt)
+            );
+        }
 
         $successorUrl = $this->resolveSuccessorUrl(array_values($params));
         $enforce = $this->resolveEnforce(array_values($params));
@@ -47,7 +58,7 @@ final readonly class Sunset
         if ($enforce && now()->greaterThanOrEqualTo($sunsetDate)) {
             $response = new ProblemResponse(
                 typeKey: 'gone',
-                title: __('auth.http_forbidden'),
+                title: __('auth.http_gone'),
                 status: Response::HTTP_GONE,
                 detail: __('general.sunset_unavailable'),
             );
@@ -83,7 +94,7 @@ final readonly class Sunset
     private function attachHeaders(Response $response, CarbonImmutable $sunsetDate, ?string $successorUrl): Response
     {
         $response->headers->set('Deprecation', '@'.$sunsetDate->timestamp);
-        $response->headers->set('Sunset', $sunsetDate->format('D, d M Y H:i:s').' GMT');
+        $response->headers->set('Sunset', $sunsetDate->utc()->format('D, d M Y H:i:s').' GMT');
 
         if ($successorUrl !== null && is_string(filter_var($successorUrl, FILTER_VALIDATE_URL))) {
             $linkValue = sprintf('<%s>; rel="successor-version"', $successorUrl);

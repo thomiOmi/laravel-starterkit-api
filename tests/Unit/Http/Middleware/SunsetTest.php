@@ -25,7 +25,7 @@ describe('Sunset Middleware', function () {
 
     describe('headers', function () {
         it('adds Deprecation header with unix timestamp', function () {
-            $response = handleSunset('+30 days');
+            $response = handleSunset('2099-01-01');
 
             expect($response->headers->has('Deprecation'))->toBeTrue()
                 ->and($response->headers->get('Deprecation'))->toMatch('/^@\d+$/');
@@ -106,9 +106,13 @@ describe('Sunset Middleware', function () {
     });
 
     it('passes request through to next handler when not enforcing', function () {
-        $response = handleSunset('+30 days');
+        $response = handleSunset('2099-01-01');
 
         expect($response->getContent())->toBe('OK');
+    });
+
+    it('throws InvalidArgumentException when the date does not match Y-m-d', function () {
+        expect(fn () => handleSunset('+30 days'))->toThrow(InvalidArgumentException::class, 'expected format Y-m-d');
     });
 
 });

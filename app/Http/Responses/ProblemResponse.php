@@ -24,7 +24,7 @@ final readonly class ProblemResponse implements Responsable
      * @param  string  $detail  Human-readable explanation
      * @param  array<string, mixed>  $extensions  Additional RFC 9457 extension members
      * @param  string  $instance  A URI reference identifying the specific occurrence
-     * @param  array<string, string>  $headers  Custom HTTP headers
+     * @param  array<string, string|int|array<int, string>|null>  $headers  Custom HTTP headers
      */
     public function __construct(
         private string $typeKey = 'default',
@@ -68,9 +68,31 @@ final readonly class ProblemResponse implements Responsable
             $payload = array_merge($payload, $cleanExtension);
         }
 
-        return response()->json($payload, $this->status, array_merge($this->headers, [
+        return response()->json($payload, $this->status, array_merge($this->normalizeHeaders(), [
             'Content-Type' => 'application/problem+json',
         ]));
+    }
+
+    /**
+     * Convert mixed header values into the string shape expected by the response.
+     *
+     * @return array<string, string|array<int, string>>
+     */
+    private function normalizeHeaders(): array
+    {
+        $headers = [];
+
+        foreach ($this->headers as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            $headers[$key] = is_array($value)
+                ? array_values(array_map('strval', $value))
+                : strval($value);
+        }
+
+        return $headers;
     }
 
     private function resolveTypeUri(): string

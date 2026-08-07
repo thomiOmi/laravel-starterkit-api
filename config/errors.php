@@ -29,6 +29,7 @@ return [
         'rate_limited' => 'rate-limit-exceeded',
         'bad_request' => 'invalid-request-payload',
         'internal_error' => 'server-error',
+        'gone' => 'resource-gone',
 
         // The catch-all default fallback
         'default' => 'general-error',

@@ -4,44 +4,30 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Http\Responses\ProblemResponse;
 use Closure;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-/**
- * Ensure the authenticated user has a verified email address.
- *
- * Usage: `Route::get(...)->middleware('auth:sanctum', 'verified')`
- * Returns RFC 9457 ProblemResponse with 403 when the email is unverified.
- */
 final readonly class EnsureEmailIsVerified
 {
-    /**
-     * @param  Closure(Request): (Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
         if ($user === null) {
-            return new ProblemResponse(
-                typeKey: 'unauthenticated',
-                title: __('auth.http_unauthorized'),
-                status: Response::HTTP_UNAUTHORIZED,
-                detail: __('auth.unauthenticated'),
-            )->toResponse($request);
+            throw new AuthenticationException(__('auth.unauthenticated'));
         }
 
-        if (! $user->hasVerifiedEmail()) {
-            return new ProblemResponse(
-                typeKey: 'forbidden',
-                title: __('auth.email_not_verified'),
-                status: Response::HTTP_FORBIDDEN,
-                detail: __('auth.email_verify_required'),
-            )->toResponse($request);
+        // @phpstan-ignore instanceof.alwaysTrue (defensive check — starter kit forks may swap User model without MustVerifyEmail)
+        if (! $user instanceof MustVerifyEmail || ! $user->hasVerifiedEmail()) {
+            throw new AccessDeniedHttpException(__('auth.email_verify_required'));
         }
+        /** @var Response $response */
+        $response = $next($request);
 
-        return $next($request);
+        return $response;
     }
 }

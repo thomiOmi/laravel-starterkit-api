@@ -48,6 +48,7 @@ return [
     'http_validation_failed' => 'Validation Failed',
     'http_too_many_requests' => 'Too Many Requests',
     'http_internal_error' => 'Internal Server Error',
+    'http_gone' => 'Gone',
 
     // HTTP status detail (fallback for ProblemResponse)
     'validation_failed' => 'The given data was invalid.',

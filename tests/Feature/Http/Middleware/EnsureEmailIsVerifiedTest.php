@@ -3,68 +3,37 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\EnsureEmailIsVerified;
-use Illuminate\Http\Request;
-use Illuminate\Testing\TestResponse;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Route;
 
 covers(EnsureEmailIsVerified::class);
 
-describe('EnsureEmailIsVerified', function () {
+describe('EnsureEmailIsVerified', function (): void {
 
-    it('returns unauthenticated ProblemResponse when no user', function () {
-        $response = TestResponse::fromBaseResponse(
-            (new EnsureEmailIsVerified)->handle(
-                new Request,
-                fn (Request $req): Response => new Response('OK'),
-            )
-        );
+    beforeEach(function (): void {
+        Route::middleware(['api', 'auth:sanctum', 'verified'])
+            ->get('/__test/verified-only', fn (): array => ['ok' => true]);
+    });
+
+    it('returns unauthenticated problem response when no user is authenticated', function (): void {
+        $response = $this->getJson('/__test/verified-only');
 
         assertProblemResponse($response, 401, 'authentication-required');
     });
 
-    describe('with a verified user', function () {
+    it('passes the request through when the user email is verified', function (): void {
+        loginAsUser();
 
-        beforeEach(function () {
-            $this->user = loginAsUser();
-        });
+        $response = $this->getJson('/__test/verified-only');
 
-        it('passes request through when user email is verified', function () {
-            $request = new Request;
-            $request->setUserResolver(fn () => $this->user);
-
-            $response = TestResponse::fromBaseResponse(
-                (new EnsureEmailIsVerified)->handle(
-                    $request,
-                    fn (Request $req): Response => new Response('OK'),
-                )
-            );
-
-            $response->assertOk()
-                ->assertContent('OK');
-        });
-
+        $response->assertOk()->assertJson(['ok' => true]);
     });
 
-    describe('with an unverified user', function () {
+    it('returns forbidden problem response when the user email is not verified', function (): void {
+        loginAsUnverifiedUser();
 
-        beforeEach(function () {
-            $this->user = loginAsUnverifiedUser();
-        });
+        $response = $this->getJson('/__test/verified-only');
 
-        it('returns forbidden ProblemResponse when email is not verified', function () {
-            $request = new Request;
-            $request->setUserResolver(fn () => $this->user);
-
-            $response = TestResponse::fromBaseResponse(
-                (new EnsureEmailIsVerified)->handle(
-                    $request,
-                    fn (Request $req): Response => new Response('OK'),
-                )
-            );
-
-            assertProblemResponse($response, 403, 'access-denied');
-        });
-
+        assertProblemResponse($response, 403, 'access-denied');
     });
 
 });

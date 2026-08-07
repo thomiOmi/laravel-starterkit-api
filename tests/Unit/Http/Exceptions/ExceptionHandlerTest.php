@@ -137,6 +137,45 @@ describe('ExceptionHandler', function () {
             expect($response->json('detail'))->toBe('I am a teapot');
         })->group('smoke');
 
+        it('forwards custom string headers from the exception', function () {
+            $response = renderApiException(new HttpException(
+                Response::HTTP_I_AM_A_TEAPOT,
+                'I am a teapot',
+                null,
+                ['X-Custom-Header' => 'custom-value'],
+            ));
+
+            $response->assertHeader('X-Custom-Header', 'custom-value');
+        })->group('smoke');
+
+        it('stringifies integer header values', function () {
+            $response = renderApiException(new HttpException(
+                Response::HTTP_I_AM_A_TEAPOT,
+                'I am a teapot',
+                null,
+                ['X-Retry-Count' => 3],
+            ));
+
+            $response->assertHeader('X-Retry-Count', '3');
+        })->group('smoke');
+
+        it('forwards multi-value headers from the exception', function () {
+            $response = renderApiException(new HttpException(
+                Response::HTTP_I_AM_A_TEAPOT,
+                'I am a teapot',
+                null,
+                ['Link' => [
+                    '<https://v2.example.com>; rel="successor-version"',
+                    '<https://v3.example.com>; rel="successor-version"',
+                ]],
+            ));
+
+            expect($response->headers->all('Link'))->toBe([
+                '<https://v2.example.com>; rel="successor-version"',
+                '<https://v3.example.com>; rel="successor-version"',
+            ]);
+        })->group('smoke');
+
     });
 
     describe('internal errors', function () {

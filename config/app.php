@@ -75,18 +75,21 @@ return [
     | This list controls which host headers are allowed in production to
     | prevent HTTP Host header attacks. Each entry is a trusted domain
     | pattern. The application URL and localhost are trusted by default.
-    | Override via the TRUSTED_HOSTS environment variable as a comma-
+    | Override via the APP_TRUSTED_HOSTS environment variable as a comma-
     | separated list of hostnames.
     |
     | @see bootstrap/app.php:trustHosts() for the active implementation
     |
     */
 
-    'trusted_hosts' => array_values(array_unique(array_map('trim', explode(',', (string) env('TRUSTED_HOSTS', implode(',', [
-        'localhost',
-        '127.0.0.1',
-        parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost',
-    ])))))),
+    'trusted_hosts' => array_values(array_filter(array_unique(array_map(
+        fn (string $host) => preg_quote(trim($host), '/'),
+        explode(',', (string) (env('APP_TRUSTED_HOSTS') ?: implode(',', [
+            'localhost',
+            '127.0.0.1',
+            parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost',
+        ])))
+    )))),
 
     /*
     |--------------------------------------------------------------------------

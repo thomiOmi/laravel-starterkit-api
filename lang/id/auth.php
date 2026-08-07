@@ -37,6 +37,7 @@ return [
     'http_validation_failed' => 'Validasi gagal',
     'http_too_many_requests' => 'Terlalu banyak permintaan',
     'http_internal_error' => 'Kesalahan Server Internal',
+    'http_gone' => 'Hilang',
 
     // Detail HTTP status (fallback untuk ProblemResponse)
     'validation_failed' => 'Data yang diberikan tidak valid.',

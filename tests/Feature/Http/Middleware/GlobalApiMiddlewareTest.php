@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\SecurityHeadersMiddleware;
+use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\TraceIdMiddleware;
+use App\Http\Responses\ProblemResponse;
+use Modules\IAM\Providers\IAMServiceProvider;
 
-covers([TraceIdMiddleware::class, SecurityHeadersMiddleware::class]);
+covers([TraceIdMiddleware::class, SecurityHeadersMiddleware::class, SetLocaleMiddleware::class, ProblemResponse::class, IAMServiceProvider::class]);
 
 describe('global api middleware pipeline', function () {
 
@@ -15,7 +18,7 @@ describe('global api middleware pipeline', function () {
         assertProblemResponse($response, 404, 'resource-not-found');
         assertHasTraceId($response);
 
-        expect($response->headers->get('X-Trace-ID'))->toMatch('/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/')
+        expect($response->headers->get('X-Trace-ID'))->toBeUlid()
             ->and($response->headers->get('X-Content-Type-Options'))->toBe('nosniff')
             ->and($response->headers->get('Referrer-Policy'))->toBe('strict-origin-when-cross-origin')
             ->and($response->headers->get('X-Frame-Options'))->toBe('DENY')
