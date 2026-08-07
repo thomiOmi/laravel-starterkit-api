@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\Route;
+use Modules\IAM\Controllers\V1\ChangePasswordController;
+use Modules\IAM\Controllers\V1\DeleteAccountController;
 use Modules\IAM\Controllers\V1\DeleteDeviceController;
 use Modules\IAM\Controllers\V1\DeviceListController;
 use Modules\IAM\Controllers\V1\ForgotPasswordController;
@@ -54,6 +56,12 @@ Route::prefix('auth')->name('auth.')->group(function () {
         Route::post('email/verification-notification', ResendVerificationController::class)
             ->middleware('ability:users:write')
             ->name('verification.send');
+
+        Route::post('change-password', ChangePasswordController::class)
+            ->name('password.change');
+
+        Route::delete('account', DeleteAccountController::class)
+            ->name('account.delete');
 
         Route::middleware('verified')->group(function () {
             Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');

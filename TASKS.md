@@ -53,10 +53,11 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] Gate hijau: pint, phpstan 0 errors, 356 tes / 1268 assertions, type coverage 100%.
 
 ### P1-E. Gap Phase 2 (Authentication) — audit & lengkapi
-- [ ] AUTH-07 Change password (current password confirmation) — baru.
-- [ ] AUTH-08 Delete account (self-service) — baru.
-- [ ] AUTH-04 token naming (`token_name` di login) — verifikasi/implementasi.
-- [ ] Verifikasi AUTH-01..06 dengan tes UAT mengikuti pola AuthRateLimitTest.
+- [x] AUTH-07 Change password (current password confirmation) — baru: Payload/Request/Action/Controller + route `POST v1.auth.password.change`; action verifikasi Hash::check (custom `auth.password_invalid`), revoke semua token lain, token aktif dipertahankan.
+- [x] AUTH-08 Delete account (self-service) — baru: Payload/Request/Action/Controller + route `DELETE v1.auth.account.delete`; verifikasi password, revoke semua token, soft-delete user.
+- [x] AUTH-04 token naming (`device_name` di login, fallback User-Agent, register default `auth_token`) — verifikasi dengan tes.
+- [x] Verifikasi AUTH-01..06 dengan tes UAT (`AuthFlowTest.php`, 15 tes, pola AuthRateLimitTest) + `ChangePasswordTest.php` (5) + `DeleteAccountTest.php` (3).
+- [x] Gate hijau: pint, phpstan 0 errors, 379 tes / 1419 assertions, type coverage 100%.
 
 ### P2-F. Module baru: Media Storage (target minimum 1)
 - [ ] `php artisan make:module Media` + pola modular IAM (Actions, Controllers, Filters, Payloads, Requests, Resources).
