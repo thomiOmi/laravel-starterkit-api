@@ -46,7 +46,7 @@ class UserResource extends JsonResource
     }
 
     /**
-     * @return array{id: string, name: ?string, email: ?string, avatar: ?string, roles: string[]|MissingValue, permissions: string[]|MissingValue, email_verified_at: ?string, created_at: ?string, updated_at: ?string, deleted_at: ?string}
+     * @return array{id: string, name: ?string, email: ?string, avatar: ?string, status: ?string, roles: string[]|MissingValue, permissions: string[]|MissingValue, email_verified_at: ?string, created_at: ?string, updated_at: ?string, deleted_at: ?string}
      */
     public function toArray(Request $request): array
     {
@@ -57,6 +57,7 @@ class UserResource extends JsonResource
             'name' => array_key_exists('name', $attributes) ? $this->resource->name : null,
             'email' => array_key_exists('email', $attributes) ? $this->resource->email : null,
             'avatar' => array_key_exists('avatar', $attributes) ? $this->resource->avatar : null,
+            'status' => array_key_exists('status', $attributes) ? $this->resource->status->value : null,
             'roles' => $this->getRoles(),
             'permissions' => $this->getPermissions(),
             'email_verified_at' => array_key_exists('email_verified_at', $attributes) ? $this->formatDate($this->resource->email_verified_at) : null,

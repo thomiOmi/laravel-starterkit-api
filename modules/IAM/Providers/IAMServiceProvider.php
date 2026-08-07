@@ -6,6 +6,7 @@ namespace Modules\IAM\Providers;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Modules\IAM\Http\Middleware\EnsureUserIsActive;
 
 class IAMServiceProvider extends ServiceProvider
 {
@@ -18,6 +19,8 @@ class IAMServiceProvider extends ServiceProvider
 
     protected function configureRoutes(): void
     {
+        Route::aliasMiddleware('active', EnsureUserIsActive::class);
+
         Route::prefix('api/v1')
             ->middleware('api')
             ->name('v1.')

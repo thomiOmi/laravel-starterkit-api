@@ -27,6 +27,9 @@ return [
     'email_verify_required' => 'Silakan verifikasi alamat email Anda sebelum mengakses sumber daya ini.',
     'email_verify_subject' => 'Verifikasi Alamat Email',
     'email_verify_line' => 'Klik tombol di bawah untuk memverifikasi alamat email Anda.',
+    'account_banned' => 'Akun ini telah diblokir. Silakan hubungi dukungan.',
+    'account_suspended' => 'Akun ini sedang ditangguhkan. Silakan hubungi dukungan.',
+    'account_inactive' => 'Akun ini tidak aktif. Silakan hubungi dukungan.',
 
     // HTTP status titles (RFC 9457 Problem Details)
     'http_unauthorized' => 'Tidak terautentikasi',

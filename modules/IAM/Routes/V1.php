@@ -50,7 +50,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::get('social/{provider}/redirect', SocialRedirectController::class)->middleware('throttle:api')->name('social.redirect');
     Route::get('social/{provider}/callback', SocialCallbackController::class)->middleware('throttle:api')->name('social.callback');
 
-    Route::middleware(['auth:sanctum', 'throttle:authenticated'])->group(function () {
+    Route::middleware(['auth:sanctum', 'active', 'throttle:authenticated'])->group(function () {
         Route::post('email/verification-notification', ResendVerificationController::class)
             ->middleware('ability:users:write')
             ->name('verification.send');
@@ -66,7 +66,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
     });
 });
 
-Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function () {
     Route::get('/', UserListController::class)->middleware('permission:'.PermissionEnum::UserView->value)->name('index');
     Route::post('/', UserCreateController::class)->middleware('permission:'.PermissionEnum::UserCreate->value)->name('create');
 
@@ -79,7 +79,7 @@ Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'verified', '
     Route::delete('/{user}', UserDeleteController::class)->middleware('permission:'.PermissionEnum::UserDelete->value)->name('delete');
 })->whereUlid(['user']);
 
-Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function () {
     Route::get('/', RoleListController::class)->middleware('permission:'.PermissionEnum::RoleView->value)->name('index');
     Route::post('/', RoleCreateController::class)->middleware('permission:'.PermissionEnum::RoleCreate->value)->name('create');
 
@@ -90,7 +90,7 @@ Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'verified', '
     Route::delete('/{role}', RoleDeleteController::class)->middleware('permission:'.PermissionEnum::RoleDelete->value)->name('delete');
 })->whereUlid(['role']);
 
-Route::prefix('permissions')->name('permission.')->middleware(['auth:sanctum', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('permissions')->name('permission.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function () {
     Route::get('/', PermissionListController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('index');
     Route::post('/', PermissionCreateController::class)->middleware('permission:'.PermissionEnum::PermissionCreate->value)->name('create');
     Route::get('/{permission}', PermissionShowController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('show');

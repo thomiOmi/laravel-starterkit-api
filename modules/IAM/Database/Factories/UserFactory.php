@@ -108,6 +108,36 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the user's account is banned.
+     */
+    public function banned(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => UserStatusEnum::Banned,
+        ]);
+    }
+
+    /**
+     * Indicate that the user's account is suspended.
+     */
+    public function suspended(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => UserStatusEnum::Suspended,
+        ]);
+    }
+
+    /**
+     * Indicate that the user's account is inactive.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => UserStatusEnum::Inactive,
+        ]);
+    }
+
+    /**
      * Indicate that the user is a social login user.
      *
      * @param  string  $provider  The social provider name.

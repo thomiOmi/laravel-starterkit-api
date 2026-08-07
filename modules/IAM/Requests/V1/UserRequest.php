@@ -9,9 +9,12 @@ use App\Concerns\ProfileValidationRules;
 use App\Contracts\Identity;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use App\Enums\UserStatusEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
 use Modules\IAM\Payloads\V1\UserPayload;
@@ -68,7 +71,7 @@ final class UserRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<int, Password|Unique|ValidationRule|string>> The validation rules.
+     * @return array<string, array<int, ValidationRule|Password|Unique|Enum|string>> The validation rules.
      */
     public function rules(): array
     {
@@ -76,9 +79,14 @@ final class UserRequest extends FormRequest
         $userId = $routeUser instanceof Model ? $routeUser->getKey() : (is_string($routeUser) ? $routeUser : null);
         $userId = is_string($userId) || is_int($userId) ? (string) $userId : null;
 
+        $statusRule = $this->user()?->can(PermissionEnum::UserEdit->value) === true
+            ? ['sometimes', Rule::enum(UserStatusEnum::class)]
+            : ['prohibited'];
+
         return [
             ...$this->profileRules($userId),
             'password' => $this->passwordRules($this->isMethod('POST')),
+            'status' => $statusRule,
         ];
     }
 

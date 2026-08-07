@@ -29,12 +29,14 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] `DatabaseSeeder` panggil satu seeder saja; update pemanggil test (`BulkActionRequestTest`, `AuthRateLimitTest`, helpers `loginAsRole`).
 - [x] Gate hijau: pint, phpstan 0 errors, 285 tes / 1019 assertions, type coverage 100%.
 
-### P0-B. User status enforcement (banned/suspended/inactive)
-- [ ] `LoginAction`: tolak login untuk status Banned/Suspended/Inactive (error message jelas, sesuai pola).
-- [ ] Middleware `EnsureUserIsActive` (cek status pada request ter-autentikasi) + alias + daftar di route group authenticated.
-- [ ] `UserRequest`/`UserPayload`: izinkan admin update status; validasi enum.
-- [ ] `UserResource`: expose `status`.
-- [ ] Factory: state `banned()`, `suspended()`, `inactive()`; tes tiap CRUD + login ter-block + middleware.
+### P0-B. User status enforcement (banned/suspended/inactive) — DONE (2026-08-07)
+- [x] `UserStatusEnum::allowsAuthentication()` (Active+Pending boleh, sisanya tidak) + `blockedMessageKey()` + lang keys en/id (`account_banned`, `account_suspended`, `account_inactive`).
+- [x] `LoginAction`: tolak login status ter-block (422 problem response, pesan sesuai status); `status` masuk select list.
+- [x] Middleware `EnsureUserIsActive` di `Modules\IAM\Http\Middleware` (import model modul — arch test); alias `active` diregistrasi via `Route::aliasMiddleware()` di `IAMServiceProvider` (hindari import module class di bootstrap/app.php); dipasang di grup auth + users/roles/permissions.
+- [x] `UserRequest`: rule `status` = enum jika punya `UserEdit`, `prohibited` jika tidak; `UserPayload::status`; `UserResource` expose `status`.
+- [x] Factory states `banned()`, `suspended()`, `inactive()`.
+- [x] Tes baru (24): enum unit, login block/allow (dataset), middleware (401/403/allow), admin update status, invalid status, prohibited tanpa permission, resource expose status.
+- [x] Gate hijau: pint, phpstan 0 errors, 309 tes / 1149 assertions, type coverage 100%.
 
 ### P0-C. URL generation pakai helper `url()`
 - [ ] `AppServiceProvider::configureEmailVerificationUrl()` — ganti string concat/parse_url dengan `Uri`/`url()->query()`; pastikan id/hash/expires/signature benar.

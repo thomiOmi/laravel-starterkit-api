@@ -31,6 +31,7 @@ final readonly class LoginAction
                 'email',
                 'avatar',
                 'password',
+                'status',
                 'email_verified_at',
                 'created_at',
                 'updated_at',
@@ -43,6 +44,12 @@ final readonly class LoginAction
             throw ValidationException::withMessages([
                 'email' => [__('auth.failed')],
                 'password' => [__('auth.failed')],
+            ]);
+        }
+
+        if (! $user->status->allowsAuthentication()) {
+            throw ValidationException::withMessages([
+                'email' => [__($user->status->blockedMessageKey())],
             ]);
         }
 

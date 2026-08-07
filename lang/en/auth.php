@@ -38,6 +38,9 @@ return [
     'email_verify_required' => 'Please verify your email address before accessing this resource.',
     'email_verify_subject' => 'Verify Email Address',
     'email_verify_line' => 'Click the button below to verify your email address.',
+    'account_banned' => 'This account has been banned. Please contact support.',
+    'account_suspended' => 'This account has been suspended. Please contact support.',
+    'account_inactive' => 'This account is inactive. Please contact support.',
 
     // HTTP status titles (RFC 9457 Problem Details)
     'http_unauthorized' => 'Unauthenticated',
