@@ -3,7 +3,7 @@
 declare(strict_types=1);
 use Illuminate\Support\Facades\Mail;
 use Modules\IAM\Database\Factories\UserFactory;
-use Modules\IAM\Database\Seeders\RoleSeeder;
+use Modules\IAM\Database\Seeders\IAMSeeder;
 
 describe('login rate limit', function (): void {
     describe('per-email', function (): void {
@@ -83,7 +83,7 @@ describe('login rate limit', function (): void {
 
 describe('register rate limit', function (): void {
     beforeEach(function (): void {
-        $this->seed(RoleSeeder::class);
+        $this->seed(IAMSeeder::class);
     });
 
     describe('per-email', function (): void {

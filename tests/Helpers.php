@@ -54,7 +54,7 @@ function loginAsUnverifiedUser(?User $user = null, array $abilities = ['*']): Us
 /**
  * Authenticate a verified user and assign the given role.
  *
- * The role must already exist in the database (seed `RoleSeeder` in the test).
+ * The role must already exist in the database (seed `IAMSeeder` in the test).
  *
  * @param  array<int, string>  $abilities
  */

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\IAM\Database\Seeders\RoleSeeder;
-use Modules\IAM\Database\Seeders\UserSeeder;
+use Modules\IAM\Database\Seeders\IAMSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,9 +14,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            UserSeeder::class,
-            RoleSeeder::class,
-        ]);
+        $this->call(IAMSeeder::class);
     }
 }

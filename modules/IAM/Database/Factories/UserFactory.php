@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Database\Factories;
 
+use App\Enums\RoleEnum;
 use App\Enums\UserStatusEnum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -64,6 +65,46 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Indicate that the user has the Super Admin role.
+     *
+     * The role must already exist in the database (seed `IAMSeeder` first).
+     */
+    public function superAdmin(): static
+    {
+        return $this->withRole(RoleEnum::SuperAdmin);
+    }
+
+    /**
+     * Indicate that the user has the Admin role.
+     *
+     * The role must already exist in the database (seed `IAMSeeder` first).
+     */
+    public function admin(): static
+    {
+        return $this->withRole(RoleEnum::Admin);
+    }
+
+    /**
+     * Indicate that the user has the regular User role.
+     *
+     * The role must already exist in the database (seed `IAMSeeder` first).
+     */
+    public function user(): static
+    {
+        return $this->withRole(RoleEnum::User);
+    }
+
+    /**
+     * Assign the given role to the user after the model is created.
+     */
+    private function withRole(RoleEnum $role): static
+    {
+        return $this->afterCreating(
+            fn (User $user) => $user->assignRole($role->value)
+        );
     }
 
     /**

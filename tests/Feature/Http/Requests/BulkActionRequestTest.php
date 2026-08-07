@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use App\Http\Requests\BulkActionRequest;
-use Modules\IAM\Database\Seeders\RoleSeeder;
+use Modules\IAM\Database\Seeders\IAMSeeder;
 
 covers(BulkActionRequest::class);
 
 beforeEach(function () {
-    $this->seed(RoleSeeder::class);
+    $this->seed(IAMSeeder::class);
     $this->user = loginAsUser();
 });
 
