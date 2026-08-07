@@ -23,11 +23,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Uri;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Pennant\Feature;
 use Laravel\Sanctum\Sanctum;
+use RuntimeException;
 
 /**
  * Central application configuration hub.
@@ -67,7 +68,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureEmailVerificationMail();
 
-        $this->configurePasswordReset();
+        $this->configurePasswordResetMail();
 
         $this->monitorProductionSecurity();
     }
@@ -181,6 +182,14 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
+     * The configured frontend base URI (scheme + host + port).
+     */
+    protected function frontendUri(): Uri
+    {
+        return Uri::of(config()->string('app.frontend_url', 'http://localhost:5173'));
+    }
+
+    /**
      * Customize the signed email verification URL for the SPA frontend.
      *
      * The signed URL is generated with a configurable expiration, then
@@ -191,29 +200,33 @@ class AppServiceProvider extends ServiceProvider
         VerifyEmail::createUrlUsing(function (Identity $notifiable): string {
             $expire = config()->integer('auth.verification.expire', 60);
 
-            $signedRouteUrl = URL::temporarySignedRoute(
-                'v1.auth.verification.verify',
-                now()->addMinutes($expire),
-                [
-                    'id' => $notifiable->getAuthIdentifier(),
-                    'hash' => sha1($notifiable->getEmailForVerification()),
-                ],
-            );
-
             $params = [
                 'id' => $notifiable->getAuthIdentifier(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
             ];
 
-            $query = parse_url($signedRouteUrl, PHP_URL_QUERY);
-            if ($query !== null && $query !== false) {
-                parse_str($query, $existing);
-                $params = array_merge($params, $existing);
+            $signedUri = Uri::temporarySignedRoute(
+                'v1.auth.verification.verify',
+                now()->addMinutes($expire),
+                $params,
+            );
+
+            $frontend = $this->frontendUri();
+            $scheme = $frontend->scheme();
+            $host = $frontend->host();
+
+            if ($scheme === null || $host === null) {
+                throw new RuntimeException(
+                    'The "app.frontend_url" config value must be an absolute URL with a scheme and host.'
+                );
             }
 
-            $frontendUrl = config()->string('app.frontend_url', 'http://localhost:5173');
-
-            return url()->query($frontendUrl.'/verify-email', $params);
+            return (string) $signedUri
+                ->withScheme($scheme)
+                ->withHost($host)
+                ->withPort($frontend->port())
+                ->withPath('/verify-email')
+                ->withQuery($params);
         });
     }
 
@@ -231,21 +244,41 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Customize the password reset URL for the SPA frontend.
+     * Customize the password reset notification message.
      */
-    protected function configurePasswordReset(): void
+    protected function configurePasswordResetMail(): void
     {
-        ResetPassword::createUrlUsing(function (mixed $user, string $token): string {
-            $frontendUrl = config()->string('app.frontend_url', 'http://localhost:5173');
+        ResetPassword::toMailUsing(function (mixed $notifiable, string $token): MailMessage {
+            $url = $this->frontendPasswordResetUrl($token, $notifiable);
 
-            $params = ['token' => $token];
+            $expire = config()->integer(
+                'auth.passwords.'.config()->string('auth.defaults.passwords').'.expire',
+                60,
+            );
 
-            if ($user instanceof Identity) {
-                $params['email'] = $user->getEmailForPasswordReset();
-            }
-
-            return url()->query($frontendUrl.'/reset-password', $params);
+            return (new MailMessage)
+                ->subject(__('auth.password_reset_subject'))
+                ->line(__('auth.password_reset_line'))
+                ->action(__('auth.password_reset_action'), $url)
+                ->line(__('auth.password_reset_expire', ['count' => $expire]))
+                ->line(__('auth.password_reset_footer'));
         });
+    }
+
+    /**
+     * Build the frontend password reset URL with the token and an encoded email.
+     */
+    protected function frontendPasswordResetUrl(string $token, mixed $user): string
+    {
+        $params = ['token' => $token];
+
+        if ($user instanceof Identity) {
+            $params['email'] = $user->getEmailForPasswordReset();
+        }
+
+        return (string) $this->frontendUri()
+            ->withPath('/reset-password')
+            ->withQuery($params);
     }
 
     /**

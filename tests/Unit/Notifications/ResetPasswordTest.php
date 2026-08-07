@@ -35,3 +35,39 @@ describe('ResetPassword frontend URL generation', function (): void {
             ->toContain('email=john%2Breset%40example.com');
     });
 });
+
+describe('ResetPassword mail content', function (): void {
+    it('builds a translated mail message in the current locale', function (): void {
+        $user = UserFactory::new()->makeOne(['email' => 'john+reset@example.com']);
+
+        $mail = (new ResetPassword('token-123'))->toMail($user);
+
+        expect($mail->subject)->toBe(__('auth.password_reset_subject'));
+        expect($mail->introLines)->toBe([__('auth.password_reset_line')]);
+        expect($mail->actionText)->toBe(__('auth.password_reset_action'));
+        expect($mail->actionUrl)->toStartWith(config('app.frontend_url').'/reset-password?');
+        expect($mail->outroLines)->toBe([
+            __('auth.password_reset_expire', [
+                'count' => config()->integer('auth.passwords.'.config()->string('auth.defaults.passwords').'.expire', 60),
+            ]),
+            __('auth.password_reset_footer'),
+        ]);
+    });
+
+    it('uses Indonesian translations when the locale is set to id', function (): void {
+        app()->setLocale('id');
+
+        $user = UserFactory::new()->makeOne();
+
+        $mail = (new ResetPassword('token-123'))->toMail($user);
+
+        expect($mail->subject)->toBe(__('auth.password_reset_subject'));
+        expect($mail->introLines)->toBe([__('auth.password_reset_line')]);
+        expect($mail->outroLines)->toBe([
+            __('auth.password_reset_expire', [
+                'count' => config()->integer('auth.passwords.'.config()->string('auth.defaults.passwords').'.expire', 60),
+            ]),
+            __('auth.password_reset_footer'),
+        ]);
+    });
+});
