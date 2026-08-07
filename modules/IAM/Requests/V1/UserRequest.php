@@ -68,7 +68,7 @@ final class UserRequest extends FormRequest
         $userId = is_string($userId) || is_int($userId) ? (string) $userId : null;
 
         $statusRule = $this->user()?->can(PermissionEnum::UserEdit->value) === true
-            ? ['sometimes', Rule::enum(UserStatusEnum::class)]
+            ? [Rule::enum(UserStatusEnum::class)]
             : ['prohibited'];
 
         return [
