@@ -13,6 +13,7 @@ dataset('securityFailCases', [
     'SESSION_DRIVER' => ['session.driver', 'file', 'SESSION_DRIVER'],
     'QUEUE_CONNECTION' => ['queue.default', 'sync', 'QUEUE_CONNECTION'],
     'SESSION_SECURE_COOKIE' => ['session.secure', false, 'SESSION_SECURE_COOKIE'],
+    'SESSION_SECURE_COOKIE (unset)' => ['session.secure', null, 'SESSION_SECURE_COOKIE'],
     'SESSION_SAME_SITE (none)' => ['session.same_site', 'none', 'SESSION_SAME_SITE'],
     'TRUSTED_HOSTS (empty)' => ['app.trusted_hosts', [], 'TRUSTED_HOSTS'],
     'MAIL_MAILER (log)' => ['mail.default', 'log', 'MAIL_MAILER'],

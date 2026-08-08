@@ -34,7 +34,7 @@ describe('production config', function () {
 });
 
 describe('failure cases', function () {
-    it('fails when misconfigured', function (string $configKey, string|bool|array $configValue, string $checkName) {
+    it('fails when misconfigured', function (string $configKey, string|bool|array|null $configValue, string $checkName) {
         config()->set($configKey, $configValue);
 
         $result = (new ProductionSecurityCheck)();

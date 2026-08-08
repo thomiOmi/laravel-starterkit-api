@@ -169,12 +169,14 @@ final readonly class ProductionSecurityCheck
      */
     private function checkSessionSecureCookie(): array
     {
-        $secure = config()->boolean('session.secure', false);
+        $secure = config('session.secure');
+
+        $isSecure = $secure === true;
 
         return [
             'check' => 'SESSION_SECURE_COOKIE',
-            'status' => $secure ? 'pass' : 'fail',
-            'detail' => $secure
+            'status' => $isSecure ? 'pass' : 'fail',
+            'detail' => $isSecure
                 ? 'SESSION_SECURE_COOKIE is enabled'
                 : 'SESSION_SECURE_COOKIE is disabled, must be true when using HTTPS',
         ];
