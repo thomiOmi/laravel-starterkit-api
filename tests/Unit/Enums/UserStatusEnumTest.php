@@ -29,4 +29,24 @@ describe('UserStatusEnum', function () {
         it('falls back to the generic failed key for allowed statuses', fn () => expect(UserStatusEnum::Active->blockedMessageKey())->toBe('auth.failed'));
     });
 
+    describe('label', function (): void {
+        it('returns the English label by default', function () {
+            expect(UserStatusEnum::Active->label())->toBe('Active')
+                ->and(UserStatusEnum::Inactive->label())->toBe('Inactive')
+                ->and(UserStatusEnum::Pending->label())->toBe('Pending')
+                ->and(UserStatusEnum::Suspended->label())->toBe('Suspended')
+                ->and(UserStatusEnum::Banned->label())->toBe('Banned');
+        });
+
+        it('returns the Indonesian label in the id locale', function () {
+            app()->setLocale('id');
+
+            expect(UserStatusEnum::Active->label())->toBe('Aktif')
+                ->and(UserStatusEnum::Inactive->label())->toBe('Nonaktif')
+                ->and(UserStatusEnum::Pending->label())->toBe('Menunggu')
+                ->and(UserStatusEnum::Suspended->label())->toBe('Ditangguhkan')
+                ->and(UserStatusEnum::Banned->label())->toBe('Diblokir');
+        });
+    });
+
 });

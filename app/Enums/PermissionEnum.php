@@ -21,4 +21,15 @@ enum PermissionEnum: string
     case PermissionCreate = 'permission.create';
     case PermissionEdit = 'permission.edit';
     case PermissionDelete = 'permission.delete';
+
+    /**
+     * Get the human-readable, localized label for this permission.
+     *
+     * Dots in the value are replaced with underscores so the key stays
+     * compatible with the `__()` dot notation lookup.
+     */
+    public function label(): string
+    {
+        return __('enums.'.basename(self::class).'.'.str_replace('.', '_', $this->value));
+    }
 }

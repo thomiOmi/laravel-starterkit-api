@@ -30,4 +30,20 @@ describe('PermissionEnum', function () {
         it('has PermissionDelete', fn () => expect(PermissionEnum::PermissionDelete->value)->toBe('permission.delete'));
     });
 
+    describe('label', function () {
+        it('returns the English label by default', function () {
+            expect(PermissionEnum::UserView->label())->toBe('View users')
+                ->and(PermissionEnum::RoleEdit->label())->toBe('Edit roles')
+                ->and(PermissionEnum::PermissionDelete->label())->toBe('Delete permissions');
+        });
+
+        it('returns the Indonesian label in the id locale', function () {
+            app()->setLocale('id');
+
+            expect(PermissionEnum::UserView->label())->toBe('Lihat pengguna')
+                ->and(PermissionEnum::RoleEdit->label())->toBe('Ubah peran')
+                ->and(PermissionEnum::PermissionDelete->label())->toBe('Hapus izin');
+        });
+    });
+
 });

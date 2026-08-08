@@ -24,6 +24,7 @@ describe('user status management', function (): void {
 
         assertSuccessResponse($response, 200, 'OK');
         expect($response->json('data.status'))->toBe('banned');
+        expect($response->json('data.status_label'))->toBe('Banned');
         expect($target->refresh()->status->value)->toBe('banned');
     })->group('module:iam');
 

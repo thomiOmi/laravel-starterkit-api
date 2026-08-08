@@ -28,6 +28,14 @@ enum UserStatusEnum: string
     }
 
     /**
+     * Get the human-readable, localized label for this status.
+     */
+    public function label(): string
+    {
+        return __('enums.'.basename(self::class).'.'.$this->value);
+    }
+
+    /**
      * Get the translation key explaining why authentication is blocked.
      */
     public function blockedMessageKey(): string
