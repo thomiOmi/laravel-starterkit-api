@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\ForgotPasswordAction;
 use Modules\IAM\Requests\V1\ForgotPasswordRequest;
 
-final readonly class ForgotPasswordController
+final readonly class ForgotPasswordController extends Controller
 {
     public function __construct(
         private ForgotPasswordAction $forgotPasswordAction

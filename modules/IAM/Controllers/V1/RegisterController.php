@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\RegisterAction;
 use Modules\IAM\Requests\V1\RegisterRequest;
 use Modules\IAM\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class RegisterController
+final readonly class RegisterController extends Controller
 {
     public function __construct(
         private RegisterAction $registerAction

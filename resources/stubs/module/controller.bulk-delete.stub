@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\BulkDelete{{pluralModule}}Action;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class BulkDeleteController
+final readonly class BulkDeleteController extends Controller
 {
     public function __construct(
         private BulkDelete{{pluralModule}}Action $bulkDelete{{pluralModule}},

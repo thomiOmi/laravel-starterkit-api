@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\CreateUserAction;
 use Modules\IAM\Requests\V1\UserRequest;
 use Modules\IAM\Resources\UserResource;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class UserCreateController
+final readonly class UserCreateController extends Controller
 {
     public function __construct(
         private CreateUserAction $createUser,

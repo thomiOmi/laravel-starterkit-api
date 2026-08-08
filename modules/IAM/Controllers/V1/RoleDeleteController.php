@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\DeleteRoleAction;
@@ -12,7 +13,7 @@ use Modules\IAM\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-final readonly class RoleDeleteController
+final readonly class RoleDeleteController extends Controller
 {
     public function __construct(
         private DeleteRoleAction $deleteRole,

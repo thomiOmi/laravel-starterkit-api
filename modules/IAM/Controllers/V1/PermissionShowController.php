@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Resources\PermissionResource;
 
-final readonly class PermissionShowController
+final readonly class PermissionShowController extends Controller
 {
     /**
      * Display the specified permission.

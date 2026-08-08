@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\BulkActionRequest;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\BulkDeleteRolesAction;
 
-final readonly class RoleBulkDeleteController
+final readonly class RoleBulkDeleteController extends Controller
 {
     public function __construct(
         private BulkDeleteRolesAction $bulkDeleteRoles,

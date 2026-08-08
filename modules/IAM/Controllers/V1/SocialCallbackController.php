@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 use Modules\IAM\Actions\SocialCallbackAction;
 use Modules\IAM\Resources\UserResource;
 
-final readonly class SocialCallbackController
+final readonly class SocialCallbackController extends Controller
 {
     public function __construct(
         private SocialCallbackAction $socialCallback

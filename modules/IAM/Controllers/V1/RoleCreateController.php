@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\CreateRoleAction;
 use Modules\IAM\Requests\V1\RoleRequest;
 use Modules\IAM\Resources\RoleResource;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class RoleCreateController
+final readonly class RoleCreateController extends Controller
 {
     public function __construct(
         private CreateRoleAction $createRole,

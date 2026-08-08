@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListUsersAction;
@@ -11,7 +12,7 @@ use Modules\IAM\Filters\UserFilter;
 use Modules\IAM\Requests\V1\UserListRequest;
 use Modules\IAM\Resources\UserResource;
 
-final readonly class UserListController
+final readonly class UserListController extends Controller
 {
     public function __construct(
         private ListUsersAction $listUsers

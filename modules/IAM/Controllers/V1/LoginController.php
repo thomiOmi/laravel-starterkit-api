@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\LoginAction;
 use Modules\IAM\Requests\V1\LoginRequest;
@@ -12,7 +13,7 @@ use Modules\IAM\Resources\UserResource;
 /**
  * @unauthenticated
  */
-final readonly class LoginController
+final readonly class LoginController extends Controller
 {
     public function __construct(
         private LoginAction $loginAction

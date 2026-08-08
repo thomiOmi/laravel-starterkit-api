@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Show{{Module}}Action;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 
-final readonly class ShowController
+final readonly class ShowController extends Controller
 {
     public function __construct(
         private Show{{Module}}Action $show{{Module}},

@@ -9,5 +9,6 @@ namespace App\Http\Controllers;
  *
  * Controllers are invoked directly by the router and do not need to
  * extend a framework base class. Kept as a stable extension point.
+ * Readonly because every module controller is declared readonly.
  */
-abstract class Controller {}
+abstract readonly class Controller {}

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\CreatePermissionAction;
 use Modules\IAM\Requests\V1\PermissionRequest;
 use Modules\IAM\Resources\PermissionResource;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class PermissionCreateController
+final readonly class PermissionCreateController extends Controller
 {
     public function __construct(
         private CreatePermissionAction $createPermission

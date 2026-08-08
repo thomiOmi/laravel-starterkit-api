@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\DeleteAccountAction;
@@ -11,7 +12,7 @@ use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\DeleteAccountRequest;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class DeleteAccountController
+final readonly class DeleteAccountController extends Controller
 {
     public function __construct(
         private DeleteAccountAction $deleteAccount,

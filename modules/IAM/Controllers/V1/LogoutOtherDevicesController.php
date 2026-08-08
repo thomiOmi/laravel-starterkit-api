@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\LogoutOtherDevicesAction;
@@ -11,7 +12,7 @@ use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\LogoutOtherDevicesRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
-final readonly class LogoutOtherDevicesController
+final readonly class LogoutOtherDevicesController extends Controller
 {
     public function __construct(
         private LogoutOtherDevicesAction $logoutOtherDevices

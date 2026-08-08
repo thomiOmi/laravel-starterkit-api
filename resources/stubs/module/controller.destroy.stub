@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Delete{{Module}}Action;
 use Modules\{{Module}}\Models\{{Module}};
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-final readonly class DeleteController
+final readonly class DeleteController extends Controller
 {
     public function __construct(
         private Delete{{Module}}Action $delete{{Module}},

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\UpdatePermissionAction;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Requests\V1\PermissionRequest;
 use Modules\IAM\Resources\PermissionResource;
 
-final readonly class PermissionUpdateController
+final readonly class PermissionUpdateController extends Controller
 {
     public function __construct(
         private UpdatePermissionAction $updatePermission

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Controllers\{{Version}};
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\{{Module}}\Actions\Create{{Module}}Action;
 use Modules\{{Module}}\Requests\{{Version}}\Create{{Module}}Request;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class CreateController
+final readonly class CreateController extends Controller
 {
     public function __construct(
         private Create{{Module}}Action $create{{Module}},

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\ChangePasswordAction;
 use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\ChangePasswordRequest;
 
-final readonly class ChangePasswordController
+final readonly class ChangePasswordController extends Controller
 {
     public function __construct(
         private ChangePasswordAction $changePassword,

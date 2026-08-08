@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\SocialRedirectAction;
 
-final readonly class SocialRedirectController
+final readonly class SocialRedirectController extends Controller
 {
     public function __construct(
         private SocialRedirectAction $socialRedirect

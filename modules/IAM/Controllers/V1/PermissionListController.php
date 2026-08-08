@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Modules\IAM\Actions\ListPermissionsAction;
@@ -11,7 +12,7 @@ use Modules\IAM\Filters\PermissionFilter;
 use Modules\IAM\Requests\V1\PermissionListRequest;
 use Modules\IAM\Resources\PermissionResource;
 
-final readonly class PermissionListController
+final readonly class PermissionListController extends Controller
 {
     public function __construct(
         private ListPermissionsAction $listPermissions

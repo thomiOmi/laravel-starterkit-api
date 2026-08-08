@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Modules\IAM\Actions\ResetPasswordAction;
 use Modules\IAM\Requests\V1\ResetPasswordRequest;
 
-final readonly class ResetPasswordController
+final readonly class ResetPasswordController extends Controller
 {
     public function __construct(
         private ResetPasswordAction $resetPasswordAction

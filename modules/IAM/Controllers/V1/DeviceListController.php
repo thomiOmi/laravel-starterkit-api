@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Controllers\V1;
 
+use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -13,7 +14,7 @@ use Modules\IAM\Models\User;
 use Modules\IAM\Requests\V1\DeviceListRequest;
 use Modules\IAM\Resources\DeviceResource;
 
-final readonly class DeviceListController
+final readonly class DeviceListController extends Controller
 {
     public function __construct(
         private ListDevicesAction $listDevices
