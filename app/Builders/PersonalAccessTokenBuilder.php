@@ -2,24 +2,27 @@
 
 declare(strict_types=1);
 
-namespace Modules\IAM\Filters;
+namespace App\Builders;
 
-use App\Support\Filters\BaseFilter;
-use Modules\IAM\Models\Permission;
+use App\Models\Sanctum\PersonalAccessToken;
 
 /**
- * @extends BaseFilter<Permission>
+ * @extends BaseQueryBuilder<PersonalAccessToken>
  */
-class PermissionFilter extends BaseFilter
+class PersonalAccessTokenBuilder extends BaseQueryBuilder
 {
     /** @var array<int, string> */
     protected array $allowedFilters = [
         'name',
+        'ip_address',
+        'last_used_at',
+        'created_at',
     ];
 
     /** @var array<int, string> */
     protected array $allowedSorts = [
         'name',
+        'last_used_at',
         'created_at',
     ];
 
@@ -27,9 +30,11 @@ class PermissionFilter extends BaseFilter
     protected array $allowedFields = [
         'id',
         'name',
-        'description',
+        'ip_address',
+        'user_agent',
+        'last_used_at',
         'created_at',
-        'updated_at',
+        'expires_at',
     ];
 
     /** @var array<int, string> */
@@ -38,5 +43,6 @@ class PermissionFilter extends BaseFilter
     /** @var array<int, string> */
     protected array $searchableColumns = [
         'name',
+        'ip_address',
     ];
 }

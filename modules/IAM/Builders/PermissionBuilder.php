@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Modules\IAM\Filters;
+namespace Modules\IAM\Builders;
 
-use App\Support\Filters\BaseFilter;
-use Modules\IAM\Models\Role;
+use App\Builders\BaseQueryBuilder;
+use Modules\IAM\Models\Permission;
 
 /**
- * @extends BaseFilter<Role>
+ * @extends BaseQueryBuilder<Permission>
  */
-class RoleFilter extends BaseFilter
+class PermissionBuilder extends BaseQueryBuilder
 {
     /** @var array<int, string> */
     protected array $allowedFilters = [
@@ -33,13 +33,10 @@ class RoleFilter extends BaseFilter
     ];
 
     /** @var array<int, string> */
-    protected array $allowedIncludes = [
-        'permissions',
-    ];
+    protected array $allowedIncludes = [];
 
     /** @var array<int, string> */
     protected array $searchableColumns = [
         'name',
-        'description',
     ];
 }

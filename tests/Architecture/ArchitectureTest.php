@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Support\Filters\BaseFilter;
+use App\Builders\BaseQueryBuilder;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
@@ -259,10 +259,10 @@ arch('module resources should extend JsonResource')
     ->classes()
     ->toExtend(JsonResource::class);
 
-arch('module filters should extend BaseFilter')
-    ->expect('Modules\*\Filters')
+arch('module builders should extend BaseQueryBuilder')
+    ->expect('Modules\*\Builders')
     ->classes()
-    ->toExtend(BaseFilter::class);
+    ->toExtend(BaseQueryBuilder::class);
 
 arch('module providers should extend ServiceProvider')
     ->expect('Modules\*\Providers')
@@ -313,7 +313,7 @@ arch('modules should be isolated')
         'Modules\*\*',
         'App\Providers',
         'App\Console',
-        'App\Filters',
+        'App\Builders',
         'Tests',
         'Database\Seeders',
         'Database\Factories',

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models\Sanctum;
 
+use App\Builders\PersonalAccessTokenBuilder;
 use App\Concerns\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
 
@@ -27,6 +29,7 @@ use Laravel\Sanctum\PersonalAccessToken as SanctumPersonalAccessToken;
     'ip_address',
     'user_agent',
 ])]
+#[UseEloquentBuilder(PersonalAccessTokenBuilder::class)]
 class PersonalAccessToken extends SanctumPersonalAccessToken
 {
     use HasDefaultBehavior;

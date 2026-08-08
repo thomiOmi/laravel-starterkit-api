@@ -7,17 +7,12 @@ namespace Modules\IAM\Controllers\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Modules\IAM\Actions\ListPermissionsAction;
-use Modules\IAM\Filters\PermissionFilter;
+use Modules\IAM\Models\Permission;
 use Modules\IAM\Requests\V1\PermissionListRequest;
 use Modules\IAM\Resources\PermissionResource;
 
 final readonly class PermissionListController extends Controller
 {
-    public function __construct(
-        private ListPermissionsAction $listPermissions
-    ) {}
-
     /**
      * Display a paginated listing of permissions.
      *
@@ -25,11 +20,16 @@ final readonly class PermissionListController extends Controller
      */
     public function __invoke(PermissionListRequest $request): SuccessResponse
     {
-        $permissions = $this->listPermissions->handle(
-            filter: new PermissionFilter($request),
-            perPage: $request->getPerPage(),
-            page: $request->getPage(),
-        );
+        $permissions = Permission::query()
+            ->allowedSearch()
+            ->allowedFilters()
+            ->allowedSorts()
+            ->allowedFields()
+            ->allowedIncludes()
+            ->paginate(
+                perPage: $request->getPerPage(),
+                page: $request->getPage(),
+            );
 
         return new SuccessResponse(
             data: PermissionResource::collection($permissions),

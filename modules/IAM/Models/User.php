@@ -11,6 +11,7 @@ use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,6 +20,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\IAM\Builders\UserBuilder;
 use Modules\IAM\Database\Factories\UserFactory;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -44,6 +46,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Fillable(['name', 'email', 'status', 'password', 'provider', 'provider_id', 'avatar'])]
 #[Hidden(['password', 'remember_token', 'provider_id'])]
 #[UseFactory(UserFactory::class)]
+#[UseEloquentBuilder(UserBuilder::class)]
 class User extends Authenticatable implements Identity
 {
     /** @use HasFactory<UserFactory> */

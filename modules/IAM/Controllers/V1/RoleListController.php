@@ -7,17 +7,12 @@ namespace Modules\IAM\Controllers\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Modules\IAM\Actions\ListRolesAction;
-use Modules\IAM\Filters\RoleFilter;
+use Modules\IAM\Models\Role;
 use Modules\IAM\Requests\V1\RoleListRequest;
 use Modules\IAM\Resources\RoleResource;
 
 final readonly class RoleListController extends Controller
 {
-    public function __construct(
-        private ListRolesAction $listRoles
-    ) {}
-
     /**
      * Display a paginated listing of the roles.
      *
@@ -25,11 +20,17 @@ final readonly class RoleListController extends Controller
      */
     public function __invoke(RoleListRequest $request): SuccessResponse
     {
-        $roles = $this->listRoles->handle(
-            filter: new RoleFilter($request),
-            perPage: $request->getPerPage(),
-            page: $request->getPage(),
-        );
+        $roles = Role::query()
+            ->with(['permissions:id,name'])
+            ->allowedSearch()
+            ->allowedFilters()
+            ->allowedSorts()
+            ->allowedFields()
+            ->allowedIncludes()
+            ->paginate(
+                perPage: $request->getPerPage(),
+                page: $request->getPage(),
+            );
 
         return new SuccessResponse(
             data: RoleResource::collection($roles),

@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Modules\IAM\Filters;
+namespace Modules\IAM\Builders;
 
-use App\Support\Filters\BaseFilter;
-use Illuminate\Database\Eloquent\Builder;
+use App\Builders\BaseQueryBuilder;
 use Modules\IAM\Models\User;
 
 /**
- * @extends BaseFilter<User>
+ * @extends BaseQueryBuilder<User>
  */
-class UserFilter extends BaseFilter
+class UserBuilder extends BaseQueryBuilder
 {
     /** @var array<int, string> */
     protected array $allowedFilters = [
@@ -59,13 +58,6 @@ class UserFilter extends BaseFilter
         'status',
     ];
 
-    /**
-     * @param  Builder<User>  $query
-     */
-    public function role(Builder $query, mixed $value): void
-    {
-        if (is_string($value) && $value !== '') {
-            $query->role($value);
-        }
-    }
+    // The `role` filter key is dispatched to the `role` named scope
+    // provided by Spatie's HasRoles trait on the User model.
 }
