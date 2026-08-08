@@ -10,4 +10,5 @@ dataset('filterOperators', [
     'lt' => ['lt:', 'age', '18',     '< ?'],
     'lte' => ['lte:', 'age', '18',    '<= ?'],
     'like' => ['like:', 'name', 'Al%', 'like ?'],
+    'in' => ['in:', 'role', 'admin,user', 'in (?, ?)'],
 ]);
