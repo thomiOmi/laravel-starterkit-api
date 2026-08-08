@@ -1,4 +1,4 @@
-# TASKS — Laravel Starterkit API
+# TASKS - Laravel Starterkit API
 
 Tracking cepat pengembangan. Source of truth tetap di `.planning/` (ROADMAP.md, REQUIREMENTS.md, STATE.md, phases/).
 Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemajuan.
@@ -7,9 +7,9 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 
 - Branch: `main`, HEAD `3d834fa`, working tree bersih.
 - Phase 1 (Quality Foundation): 2/2 plans selesai, gate hijau (pint, phpstan 0 errors, 100% type coverage, 387 test / 1445 assertion).
-- Remediasi audit P2-G (`TASKS_2.md`): SELESAI — Tahap A (A1-A17), B (B1-B5), C verifikasi (C1-C6), semua `[x]`.
-- Tersisa 2 keputusan desain pending: Q3 translatable enum (Opsi B), S4/P1 LIKE wildcard + index.
-- Target: minimum 1 module baru (Media Storage), tanpa maju-mundur antar modul — setiap perubahan selesai dan hijau sebelum lanjut.
+- Remediasi audit P2-G (`TASKS_2.md`): SELESAI - A1-A17, B1-B5, C1-C6 (tracking di `TASKS_2.md`, tidak di-commit).
+- Keputusan pending Q3 (enum label) + S4/P1 (LIKE wildcard) dikunci 2026-08-08 - tanpa keputusan desain tersisa.
+- Target: minimum 1 module baru (Media Storage), tanpa maju-mundur antar modul - setiap perubahan selesai dan hijau sebelum lanjut.
 
 ## Keputusan arsitektur (catatan permanen)
 
@@ -20,6 +20,8 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 | Enums IAM tetap di `app/Enums` | `UserStatusEnum` dipakai migration root + `PermissionEnum` dipakai `app/Http/Requests/BulkActionRequest.php` — keduanya di luar allowlist arch test; memindahkan enum ke module melanggar `modules should be isolated`. Bukan inkonsistensi: satu prinsip "file root di luar allowlist tidak boleh import module code". |
 | Akuntansi = rejected untuk module baru | Scope besar & domain-specific (chart of accounts, tax per negara); tidak bisa digeneralisasi jadi kit. Modul produk, bukan infrastruktur kit. |
 | Media Storage = module baru pertama | Reuse tertinggi di industri (avatar, dokumen, receipt, galeri); sudah tercantum di PROJECT.md; pakai Storage bawaan Laravel tanpa dependency baru. |
+| Enum labels native (`label()` + `lang/en|id/enums.php`) | Tanpa third-party package; pola sama seperti `blockedMessageKey()`; key permission pakai underscore (`user_view`) karena dot-notation `__()` memecah key ber-titik (`user.view`). |
+| LIKE wildcard full scan diterima | `BaseFilter` memakai `%value%` (leading wildcard, tidak bisa pakai B-tree index); dataset starter kit kecil + guard truncate input sudah ada; tanpa FULLTEXT (overengineering, MySQL-specific vs sqlite test). Keputusan dikunci saat desain filter Media module (P2-F). |
 
 ## Prioritas aktif (urutan kerja)
 
