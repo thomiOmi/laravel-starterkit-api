@@ -41,10 +41,6 @@ final class BulkActionRequest extends FormRequest
                 return $user->can(PermissionEnum::RoleDelete->value);
             }
 
-            if ($action === 'restore') {
-                return $user->can(PermissionEnum::RoleEdit->value);
-            }
-
             return false;
         }
 
