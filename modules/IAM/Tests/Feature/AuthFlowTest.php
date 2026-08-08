@@ -163,7 +163,7 @@ describe('AUTH-04 device management', function (): void {
         $list->assertJsonFragment(['name' => 'device-b']);
 
         $delete = $this->withToken($tokenA->plainTextToken)
-            ->deleteJson(route('v1.auth.devices.delete', ['device' => $tokenB->accessToken]));
+            ->deleteJson(route('v1.iam.auth.devices.delete', ['device' => $tokenB->accessToken]));
 
         assertSuccessResponse($delete, 200);
         expect(PersonalAccessToken::query()->whereKey($tokenB->accessToken->getKey())->exists())->toBeFalse();
@@ -191,7 +191,7 @@ describe('AUTH-05 email verification', function (): void {
         $user = UserFactory::new()->unverified()->createOne();
 
         $url = URL::temporarySignedRoute(
-            'v1.auth.verification.verify',
+            'v1.iam.auth.verification.verify',
             now()->addMinutes(60),
             ['id' => $user->id, 'hash' => sha1($user->email)],
         );

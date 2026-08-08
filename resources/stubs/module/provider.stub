@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\{{Module}}\Providers;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class {{Module}}ServiceProvider extends ServiceProvider
@@ -14,7 +13,7 @@ class {{Module}}ServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->configureRoutes();
+        //
     }
 
     /**
@@ -23,13 +22,5 @@ class {{Module}}ServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
-    }
-
-    protected function configureRoutes(): void
-    {
-        Route::prefix('api/{{routePrefix}}')
-            ->middleware('api')
-            ->name('{{routePrefix}}.')
-            ->group(base_path('modules/{{Module}}/Routes/{{Version}}.php'));
     }
 }

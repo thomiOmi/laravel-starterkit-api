@@ -404,7 +404,10 @@ describe('api version', function () {
             ->assertSuccessful();
 
         $provider = Storage::disk('modules')->get(MAKE_MODULE.'/Providers/'.MAKE_MODULE.'ServiceProvider.php');
-        expect($provider)->toContain('api/v2');
+        expect($provider)->toContain('class '.MAKE_MODULE.'ServiceProvider extends ServiceProvider')
+            ->not->toContain('configureRoutes');
+
+        Storage::disk('modules')->assertExists(MAKE_MODULE.'/Routes/V2.php');
     });
 
     it('rejects invalid api-version format', function () {
@@ -462,7 +465,10 @@ describe('api version', function () {
             ->assertSuccessful();
 
         $provider = Storage::disk('modules')->get(MAKE_MODULE.'/Providers/'.MAKE_MODULE.'ServiceProvider.php');
-        expect($provider)->toContain('api/v1');
+        expect($provider)->toContain('class '.MAKE_MODULE.'ServiceProvider extends ServiceProvider')
+            ->not->toContain('configureRoutes');
+
+        Storage::disk('modules')->assertExists(MAKE_MODULE.'/Routes/V1.php');
     });
 });
 

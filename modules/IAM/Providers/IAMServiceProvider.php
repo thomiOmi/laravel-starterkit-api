@@ -21,7 +21,7 @@ class IAMServiceProvider extends ServiceProvider
     {
         $this->configurePolicies();
 
-        $this->configureRoutes();
+        $this->registerMiddlewareAliases();
     }
 
     public function register(): void {}
@@ -39,13 +39,13 @@ class IAMServiceProvider extends ServiceProvider
         Gate::policy(Permission::class, PermissionPolicy::class);
     }
 
-    protected function configureRoutes(): void
+    /**
+     * Register middleware aliases used by the module routes.
+     *
+     * Route discovery is centralized in RouteServiceProvider.
+     */
+    protected function registerMiddlewareAliases(): void
     {
         Route::aliasMiddleware('active', EnsureUserIsActive::class);
-
-        Route::prefix('api/v1')
-            ->middleware('api')
-            ->name('v1.')
-            ->group(base_path('modules/IAM/Routes/V1.php'));
     }
 }

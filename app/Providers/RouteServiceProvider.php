@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Route;
  *
  * Iterates all directories under `modules/` and loads versioned route
  * files (`Routes/{VERSION}.php`) with the correct prefix and middleware.
- * The IAM module is skipped because it registers its own routes via
- * IAMServiceProvider.
+ * Every module, including IAM, is discovered the same way.
  */
 class RouteServiceProvider extends ServiceProvider
 {
@@ -32,19 +31,20 @@ class RouteServiceProvider extends ServiceProvider
     }
 
     /**
-     * Load versioned API route files for every non-IAM module.
+     * Load versioned API route files for every module.
      *
      * Each module can provide routes for one or more API versions (e.g. V1, V2).
-     * A legacy `Routes/api.php` fallback is supported for backward compatibility.
      */
     protected function mapModuleApiRoutes(): void
     {
         $moduleBase = base_path('modules');
-        $supportedVersions = config()->array('apiroute.supported_versions', ['V1']);
 
         if (! File::exists($moduleBase)) {
             return;
         }
+
+        /** @var array<int, string> $supportedVersions */
+        $supportedVersions = config()->array('apiroute.supported_versions', ['V1']);
 
         $moduleDirs = File::directories($moduleBase);
 
@@ -56,12 +56,6 @@ class RouteServiceProvider extends ServiceProvider
 
             $moduleName = basename($resolvedPath);
 
-            // IAM registers its own routes via IAMServiceProvider
-            if (strtolower($moduleName) === 'iam') {
-                continue;
-            }
-
-            /** @var array<int, string> $supportedVersions */
             foreach ($supportedVersions as $version) {
                 $routeFile = "{$resolvedPath}/Routes/{$version}.php";
 
@@ -71,14 +65,6 @@ class RouteServiceProvider extends ServiceProvider
                         ->name(strtolower($version).'.'.strtolower($moduleName).'.')
                         ->group($routeFile);
                 }
-            }
-
-            $legacyRouteFile = $resolvedPath.'/Routes/api.php';
-            if (File::exists($legacyRouteFile)) {
-                Route::prefix('api')
-                    ->middleware('api')
-                    ->name(strtolower($moduleName).'.')
-                    ->group($legacyRouteFile);
             }
         }
     }

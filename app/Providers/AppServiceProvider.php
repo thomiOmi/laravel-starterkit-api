@@ -206,7 +206,7 @@ class AppServiceProvider extends ServiceProvider
             ];
 
             $signedUri = Uri::temporarySignedRoute(
-                'v1.auth.verification.verify',
+                'v1.iam.auth.verification.verify',
                 now()->addMinutes($expire),
                 $params,
             );
