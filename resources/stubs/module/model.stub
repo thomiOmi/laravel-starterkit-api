@@ -9,14 +9,13 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-{{modelTraits}}
-use Modules\{{Module}}\Database\Factories\{{Module}}Factory;
+{{modelTraits}}{{builderImports}}use Modules\{{Module}}\Database\Factories\{{Module}}Factory;
 
 /**
 {{modelProperties}} */
 #[Fillable([
 {{fillableColumns}}])]
-#[UseFactory({{Module}}Factory::class)]
+#[UseFactory({{Module}}Factory::class)]{{builderAttribute}}
 class {{Module}} extends Model
 {
     /** @use HasFactory<{{Module}}Factory> */

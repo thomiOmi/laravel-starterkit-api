@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Modules\{{Module}}\Filters;
+namespace Modules\{{Module}}\Builders;
 
-use App\Support\Filters\BaseFilter;
+use App\Builders\BaseQueryBuilder;
 use Modules\{{Module}}\Models\{{Module}};
 
 /**
- * @extends BaseFilter<{{Module}}>
+ * @extends BaseQueryBuilder<{{Module}}>
  */
-class {{Module}}Filter extends BaseFilter
+class {{Module}}Builder extends BaseQueryBuilder
 {
     /** @var array<int, string> */
     protected array $allowedFilters = [

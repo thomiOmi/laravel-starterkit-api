@@ -33,7 +33,7 @@ describe('basic creation', function () {
             ->expectsChoice(
                 'Which components would you like to create?',
                 ['action', 'filter'],
-                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Builder', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
             )
             ->expectsChoice('Generate test files?', 'none', [
                 'none' => 'None',
@@ -83,7 +83,7 @@ describe('basic creation', function () {
             ->expectsChoice(
                 'Which components would you like to create?',
                 ['action', 'filter'],
-                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Builder', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
             )
             ->expectsChoice('Generate test files?', 'none', [
                 'none' => 'None',
@@ -162,7 +162,7 @@ describe('existing module', function () {
             ->expectsChoice(
                 'Which components would you like to create?',
                 ['action', 'filter'],
-                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Builder', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
             )
             ->expectsChoice('Generate test files?', 'none', [
                 'none' => 'None',
@@ -199,7 +199,7 @@ describe('component options', function () {
 
         Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Actions');
         Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Controllers/V1/ListController.php');
-        Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Filters');
+        Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Builders');
         Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Database/Migrations');
         Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Database/Factories');
         Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Database/Seeders');
@@ -219,7 +219,7 @@ describe('component options', function () {
             ->assertSuccessful();
 
         Storage::disk('modules')->assertExists(MAKE_MODULE.'/Actions');
-        Storage::disk('modules')->assertExists(MAKE_MODULE.'/Filters/'.MAKE_MODULE.'Filter.php');
+        Storage::disk('modules')->assertExists(MAKE_MODULE.'/Builders/'.MAKE_MODULE.'Builder.php');
         Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Migrations');
         Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Factories');
         Storage::disk('modules')->assertExists(MAKE_MODULE.'/Database/Seeders');
@@ -256,7 +256,7 @@ describe('--add component', function () {
             ->expectsChoice(
                 'Which components would you like to create?',
                 ['action'],
-                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Builder', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
             )
             ->expectsChoice('Generate test files?', 'none', [
                 'none' => 'None',
@@ -279,14 +279,14 @@ describe('--add component', function () {
             ->expectsQuestion('Add another field?', false)
             ->assertSuccessful();
 
-        Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Filters/'.MAKE_MODULE.'Filter.php');
+        Storage::disk('modules')->assertMissing(MAKE_MODULE.'/Builders/'.MAKE_MODULE.'Builder.php');
 
         artisanCommand($this, 'make:module', [
             'name' => MAKE_MODULE,
             '--add' => 'filter',
         ])->assertSuccessful();
 
-        Storage::disk('modules')->assertExists(MAKE_MODULE.'/Filters/'.MAKE_MODULE.'Filter.php');
+        Storage::disk('modules')->assertExists(MAKE_MODULE.'/Builders/'.MAKE_MODULE.'Builder.php');
     });
 
     it('warns about already-existing components', function () {
@@ -306,7 +306,7 @@ describe('--add component', function () {
             ->expectsChoice(
                 'Which components would you like to create?',
                 ['action', 'filter'],
-                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Builder', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
             )
             ->expectsChoice('Generate test files?', 'none', [
                 'none' => 'None',
@@ -380,7 +380,7 @@ describe('api version', function () {
             ->expectsChoice(
                 'Which components would you like to create?',
                 ['action', 'filter'],
-                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Builder', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
             )
             ->expectsChoice('Generate test files?', 'none', [
                 'none' => 'None',
@@ -441,7 +441,7 @@ describe('api version', function () {
             ->expectsChoice(
                 'Which components would you like to create?',
                 ['action', 'filter'],
-                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Builder', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
             )
             ->expectsChoice('Generate test files?', 'none', [
                 'none' => 'None',
@@ -512,7 +512,7 @@ describe('route file', function () {
             ->expectsChoice(
                 'Which components would you like to create?',
                 ['action', 'filter'],
-                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Filter', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
+                ['action' => 'CRUD Actions & Payloads', 'filter' => 'Query Builder', 'migration' => 'Migration', 'factory' => 'Factory', 'seeder' => 'Seeder', 'event' => 'Event'],
             )
             ->expectsChoice('Generate test files?', 'none', [
                 'none' => 'None',

@@ -7,16 +7,12 @@ namespace Modules\{{Module}}\Controllers\{{Version}};
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Modules\{{Module}}\Actions\List{{pluralModule}}Action;
+use Modules\{{Module}}\Models\{{Module}};
 use Modules\{{Module}}\Requests\{{Version}}\List{{Module}}Request;
 use Modules\{{Module}}\Resources\{{Module}}Resource;
 
 final readonly class ListController extends Controller
 {
-    public function __construct(
-        private List{{pluralModule}}Action $list{{pluralModule}}
-    ) {}
-
     /**
      * Display a paginated listing of the {{lowerResource}}s.
      *
@@ -24,7 +20,16 @@ final readonly class ListController extends Controller
      */
     public function __invoke(List{{Module}}Request $request): SuccessResponse
     {
-        ${{lowerResource}}s = $this->list{{pluralModule}}->handle();
+        ${{lowerResource}}s = {{Module}}::query()
+            ->allowedSearch()
+            ->allowedFilters()
+            ->allowedSorts()
+            ->allowedFields()
+            ->allowedIncludes()
+            ->paginate(
+                perPage: $request->getPerPage(),
+                page: $request->getPage(),
+            );
 
         return new SuccessResponse(
             data: {{Module}}Resource::collection(${{lowerResource}}s),

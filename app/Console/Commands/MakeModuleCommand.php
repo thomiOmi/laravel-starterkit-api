@@ -27,7 +27,7 @@ use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
-#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--A|add= : Comma-separated components to add to an existing module} {--no-timestamps : Exclude timestamps columns (created_at, updated_at)} {--soft-deletes : Include soft deletes column (deleted_at)} {--T|tests=none : Generate test files (none,unit,feature,all)} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query filter} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
+#[Signature('make:module {name? : The name of the module} {--force : Overwrite existing files} {--api-version=V1 : API version} {--x|except= : Comma-separated components to skip (action,filter,migration,factory,seeder,event)} {--A|add= : Comma-separated components to add to an existing module} {--no-timestamps : Exclude timestamps columns (created_at, updated_at)} {--soft-deletes : Include soft deletes column (deleted_at)} {--T|tests=none : Generate test files (none,unit,feature,all)} {--E|event : Create event} {--a|action : Create CRUD actions & payloads} {--l|filter : Create query builder} {--m|migration : Create migration} {--y|factory : Create factory} {--s|seeder : Create seeder}')]
 #[Description('Create a new module with controllers, model, resource, and optional components. Supports shorthand flags (-Talmys), --except to skip components, --add to add components to existing modules, --tests to generate test stubs, --no-timestamps, and --soft-deletes.')]
 #[Help('Scaffold a new module with controllers, model, resource, actions, payloads, filter, migration, factory, seeder, event, and tests. Supports interactive and non-interactive modes.')]
 #[Usage('make:module Partner')]
@@ -39,7 +39,7 @@ class MakeModuleCommand extends Command
 {
     private const array COMPONENTS = [
         'action' => 'CRUD Actions & Payloads',
-        'filter' => 'Query Filter',
+        'filter' => 'Query Builder',
         'migration' => 'Migration',
         'factory' => 'Factory',
         'seeder' => 'Seeder',
@@ -48,7 +48,7 @@ class MakeModuleCommand extends Command
 
     private const array COMPONENTS_INFO = [
         'action' => 'CRUD actions with payloads for Create, Read, Update, Delete.',
-        'filter' => 'Query filtering with sort, search, and pagination support.',
+        'filter' => 'Query builder with sort, search, and pagination support.',
         'migration' => 'Database migration for the module table.',
         'factory' => 'Model factory for testing and seeding.',
         'seeder' => 'Database seeder for development data.',
@@ -380,7 +380,7 @@ class MakeModuleCommand extends Command
             $components,
             fn (string $key) => match ($key) {
                 'action' => ! Storage::disk('modules')->exists("{$name}/Actions"),
-                'filter' => ! Storage::disk('modules')->exists("{$name}/Filters"),
+                'filter' => ! Storage::disk('modules')->exists("{$name}/Builders"),
                 'migration' => ! Storage::disk('modules')->exists("{$name}/Database/Migrations"),
                 'factory' => ! Storage::disk('modules')->exists("{$name}/Database/Factories"),
                 'seeder' => ! Storage::disk('modules')->exists("{$name}/Database/Seeders"),
@@ -572,6 +572,12 @@ class MakeModuleCommand extends Command
             'filterSorts' => $this->renderFilterSorts($schema),
             'filterAllowedFields' => $this->renderFilterAllowedFields($schema),
             'filterSearchableColumns' => $this->renderFilterSearchableColumns($schema),
+            'builderImports' => $options['filter']
+                ? "use Illuminate\\Database\\Eloquent\\Attributes\\UseEloquentBuilder;\nuse Modules\\{$name}\\Builders\\{$name}Builder;\n"
+                : '',
+            'builderAttribute' => $options['filter']
+                ? "\n#[UseEloquentBuilder({$name}Builder::class)]"
+                : '',
             'resourceTimestamps' => $timestamps
                 ? "            'created_at' => \$this->resource->created_at,\n            'updated_at' => \$this->resource->updated_at,\n"
                 : '',
@@ -725,12 +731,6 @@ class MakeModuleCommand extends Command
 
         $pluralName = Str::plural($name);
 
-        if (in_array('list', $operations, true)) {
-            if (! $this->putStub("{$name}/Actions/List{$pluralName}Action.php", 'action.list', $replacements)) {
-                return false;
-            }
-        }
-
         foreach (['create', 'update'] as $action) {
             if (! in_array($action, $operations, true)) {
                 continue;
@@ -818,7 +818,7 @@ class MakeModuleCommand extends Command
         array $operations,
         bool $hasAction,
     ): bool {
-        if ($options['filter'] && ! $this->putStub("{$name}/Filters/{$name}Filter.php", 'filter', $replacements)) {
+        if ($options['filter'] && ! $this->putStub("{$name}/Builders/{$name}Builder.php", 'builder', $replacements)) {
             return false;
         }
 
@@ -954,7 +954,7 @@ class MakeModuleCommand extends Command
         }
 
         if ($options['filter']) {
-            $directories[] = "{$name}/Filters";
+            $directories[] = "{$name}/Builders";
         }
 
         if ($options['event']) {
@@ -1116,7 +1116,7 @@ PHP;
 
     private function renderModelTraits(bool $softDeletes): string
     {
-        return $softDeletes ? "use Illuminate\Database\Eloquent\SoftDeletes;" : '';
+        return $softDeletes ? "use Illuminate\Database\Eloquent\SoftDeletes;\n" : '';
     }
 
     private function renderModelTraitsUse(bool $softDeletes): string
@@ -1408,7 +1408,7 @@ PHP;
                 ['Model', 'Created'],
                 ['Actions', $options['action'] ? 'Created' : 'Skipped'],
                 ['Payloads', $options['action'] ? 'Created' : 'Skipped'],
-                ['Filter', $options['filter'] ? 'Created' : 'Skipped'],
+                ['Builder', $options['filter'] ? 'Created' : 'Skipped'],
                 ['Migration', $options['migration'] ? 'Created' : 'Skipped'],
                 ['Factory', $options['factory'] ? 'Created' : 'Skipped'],
                 ['Seeder', $options['seeder'] ? 'Created' : 'Skipped'],
