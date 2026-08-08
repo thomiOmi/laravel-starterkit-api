@@ -220,7 +220,7 @@ class MakeModuleCommand extends Command
                 $cliVersion = $this->option('api-version');
                 $default = is_string($cliVersion) && $cliVersion !== ''
                     ? Str::upper($cliVersion)
-                    : config('apiroute.default_version', 'V1');
+                    : config()->string('apiroute.default_version', 'V1');
 
                 return suggest(
                     label: 'API version?',
@@ -1385,9 +1385,6 @@ PHP;
             ->implode("\n");
     }
 
-    /**
-     * @param  array<int, array{name: string, type: string, nullable: bool}>  $schema
-     */
     /**
      * @param  array<string, bool>  $options
      */

@@ -28,8 +28,16 @@ final readonly class SecurityHeadersMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
+        return self::applyHeaders($next($request));
+    }
 
+    /**
+     * Attach security headers to an already-built response.
+     *
+     * Also called from exception rendering, where middleware never runs.
+     */
+    public static function applyHeaders(Response $response): Response
+    {
         foreach (self::HEADERS as $header => $value) {
             $response->headers->set($header, $value);
         }

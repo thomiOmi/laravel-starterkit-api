@@ -46,7 +46,7 @@ final readonly class Sunset
             $sunsetDate = null;
         }
 
-        if ($sunsetDate === null) {
+        if (! $sunsetDate instanceof CarbonImmutable) {
             throw new InvalidArgumentException(
                 sprintf('Invalid sunset date "%s" - expected format Y-m-d.', $sunsetAt)
             );

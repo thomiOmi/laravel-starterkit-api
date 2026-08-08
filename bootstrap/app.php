@@ -179,11 +179,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->respond(function (ProblemResponse|Response $response, Throwable $e, Request $request): Response {
             $response = Router::toResponse($request, $response);
 
-            return app(TraceIdMiddleware::class)->handle($request, function () use ($response, $request): Response {
-                return app(SecurityHeadersMiddleware::class)->handle($request, function () use ($response): Response {
-                    return $response;
-                });
-            });
+            $response = TraceIdMiddleware::applyTraceId($response, $request);
+
+            return SecurityHeadersMiddleware::applyHeaders($response);
         });
     })
     ->create();

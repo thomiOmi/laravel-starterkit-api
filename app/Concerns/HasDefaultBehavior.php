@@ -14,10 +14,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
  */
 trait HasDefaultBehavior
 {
-    use FormatDate, HasUlids;
+    use HasUlids;
 
     protected function serializeDate(\DateTimeInterface $date): string
     {
-        return $this->formatDate($date) ?? $date->format('Y-m-d H:i:s');
+        return $date->format('Y-m-d H:i:s');
     }
 }

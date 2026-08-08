@@ -6,7 +6,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -21,8 +20,9 @@ final readonly class EnsureEmailIsVerified
             throw new AuthenticationException(__('auth.unauthenticated'));
         }
 
-        // @phpstan-ignore instanceof.alwaysTrue (defensive check — starter kit forks may swap User model without MustVerifyEmail)
-        if (! $user instanceof MustVerifyEmail || ! $user->hasVerifiedEmail()) {
+        // Identity extends MustVerifyEmail — the check is unconditional by contract.
+        // A fork swapping the model without verification support fails loudly instead.
+        if (! $user->hasVerifiedEmail()) {
             throw new AccessDeniedHttpException(__('auth.email_verify_required'));
         }
         /** @var Response $response */
