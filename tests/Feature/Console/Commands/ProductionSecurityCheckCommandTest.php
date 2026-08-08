@@ -10,6 +10,7 @@ beforeEach(function () {
     config()->set('app.debug', false);
     config()->set('app.env', 'production');
     config()->set('app.url', 'https://example.com');
+    config()->set('app.frontend_url', 'https://frontend.example.com');
     config()->set('cache.default', 'redis');
     config()->set('session.driver', 'redis');
     config()->set('session.secure', true);

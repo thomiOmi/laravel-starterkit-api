@@ -10,6 +10,7 @@ beforeEach(function () {
     config()->set('app.debug', false);
     config()->set('app.env', 'production');
     config()->set('app.url', 'https://example.com');
+    config()->set('app.frontend_url', 'https://frontend.example.com');
     config()->set('app.trusted_hosts', ['example.com']);
     config()->set('cache.default', 'redis');
     config()->set('session.driver', 'redis');
@@ -29,7 +30,7 @@ describe('production config', function () {
         $failed = array_filter($result, fn (array $r): bool => $r['status'] === 'fail');
 
         expect($failed)->toBeEmpty()
-            ->and($result)->toHaveCount(13);
+            ->and($result)->toHaveCount(14);
     });
 });
 

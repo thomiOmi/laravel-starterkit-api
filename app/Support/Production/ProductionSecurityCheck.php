@@ -21,6 +21,7 @@ final readonly class ProductionSecurityCheck
             $this->checkAppDebug(),
             $this->checkAppEnv(),
             $this->checkAppUrl(),
+            $this->checkFrontendUrl(),
             $this->checkTrustedHosts(),
             $this->checkAppKey(),
             $this->checkCacheStore(),
@@ -79,6 +80,22 @@ final readonly class ProductionSecurityCheck
             'detail' => str_starts_with($url, 'https://')
                 ? 'APP_URL uses HTTPS'
                 : "APP_URL '{$url}' must use HTTPS in production",
+        ];
+    }
+
+    /**
+     * @return array{check: string, status: string, detail: string}
+     */
+    private function checkFrontendUrl(): array
+    {
+        $url = (string) config()->get('app.frontend_url', '');
+
+        return [
+            'check' => 'FRONTEND_URL',
+            'status' => str_starts_with($url, 'https://') ? 'pass' : 'fail',
+            'detail' => str_starts_with($url, 'https://')
+                ? 'FRONTEND_URL uses HTTPS'
+                : "FRONTEND_URL '{$url}' must use HTTPS in production",
         ];
     }
 

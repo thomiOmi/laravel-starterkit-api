@@ -7,6 +7,8 @@ dataset('securityFailCases', [
     'APP_ENV' => ['app.env', 'local', 'APP_ENV'],
     'APP_URL (no https)' => ['app.url', 'http://example.com', 'APP_URL'],
     'APP_URL (empty)' => ['app.url', '', 'APP_URL'],
+    'FRONTEND_URL (no https)' => ['app.frontend_url', 'http://example.com', 'FRONTEND_URL'],
+    'FRONTEND_URL (empty)' => ['app.frontend_url', '', 'FRONTEND_URL'],
     'APP_KEY (empty)' => ['app.key', '', 'APP_KEY'],
     'APP_KEY (invalid)' => ['app.key', 'some-invalid-key', 'APP_KEY'],
     'CACHE_STORE' => ['cache.default', 'array', 'CACHE_STORE'],
