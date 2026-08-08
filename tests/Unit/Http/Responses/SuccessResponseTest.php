@@ -153,6 +153,27 @@ describe('extra features', function () {
 
         expect($response->headers->get('X-Custom'))->toBe('test-value');
     });
+
+    it('normalizes mixed header values', function () {
+        $response = new SuccessResponse(
+            data: ['id' => 1],
+            headers: ['X-Int' => 42, 'X-Null' => null, 'X-List' => ['a', 'b']],
+        )->toResponse(new Request);
+
+        expect($response->headers->get('X-Int'))->toBe('42')
+            ->and($response->headers->has('X-Null'))->toBeFalse()
+            ->and($response->headers->all('X-List'))->toBe(['a', 'b']);
+    });
+
+    it('normalizes headers for no content responses', function () {
+        $response = new SuccessResponse(
+            status: 204,
+            headers: ['X-Int' => 42, 'X-Null' => null],
+        )->toResponse(new Request);
+
+        expect($response->headers->get('X-Int'))->toBe('42')
+            ->and($response->headers->has('X-Null'))->toBeFalse();
+    });
 });
 
 describe('snapshots', function () {

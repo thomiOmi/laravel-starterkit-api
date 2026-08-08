@@ -41,3 +41,34 @@ describe('VerifyEmail frontend URL generation', function (): void {
             ->toContain('signature=');
     });
 });
+
+describe('VerifyEmail mail content', function (): void {
+    it('builds a translated mail message in the current locale', function (): void {
+        $user = UserFactory::new()->makeOne([
+            'id' => Str::ulid()->toString(),
+            'email' => 'verify@example.com',
+        ]);
+
+        $mail = (new VerifyEmail)->toMail($user);
+
+        expect($mail->subject)->toBe(__('auth.email_verify_subject'));
+        expect($mail->introLines)->toBe([__('auth.email_verify_line')]);
+        expect($mail->actionText)->toBe(__('auth.email_verify_action'));
+        expect($mail->outroLines)->toBe([__('auth.email_verify_footer')]);
+    });
+
+    it('uses Indonesian translations when the locale is set to id', function (): void {
+        app()->setLocale('id');
+
+        $user = UserFactory::new()->makeOne([
+            'id' => Str::ulid()->toString(),
+            'email' => 'verify@example.com',
+        ]);
+
+        $mail = (new VerifyEmail)->toMail($user);
+
+        expect($mail->subject)->toBe(__('auth.email_verify_subject'));
+        expect($mail->introLines)->toBe([__('auth.email_verify_line')]);
+        expect($mail->outroLines)->toBe([__('auth.email_verify_footer')]);
+    });
+});

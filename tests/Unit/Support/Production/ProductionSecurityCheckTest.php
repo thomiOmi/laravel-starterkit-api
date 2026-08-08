@@ -10,9 +10,11 @@ beforeEach(function () {
     config()->set('app.debug', false);
     config()->set('app.env', 'production');
     config()->set('app.url', 'https://example.com');
+    config()->set('app.trusted_hosts', ['example.com']);
     config()->set('cache.default', 'redis');
     config()->set('session.driver', 'redis');
     config()->set('session.secure', true);
+    config()->set('session.same_site', 'lax');
     config()->set('queue.default', 'redis');
     config()->set('mail.default', 'smtp');
     config()->set('mail.from.address', 'noreply@example.com');
@@ -27,12 +29,12 @@ describe('production config', function () {
         $failed = array_filter($result, fn (array $r): bool => $r['status'] === 'fail');
 
         expect($failed)->toBeEmpty()
-            ->and($result)->toHaveCount(11);
+            ->and($result)->toHaveCount(13);
     });
 });
 
 describe('failure cases', function () {
-    it('fails when misconfigured', function (string $configKey, string|bool $configValue, string $checkName) {
+    it('fails when misconfigured', function (string $configKey, string|bool|array $configValue, string $checkName) {
         config()->set($configKey, $configValue);
 
         $result = (new ProductionSecurityCheck)();

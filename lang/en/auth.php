@@ -38,6 +38,8 @@ return [
     'email_verify_required' => 'Please verify your email address before accessing this resource.',
     'email_verify_subject' => 'Verify Email Address',
     'email_verify_line' => 'Click the button below to verify your email address.',
+    'email_verify_action' => 'Verify Email Address',
+    'email_verify_footer' => 'If you did not create an account, no further action is required.',
     'password_reset_subject' => 'Reset your password',
     'password_reset_line' => 'You are receiving this email because we received a password reset request for your account.',
     'password_reset_action' => 'Reset Password',

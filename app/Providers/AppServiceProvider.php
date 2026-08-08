@@ -239,7 +239,8 @@ class AppServiceProvider extends ServiceProvider
             return (new MailMessage)
                 ->subject(__('auth.email_verify_subject'))
                 ->line(__('auth.email_verify_line'))
-                ->action(__('auth.email_verify_subject'), $url);
+                ->action(__('auth.email_verify_action'), $url)
+                ->line(__('auth.email_verify_footer'));
         });
     }
 

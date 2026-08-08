@@ -22,7 +22,7 @@ final readonly class SuccessResponse implements Responsable
     /**
      * @param  T  $data
      * @param  array<string, mixed>  $extra
-     * @param  array<string, string>  $headers
+     * @param  array<string, string|int|array<int, string>|null>  $headers
      */
     public function __construct(
         private mixed $data = null,
@@ -39,7 +39,7 @@ final readonly class SuccessResponse implements Responsable
     public function toResponse($request): JsonResponse|\Illuminate\Http\Response
     {
         if ($this->status === Response::HTTP_NO_CONTENT || $this->status === Response::HTTP_RESET_CONTENT) {
-            return response()->noContent(status: $this->status, headers: $this->headers);
+            return response()->noContent(status: $this->status, headers: $this->normalizeHeaders());
         }
 
         $payload = [
@@ -67,7 +67,29 @@ final readonly class SuccessResponse implements Responsable
             $payload = array_merge($payload, $cleanExtra);
         }
 
-        return response()->json($payload, $this->status, $this->headers);
+        return response()->json($payload, $this->status, $this->normalizeHeaders());
+    }
+
+    /**
+     * Convert mixed header values into the string shape expected by the response.
+     *
+     * @return array<string, string|array<int, string>>
+     */
+    private function normalizeHeaders(): array
+    {
+        $headers = [];
+
+        foreach ($this->headers as $key => $value) {
+            if ($value === null) {
+                continue;
+            }
+
+            $headers[$key] = is_array($value)
+                ? array_values(array_map('strval', $value))
+                : strval($value);
+        }
+
+        return $headers;
     }
 
     private function resolveData(): mixed

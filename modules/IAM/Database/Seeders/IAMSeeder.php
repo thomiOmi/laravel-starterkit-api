@@ -70,7 +70,7 @@ class IAMSeeder extends Seeder
      */
     private function seedUsers(): void
     {
-        $rawPassword = config('auth.default_password');
+        $rawPassword = config()->string('auth.default_password');
         $password = Hash::make(filled($rawPassword) ? (string) $rawPassword : Str::random(32));
 
         UserFactory::new()->superAdmin()->create([

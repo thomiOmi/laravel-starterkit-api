@@ -30,7 +30,7 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        $defaultPassword = config('auth.default_password');
+        $defaultPassword = config()->string('auth.default_password');
 
         return [
             'name' => fake()->name(),

@@ -27,6 +27,8 @@ return [
     'email_verify_required' => 'Silakan verifikasi alamat email Anda sebelum mengakses sumber daya ini.',
     'email_verify_subject' => 'Verifikasi Alamat Email',
     'email_verify_line' => 'Klik tombol di bawah untuk memverifikasi alamat email Anda.',
+    'email_verify_action' => 'Verifikasi Alamat Email',
+    'email_verify_footer' => 'Jika Anda tidak membuat akun, tidak diperlukan tindakan lebih lanjut.',
     'password_reset_subject' => 'Atur Ulang Kata Sandi',
     'password_reset_line' => 'Anda menerima email ini karena kami menerima permintaan atur ulang kata sandi untuk akun Anda.',
     'password_reset_action' => 'Atur Ulang Kata Sandi',

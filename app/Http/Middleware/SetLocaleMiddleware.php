@@ -16,18 +16,23 @@ use Symfony\Component\HttpFoundation\Response;
  * Resolves available locales from the lang/ directory, caches them
  * for 24 hours, and sets the best matching locale on the App facade.
  */
-final class SetLocaleMiddleware
+final readonly class SetLocaleMiddleware
 {
-    /** @var array<int, string> */
+    /**
+     * @var array<int, string>
+     */
     private array $availableLocales;
+
+    public function __construct()
+    {
+        $this->availableLocales = $this->resolveLocales();
+    }
 
     /**
      * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $this->resolveLocales();
-
         $locale = $request->getPreferredLanguage($this->availableLocales);
 
         if ($locale !== null && in_array($locale, $this->availableLocales, true)) {
@@ -41,8 +46,10 @@ final class SetLocaleMiddleware
 
     /**
      * Load available locales from cache or fall back to scanning filesystem.
+     *
+     * @return array<int, string>
      */
-    private function resolveLocales(): void
+    private function resolveLocales(): array
     {
         /** @var array<int, string> $locales */
         $locales = Cache::remember('app.available_locales', 86400, function (): array {
@@ -55,6 +62,6 @@ final class SetLocaleMiddleware
             return $locales !== [] ? $locales : ['en'];
         });
 
-        $this->availableLocales = $locales;
+        return $locales;
     }
 }

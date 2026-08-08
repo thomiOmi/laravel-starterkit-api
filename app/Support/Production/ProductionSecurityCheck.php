@@ -21,11 +21,13 @@ final readonly class ProductionSecurityCheck
             $this->checkAppDebug(),
             $this->checkAppEnv(),
             $this->checkAppUrl(),
+            $this->checkTrustedHosts(),
             $this->checkAppKey(),
             $this->checkCacheStore(),
             $this->checkSessionDriver(),
             $this->checkQueueConnection(),
             $this->checkSessionSecureCookie(),
+            $this->checkSessionSameSite(),
             $this->checkMailMailer(),
             $this->checkLogChannel(),
             $this->checkMailFromAddress(),
@@ -37,7 +39,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkAppDebug(): array
     {
-        $debug = config()->get('app.debug', true);
+        $debug = config()->boolean('app.debug', true);
 
         return [
             'check' => 'APP_DEBUG',
@@ -53,7 +55,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkAppEnv(): array
     {
-        $env = config()->get('app.env', 'production');
+        $env = config()->string('app.env', 'production');
 
         return [
             'check' => 'APP_ENV',
@@ -69,7 +71,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkAppUrl(): array
     {
-        $url = (string) config()->get('app.url', '');
+        $url = config()->string('app.url', '');
 
         return [
             'check' => 'APP_URL',
@@ -77,6 +79,22 @@ final readonly class ProductionSecurityCheck
             'detail' => str_starts_with($url, 'https://')
                 ? 'APP_URL uses HTTPS'
                 : "APP_URL '{$url}' must use HTTPS in production",
+        ];
+    }
+
+    /**
+     * @return array{check: string, status: string, detail: string}
+     */
+    private function checkTrustedHosts(): array
+    {
+        $hosts = config()->array('app.trusted_hosts', []);
+
+        return [
+            'check' => 'TRUSTED_HOSTS',
+            'status' => $hosts !== [] ? 'pass' : 'fail',
+            'detail' => $hosts !== []
+                ? 'TRUSTED_HOSTS has '.count($hosts).' trusted host(s)'
+                : 'TRUSTED_HOSTS is empty, at least one trusted host must be configured to prevent host header poisoning',
         ];
     }
 
@@ -103,7 +121,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkCacheStore(): array
     {
-        $store = (string) config()->get('cache.default', 'file');
+        $store = config()->string('cache.default', 'file');
 
         return [
             'check' => 'CACHE_STORE',
@@ -119,7 +137,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkSessionDriver(): array
     {
-        $driver = (string) config()->get('session.driver', 'file');
+        $driver = config()->string('session.driver', 'file');
 
         return [
             'check' => 'SESSION_DRIVER',
@@ -135,7 +153,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkQueueConnection(): array
     {
-        $connection = (string) config()->get('queue.default', 'sync');
+        $connection = config()->string('queue.default', 'sync');
 
         return [
             'check' => 'QUEUE_CONNECTION',
@@ -151,7 +169,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkSessionSecureCookie(): array
     {
-        $secure = (bool) config()->get('session.secure', false);
+        $secure = config()->boolean('session.secure', false);
 
         return [
             'check' => 'SESSION_SECURE_COOKIE',
@@ -165,9 +183,25 @@ final readonly class ProductionSecurityCheck
     /**
      * @return array{check: string, status: string, detail: string}
      */
+    private function checkSessionSameSite(): array
+    {
+        $sameSite = config()->string('session.same_site', 'lax');
+
+        return [
+            'check' => 'SESSION_SAME_SITE',
+            'status' => in_array($sameSite, ['lax', 'strict'], true) ? 'pass' : 'fail',
+            'detail' => in_array($sameSite, ['lax', 'strict'], true)
+                ? "SESSION_SAME_SITE is '{$sameSite}'"
+                : "SESSION_SAME_SITE is '{$sameSite}', use lax or strict in production to mitigate CSRF",
+        ];
+    }
+
+    /**
+     * @return array{check: string, status: string, detail: string}
+     */
     private function checkMailMailer(): array
     {
-        $mailer = (string) config()->get('mail.default', 'log');
+        $mailer = config()->string('mail.default', 'log');
 
         return [
             'check' => 'MAIL_MAILER',
@@ -183,7 +217,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkLogChannel(): array
     {
-        $channel = (string) config()->get('logging.default', 'stack');
+        $channel = config()->string('logging.default', 'stack');
 
         return [
             'check' => 'LOG_CHANNEL',
@@ -199,7 +233,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkMailFromAddress(): array
     {
-        $address = (string) config()->get('mail.from.address', '');
+        $address = config()->string('mail.from.address', '');
 
         return [
             'check' => 'MAIL_FROM_ADDRESS',
