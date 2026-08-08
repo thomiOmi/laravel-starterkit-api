@@ -3,11 +3,12 @@
 Tracking cepat pengembangan. Source of truth tetap di `.planning/` (ROADMAP.md, REQUIREMENTS.md, STATE.md, phases/).
 Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemajuan.
 
-## Status snapshot (2026-08-07)
+## Status snapshot (2026-08-08)
 
-- Branch: `main`, HEAD `2e2e002`, working tree bersih, ahead of origin/main 32 commit.
-- Phase 1 (Quality Foundation): 2/2 plans selesai, gate hijau (pint, phpstan 0 errors, 100% type coverage, 285 test / 1019 assertion).
-- Phase 1 status `verifying` — tersisa 1 human verification (concurrency limiter) + findings REVIEW (WR-01, WR-02, IN-01, IN-02).
+- Branch: `main`, HEAD `3d834fa`, working tree bersih.
+- Phase 1 (Quality Foundation): 2/2 plans selesai, gate hijau (pint, phpstan 0 errors, 100% type coverage, 387 test / 1445 assertion).
+- Remediasi audit P2-G (`TASKS_2.md`): SELESAI — Tahap A (A1-A17), B (B1-B5), C verifikasi (C1-C6), semua `[x]`.
+- Tersisa 2 keputusan desain pending: Q3 translatable enum (Opsi B), S4/P1 LIKE wildcard + index.
 - Target: minimum 1 module baru (Media Storage), tanpa maju-mundur antar modul — setiap perubahan selesai dan hijau sebelum lanjut.
 
 ## Keputusan arsitektur (catatan permanen)
@@ -58,6 +59,12 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] AUTH-04 token naming (`device_name` di login, fallback User-Agent, register default `auth_token`) — verifikasi dengan tes.
 - [x] Verifikasi AUTH-01..06 dengan tes UAT (`AuthFlowTest.php`, 15 tes, pola AuthRateLimitTest) + `ChangePasswordTest.php` (5) + `DeleteAccountTest.php` (3).
 - [x] Gate hijau: pint, phpstan 0 errors, 379 tes / 1419 assertions, type coverage 100%.
+
+### P2-G. Remediasi audit app/ + bootstrap/ (`TASKS_2.md`) — DONE (2026-08-08)
+- [x] Tahap A (A1-A17): dead code, redudansi, typed config access, headers/errors konsisten, route discovery tunggal (names `v1.{module}.{name}`), semua controller extends `abstract readonly Controller`.
+- [x] Tahap B (B1-B5): ProductionSecurityCheck 13 cek, dead branch hapus, mail custom (reset + verify) dengan terjemahan en/id.
+- [x] Tahap C (C1-C6): route 34/34 identik (method+uri), lint/types/coverage 100%, 387 tes / 1445 assertion, commit per kluster tanpa push.
+- Detail dan deviasi tiap item tercatat di `TASKS_2.md` (tracking, TIDAK di-commit).
 
 ### P2-F. Module baru: Media Storage (target minimum 1)
 - [ ] `php artisan make:module Media` + pola modular IAM (Actions, Controllers, Filters, Payloads, Requests, Resources).
