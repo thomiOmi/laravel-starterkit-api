@@ -3,13 +3,15 @@
 Tracking cepat pengembangan. Source of truth tetap di `.planning/` (ROADMAP.md, REQUIREMENTS.md, STATE.md, phases/).
 Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemajuan.
 
-## Status snapshot (2026-08-08)
+## Status snapshot (2026-08-10)
 
-- Branch: `main`, HEAD `3d834fa`, working tree bersih.
-- Phase 1 (Quality Foundation): 2/2 plans selesai, gate hijau (pint, phpstan 0 errors, 100% type coverage, 387 test / 1445 assertion).
+- Branch: `main`, HEAD `6f956b8`, synced dengan origin (8 commit terakhir di-push).
+- Phase 1 (Quality Foundation): 2/2 plans selesai, gate hijau.
 - Remediasi audit P2-G (`TASKS_2.md`): SELESAI - A1-A17, B1-B5, C1-C6 (tracking di `TASKS_2.md`, tidak di-commit).
+- Phase 2 (Authentication) + P2-F (Media Storage): DONE.
+- Phase 3 (Social Auth & Profile) + Phase 4 (IAM Admin verification): DONE — gate: 562 tes / 2265 assertions (serial + parallel), arch 46/46, phpstan 0 errors, coverage 100%, `composer ci:check` pass.
 - Keputusan pending Q3 (enum label) + S4/P1 (LIKE wildcard) dikunci 2026-08-08 - tanpa keputusan desain tersisa.
-- Target: minimum 1 module baru (Media Storage), tanpa maju-mundur antar modul - setiap perubahan selesai dan hijau sebelum lanjut.
+- Next: Phase 5 (Feature Flags Pennant, perlu dependency) atau Phase 6 (API Hardening) — pilihan user.
 
 ## Keputusan arsitektur (catatan permanen)
 
@@ -77,19 +79,34 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] Gate hijau: pint, phpstan 0 errors, full suite 100% coverage, `composer ci:check` pass (rector 0 changed, architecture OK).
 - Detail dan keputusan tercatat di `TASKS_2.md` (tracking, TIDAK di-commit).
 
+### Phase 3. Social Auth & Profile — DONE (2026-08-09)
+- [x] Pivot `social_accounts` (multi-provider; unique (provider, provider_id) + (user_id, provider); migration tunggal: create -> copy -> drop kolom users).
+- [x] Login/link/unlink via Socialite stateless; state OAuth stateless `SocialState` (Crypt, TTL 10 menit; kini di `Modules\IAM\Support`, bukan Actions).
+- [x] Profile: update name/email/avatar (2-step upload media) + change email -> email_verified_at null + re-verify; email bind hanya jika existing sama; email kosong provider -> synthetic `{provider}-{id}@social.local`.
+- [x] Unlink guard lockout 422 (password null + <=1 social account).
+- [x] Tes: SocialAuthTest, SocialLinkTest, SocialStateTest, ProfileTest.
+- [x] Commit: 6844ee1, 26b768b, 492d530 (+ relokasi SocialState di f0a127a).
+
+### Phase 4. IAM Admin CRUD verification — DONE (2026-08-10)
+- [x] 4 feature test baru (UserAdminTest 441 baris, RoleAdminTest, PermissionAdminTest, AssignmentTest) — IAM suite 211/211; verifikasi success criteria Phase 4 (contract Identity, guard mismatch 403, cache race) + CRUD per entitas + unauthorized.
+- [x] Bug AssignRolesRequest: guard SuperAdmin di-skip karena route `{user}` route-model-bound (branch `instanceof Model`); sebelum fix admin bisa assign roles ke SuperAdmin (200, harusnya 403).
+- [x] Bug CreateUserAction: `status: null` di response (default DB tidak ter-materialize) -> `UserStatusEnum::Pending` via array spread.
+- [x] Arch pre-existing dirapikan: `SocialState` Actions -> `Modules\IAM\Support` (utility stateless, bukan Action); `UpdateProfilePayload` + `toArray()`; arch 46/46.
+- [x] Parallel fix: `use InvalidArgumentException;` no-op di file test global-namespace (break worker parallel) dihapus (6f956b8).
+- [x] Gate: 562/562 serial + parallel (2265 assertions), `composer ci:check` pass.
+- [x] Commit: 53f51b2, 58e24f9, 17874b8, f0a127a, 6f956b8 — semua di-push.
+
 ## Backlog roadmap (dari .planning/ROADMAP.md — prioritas turun)
 
-- [ ] Phase 3: Social Auth & Profile — controllers ada; gap: link/unlink, avatar MissingAttributeException (verifikasi), change email re-verify.
-- [ ] Phase 4: IAM Admin — CRUD sudah ada; verifikasi success criteria (contract Identity, guard mismatch 403, cache race).
-- [ ] Phase 5: Feature Flags (Pennant) — FLAG-01..02.
+- [ ] Phase 5: Feature Flags (Pennant) — FLAG-01..02; perlu dependency `laravel/pennant` (persetujuan user).
 - [ ] Phase 6: API Hardening & Documentation — idempotency keys, Scramble (config scramble.php sudah ada).
 - [ ] Phase 7: Observability — health endpoint, Pulse.
 - [ ] Phase 8: Modern Features & Advanced Testing — attributes, mutation/stress/snapshot (mutasi: 210 passed; `risky` = artefak format output, bukan kegagalan).
 
 ## Known issues (dari PROJECT.md + REVIEW)
 
-- [ ] Module unit tests `no such table: users` (migration ordering) — cek apakah masih terjadi.
-- [ ] AuthTest avatar MissingAttributeException — verifikasi keberadaan test tsb (tidak ada di inventaris saat ini).
+- [x] Module unit tests `no such table: users` (migration ordering) — TERVERIFIKASI HILANG (2026-08-10): parallel suite 562/562 hijau; varian roles-table di BaseQueryBuilderTest ditangani via dataset `name` (53f51b2).
+- [x] AuthTest avatar MissingAttributeException — TERVERIFIKASI TIDAK ADA di inventaris test (stale, ditutup).
 - [ ] Spatie permission cache race parallel CI — P0-A sebagian menangani; long-term TEST_TOKEN prefix.
 - [ ] REVIEW Phase 1: WR-01 (generic renderer header deviation — perlu keputusan: revert atau approve+dokumentasi), WR-02 (hardcoded `X-RateLimit-Remaining '4'`), IN-01/IN-02.
 
