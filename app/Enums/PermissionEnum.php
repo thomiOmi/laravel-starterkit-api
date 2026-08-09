@@ -22,6 +22,10 @@ enum PermissionEnum: string
     case PermissionEdit = 'permission.edit';
     case PermissionDelete = 'permission.delete';
 
+    case MediaView = 'media.view';
+    case MediaCreate = 'media.create';
+    case MediaDelete = 'media.delete';
+
     /**
      * Get the human-readable, localized label for this permission.
      *

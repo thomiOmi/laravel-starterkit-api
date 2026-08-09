@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\IAM\Database\Seeders\IAMSeeder;
+use Modules\Media\Database\Seeders\MediaSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,5 +16,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(IAMSeeder::class);
+        $this->call(MediaSeeder::class);
     }
 }

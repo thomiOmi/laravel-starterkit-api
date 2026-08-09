@@ -40,5 +40,13 @@ return [
         'permission_create' => 'Buat izin',
         'permission_edit' => 'Ubah izin',
         'permission_delete' => 'Hapus izin',
+        'media_view' => 'Lihat media',
+        'media_create' => 'Unggah media',
+        'media_delete' => 'Hapus media',
+    ],
+
+    'MediaVisibilityEnum' => [
+        'public' => 'Publik',
+        'private' => 'Pribadi',
     ],
 ];

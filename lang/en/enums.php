@@ -40,5 +40,13 @@ return [
         'permission_create' => 'Create permissions',
         'permission_edit' => 'Edit permissions',
         'permission_delete' => 'Delete permissions',
+        'media_view' => 'View media',
+        'media_create' => 'Upload media',
+        'media_delete' => 'Delete media',
+    ],
+
+    'MediaVisibilityEnum' => [
+        'public' => 'Public',
+        'private' => 'Private',
     ],
 ];
