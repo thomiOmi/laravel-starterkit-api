@@ -7,6 +7,7 @@ namespace Modules\IAM\Providers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Laravel\Pennant\Feature;
 use Modules\IAM\Http\Middleware\EnsureUserIsActive;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
@@ -22,6 +23,8 @@ class IAMServiceProvider extends ServiceProvider
         $this->configurePolicies();
 
         $this->registerMiddlewareAliases();
+
+        $this->defineFeatures();
     }
 
     public function register(): void {}
@@ -47,5 +50,13 @@ class IAMServiceProvider extends ServiceProvider
     protected function registerMiddlewareAliases(): void
     {
         Route::aliasMiddleware('active', EnsureUserIsActive::class);
+    }
+
+    /**
+     * Define Pennant feature flags owned by the IAM module.
+     */
+    protected function defineFeatures(): void
+    {
+        Feature::define('iam.self-registration', fn () => true);
     }
 }
