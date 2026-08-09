@@ -42,15 +42,20 @@ final class AssignRolesRequest extends FormRequest
 
         $userId = $this->route('user');
 
-        if (is_string($userId)) {
+        if ($userId instanceof Model) {
+            /** @var Identity&Model $targetUser */
+            $targetUser = $userId;
+        } elseif (is_string($userId)) {
             /** @var class-string<Model> $model */
             $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
-            /** @var Identity $targetUser */
+            /** @var Identity&Model $targetUser */
             $targetUser = $model::query()->findOrFail($userId);
+        } else {
+            return true;
+        }
 
-            if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
-                return false;
-            }
+        if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
+            return false;
         }
 
         return true;

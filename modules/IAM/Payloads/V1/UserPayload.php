@@ -46,7 +46,7 @@ final readonly class UserPayload
     /**
      * Convert the payload to an array for Eloquent.
      *
-     * @return array<string, mixed>
+     * @return array{name: string, email: string, password?: string, status?: UserStatusEnum}
      */
     public function toArray(): array
     {
