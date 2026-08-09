@@ -68,12 +68,14 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] Tahap C (C1-C6): route 34/34 identik (method+uri), lint/types/coverage 100%, 387 tes / 1445 assertion, commit per kluster tanpa push.
 - Detail dan deviasi tiap item tercatat di `TASKS_2.md` (tracking, TIDAK di-commit).
 
-### P2-F. Module baru: Media Storage (target minimum 1)
-- [ ] `php artisan make:module Media` + pola modular IAM (Actions, Controllers, Filters, Payloads, Requests, Resources).
-- [ ] Model `Media` (ulid, disk, mime_type, size, path, meta), migration, factory, seeder.
-- [ ] Endpoint V1: upload, list, show, delete; public vs private storage (signed URL).
-- [ ] Permission `media.view/create/delete` + `MediaPolicy` (sekaligus contoh penerapan P1-D).
-- [ ] Tes feature + unit per pola IAM.
+### P2-F. Module baru: Media Storage (target minimum 1) — DONE (2026-08-09)
+- [x] `php artisan make:module Media` + pola modular IAM (Actions, Controllers, Payloads, Requests, Resources) — tanpa Filters (filter cukup via PaginationRequest search).
+- [x] Model `Media` (ulid, disk, mime_type, size, path, meta, uploaded_by), migration, factory, seeder (3 file contoh).
+- [x] Endpoint V1: upload, list, show, delete; public vs private storage (signed URL native Laravel via disk `local` `serve => true` + `ServeFile`, TTL 15 menit).
+- [x] Permission `media.view/create/delete` + `MediaPolicy` (delete = permission ATAU owner; contoh penerapan P1-D).
+- [x] Tes feature + unit per pola IAM — 39 tes Media (MediaTest 15, MediaPolicyTest 12, MediaUnitTest 9, MediaSignedUrlTest 3) + enum tests.
+- [x] Gate hijau: pint, phpstan 0 errors, full suite 100% coverage, `composer ci:check` pass (rector 0 changed, architecture OK).
+- Detail dan keputusan tercatat di `TASKS_2.md` (tracking, TIDAK di-commit).
 
 ## Backlog roadmap (dari .planning/ROADMAP.md — prioritas turun)
 

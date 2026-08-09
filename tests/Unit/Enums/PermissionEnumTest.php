@@ -30,11 +30,20 @@ describe('PermissionEnum', function () {
         it('has PermissionDelete', fn () => expect(PermissionEnum::PermissionDelete->value)->toBe('permission.delete'));
     });
 
+    describe('media permissions', function () {
+        it('has MediaView', fn () => expect(PermissionEnum::MediaView->value)->toBe('media.view'));
+        it('has MediaCreate', fn () => expect(PermissionEnum::MediaCreate->value)->toBe('media.create'));
+        it('has MediaDelete', fn () => expect(PermissionEnum::MediaDelete->value)->toBe('media.delete'));
+    });
+
     describe('label', function () {
         it('returns the English label by default', function () {
             expect(PermissionEnum::UserView->label())->toBe('View users')
                 ->and(PermissionEnum::RoleEdit->label())->toBe('Edit roles')
-                ->and(PermissionEnum::PermissionDelete->label())->toBe('Delete permissions');
+                ->and(PermissionEnum::PermissionDelete->label())->toBe('Delete permissions')
+                ->and(PermissionEnum::MediaView->label())->toBe('View media')
+                ->and(PermissionEnum::MediaCreate->label())->toBe('Upload media')
+                ->and(PermissionEnum::MediaDelete->label())->toBe('Delete media');
         });
 
         it('returns the Indonesian label in the id locale', function () {
@@ -42,7 +51,10 @@ describe('PermissionEnum', function () {
 
             expect(PermissionEnum::UserView->label())->toBe('Lihat pengguna')
                 ->and(PermissionEnum::RoleEdit->label())->toBe('Ubah peran')
-                ->and(PermissionEnum::PermissionDelete->label())->toBe('Hapus izin');
+                ->and(PermissionEnum::PermissionDelete->label())->toBe('Hapus izin')
+                ->and(PermissionEnum::MediaView->label())->toBe('Lihat media')
+                ->and(PermissionEnum::MediaCreate->label())->toBe('Unggah media')
+                ->and(PermissionEnum::MediaDelete->label())->toBe('Hapus media');
         });
     });
 
