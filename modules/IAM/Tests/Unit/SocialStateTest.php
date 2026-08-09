@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Carbon;
-use InvalidArgumentException;
 use Modules\IAM\Support\SocialState;
 
 describe('SocialState', function (): void {
