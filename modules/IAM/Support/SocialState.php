@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\IAM\Actions;
+namespace Modules\IAM\Support;
 
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
@@ -16,7 +16,7 @@ use JsonException;
  * the target user id. It is encrypted with the application key so it cannot
  * be forged or tampered with, and expires after a short window.
  */
-final class SocialState
+final readonly class SocialState
 {
     /** Minutes a state token stays valid. */
     private const int TTL_MINUTES = 10;

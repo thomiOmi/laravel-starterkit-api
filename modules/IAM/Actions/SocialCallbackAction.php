@@ -14,6 +14,7 @@ use Laravel\Socialite\Two\User as SocialiteUser;
 use Modules\IAM\Models\SocialAccount;
 use Modules\IAM\Models\User;
 use Modules\IAM\Services\UserAuthorizationService;
+use Modules\IAM\Support\SocialState;
 
 final readonly class SocialCallbackAction
 {

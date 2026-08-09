@@ -5,10 +5,10 @@ declare(strict_types=1);
 use Laravel\Socialite\Contracts\Factory;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
-use Modules\IAM\Actions\SocialState;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Database\Seeders\IAMSeeder;
 use Modules\IAM\Models\SocialAccount;
+use Modules\IAM\Support\SocialState;
 
 beforeEach(function (): void {
     $this->seed(IAMSeeder::class);

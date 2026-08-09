@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
 use Modules\IAM\Models\User;
+use Modules\IAM\Support\SocialState;
 
 final readonly class SocialLinkAction
 {

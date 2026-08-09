@@ -33,4 +33,16 @@ final readonly class UpdateProfilePayload
             avatarMediaId: $request->safe()->has('avatar') ? $request->safe()->string('avatar')->toString() : null,
         );
     }
+
+    /**
+     * @return array{name: string|null, email: string|null, avatar_media_id: string|null}
+     */
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'email' => $this->email,
+            'avatar_media_id' => $this->avatarMediaId,
+        ];
+    }
 }

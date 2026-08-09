@@ -7,6 +7,7 @@ namespace Modules\IAM\Actions;
 use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
+use Modules\IAM\Support\SocialState;
 
 final readonly class SocialRedirectAction
 {

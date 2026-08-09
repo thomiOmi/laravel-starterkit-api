@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
-use Modules\IAM\Actions\SocialState;
+use Modules\IAM\Support\SocialState;
 
 describe('SocialState', function (): void {
     it('creates a valid state token with the given action', function (): void {
