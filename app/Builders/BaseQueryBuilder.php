@@ -31,7 +31,7 @@ use InvalidArgumentException;
  * ```
  * ?filter[name]=bob               → WHERE name LIKE '%bob%'
  * ?filter[id]=gt:5                → WHERE id > 5
- * ?filter[role]=in:admin,user     → WHERE role IN ('admin', 'user')
+ * ?filter[name]=in:bob,alice      → WHERE name IN ('bob', 'alice')
  * ?sort=-created_at,name          → ORDER BY created_at DESC, name ASC
  * (no sort)                       → ORDER BY created_at DESC, id DESC
  * ?fields[users]=id,name          → SELECT id, name FROM users
@@ -43,8 +43,9 @@ use InvalidArgumentException;
  * **Extending:**
  * Override `$allowedFilters`, `$allowedSorts`, `$allowedFields`, `$allowedIncludes`,
  * `$searchableColumns`, `$exactMatchColumns`. Add strategy methods (camelCased filter
- * key, single `mixed $value` argument) for complex logic. Override `search()` for
- * custom search logic (takes priority over `$searchableColumns`).
+ * key, single `mixed $value` argument) for complex logic. Model named scopes (e.g.
+ * Spatie's `role`) are dispatched automatically when the camelCased key matches.
+ * Override `search()` for custom search logic (takes priority over `$searchableColumns`).
  *
  * @template TModel of Model
  *
@@ -124,7 +125,13 @@ abstract class BaseQueryBuilder extends Builder
 
     /**
      * Iterate `?filter[key]=value` entries and dispatch each to the
-     * appropriate handler: strategy method or simple auto-map.
+     * appropriate handler: strategy method, model named scope, or simple auto-map.
+     *
+     * Dispatch order:
+     * 1. Strategy method on the builder (camelCased filter key) - highest priority.
+     * 2. Model named scope with the camelCased filter key - lets Spatie scopes
+     *    (e.g. `role` on HasRoles) be reached through the filter API.
+     * 3. Auto-map to a column via {@see applyFilterToColumn()}.
      *
      * Unknown keys trigger {@see reportWarning()}.
      *
@@ -149,6 +156,12 @@ abstract class BaseQueryBuilder extends Builder
             $method = Str::camel($key);
 
             if (method_exists($this, $method) && ! method_exists(Builder::class, $method)) {
+                $this->{$method}($value);
+
+                continue;
+            }
+
+            if ($this->hasNamedScope($method)) {
                 $this->{$method}($value);
 
                 continue;

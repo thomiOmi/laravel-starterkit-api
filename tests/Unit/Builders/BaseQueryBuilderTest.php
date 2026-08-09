@@ -108,8 +108,8 @@ describe('filter', function () {
 
     it('applies WHERE IN for array values', function () {
         $builder = makeQueryBuilder(
-            query: ['filter' => ['role' => ['admin', 'user']]],
-            config: ['allowedFilters' => ['role']],
+            query: ['filter' => ['name' => ['bob', 'alice']]],
+            config: ['allowedFilters' => ['name']],
         );
 
         $sql = $builder->allowedFilters()->toSql();
