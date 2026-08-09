@@ -28,7 +28,10 @@ use Modules\IAM\Controllers\V1\RoleListController;
 use Modules\IAM\Controllers\V1\RoleShowController;
 use Modules\IAM\Controllers\V1\RoleUpdateController;
 use Modules\IAM\Controllers\V1\SocialCallbackController;
+use Modules\IAM\Controllers\V1\SocialLinkController;
 use Modules\IAM\Controllers\V1\SocialRedirectController;
+use Modules\IAM\Controllers\V1\SocialUnlinkController;
+use Modules\IAM\Controllers\V1\UpdateProfileController;
 use Modules\IAM\Controllers\V1\UserAssignRolesController;
 use Modules\IAM\Controllers\V1\UserBulkDeleteController;
 use Modules\IAM\Controllers\V1\UserBulkRestoreController;
@@ -66,6 +69,10 @@ Route::prefix('auth')->name('auth.')->group(function () {
         Route::middleware('verified')->group(function () {
             Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');
             Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
+            Route::put('me', UpdateProfileController::class)->name('me.update');
+
+            Route::get('social/{provider}/link', SocialLinkController::class)->name('social.link');
+            Route::delete('social/{provider}', SocialUnlinkController::class)->name('social.unlink');
 
             Route::get('devices', DeviceListController::class)->middleware('ability:auth:manage')->name('devices.index');
             Route::delete('devices/{device}', DeleteDeviceController::class)->middleware('ability:auth:manage')->name('devices.delete');

@@ -2,6 +2,11 @@
 
 return [
     'social_provider_invalid' => 'The selected social provider is invalid.',
+    'social_state_invalid' => 'The social authentication state is invalid.',
+    'social_state_expired' => 'The social authentication state has expired.',
+    'social_account_exists' => 'This social account is already linked.',
+    'social_not_linked' => 'This social account is not linked to your account.',
+    'avatar_invalid' => 'The selected avatar is invalid.',
 
     /*
     |--------------------------------------------------------------------------

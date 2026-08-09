@@ -2,6 +2,11 @@
 
 return [
     'social_provider_invalid' => 'Penyedia sosial yang dipilih tidak valid.',
+    'social_state_invalid' => 'Status autentikasi sosial tidak valid.',
+    'social_state_expired' => 'Status autentikasi sosial telah kedaluwarsa.',
+    'social_account_exists' => 'Akun sosial ini sudah ditautkan.',
+    'social_not_linked' => 'Akun sosial ini tidak tertaut dengan akun Anda.',
+    'avatar_invalid' => 'Avatar yang dipilih tidak valid.',
 
     /*
     |--------------------------------------------------------------------------

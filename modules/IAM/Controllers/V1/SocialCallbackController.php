@@ -23,6 +23,7 @@ final readonly class SocialCallbackController extends Controller
     {
         $result = $this->socialCallback->handle(
             provider: $provider,
+            state: $request->string('state')->toString(),
             ipAddress: $request->ip() ?? '0.0.0.0',
             userAgent: $request->userAgent(),
         );
