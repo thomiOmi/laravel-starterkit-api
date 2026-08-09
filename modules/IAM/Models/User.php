@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -33,18 +34,17 @@ use Spatie\Permission\Traits\HasRoles;
  * @property UserStatusEnum $status The account status of the user.
  * @property string|null $password The hashed password of the user.
  * @property string|null $remember_token The remember token for the user.
- * @property string|null $provider The social auth provider.
- * @property string|null $provider_id The social auth provider ID.
  * @property string|null $avatar The avatar URL of the user.
  * @property Carbon|null $email_verified_at The timestamp when the email was verified.
  * @property Carbon|null $created_at The timestamp when the user was created.
  * @property Carbon|null $updated_at The timestamp when the user was last updated.
  * @property Carbon|null $deleted_at The timestamp when the user was soft deleted.
+ * @property-read Collection<int, SocialAccount> $socialAccounts The social accounts linked to the user.
  * @property-read Collection<int, Role> $roles The roles assigned to the user.
  * @property-read Collection<int, Permission> $permissions The permissions assigned to the user.
  */
-#[Fillable(['name', 'email', 'status', 'password', 'provider', 'provider_id', 'avatar'])]
-#[Hidden(['password', 'remember_token', 'provider_id'])]
+#[Fillable(['name', 'email', 'status', 'password', 'avatar'])]
+#[Hidden(['password', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
 #[UseEloquentBuilder(UserBuilder::class)]
 class User extends Authenticatable implements Identity
@@ -62,6 +62,24 @@ class User extends Authenticatable implements Identity
                 $user->updateQuietly(['status' => UserStatusEnum::Active]);
             }
         });
+    }
+
+    /**
+     * Get the social accounts linked to this user.
+     *
+     * @return HasMany<SocialAccount, $this>
+     */
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
+    /**
+     * Determine whether the user has a password set.
+     */
+    public function hasPassword(): bool
+    {
+        return $this->password !== null;
     }
 
     /**
@@ -93,7 +111,6 @@ class User extends Authenticatable implements Identity
             'email_verified_at' => 'datetime',
             'status' => UserStatusEnum::class,
             'password' => 'hashed',
-            'provider_id' => 'encrypted',
         ];
     }
 }

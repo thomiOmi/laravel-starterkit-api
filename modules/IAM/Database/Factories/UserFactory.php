@@ -39,8 +39,6 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make(filled($defaultPassword) ? (string) $defaultPassword : Str::random(32)),
             'remember_token' => Str::random(10),
-            'provider' => null,
-            'provider_id' => null,
             'avatar' => null,
             'deleted_at' => null,
         ];
@@ -146,9 +144,13 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'password' => null,
-            'provider' => $provider,
-            'provider_id' => fake()->numerify($provider.'-######'),
             'avatar' => fake()->imageUrl(),
-        ]);
+        ])->afterCreating(function (User $user) use ($provider): void {
+            $user->socialAccounts()->create([
+                'provider' => $provider,
+                'provider_id' => fake()->numerify($provider.'-######'),
+                'avatar' => fake()->imageUrl(),
+            ]);
+        });
     }
 }

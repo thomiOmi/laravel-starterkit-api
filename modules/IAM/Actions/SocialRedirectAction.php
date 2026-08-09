@@ -19,9 +19,11 @@ final readonly class SocialRedirectAction
             throw new InvalidArgumentException(__('validation.social_provider_invalid'));
         }
 
+        $state = SocialState::create('login');
+
         /** @var AbstractProvider $driver */
         $driver = Socialite::driver($provider);
 
-        return $driver->stateless()->redirect()->getTargetUrl();
+        return $driver->stateless()->with(['state' => $state])->redirect()->getTargetUrl();
     }
 }
