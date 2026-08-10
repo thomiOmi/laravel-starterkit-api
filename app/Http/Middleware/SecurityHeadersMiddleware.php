@@ -21,6 +21,7 @@ final readonly class SecurityHeadersMiddleware
         'Referrer-Policy' => 'strict-origin-when-cross-origin',
         'X-Frame-Options' => 'DENY',
         'Permissions-Policy' => 'camera=(), microphone=(), geolocation=()',
+        'Cache-Control' => 'no-store',
     ];
 
     /**
