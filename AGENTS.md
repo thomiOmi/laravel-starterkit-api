@@ -85,6 +85,9 @@ Run `php artisan boost:update --discover` to install Boost-provided guidelines a
 |---|---|---|
 | `laravel-attributes` | `.ai/skills/laravel-attributes/` | PHP 8 attributes for Laravel models, jobs, commands, form requests |
 | `modular-architecture` | `.ai/skills/modular-architecture/` | Module DDD structure: Actions, Controllers, Filters, Payloads, Resources |
+| `create-prd` | `.ai/skills/create-prd/` | PRD creation from `docs/prd/template.md` with clarifying questions |
+| `create-adr` | `.ai/skills/create-adr/` | Architecture Decision Records in Nygard format from `docs/adr/template.md` |
+| `update-tasks` | `.ai/skills/update-tasks/` | TASKS.md operational tracker maintenance |
 
 Use the `skill` tool to load a skill when the task matches its description. List all available skills with the `available_skills` list in the system prompt.
 

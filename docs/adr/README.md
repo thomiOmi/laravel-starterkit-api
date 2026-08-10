@@ -35,4 +35,4 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 - Number sequentially; do not reuse or reorder numbers (Superseded decisions keep their number and point to the replacement).
 - Status values: `Proposed`, `Accepted`, `Deprecated`, `Superseded by ADR-NNNN`.
 - Record the decision when it is settled, with the reason ("why") — not just the outcome.
-- Migrated from `TASKS.md`/`TASKS_2.md` decision tables on 2026-08-11; those working files are no longer the decision source of truth.
+- Migrated from legacy decision tables on 2026-08-11; those working files are no longer the decision source of truth.
