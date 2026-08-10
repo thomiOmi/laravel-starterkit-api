@@ -5,14 +5,15 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 
 ## Status snapshot (2026-08-10)
 
-- Branch: `main`, HEAD `6f956b8`, synced dengan origin (8 commit terakhir di-push).
+- Branch: `main`, HEAD `0717d3d`, synced dengan origin.
 - Phase 1 (Quality Foundation): 2/2 plans selesai, gate hijau.
 - Remediasi audit P2-G (`TASKS_2.md`): SELESAI - A1-A17, B1-B5, C1-C6 (tracking di `TASKS_2.md`, tidak di-commit).
 - Phase 2 (Authentication) + P2-F (Media Storage): DONE.
 - Phase 3 (Social Auth & Profile) + Phase 4 (IAM Admin verification): DONE — gate: 562 tes / 2265 assertions (serial + parallel), arch 46/46, phpstan 0 errors, coverage 100%, `composer ci:check` pass.
 - Phase 5 (Feature Flags Pennant): DONE — 567 tes / 2283 assertions (serial + parallel), coverage 100%, `composer ci:check` pass.
+- Phase 6 (API Hardening): DONE — 581 tes / 2347 assertions (serial + parallel), coverage 100%, `composer ci:check` pass. API-04 Complete; API-05 (Scramble) di-skip sengaja (keputusan user 2026-08-10) — `dedoc/scramble` tetap terpasang tanpa perubahan.
 - Keputusan pending Q3 (enum label) + S4/P1 (LIKE wildcard) dikunci 2026-08-08 - tanpa keputusan desain tersisa.
-- Next: Phase 6 (API Hardening & Documentation) — pilihan user.
+- Next: Phase 7 (Observability — health endpoint, Pulse).
 
 ## Keputusan arsitektur (catatan permanen)
 
@@ -106,10 +107,20 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] Gate: 567/567 (2283 assertions) serial + parallel, arch 46/46, lint/phpstan 0, coverage 100%, `composer ci:check` pass.
 - [x] Commit: 80b40cd, e9cc188 — plus 1 commit docs menyusul.
 
+### Phase 6. API Hardening — DONE (2026-08-10)
+- [x] API-04 idempotency keys: `IdempotencyMiddleware` baru (final readonly, validasi UUID v4 -> 422 ValidationException, key `idempotency:hash(sha256(method|path|user-id|'guest'|lowercase-key))`, `Cache::lock` 10s + try/finally, simpan hanya 2xx/3xx, replay body sama -> `Idempotency-Replayed: true`, body beda -> 409 `conflict` via `config/errors.php`); `config/idempotency.php` (ttl 86400, env `IDEMPOTENCY_TTL`); alias `idempotency` + `appendToGroup('api')` di `bootstrap/app.php` (global ke semua route api); lang en/id `http_conflict`, `idempotency_invalid`, `idempotency_conflict`; `config/cors.php` exposed `Idempotency-Replayed`.
+- [x] Cache-Control `no-store` di `SecurityHeadersMiddleware::HEADERS` (hasil merge Symfony = `no-store, private`; test diassert sesuai perilaku aktual).
+- [x] CORS audit: exposed_headers + header baru idempotency; tanpa perubahan whitelist asal.
+- [x] Tes: `IdempotencyMiddlewareTest` baru 8 (termasuk replay route-level register -> count user tetap 1), `SunsetMiddlewareTest` baru 6 (Deprecation/Sunset, Link successor, enforce 410 via `CarbonImmutable::setTestNow`, param order-independent, tanggal invalid -> InvalidArgumentException), `GlobalApiMiddlewareTest` assert `no-store, private`.
+- [x] Parallel fix terulang: `use InvalidArgumentException;` no-op di file test global-namespace dihapus (pola 6f956b8).
+- [x] Gate: 581/581 serial + parallel (2347 assertions), lint/phpstan 0, coverage 100%, `composer ci:check` pass (rector 0 setelah manual convert assert).
+- [x] Keputusan: D1 idempotency global group api (bukan opt-in per route), D2 409 conflict ikut, D3 `dedoc/scramble` di-skip — API-05 Pending.
+- [x] Commit: bac5fd4, cdce8a8, 0717d3d — perlu push.
+
 ## Backlog roadmap (dari .planning/ROADMAP.md — prioritas turun)
 
 - [ ] Evaluasi `laravel/chisel` (install-time feature trimming, ref: laravel/vue-starter-kit) — defer sampai kit stabil pasca Phase 8.
-- [ ] Phase 6: API Hardening & Documentation — idempotency keys, Scramble (config scramble.php sudah ada).
+- [ ] Phase 6 API-05: Scramble (OpenAPI docs) — di-skip sengaja 2026-08-10, `dedoc/scramble` tetap terpasang (config/scramble.php ada); resume bila diinginkan.
 - [ ] Phase 7: Observability — health endpoint, Pulse.
 - [ ] Phase 8: Modern Features & Advanced Testing — attributes, mutation/stress/snapshot (mutasi: 210 passed; `risky` = artefak format output, bukan kegagalan).
 
