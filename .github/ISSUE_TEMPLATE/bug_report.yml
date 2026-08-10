@@ -1,0 +1,52 @@
+name: Bug report
+description: Report a bug in the starterkit
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to fill out this bug report.
+  - type: input
+    id: version
+    attributes:
+      label: Kit version
+      description: Tag or commit hash you are using (e.g. v0.19.1)
+      placeholder: v0.19.1
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? Include expected vs actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps to reproduce the issue.
+      placeholder: |
+        1. Create a user with role X
+        2. Call POST /api/v1/...
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: PHP version, database, web server, and any relevant configuration.
+      placeholder: |
+        PHP 8.4
+        MySQL 8.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: verification
+    attributes:
+      label: Verification
+      options:
+        - label: I checked existing issues for a duplicate
+          required: true
+        - label: I am using the latest release
