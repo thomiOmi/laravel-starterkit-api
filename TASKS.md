@@ -11,7 +11,7 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - Phase 2 (Authentication) + P2-F (Media Storage): DONE.
 - Phase 3 (Social Auth & Profile) + Phase 4 (IAM Admin verification): DONE — gate: 562 tes / 2265 assertions (serial + parallel), arch 46/46, phpstan 0 errors, coverage 100%, `composer ci:check` pass.
 - Phase 5 (Feature Flags Pennant): DONE — 567 tes / 2283 assertions (serial + parallel), coverage 100%, `composer ci:check` pass.
-- Phase 6 (API Hardening): DONE — 581 tes / 2347 assertions (serial + parallel), coverage 100%, `composer ci:check` pass. API-04 Complete; API-05 (Scramble) di-skip sengaja (keputusan user 2026-08-10) — `dedoc/scramble` tetap terpasang tanpa perubahan.
+- Phase 6 (API Hardening): DONE — 581 tes / 2347 assertions (serial + parallel), coverage 100%, `composer ci:check` pass. API-04 Complete (dipasang opt-in di `auth.register`, D1 direvisi 2026-08-11); API-05 (Scramble) di-skip sengaja (keputusan user 2026-08-10) — `dedoc/scramble` tetap terpasang tanpa perubahan.
 - Keputusan pending Q3 (enum label) + S4/P1 (LIKE wildcard) dikunci 2026-08-08 - tanpa keputusan desain tersisa.
 - Next: Phase 7 (Observability — health endpoint, Pulse).
 
@@ -108,14 +108,15 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] Commit: 80b40cd, e9cc188 — plus 1 commit docs menyusul.
 
 ### Phase 6. API Hardening — DONE (2026-08-10)
-- [x] API-04 idempotency keys: `IdempotencyMiddleware` baru (final readonly, validasi UUID v4 -> 422 ValidationException, key `idempotency:hash(sha256(method|path|user-id|'guest'|lowercase-key))`, `Cache::lock` 10s + try/finally, simpan hanya 2xx/3xx, replay body sama -> `Idempotency-Replayed: true`, body beda -> 409 `conflict` via `config/errors.php`); `config/idempotency.php` (ttl 86400, env `IDEMPOTENCY_TTL`); alias `idempotency` + `appendToGroup('api')` di `bootstrap/app.php` (global ke semua route api); lang en/id `http_conflict`, `idempotency_invalid`, `idempotency_conflict`; `config/cors.php` exposed `Idempotency-Replayed`.
+- [x] API-04 idempotency keys: `IdempotencyMiddleware` baru (final readonly, validasi UUID v4 -> 422 ValidationException, key `idempotency:hash(sha256(method|path|user-id|'guest'|lowercase-key))`, `Cache::lock` 30s + block 10s + try/finally, simpan hanya 2xx/3xx, skip Streamed/BinaryFile/oversized body-response, replay body sama -> `Idempotency-Replayed: true` + echo `Idempotency-Key`, body beda -> 409 ConflictHttpException); `App\Payloads\IdempotencyPayload` (DTO defensif fromArray/toArray); `config/idempotency.php` (ttl 86400, `IDEMPOTENCY_TTL`, lock_timeout/wait_timeout, max_body_size/max_response_size); alias `idempotency` + renderer `ConflictHttpException` di `bootstrap/app.php`; lang en/id `http_conflict`, `conflict_detail`, `idempotency_invalid`, `idempotency_conflict`; `config/cors.php` exposed `Idempotency-Replayed`.
 - [x] Cache-Control `no-store` di `SecurityHeadersMiddleware::HEADERS` (hasil merge Symfony = `no-store, private`; test diassert sesuai perilaku aktual).
 - [x] CORS audit: exposed_headers + header baru idempotency; tanpa perubahan whitelist asal.
-- [x] Tes: `IdempotencyMiddlewareTest` baru 8 (termasuk replay route-level register -> count user tetap 1), `SunsetMiddlewareTest` baru 6 (Deprecation/Sunset, Link successor, enforce 410 via `CarbonImmutable::setTestNow`, param order-independent, tanggal invalid -> InvalidArgumentException), `GlobalApiMiddlewareTest` assert `no-store, private`.
+- [x] Tes: `IdempotencyMiddlewareTest` unit baru (method bypass, validasi key, caching, conflict, lock timeout, size limit) + feature global (replay/409/201/scope isolation via test route `/_test/*`), `SunsetMiddlewareTest` baru 6, `GlobalApiMiddlewareTest` assert `no-store, private`.
 - [x] Parallel fix terulang: `use InvalidArgumentException;` no-op di file test global-namespace dihapus (pola 6f956b8).
 - [x] Gate: 581/581 serial + parallel (2347 assertions), lint/phpstan 0, coverage 100%, `composer ci:check` pass (rector 0 setelah manual convert assert).
-- [x] Keputusan: D1 idempotency global group api (bukan opt-in per route), D2 409 conflict ikut, D3 `dedoc/scramble` di-skip — API-05 Pending.
-- [x] Commit: bac5fd4, cdce8a8, 0717d3d — perlu push.
+- [x] Keputusan D1 DIREVISI (2026-08-11): idempotency **opt-in per route** (bukan global group api) — dipasang di `auth.register` saja, urutan `['feature.flag:iam.self-registration', 'throttle:auth', 'idempotency']` (flag terluar, throttle gate kedua, idempotency sebelum controller). Alasan: (1) guard default sanctum resolve lazy dari token -> global tidak memberi keamanan ekstra; (2) filosofi "Explicit over magic"; (3) route lain tidak butuh. D2 409 conflict ikut, D3 `dedoc/scramble` di-skip — API-05 Pending.
+- [x] Test integrasi route-level register di module: `modules/IAM/Tests/Feature/RegisterIdempotencyTest.php` (replay 201 tanpa duplikasi user, 409 body beda).
+- [x] Commit: bac5fd4, cdce8a8, 0717d3d (Phase 6) + commit lanjutan rev D1 — perlu push.
 
 ## Backlog roadmap (dari .planning/ROADMAP.md — prioritas turun)
 
