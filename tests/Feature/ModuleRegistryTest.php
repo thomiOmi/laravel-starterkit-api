@@ -25,10 +25,10 @@ describe('ModuleRegistry', function (): void {
         $isolated['config']->set('modules.enabled', ['iam']);
 
         try {
-            (new ModuleServiceProvider($isolated))->register();
+            new ModuleServiceProvider($isolated)->register();
 
-            expect($isolated->getProvider('Modules\IAM\Providers\IAMServiceProvider'))->not->toBeNull()
-                ->and($isolated->getProvider('Modules\Media\Providers\MediaServiceProvider'))->toBeNull();
+            expect($isolated->getProvider(\Modules\IAM\Providers\IAMServiceProvider::class))->not->toBeNull()
+                ->and($isolated->getProvider(\Modules\Media\Providers\MediaServiceProvider::class))->toBeNull();
         } finally {
             Application::setInstance($this->app);
         }
