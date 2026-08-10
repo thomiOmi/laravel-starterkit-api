@@ -74,5 +74,5 @@ Handled in `bootstrap/app.php`:
 ## Service Providers
 
 - **AppServiceProvider**: Rate limiters, `Password::defaults()`, `Gate::before()` for super-admin, feature flag definitions, email verification, password reset, production security monitoring
-- **ModuleServiceProvider**: Auto-discovers and registers all module providers by scanning `modules/` directory
+- **ModuleServiceProvider**: Registers the providers and migrations of modules listed in `config/modules.php` (allow-list, Fortify-style). Directories under `modules/` that are not listed are silently ignored
 - **Module providers**: Each module has `{Module}ServiceProvider` responsible for registering its own routes

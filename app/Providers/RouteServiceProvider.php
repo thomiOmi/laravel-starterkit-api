@@ -11,9 +11,10 @@ use Illuminate\Support\Facades\Route;
 /**
  * Discover and register module API routes.
  *
- * Iterates all directories under `modules/` and loads versioned route
- * files (`Routes/{VERSION}.php`) with the correct prefix and middleware.
- * Every module, including IAM, is discovered the same way.
+ * Iterates the enabled modules listed in config/modules.php and loads their
+ * versioned route files (`Routes/{VERSION}.php`) with the correct prefix and
+ * middleware. Every module, including IAM, is discovered the same way.
+ * Modules that are not in the allow-list are skipped.
  */
 class RouteServiceProvider extends ServiceProvider
 {
@@ -46,6 +47,8 @@ class RouteServiceProvider extends ServiceProvider
         /** @var array<int, string> $supportedVersions */
         $supportedVersions = config()->array('apiroute.supported_versions', ['V1']);
 
+        $enabledModules = config()->array('modules.enabled', []);
+
         $moduleDirs = File::directories($moduleBase);
 
         foreach ($moduleDirs as $moduleDir) {
@@ -55,6 +58,10 @@ class RouteServiceProvider extends ServiceProvider
             }
 
             $moduleName = basename($resolvedPath);
+
+            if (! in_array(strtolower($moduleName), $enabledModules, true)) {
+                continue;
+            }
 
             foreach ($supportedVersions as $version) {
                 $routeFile = "{$resolvedPath}/Routes/{$version}.php";
