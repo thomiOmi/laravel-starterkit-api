@@ -128,7 +128,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 - **Decisions**: [docs/adr/](../adr/README.md) — why each convention exists
 - **Execution status**: [TASKS.md](../../TASKS.md) — phase-by-phase tracking
 - **Technical details**: [docs/](../README.md) — api-standard, architecture, auth, testing, rbac, etc.
-- **Historical planning**: `.planning/` (GSD) — original research and phase artifacts; reference only, not maintained
+- **Historical planning**: GSD artifacts (`.planning/`, removed 2026-08-11) — preserved in git history only; superseded by `docs/` and `.ai/rules/`
 
 ## Revision History
 

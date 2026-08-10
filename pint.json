@@ -1,6 +1,3 @@
 {
-  "preset": "laravel",
-  "exclude": [
-    ".planning"
-  ]
+  "preset": "laravel"
 }

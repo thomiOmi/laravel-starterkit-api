@@ -24,13 +24,11 @@ PRD (what/why the product needs)      ->  docs/prd/
    decision rationale                 ->  docs/adr/ (why a convention exists)
    execution status                   ->  TASKS.md (phase tracking, not committed decisions)
    technical detail                   ->  docs/*.md (how to use/extend)
-   historical research & phase logs   ->  .planning/ (GSD, reference only)
 ```
 
 - Requirements in the PRD carry IDs (AUTH-01, IAM-01, ...). Their shipped status is tracked in the PRD tables and the execution tracker.
 - ADRs are the answer to "why is the code like this?" — read them before changing a settled convention.
 - `docs/*.md` are the "how" documents — implementation conventions and usage guides.
-- `.planning/` is the GSD workflow archive (research, phase plans, UAT logs). It was the pre-2026-08-11 source of truth and remains as historical reference only; it is not maintained in sync with the codebase.
 
 ## Updating
 
