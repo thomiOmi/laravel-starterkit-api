@@ -33,80 +33,20 @@
 | Date format | `Y-m-d H:i:s` |
 | Route names | `v1.{module}.{name}` |
 
-## Testing Rules
+## Project Rules (`.ai/rules/`)
 
-- Pest feature tests with `RefreshDatabase` trait
-- `beforeEach`: seeds roles (web + sanctum guards), calls `forgetCachedPermissions()`, creates admin with `loginAsUser()`
-- Test each CRUD operation: list, create, view, update, delete, unauthorized access
-- Unit test per Action class (test business logic in isolation)
-- Use response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`
-- Prefer specific assertions over generic status checks: `assertOk()`, `assertNoContent()`, `assertUnprocessable()`, `assertForbidden()`, `assertNotFound()` — use `assertStatus()`/`getStatusCode()` only for dynamic statuses
-- Test exceptions with `expect(fn () => ...)->toThrow(Exception::class, 'message')` — never manual try/catch
-- Use specific expectations (`toBeUlid()`, `toBeInstanceOf()`, `toMatch()`) instead of wrapping predicates in `toBeTrue()`/`toBeFalse()`
-- AI agent verification probe: `vendor/bin/pest --agent='...'` (see docs/testing.md; probes are not a substitute for permanent tests)
-- Parallel test: `php artisan test --compact --parallel`
+Area-specific conventions (testing, controllers, actions, models, routes, responses, database) live in `.ai/rules/` and are matched to files by glob. Read the rule files matching your work before editing. When a settled convention is not yet recorded, record it with `record-rule` so the next agent inherits it.
 
-### Composer Scripts
+## Quality Gates
 
-| Command | Description |
-|---|---|---|
-| `composer setup` | Install dependencies and prepare the application |
-| `composer setup:ci` | Prepare the application for CI (copy .env, key:generate, sqlite, migrate) |
-| `composer lint` | Auto-fix code style with Pint |
-| `composer lint:staged` | Auto-fix code style for staged files only (pre-commit hook) |
-| `composer lint:check` | Check code style without modifications |
-| `composer types:check` | Run PHPStan static analysis |
-| `composer test` | Run lint:check + types:check + test suite |
-| `composer test:quality` | Run lint:check + types:check + tests with code & type coverage (min 100%) |
-| `composer test:mutation` | Run mutation testing |
-| `composer test:profanity` | Run profanity checks on test files |
-| `composer test:tia` | Re-run only tests affected by your changes (test impact analysis); also enabled automatically on local machines |
-| `composer test:snapshot` | Update stored snapshots (`tests/.pest/snapshots`) |
-| `composer ci:check` | Full CI pipeline (quality + rector + profanity) |
-| `composer dev` | Run all dev processes concurrently (server, queue, logs) |
-
-### Testing Organization
-
-| Concern | Location | When |
-|---|---|---|
-| Custom expectations | `tests/Expectations.php` | Reusable `expect()->extend()` / `expect()->pipe()` |
-| Global helpers | `tests/Helpers.php` | Functions reused in 3+ test files |
-| File helpers | Inline in test file | Single-file use only |
-| Named datasets | `tests/Datasets/{Name}.php` | Used via `->with('name')` in 2+ tests |
-| Inline datasets | Inside `dataset()` in test file | Single `->with()` usage only |
-
-### describe() / it() / group()
-
-- **`describe()`** — Every test file MUST use `describe()` blocks to group logical concerns. Nesting is allowed for sub-grouping (e.g., `describe('fillable')` inside `describe('PersonalAccessToken')`). Description describes the unit under test or the behavior.
-- **`it()`** — All test cases use `it()` (never bare `test()`). Name describes expected behavior, not implementation — e.g., `it('returns 422 when email is missing')`.
-- **`group()`** — Use `->group('name', ...)` for cross-cutting categorization:
-  - `'smoke'` — critical-path tests for deployment validation
-  - `'slow'` — tests that take >5s
-  - `'integration'` — tests that hit external services
-  - `'module:{name}'` — e.g., `module:iam`, `module:billing`
-  - Add new groups sparingly; prefer `describe()` + `--filter` for most filtering needs
-
-## Code Quality Rules
-
-- After writing PHP code, run: `composer lint:staged` (pre-commit) or `composer lint` (all files)
-- Then run: `composer types:check`
-- Then run type coverage: `composer test:quality`
+- After writing PHP code: `composer lint:staged` (pre-commit) or `composer lint` (all files)
+- Then: `composer types:check`
+- Then type coverage: `composer test:quality` (min 100% code & type)
 - Run tests: `composer test` (includes lint:check + types:check + test suite)
-- Before pushing: run `composer ci:check` (full quality gate)
-- Fix all errors in code (do NOT modify `phpstan.neon`)
-- Do NOT use `@phpstan-ignore` comments — fix the root cause instead
-- All datetime fields in API responses **MUST** use `Y-m-d H:i:s` format
-- Follow existing code conventions — check sibling files before creating new ones
+- Before pushing: `composer ci:check` (full quality gate)
+- Fix all errors in code (do NOT modify `phpstan.neon`); do NOT use `@phpstan-ignore` — fix the root cause instead
+- Follow existing code conventions — check sibling files and `.ai/rules/` before creating new ones
 - Every change must have a corresponding test
-- `declare(strict_types=1)` on every PHP file
-- `final readonly` for Action / Controller / Payload classes
-- PHP 8 attributes (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`) over `$fillable` / `$hidden`
-- `config()->string()` / `->integer()` / `->boolean()` / `->array()` for config access
-- Prefer `match` expression over `switch`
-- Use Enum value as default in migration: `$table->string('status')->default(StatusEnum::Pending->value)`
-- Cast enum columns to Enum type in Model: `'status' => StatusEnum::class`
-- Do NOT chain migration commands with `&&` or `;` — they may get identical timestamps
-- Use Context7 (`context7_query-docs`) for library docs when Laravel Boost `search-docs` does not have the library
 
 ## Architecture Test Rules (`tests/Architecture/ArchitectureTest.php`)
 
@@ -128,5 +68,6 @@
 |---|---|---|
 | `AGENTS.md` | Laravel Boost (auto-generated) | **DO NOT** edit directly — edit `.ai/guidelines/` or `.ai/skills/` instead |
 | `.ai/guidelines/` | You (survives `boost:update`) | Edit directly — source files for AGENTS.md guidelines section |
+| `.ai/rules/` | Boost `record-rule` + you | Record via `record-rule`; hand-edits allowed but keep `index.md` in sync |
 | `.ai/skills/` | You (survives `boost:update`) | Edit directly — Boost-managed agent skills |
 | `.agents/` | AI agent's skill/rules system | **DO NOT** edit directly — let the AI agent manage it |
