@@ -19,7 +19,10 @@
         "pest-testing",
         "laravel-permission-development",
         "pest-plugin-agent",
+        "create-adr",
+        "create-prd",
         "laravel-attributes",
-        "modular-architecture"
+        "modular-architecture",
+        "update-tasks"
     ]
 }
