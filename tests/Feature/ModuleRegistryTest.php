@@ -11,6 +11,8 @@ use Illuminate\Foundation\Bootstrap\LoadEnvironmentVariables;
 use Illuminate\Foundation\Bootstrap\RegisterFacades;
 use Illuminate\Foundation\Bootstrap\RegisterProviders;
 use Illuminate\Support\Facades\Facade;
+use Modules\IAM\Providers\IAMServiceProvider;
+use Modules\Media\Providers\MediaServiceProvider;
 
 covers([ModuleServiceProvider::class, RouteServiceProvider::class]);
 
@@ -27,8 +29,8 @@ describe('ModuleRegistry', function (): void {
         try {
             new ModuleServiceProvider($isolated)->register();
 
-            expect($isolated->getProvider(\Modules\IAM\Providers\IAMServiceProvider::class))->not->toBeNull()
-                ->and($isolated->getProvider(\Modules\Media\Providers\MediaServiceProvider::class))->toBeNull();
+            expect($isolated->getProvider(IAMServiceProvider::class))->not->toBeNull()
+                ->and($isolated->getProvider(MediaServiceProvider::class))->toBeNull();
         } finally {
             Application::setInstance($this->app);
         }
