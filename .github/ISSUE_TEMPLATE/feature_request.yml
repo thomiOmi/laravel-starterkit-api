@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest an idea for the starterkit
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to share your idea.
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Problem
+      description: What problem does this solve? What do you need that the kit does not provide?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How should the kit address the problem? Keep the kit minimal and Laravel-native in mind.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: What alternatives have you considered? Existing packages, workarounds, configuration.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links, screenshots, or examples that help explain the request.
