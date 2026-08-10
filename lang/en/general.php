@@ -15,5 +15,8 @@ return [
 
     'roles_assigned' => 'Roles assigned successfully',
 
+    'idempotency_invalid' => 'The Idempotency-Key header must be a valid v4 UUID.',
+    'idempotency_conflict' => 'The Idempotency-Key was already used with a different request body.',
+
     'sunset_unavailable' => 'This endpoint is no longer available and has been sunset.',
 ];

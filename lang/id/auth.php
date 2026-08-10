@@ -52,6 +52,7 @@ return [
     'http_too_many_requests' => 'Terlalu banyak permintaan',
     'http_internal_error' => 'Kesalahan Server Internal',
     'http_gone' => 'Hilang',
+    'http_conflict' => 'Konflik',
 
     // Detail HTTP status (fallback untuk ProblemResponse)
     'validation_failed' => 'Data yang diberikan tidak valid.',

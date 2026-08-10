@@ -15,5 +15,8 @@ return [
 
     'roles_assigned' => 'Peran berhasil ditetapkan',
 
+    'idempotency_invalid' => 'Header Idempotency-Key harus berupa UUID v4 yang valid.',
+    'idempotency_conflict' => 'Idempotency-Key sudah digunakan dengan body permintaan yang berbeda.',
+
     'sunset_unavailable' => 'Endpoint ini tidak lagi tersedia dan telah dihentikan.',
 ];

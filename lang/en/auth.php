@@ -63,6 +63,7 @@ return [
     'http_too_many_requests' => 'Too Many Requests',
     'http_internal_error' => 'Internal Server Error',
     'http_gone' => 'Gone',
+    'http_conflict' => 'Conflict',
 
     // HTTP status detail (fallback for ProblemResponse)
     'validation_failed' => 'The given data was invalid.',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\FeatureFlagMiddleware;
+use App\Http\Middleware\IdempotencyMiddleware;
 use App\Http\Middleware\SecurityHeadersMiddleware;
 use App\Http\Middleware\SetLocaleMiddleware;
 use App\Http\Middleware\Sunset;
@@ -47,6 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'feature.flag' => FeatureFlagMiddleware::class,
+            'idempotency' => IdempotencyMiddleware::class,
             'sunset' => Sunset::class,
             'trace.id' => TraceIdMiddleware::class,
         ]);
@@ -59,6 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SetLocaleMiddleware::class);
         $middleware->prependToGroup('api', TraceIdMiddleware::class);
         $middleware->prependToGroup('api', SecurityHeadersMiddleware::class);
+        $middleware->appendToGroup('api', IdempotencyMiddleware::class);
 
         $middleware->redirectGuestsTo(null);
 

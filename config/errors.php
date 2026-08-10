@@ -28,6 +28,7 @@ return [
         'not_found' => 'resource-not-found',
         'rate_limited' => 'rate-limit-exceeded',
         'bad_request' => 'invalid-request-payload',
+        'conflict' => 'conflict',
         'internal_error' => 'server-error',
         'gone' => 'resource-gone',
 

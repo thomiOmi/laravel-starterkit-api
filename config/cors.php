@@ -94,6 +94,7 @@ return [
         'Deprecation',
         'Sunset',
         'Link',
+        'Idempotency-Replayed',
     ],
 
     /*
