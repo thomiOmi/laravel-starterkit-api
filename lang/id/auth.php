@@ -61,5 +61,6 @@ return [
     'not_found_detail' => 'URL yang diminta tidak ditemukan.',
     'rate_limited_detail' => 'Anda telah melampaui batas permintaan. Silakan coba lagi nanti.',
     'bad_request_detail' => 'Permintaan tidak dapat dipahami oleh server karena sintaksis yang salah.',
+    'conflict_detail' => 'Permintaan bertentangan dengan status server saat ini.',
     'internal_error_detail' => 'Terjadi kesalahan server internal.',
 ];

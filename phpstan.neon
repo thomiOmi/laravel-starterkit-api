@@ -28,6 +28,7 @@ parameters:
 
     # Module migration paths for schema inference
     databaseMigrationsPath:
+        - database/migrations
         - modules/*/Database/migrations
 
     # Translation files (Laravel 13 uses lang/, not resources/lang/)

@@ -29,6 +29,7 @@ use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
@@ -61,7 +62,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SetLocaleMiddleware::class);
         $middleware->prependToGroup('api', TraceIdMiddleware::class);
         $middleware->prependToGroup('api', SecurityHeadersMiddleware::class);
-        $middleware->appendToGroup('api', IdempotencyMiddleware::class);
 
         $middleware->redirectGuestsTo(null);
 
@@ -146,6 +146,20 @@ return Application::configure(basePath: dirname(__DIR__))
                 title: __('auth.http_bad_request'),
                 status: Response::HTTP_BAD_REQUEST,
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.bad_request_detail'),
+            );
+        });
+
+        // Conflict Exception (409)
+        $exceptions->render(function (ConflictHttpException $e, Request $request): ProblemResponse {
+            /** @var array<string, string|int|array<int, string>|null> $headers */
+            $headers = $e->getHeaders();
+
+            return new ProblemResponse(
+                typeKey: 'conflict',
+                title: __('auth.http_conflict'),
+                status: Response::HTTP_CONFLICT,
+                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.conflict_detail'),
+                headers: $headers,
             );
         });
 

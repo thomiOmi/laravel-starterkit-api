@@ -72,5 +72,6 @@ return [
     'not_found_detail' => 'The requested URL does not exist.',
     'rate_limited_detail' => 'You have exceeded the request rate limit. Please try again later.',
     'bad_request_detail' => 'The request could not be understood by the server due to malformed syntax.',
+    'conflict_detail' => 'The request conflicts with the current state of the server.',
     'internal_error_detail' => 'An internal server error occurred.',
 ];
