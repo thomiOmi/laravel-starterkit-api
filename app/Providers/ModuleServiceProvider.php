@@ -8,7 +8,11 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Automatically discovers and registers module service providers.
+ * Registers the service providers and migrations of enabled modules.
+ *
+ * Modules are loaded from the allow-list in config/modules.php. Directories
+ * under modules/ that are not listed are silently ignored, which also makes
+ * private modules possible: keep the directory on disk without registering it.
  */
 class ModuleServiceProvider extends ServiceProvider
 {
@@ -29,7 +33,7 @@ class ModuleServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register modules and their providers.
+     * Register enabled modules and their providers.
      */
     protected function registerModules(): void
     {
@@ -39,14 +43,20 @@ class ModuleServiceProvider extends ServiceProvider
             return;
         }
 
+        $enabledModules = config()->array('modules.enabled', []);
+
         $modules = File::directories($modulePath);
 
         foreach ($modules as $module) {
-            $modulePath = is_string($module) ? $module : '';
-            if ($modulePath === '') {
+            $resolvedPath = is_string($module) ? $module : '';
+            if ($resolvedPath === '') {
                 continue;
             }
-            $moduleName = basename($modulePath);
+            $moduleName = basename($resolvedPath);
+
+            if (! in_array(strtolower($moduleName), $enabledModules, true)) {
+                continue;
+            }
 
             // Register Service Provider
             $provider = "Modules\\{$moduleName}\\Providers\\{$moduleName}ServiceProvider";
@@ -55,7 +65,7 @@ class ModuleServiceProvider extends ServiceProvider
             }
 
             // Load Migrations
-            $migrationPath = "{$modulePath}/Database/Migrations";
+            $migrationPath = "{$resolvedPath}/Database/Migrations";
             if (File::exists($migrationPath)) {
                 $this->loadMigrationsFrom($migrationPath);
             }
