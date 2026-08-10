@@ -1,137 +1,44 @@
 # TASKS - Laravel Starterkit API
 
-Tracking cepat pengembangan. Source of truth tetap di `.planning/` (ROADMAP.md, REQUIREMENTS.md, STATE.md, phases/).
-Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemajuan.
+Operational tracker untuk kerja harian. **Bukan** source of truth keputusan — keputusan & produk ada di `docs/` (PRD + ADR), riset historis di `.planning/`.
 
-## Status snapshot (2026-08-10)
+## Status snapshot (2026-08-11)
 
-- Branch: `main`, HEAD `0717d3d`, synced dengan origin.
-- Phase 1 (Quality Foundation): 2/2 plans selesai, gate hijau.
-- Remediasi audit P2-G (`TASKS_2.md`): SELESAI - A1-A17, B1-B5, C1-C6 (tracking di `TASKS_2.md`, tidak di-commit).
-- Phase 2 (Authentication) + P2-F (Media Storage): DONE.
-- Phase 3 (Social Auth & Profile) + Phase 4 (IAM Admin verification): DONE — gate: 562 tes / 2265 assertions (serial + parallel), arch 46/46, phpstan 0 errors, coverage 100%, `composer ci:check` pass.
-- Phase 5 (Feature Flags Pennant): DONE — 567 tes / 2283 assertions (serial + parallel), coverage 100%, `composer ci:check` pass.
-- Phase 6 (API Hardening): DONE — 581 tes / 2347 assertions (serial + parallel), coverage 100%, `composer ci:check` pass. API-04 Complete (dipasang opt-in di `auth.register`, D1 direvisi 2026-08-11); API-05 (Scramble) di-skip sengaja (keputusan user 2026-08-10) — `dedoc/scramble` tetap terpasang tanpa perubahan.
-- Keputusan pending Q3 (enum label) + S4/P1 (LIKE wildcard) dikunci 2026-08-08 - tanpa keputusan desain tersisa.
-- Next: Phase 7 (Observability — health endpoint, Pulse).
+- Branch: `main`, HEAD `91ec339`, synced dengan origin.
+- Phase 1-6 DONE, Phase 7 SKIPPED (2026-08-11, prioritas user beralih — rencana OBS-01 health tercatat di bawah).
+- Baseline final: 600 tes / 2398 assertions (serial + parallel), arch 46/46, phpstan 0, coverage 100%, `composer ci:check` pass.
+- Semua task roadmap & known issues ditutup sementara (2026-08-11); tidak ada keputusan desain tersisa.
+- 2026-08-11: docs/ resmi jadi canonical (PRD + 22 ADR); `TASKS_2.md` dihapus — keputusan & deviasinya sudah diwariskan ke `docs/adr/`.
+- Next: prioritas user di luar roadmap starterkit.
 
-## Keputusan arsitektur (catatan permanen)
+## Fokus aktif (urutan kerja)
 
-| Keputusan | Alasan |
-|---|---|
-| `app/` = shared vocabulary & contract | Contracts, Enums, Concerns dipakai lintas lapisan (root Database/Middleware/HTTP/Providers + semua modul). Arah dependensi modul → `app/` selalu diizinkan. |
-| `Modules/*/Policies` = implementasi domain | Policy terikat model modul (`Modules\IAM\Models\User`) dan `App\Policies` tidak ada di allowlist `arch('modules should be isolated')` → wajib di module, diregistrasi via `Gate::policy()` di `IAMServiceProvider`. |
-| Enums IAM tetap di `app/Enums` | `UserStatusEnum` dipakai migration root + `PermissionEnum` dipakai `app/Http/Requests/BulkActionRequest.php` — keduanya di luar allowlist arch test; memindahkan enum ke module melanggar `modules should be isolated`. Bukan inkonsistensi: satu prinsip "file root di luar allowlist tidak boleh import module code". |
-| Akuntansi = rejected untuk module baru | Scope besar & domain-specific (chart of accounts, tax per negara); tidak bisa digeneralisasi jadi kit. Modul produk, bukan infrastruktur kit. |
-| Media Storage = module baru pertama | Reuse tertinggi di industri (avatar, dokumen, receipt, galeri); sudah tercantum di PROJECT.md; pakai Storage bawaan Laravel tanpa dependency baru. |
-| Enum labels native (`label()` + `lang/en|id/enums.php`) | Tanpa third-party package; pola sama seperti `blockedMessageKey()`; key permission pakai underscore (`user_view`) karena dot-notation `__()` memecah key ber-titik (`user.view`). |
-| LIKE wildcard full scan diterima | `BaseFilter` memakai `%value%` (leading wildcard, tidak bisa pakai B-tree index); dataset starter kit kecil + guard truncate input sudah ada; tanpa FULLTEXT (overengineering, MySQL-specific vs sqlite test). Keputusan dikunci saat desain filter Media module (P2-F). |
+(Isi saat mulai pengerjaan baru — prioritas user di luar roadmap.)
 
-## Prioritas aktif (urutan kerja)
+## Phase 7. Observability — SKIPPED (2026-08-11)
 
-### P0-A. Seeder IAM tunggal (anti race cache/seeder) — DONE (2026-08-07)
-- [x] Gabung `UserSeeder` + `RoleSeeder` jadi satu seeder `IAMSeeder` di `Modules\IAM\Database\Seeders`.
-- [x] Ikuti pola Spatie: flush cache sebelum, buat permissions → roles → users, flush setelah.
-- [x] Factory state `afterCreating` assign role (`superAdmin()`, `admin()`, `user()`), hapus `assignRolesToExistingUsers()` yang query silang.
-- [x] `DatabaseSeeder` panggil satu seeder saja; update pemanggil test (`BulkActionRequestTest`, `AuthRateLimitTest`, helpers `loginAsRole`).
-- [x] Gate hijau: pint, phpstan 0 errors, 285 tes / 1019 assertions, type coverage 100%.
+- OBS-01 health endpoint — DITUNDA (prioritas beralih, bukan dibatalkan). Rencana: module `System`, `GET /api/v1/system/health` (name `v1.system.health`), publik tanpa auth/throttle, check database (`select 1`) + cache (put/get/forget) + disk (put/get/delete) dengan latency per service, 200 `SuccessResponse` / 503 `ProblemResponse` typeKey `service_unavailable`; test unit action + feature module (`group('module:system')`). Resume bila diinginkan.
+- OBS-02 Laravel Pulse — SKIP (dashboard web tidak relevan API-only; butuh dependency baru tanpa approval).
 
-### P0-B. User status enforcement (banned/suspended/inactive) — DONE (2026-08-07)
-- [x] `UserStatusEnum::allowsAuthentication()` (Active+Pending boleh, sisanya tidak) + `blockedMessageKey()` + lang keys en/id (`account_banned`, `account_suspended`, `account_inactive`).
-- [x] `LoginAction`: tolak login status ter-block (422 problem response, pesan sesuai status); `status` masuk select list.
-- [x] Middleware `EnsureUserIsActive` di `Modules\IAM\Http\Middleware` (import model modul — arch test); alias `active` diregistrasi via `Route::aliasMiddleware()` di `IAMServiceProvider` (hindari import module class di bootstrap/app.php); dipasang di grup auth + users/roles/permissions.
-- [x] `UserRequest`: rule `status` = enum jika punya `UserEdit`, `prohibited` jika tidak; `UserPayload::status`; `UserResource` expose `status`.
-- [x] Factory states `banned()`, `suspended()`, `inactive()`.
-- [x] Tes baru (24): enum unit, login block/allow (dataset), middleware (401/403/allow), admin update status, invalid status, prohibited tanpa permission, resource expose status.
-- [x] Gate hijau: pint, phpstan 0 errors, 309 tes / 1149 assertions, type coverage 100%.
+## Backlog (prioritas turun, semua ditutup sementara)
 
-### P0-C. URL generation pakai helper `url()` — DONE (2026-08-07)
-- [x] `configureEmailVerificationUrl()` — ganti `http_build_query` string concat dengan `url()->query($frontendUrl.'/verify-email', $params)` (encoding aman); merge signed params tetap.
-- [x] `configurePasswordReset()` — `url()->query(...)` dengan token + email encoded (`%2B`, `%40`), memperbaiki bug email tidak di-encode.
-- [x] Tes baru: URL verifikasi berisi id/hash/expires/signature; URL reset berisi token + email ter-encode (unit, `makeOne` + id ULID eksplisit; `hash('sha1')` karena `sha1()` dilarang di namespace Tests).
-- [x] Gate hijau: pint, phpstan 0 errors, 311 tes / 1157 assertions, type coverage 100%.
+- Evaluasi `laravel/chisel` — DEFER dicabut 2026-08-11; dapat dibuka kembali.
+- Phase 6 API-05: Scramble (OpenAPI) — di-skip 2026-08-10, `dedoc/scramble` tetap terpasang (lihat ADR-0019).
+- Phase 7: Observability — SKIPPED 2026-08-11 (lihat atas).
+- Phase 8: Modern Features & Advanced Testing — DITUTUP sementara; catatan: mutasi 210 passed (`risky` = artefak format output).
 
-### P1-D. Model Policies (Spatie permission) — DONE (2026-08-08)
-- [x] `UserPolicy` (view: self atau UserView; create: UserCreate; update: self atau UserEdit, non-SA dilarang edit target SuperAdmin; delete: bukan diri sendiri + UserDelete, non-SA dilarang delete target SuperAdmin), `RolePolicy` (view/create/update/delete, update+delete dilarang pada role SuperAdmin untuk non-SA), `PermissionPolicy` (view/create/update/delete) di `Modules\IAM\Policies`.
-- [x] Registrasi eksplisit via `Gate::policy()` di `boot()` `IAMServiceProvider` (`configurePolicies()`; auto-discovery Laravel hanya mencakup `App\Models`).
-- [x] `UserRequest`/`RoleRequest`/`PermissionRequest` `authorize()` pakai policy via `$user->can()`; model class diambil dari `config('auth.providers.users.model')` / `config('permission.models.role|permission')` (arch test melarang import `Modules\*\Models` di Requests).
-- [x] Controller DELETE/Show pakai policy: `UserDeleteController` (self-delete tetap `self_delete_forbidden`, sisanya policy), `UserShowController` (view), `RoleDeleteController` + `PermissionDeleteController` (delete) — RoleDeleteController kini juga memblokir delete role SuperAdmin untuk non-SA.
-- [x] Tes baru (45): ability tiap policy (view/create/update/delete) per policy, super-admin bypass via Gate::before, guard mismatch (role web guard vs sanctum route = 403), route enforcement 403.
-- [x] Gate hijau: pint, phpstan 0 errors, 356 tes / 1268 assertions, type coverage 100%.
+## Known issues (sementara ditutup)
 
-### P1-E. Gap Phase 2 (Authentication) — audit & lengkapi
-- [x] AUTH-07 Change password (current password confirmation) — baru: Payload/Request/Action/Controller + route `POST v1.auth.password.change`; action verifikasi Hash::check (custom `auth.password_invalid`), revoke semua token lain, token aktif dipertahankan.
-- [x] AUTH-08 Delete account (self-service) — baru: Payload/Request/Action/Controller + route `DELETE v1.auth.account.delete`; verifikasi password, revoke semua token, soft-delete user.
-- [x] AUTH-04 token naming (`device_name` di login, fallback User-Agent, register default `auth_token`) — verifikasi dengan tes.
-- [x] Verifikasi AUTH-01..06 dengan tes UAT (`AuthFlowTest.php`, 15 tes, pola AuthRateLimitTest) + `ChangePasswordTest.php` (5) + `DeleteAccountTest.php` (3).
-- [x] Gate hijau: pint, phpstan 0 errors, 379 tes / 1419 assertions, type coverage 100%.
-
-### P2-G. Remediasi audit app/ + bootstrap/ (`TASKS_2.md`) — DONE (2026-08-08)
-- [x] Tahap A (A1-A17): dead code, redudansi, typed config access, headers/errors konsisten, route discovery tunggal (names `v1.{module}.{name}`), semua controller extends `abstract readonly Controller`.
-- [x] Tahap B (B1-B5): ProductionSecurityCheck 13 cek, dead branch hapus, mail custom (reset + verify) dengan terjemahan en/id.
-- [x] Tahap C (C1-C6): route 34/34 identik (method+uri), lint/types/coverage 100%, 387 tes / 1445 assertion, commit per kluster tanpa push.
-- Detail dan deviasi tiap item tercatat di `TASKS_2.md` (tracking, TIDAK di-commit).
-
-### P2-F. Module baru: Media Storage (target minimum 1) — DONE (2026-08-09)
-- [x] `php artisan make:module Media` + pola modular IAM (Actions, Controllers, Payloads, Requests, Resources) — tanpa Filters (filter cukup via PaginationRequest search).
-- [x] Model `Media` (ulid, disk, mime_type, size, path, meta, uploaded_by), migration, factory, seeder (3 file contoh).
-- [x] Endpoint V1: upload, list, show, delete; public vs private storage (signed URL native Laravel via disk `local` `serve => true` + `ServeFile`, TTL 15 menit).
-- [x] Permission `media.view/create/delete` + `MediaPolicy` (delete = permission ATAU owner; contoh penerapan P1-D).
-- [x] Tes feature + unit per pola IAM — 39 tes Media (MediaTest 15, MediaPolicyTest 12, MediaUnitTest 9, MediaSignedUrlTest 3) + enum tests.
-- [x] Gate hijau: pint, phpstan 0 errors, full suite 100% coverage, `composer ci:check` pass (rector 0 changed, architecture OK).
-- Detail dan keputusan tercatat di `TASKS_2.md` (tracking, TIDAK di-commit).
-
-### Phase 3. Social Auth & Profile — DONE (2026-08-09)
-- [x] Pivot `social_accounts` (multi-provider; unique (provider, provider_id) + (user_id, provider); migration tunggal: create -> copy -> drop kolom users).
-- [x] Login/link/unlink via Socialite stateless; state OAuth stateless `SocialState` (Crypt, TTL 10 menit; kini di `Modules\IAM\Support`, bukan Actions).
-- [x] Profile: update name/email/avatar (2-step upload media) + change email -> email_verified_at null + re-verify; email bind hanya jika existing sama; email kosong provider -> synthetic `{provider}-{id}@social.local`.
-- [x] Unlink guard lockout 422 (password null + <=1 social account).
-- [x] Tes: SocialAuthTest, SocialLinkTest, SocialStateTest, ProfileTest.
-- [x] Commit: 6844ee1, 26b768b, 492d530 (+ relokasi SocialState di f0a127a).
-
-### Phase 4. IAM Admin CRUD verification — DONE (2026-08-10)
-- [x] 4 feature test baru (UserAdminTest 441 baris, RoleAdminTest, PermissionAdminTest, AssignmentTest) — IAM suite 211/211; verifikasi success criteria Phase 4 (contract Identity, guard mismatch 403, cache race) + CRUD per entitas + unauthorized.
-- [x] Bug AssignRolesRequest: guard SuperAdmin di-skip karena route `{user}` route-model-bound (branch `instanceof Model`); sebelum fix admin bisa assign roles ke SuperAdmin (200, harusnya 403).
-- [x] Bug CreateUserAction: `status: null` di response (default DB tidak ter-materialize) -> `UserStatusEnum::Pending` via array spread.
-- [x] Arch pre-existing dirapikan: `SocialState` Actions -> `Modules\IAM\Support` (utility stateless, bukan Action); `UpdateProfilePayload` + `toArray()`; arch 46/46.
-- [x] Parallel fix: `use InvalidArgumentException;` no-op di file test global-namespace (break worker parallel) dihapus (6f956b8).
-- [x] Gate: 562/562 serial + parallel (2265 assertions), `composer ci:check` pass.
-- [x] Commit: 53f51b2, 58e24f9, 17874b8, f0a127a, 6f956b8 — semua di-push.
-
-### Phase 5. Feature Flags (Pennant) — DONE (2026-08-10)
-- [x] `laravel/pennant` 1.24.0 sudah terpasang (tanpa dependency baru); infra pre-existing: config/pennant.php (default store database), migration `create_features_table`, `FeatureFlagMiddleware` (403 + `auth.http_forbidden`) + alias `feature.flag`.
-- [x] Definisi flag di module: `IAMServiceProvider::defineFeatures()` -> `Feature::define('iam.self-registration', fn () => true)` (facade global, `feature:activate/deactivate` untuk toggle runtime).
-- [x] Route `POST v1.auth.register` di-gate: `feature.flag:iam.self-registration` (sebelum `throttle:auth`, tidak habiskan kuota saat off).
-- [x] Keputusan: middleware kustom dipertahankan (native `EnsureFeaturesAreActive` default abort(400)); `beta-feature` placeholder di AppServiceProvider TIDAK disentuh (closure param non-nullable -> tidak boleh di-gate ke route publik).
-- [x] Tes: `FeatureFlagMiddlewareTest` diperluas 4 tes (+ guest-scope via `Feature::flushCache()`), `FeatureFlagRouteTest` baru 3 tes (on 201, off 403, reactivate 201).
-- [x] Gate: 567/567 (2283 assertions) serial + parallel, arch 46/46, lint/phpstan 0, coverage 100%, `composer ci:check` pass.
-- [x] Commit: 80b40cd, e9cc188 — plus 1 commit docs menyusul.
-
-### Phase 6. API Hardening — DONE (2026-08-10)
-- [x] API-04 idempotency keys: `IdempotencyMiddleware` baru (final readonly, validasi UUID v4 -> 422 ValidationException, key `idempotency:hash(sha256(method|path|user-id|'guest'|lowercase-key))`, `Cache::lock` 30s + block 10s + try/finally, simpan hanya 2xx/3xx, skip Streamed/BinaryFile/oversized body-response, replay body sama -> `Idempotency-Replayed: true` + echo `Idempotency-Key`, body beda -> 409 ConflictHttpException); `App\Payloads\IdempotencyPayload` (DTO defensif fromArray/toArray); `config/idempotency.php` (ttl 86400, `IDEMPOTENCY_TTL`, lock_timeout/wait_timeout, max_body_size/max_response_size); alias `idempotency` + renderer `ConflictHttpException` di `bootstrap/app.php`; lang en/id `http_conflict`, `conflict_detail`, `idempotency_invalid`, `idempotency_conflict`; `config/cors.php` exposed `Idempotency-Replayed`.
-- [x] Cache-Control `no-store` di `SecurityHeadersMiddleware::HEADERS` (hasil merge Symfony = `no-store, private`; test diassert sesuai perilaku aktual).
-- [x] CORS audit: exposed_headers + header baru idempotency; tanpa perubahan whitelist asal.
-- [x] Tes: `IdempotencyMiddlewareTest` unit baru (method bypass, validasi key, caching, conflict, lock timeout, size limit) + feature global (replay/409/201/scope isolation via test route `/_test/*`), `SunsetMiddlewareTest` baru 6, `GlobalApiMiddlewareTest` assert `no-store, private`.
-- [x] Parallel fix terulang: `use InvalidArgumentException;` no-op di file test global-namespace dihapus (pola 6f956b8).
-- [x] Gate: 581/581 serial + parallel (2347 assertions), lint/phpstan 0, coverage 100%, `composer ci:check` pass (rector 0 setelah manual convert assert).
-- [x] Keputusan D1 DIREVISI (2026-08-11): idempotency **opt-in per route** (bukan global group api) — dipasang di `auth.register` saja, urutan `['feature.flag:iam.self-registration', 'throttle:auth', 'idempotency']` (flag terluar, throttle gate kedua, idempotency sebelum controller). Alasan: (1) guard default sanctum resolve lazy dari token -> global tidak memberi keamanan ekstra; (2) filosofi "Explicit over magic"; (3) route lain tidak butuh. D2 409 conflict ikut, D3 `dedoc/scramble` di-skip — API-05 Pending.
-- [x] Test integrasi route-level register di module: `modules/IAM/Tests/Feature/RegisterIdempotencyTest.php` (replay 201 tanpa duplikasi user, 409 body beda).
-- [x] Commit: bac5fd4, cdce8a8, 0717d3d (Phase 6) + commit lanjutan rev D1 — perlu push.
-
-## Backlog roadmap (dari .planning/ROADMAP.md — prioritas turun)
-
-- [ ] Evaluasi `laravel/chisel` (install-time feature trimming, ref: laravel/vue-starter-kit) — defer sampai kit stabil pasca Phase 8.
-- [ ] Phase 6 API-05: Scramble (OpenAPI docs) — di-skip sengaja 2026-08-10, `dedoc/scramble` tetap terpasang (config/scramble.php ada); resume bila diinginkan.
-- [ ] Phase 7: Observability — health endpoint, Pulse.
-- [ ] Phase 8: Modern Features & Advanced Testing — attributes, mutation/stress/snapshot (mutasi: 210 passed; `risky` = artefak format output, bukan kegagalan).
-
-## Known issues (dari PROJECT.md + REVIEW)
-
-- [x] Module unit tests `no such table: users` (migration ordering) — TERVERIFIKASI HILANG (2026-08-10): parallel suite 562/562 hijau; varian roles-table di BaseQueryBuilderTest ditangani via dataset `name` (53f51b2).
-- [x] AuthTest avatar MissingAttributeException — TERVERIFIKASI TIDAK ADA di inventaris test (stale, ditutup).
-- [ ] Spatie permission cache race parallel CI — P0-A sebagian menangani; long-term TEST_TOKEN prefix.
-- [ ] REVIEW Phase 1: WR-01 (generic renderer header deviation — perlu keputusan: revert atau approve+dokumentasi), WR-02 (hardcoded `X-RateLimit-Remaining '4'`), IN-01/IN-02.
+- Spatie permission cache race parallel CI — DITUTUP 2026-08-11 (pengamatan; long-term TEST_TOKEN prefix); buka kembali bila perlu.
+- REVIEW Phase 1: WR-01 (generic renderer header deviation), WR-02 (hardcoded `X-RateLimit-Remaining '4'`), IN-01/IN-02 — DITUTUP 2026-08-11 tanpa keputusan desain; buka kembali bila perlu.
 
 ## Definition of Done (tiap task)
 
 - `composer lint:check`, `composer types:check`, `composer test:quality` hijau; test baru untuk tiap perubahan; tidak ada `@phpstan-ignore`.
+
+## Pointer dokumen
+
+- Produk & requirement: `docs/prd/`
+- Keputusan arsitektur: `docs/adr/` (22 ADR)
+- Konvensi teknis: `docs/` (api-standard, architecture, auth, coding-standards, module-generator, rate-limiting, rbac, testing)
+- Riset & fase historis: `.planning/` (referensi GSD saja)
