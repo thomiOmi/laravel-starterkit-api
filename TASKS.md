@@ -10,8 +10,9 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - Remediasi audit P2-G (`TASKS_2.md`): SELESAI - A1-A17, B1-B5, C1-C6 (tracking di `TASKS_2.md`, tidak di-commit).
 - Phase 2 (Authentication) + P2-F (Media Storage): DONE.
 - Phase 3 (Social Auth & Profile) + Phase 4 (IAM Admin verification): DONE — gate: 562 tes / 2265 assertions (serial + parallel), arch 46/46, phpstan 0 errors, coverage 100%, `composer ci:check` pass.
+- Phase 5 (Feature Flags Pennant): DONE — 567 tes / 2283 assertions (serial + parallel), coverage 100%, `composer ci:check` pass.
 - Keputusan pending Q3 (enum label) + S4/P1 (LIKE wildcard) dikunci 2026-08-08 - tanpa keputusan desain tersisa.
-- Next: Phase 5 (Feature Flags Pennant, perlu dependency) atau Phase 6 (API Hardening) — pilihan user.
+- Next: Phase 6 (API Hardening & Documentation) — pilihan user.
 
 ## Keputusan arsitektur (catatan permanen)
 
@@ -96,9 +97,18 @@ Dokumen ini = prioritas gabungan + status terkini, diupdate tiap kali ada kemaju
 - [x] Gate: 562/562 serial + parallel (2265 assertions), `composer ci:check` pass.
 - [x] Commit: 53f51b2, 58e24f9, 17874b8, f0a127a, 6f956b8 — semua di-push.
 
+### Phase 5. Feature Flags (Pennant) — DONE (2026-08-10)
+- [x] `laravel/pennant` 1.24.0 sudah terpasang (tanpa dependency baru); infra pre-existing: config/pennant.php (default store database), migration `create_features_table`, `FeatureFlagMiddleware` (403 + `auth.http_forbidden`) + alias `feature.flag`.
+- [x] Definisi flag di module: `IAMServiceProvider::defineFeatures()` -> `Feature::define('iam.self-registration', fn () => true)` (facade global, `feature:activate/deactivate` untuk toggle runtime).
+- [x] Route `POST v1.auth.register` di-gate: `feature.flag:iam.self-registration` (sebelum `throttle:auth`, tidak habiskan kuota saat off).
+- [x] Keputusan: middleware kustom dipertahankan (native `EnsureFeaturesAreActive` default abort(400)); `beta-feature` placeholder di AppServiceProvider TIDAK disentuh (closure param non-nullable -> tidak boleh di-gate ke route publik).
+- [x] Tes: `FeatureFlagMiddlewareTest` diperluas 4 tes (+ guest-scope via `Feature::flushCache()`), `FeatureFlagRouteTest` baru 3 tes (on 201, off 403, reactivate 201).
+- [x] Gate: 567/567 (2283 assertions) serial + parallel, arch 46/46, lint/phpstan 0, coverage 100%, `composer ci:check` pass.
+- [x] Commit: 80b40cd, e9cc188 — plus 1 commit docs menyusul.
+
 ## Backlog roadmap (dari .planning/ROADMAP.md — prioritas turun)
 
-- [ ] Phase 5: Feature Flags (Pennant) — FLAG-01..02; perlu dependency `laravel/pennant` (persetujuan user).
+- [ ] Evaluasi `laravel/chisel` (install-time feature trimming, ref: laravel/vue-starter-kit) — defer sampai kit stabil pasca Phase 8.
 - [ ] Phase 6: API Hardening & Documentation — idempotency keys, Scramble (config scramble.php sudah ada).
 - [ ] Phase 7: Observability — health endpoint, Pulse.
 - [ ] Phase 8: Modern Features & Advanced Testing — attributes, mutation/stress/snapshot (mutasi: 210 passed; `risky` = artefak format output, bukan kegagalan).
