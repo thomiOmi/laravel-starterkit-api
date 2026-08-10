@@ -45,7 +45,7 @@ use Modules\IAM\Controllers\V1\VerifyEmailController;
 Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('login', LoginController::class)->middleware('throttle:auth')->name('login');
     Route::post('register', RegisterController::class)
-        ->middleware(['feature.flag:iam.self-registration', 'throttle:auth'])
+        ->middleware(['feature.flag:iam.self-registration', 'throttle:auth', 'idempotency'])
         ->name('register');
     Route::post('forgot-password', ForgotPasswordController::class)->middleware('throttle:auth')->name('password.forgot');
     Route::post('reset-password', ResetPasswordController::class)->middleware('throttle:auth')->name('password.reset');
