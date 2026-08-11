@@ -51,8 +51,8 @@ Every phase follows the same loop:
 3. Test (new or updated tests for every change)
 4. Record rules in `.ai/rules/` via `record-rule`
 5. Run quality gates: `composer lint`, `composer types:check`, `composer test:quality`, `composer ci:check`
-6. Open a pull request and wait for CI
-7. Stop for user review before merge
+6. Stop and present the diff for user review (before any push)
+7. On approval: push, open a pull request, wait for CI
 8. Update this roadmap status table
 
 ## Document Relations
