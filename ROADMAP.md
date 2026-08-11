@@ -1,72 +1,65 @@
-# Roadmap — laravel-starterkit-api
+# Roadmap: laravel-starterkit-api
 
-## Goal & Vision
-This repository provides a Laravel-based API starter kit to help bootstrap product projects quickly: modular structure, Sanctum authentication, role/permission management, and Laravel best practices.
+## Vision
 
-Short-term vision (0-3 months):
-- Ship a customizable, documented, production-ready starter kit for microservice APIs.
-- Provide core features: Sanctum auth, Spatie roles/permissions, modular structure, basic testing, and CI.
+A production-ready Laravel API starterkit that is modular, maintainable, and deliberately not overengineered. Adopters fork or clone the repository and build a product vertical without fighting infrastructure concerns.
 
-Mid-term vision (3-9 months):
-- Add social auth, feature flags (Pennant), and sample modules (users, billing).
-- Harden CI, static analysis, and release process.
+## MVP Definition
 
-## Roadmap (Milestones)
-1. Project initialization
-   - README + CONTRIBUTING
-   - .env.example
-   - Basic routes & auth scaffold (Sanctum)
+| MVP | Scope | Target |
+|-----|-------|--------|
+| MVP 1 | Core and infrastructure: rules, module consistency, toggles, toolkit items, ops | Stable release tag `v1.0.0` |
+| MVP 2 | SaaS vertical: Invoicing module (PPN Indonesia from schema design), organization domain model and membership | Post `v1.0.0` |
 
-2. Core features
-   - Spatie laravel-permission
-   - Users module with CRUD and tests
-   - API Resources & standardized responses (SuccessResponse / ProblemResponse)
+## Definition of v1.0.0 (Gates)
 
-3. Quality & CI
-   - GitHub Actions: test, phpstan/larastan, static checks
-   - Composer scripts for code checks
-   - Code style and linting rules
+Execution order is fixed. Each gate has an exit criterion proven by code and tests, not by intention.
 
-4. Extensibility
-   - Socialite integrations
-   - Feature flags example (Pennant)
-   - Additional sample modules (billing, notifications)
+| # | Gate | Exit Criterion |
+|---|------|----------------|
+| G5 | Rules coverage | `.ai/rules/` covers every file type in the repo; architecture docs match the rules; ArchitectureTest enforces them |
+| G4 | Native-first | Every customization keeps the native Laravel path working; escape hatches proven by tests |
+| G2 | Wrapper classification | Every wrapper classified (keep / simplify / remove); each decision recorded in an ADR |
+| G6 | Toolkit items (code) | Sunset, idempotency, trace-id, security headers, rate-limit headers, typed config: each tidy and tested |
+| G1 | Module consistency | All modules follow the folder matrix; deliberate deviations recorded |
+| G3 | Feature toggles | Every off-able capability is proven inert by tests; Pennant example in `app/Features` |
+| G7 | Technical documentation | docs/*.md match the final code |
+| G8 | Operations | Health endpoint, deployment guide, Scramble decision recorded |
+| G9 | Release | CI green (PHP 8.4 / 8.5), CHANGELOG updated, tag `v1.0.0` |
 
-## Suggested phases (sprints)
-- Phase A (Weeks 0-2): Repo setup, README, ROADMAP, create initial issues and project board.
-- Phase B (Weeks 2-6): Implement auth + users module + basic tests.
-- Phase C (Weeks 6-12): Permissions, responses, CI, static analysis.
-- Phase D (Months 3-9): Social auth, feature flags, sample modules, docs.
+## Phases
 
-## Initial issues
-- Add README.md and CONTRIBUTING.md
-- Add .env.example
-- Add ROADMAP.md (this file)
-- Implement Sanctum auth scaffold
-- Implement Users module (migration, model, controller, resource)
-- Setup Spatie laravel-permission
-- Add GitHub Actions for tests & static analysis
-- Add phpstan/larastan config
-- Add Pest + basic tests for Users
+| Phase | Gate | Deliverable | Status |
+|-------|------|-------------|--------|
+| P0 | - | ROADMAP.md + TASKS.md | In progress |
+| P1 | G5 | 23 rule files (standard format), ADR-0026, ADR-0007 revision, architecture docs, ArchitectureTest additions | Pending |
+| P2 | G4 | Native-first audit + escape hatches + tests | Pending |
+| P3 | G2 | Wrapper pass (per item ADR + code change) | Pending |
+| P4 | G6 | Toolkit items code cleanup + tests | Pending |
+| P5 | G1 | Module folder consistency (enum move, layout alignment) | Pending |
+| P6 | G3 | Feature toggle example + inert-by-default tests | Pending |
+| P7 | G7 | Technical documentation pass | Pending |
+| P8 | G8 | Health endpoint, deployment guide, Scramble decision | Pending |
+| P9 | G9 | CHANGELOG, release workflow, tag `v1.0.0` | Pending |
 
-## Project board suggested columns
-- Backlog
-- To do
-- In progress
-- Review / QA
-- Done
+## Phase Workflow
 
-## Usage
-1. Open ROADMAP.md in repo root.
-2. Create a GitHub Project board named "Roadmap" and the suggested columns.
-3. Create issues from the initial issues list and move them into the Backlog.
+Every phase follows the same loop:
 
----
+1. Research and confirm scope (with user review)
+2. Implement
+3. Test (new or updated tests for every change)
+4. Record rules in `.ai/rules/` via `record-rule`
+5. Run quality gates: `composer lint`, `composer types:check`, `composer test:quality`, `composer ci:check`
+6. Open a pull request and wait for CI
+7. Stop for user review before merge
+8. Update this roadmap status table
 
-This document was generated by Copilot. I can now:
-- Create the ROADMAP.md file in the repository (ask to confirm),
-- Create the suggested issues in English,
-- Create a Project board and add the issues to the Backlog,
-- Create milestones and link issues to them.
+## Document Relations
 
-Do you want me to proceed and create ROADMAP.md, the issues, and the project board now?
+| Document | Role |
+|----------|------|
+| [docs/prd/](docs/prd/) | What the product needs (PRD, requirements) |
+| [docs/adr/](docs/adr/) | Why a convention exists (decisions) |
+| [docs/](docs/README.md) | How to use and extend (technical) |
+| [TASKS.md](TASKS.md) | Daily execution tracker (not committed, gitignored) |
