@@ -17,7 +17,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/socialite": "^5.0",
         "laravel/tinker": "^3.0",
-        "spatie/laravel-permission": "^8.0"
+        "spatie/laravel-permission": "^8.0",
+        "stancl/tenancy": "3.10"
     },
     "require-dev": {
         "captainhook/captainhook": "^5.29",
@@ -169,7 +170,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "stancl/tenancy"
+            ]
         },
         "phpstan": {
             "includes": [
