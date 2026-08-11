@@ -52,6 +52,7 @@ php artisan serve
 |--------|-------------|------|
 | IAM | Authentication, RBAC, social auth, feature flags | [auth.md](docs/auth.md), [rbac.md](docs/rbac.md) |
 | Media | File uploads and media storage | [ADR-0015](docs/adr/0015-media-storage-module.md) |
+| Organization | Multi-tenancy (stancl/tenancy, single database), disabled by default | - |
 
 Modules are loaded from the allow-list in `config/modules.php`, following the Laravel Fortify pattern: a module is only active once it is listed there. Directories under `modules/` that are not listed are silently ignored (service provider, migrations, and routes are skipped), which also enables private modules -- keep the directory on disk and in `.gitignore` without registering it for customers. Create new modules with `php artisan make:module` (see [module-generator.md](docs/module-generator.md)).
 
