@@ -28,6 +28,9 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0020](0020-single-iam-seeder.md) | Single IAM Seeder | Accepted | 2026-08-07 |
 | [0021](0021-social-auth-design.md) | Social Auth Design (Pivot, Stateless State, Email Binding) | Accepted | 2026-08-09 |
 | [0022](0022-feature-flag-middleware.md) | Custom FeatureFlagMiddleware over Native Pennant | Accepted | 2026-08-10 |
+| [0023](0023-tenancy-opt-in-organization-module.md) | Tenancy as an Opt-In Organization Module (Single Database) | Accepted | 2026-08-11 |
+| [0024](0024-module-registry-allow-list.md) | Module Registry Allow-List Without Environment Toggle | Accepted | 2026-08-11 |
+| [0025](0025-global-users-organization-membership.md) | Global Users With Organization Membership (Single-DB Data Model) | Accepted | 2026-08-11 |
 
 ## Process
 
