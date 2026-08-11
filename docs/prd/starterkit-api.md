@@ -1,7 +1,7 @@
 # PRD: Laravel Starterkit API
 
 - Status: Approved
-- Version: 1.0.0
+- Version: 2.0.0
 - Date: 2026-08-11
 - Related ADRs: see [docs/adr/README.md](../adr/README.md)
 
@@ -67,6 +67,15 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 | FLAG-01 | Admin can create/update/delete feature flags | Done (Phase 5) |
 | FLAG-02 | Authenticated user can query feature flag state | Done (Phase 5) |
 
+### Tenancy (ORG-01..04) - v2 scope
+
+| ID | Requirement | Status |
+|----|-------------|--------|
+| ORG-01 | Modules activate via a Fortify-style allow-list (`config/modules.php`), no env toggle; unlisted modules are fully inert | Done (ADR-0024) |
+| ORG-02 | Multi-tenancy ships as the opt-in `Organization` module wrapping stancl/tenancy ^3.10, disabled by default | Done (ADR-0023) |
+| ORG-03 | Single-database tenancy: tenant data scoped by `tenant_id` columns; no per-tenant databases | Done (design) - scoping contract in later phase |
+| ORG-04 | Users stay global; organizations (tenants) and membership are Organization-module concerns | Done (design, ADR-0025) |
+
 ### API Infrastructure (API-01..05)
 
 | ID | Requirement | Status |
@@ -98,10 +107,12 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 | Laravel Pulse (OBS-02) | Skipped — web dashboard not relevant for API-only kit |
 | Accounting module | Domain-specific, cannot be generalized (ADR-0016) |
 | Image processing | Deferred — 10MB free-typed limit; intervention/image recipe documented (ADR-0015) |
+| Domain model for organizations | Deferred — stancl default tenant model (UUID key, ADR-0023/0025) until a vertical needs it |
+| Per-organization roles/scoping | Deferred — Organization module contract phase; global users remain the identity model (ADR-0025) |
 
 ## Architecture Overview
 
-- **Modules**: `Modules/IAM` (core) + `Modules/Media` (first feature module). Modules communicate through contracts (`App\Contracts\Identity`), never direct imports (ADR-0004, ADR-0005).
+- **Modules**: `modules/` registry with Fortify-style allow-list (`config/modules.php`, ADR-0024). `IAM` (core) + `Media` (first feature module) ship enabled; `Organization` (tenancy) ships disabled. Modules communicate through contracts (`App\Contracts\Identity`), never direct imports (ADR-0004, ADR-0005).
 - **Routing**: single discovery via `RouteServiceProvider`; names `v1.{module}.{name}` (ADR-0008).
 - **Controllers**: plain `abstract readonly Controller` base; invokable `final readonly` controllers (ADR-0009).
 - **Responses**: `SuccessResponse` / `ProblemResponse` (RFC 9457), no `success` boolean.
@@ -134,3 +145,4 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 | Version | Date | Change |
 |---------|------|--------|
 | 1.0.0 | 2026-08-11 | Migrated from legacy planning docs into canonical `docs/`; corrected stale stack facts (no Redis); requirement statuses updated to actual shipped state |
+| 2.0.0 | 2026-08-11 | Added v2 scope: module registry allow-list (ORG-01), opt-in `Organization` tenancy module (ORG-02..03, ADR-0023/0024), global users + membership model (ORG-04, ADR-0025); updated Architecture Overview |
