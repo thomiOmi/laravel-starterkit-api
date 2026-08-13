@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\IAM\Database\Factories\UserFactory;
+use Modules\IAM\Models\User;
 
 describe('delete account', function (): void {
     it('soft-deletes the account and revokes all tokens with the correct password', function (): void {
@@ -41,5 +42,22 @@ describe('delete account', function (): void {
         $this->deleteJson('/api/v1/auth/account', [
             'password' => 'secret-password',
         ])->assertUnauthorized();
+    })->group('module:iam');
+
+    it('rolls back the token revocation when the account delete fails', function (): void {
+        $user = loginAsUser(UserFactory::new()->createOne(['password' => 'secret-password']));
+        $token = $user->createToken('test-device');
+
+        User::deleting(fn (): never => throw new RuntimeException('forced delete failure'));
+
+        $this->deleteJson('/api/v1/auth/account', [
+            'password' => 'secret-password',
+        ])->assertServerError();
+
+        $user->refresh();
+
+        expect($user->trashed())->toBeFalse();
+        expect($user->tokens()->exists())->toBeTrue();
+        expect($token->accessToken->exists())->toBeTrue();
     })->group('module:iam');
 });

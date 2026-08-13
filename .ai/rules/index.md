@@ -4,28 +4,28 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
-| modules/** | .ai/rules/modules-structure.md |
 | modules/*/Actions/** | .ai/rules/actions.md |
-| modules/*/Http/Controllers/**, modules/*/Controllers/** | .ai/rules/controllers.md |
-| modules/*/Models/** | .ai/rules/models.md |
-| modules/*/Services/** | .ai/rules/services.md |
-| modules/*/Support/**, app/Support/** | .ai/rules/support.md |
 | modules/*/Builders/**, app/Builders/** | .ai/rules/builders.md |
+| modules/*/Http/Controllers/**, modules/*/Controllers/**, app/Http/Requests/BulkActionRequest.php | .ai/rules/bulk-actions.md |
+| modules/*/Console/Commands/**, modules/*/Commands/**, app/Console/Commands/** | .ai/rules/commands.md |
+| modules/*/Config/**, config/**, config/modules.php | .ai/rules/config.md |
+| modules/*/Contracts/**, app/Contracts/** | .ai/rules/contracts.md |
+| modules/*/Http/Controllers/**, modules/*/Controllers/** | .ai/rules/controllers.md |
+| database/migrations/**, modules/*/Database/** | .ai/rules/database.md |
+| modules/*/Enums/**, app/Enums/** | .ai/rules/enums.md |
+| bootstrap/app.php, modules/*/Actions/**, modules/*/Controllers/**, app/Exceptions/** | .ai/rules/error-handling.md |
+| modules/*/Features/**, app/Features/**, config/modules.php | .ai/rules/features.md |
+| modules/*/Http/Middleware/**, modules/*/Middleware/**, app/Http/Middleware/** | .ai/rules/middleware.md |
+| modules/*/Models/** | .ai/rules/models.md |
+| modules/** | .ai/rules/modules-structure.md |
+| modules/*/Notifications/**, app/Notifications/** | .ai/rules/notifications.md |
 | modules/*/Payloads/**, app/Payloads/** | .ai/rules/payloads.md |
+| modules/*/Policies/** | .ai/rules/policies.md |
+| modules/*/Providers/**, app/Providers/ModuleServiceProvider.php, app/Providers/ModuleLoaderServiceProvider.php | .ai/rules/providers.md |
 | modules/*/Http/Requests/**, modules/*/Requests/**, app/Http/Requests/** | .ai/rules/requests.md |
 | modules/*/Http/Resources/**, modules/*/Resources/** | .ai/rules/resources.md |
-| modules/*/Policies/** | .ai/rules/policies.md |
-| modules/*/Providers/** | .ai/rules/providers.md |
-| modules/*/Http/Middleware/**, modules/*/Middleware/**, app/Http/Middleware/** | .ai/rules/middleware.md |
-| modules/*/Enums/**, app/Enums/** | .ai/rules/enums.md |
-| modules/*/Contracts/**, app/Contracts/** | .ai/rules/contracts.md |
-| modules/*/Config/**, config/** | .ai/rules/config.md |
-| modules/*/Notifications/**, app/Notifications/** | .ai/rules/notifications.md |
-| modules/*/Console/Commands/**, modules/*/Commands/**, app/Console/Commands/** | .ai/rules/commands.md |
-| modules/*/Routes/** | .ai/rules/routes.md |
-| database/migrations/**, modules/*/Database/** | .ai/rules/database.md |
-| modules/*/Features/**, app/Features/**, config/modules.php | .ai/rules/features.md |
-| modules/*/Http/Controllers/**, modules/*/Controllers/**, app/Http/Requests/BulkActionRequest.php | .ai/rules/bulk-actions.md |
-| bootstrap/app.php, modules/*/Actions/**, modules/*/Controllers/**, app/Exceptions/** | .ai/rules/error-handling.md |
 | app/Http/Responses/** | .ai/rules/responses.md |
+| modules/*/Routes/** | .ai/rules/routes.md |
+| modules/*/Services/** | .ai/rules/services.md |
+| modules/*/Support/**, app/Support/** | .ai/rules/support.md |
 | tests/**, modules/*/Tests/** | .ai/rules/tests.md |

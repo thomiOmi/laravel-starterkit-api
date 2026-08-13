@@ -16,12 +16,12 @@ covers(OrganizationServiceProvider::class);
 
 describe('OrganizationModule', function (): void {
     it('is not registered by default', function (): void {
-        expect(config('modules.enabled'))->not->toContain('organization')
+        expect(config('modules.modules.organization.active', false))->toBeFalse()
             ->and(config('tenancy'))->toBeNull()
             ->and($this->app->getProvider(OrganizationServiceProvider::class))->toBeNull();
     });
 
-    it('registers tenancy when the module is enabled', function (): void {
+    it('registers tenancy when the module is active', function (): void {
         $isolated = Application::configure(base_path())->create();
         Facade::clearResolvedInstances();
         Facade::setFacadeApplication($isolated);
@@ -30,7 +30,11 @@ describe('OrganizationModule', function (): void {
             LoadConfiguration::class,
             RegisterFacades::class,
         ]);
-        $isolated['config']->set('modules.enabled', ['iam', 'media', 'organization']);
+        $isolated['config']->set('modules.modules', [
+            'iam' => ['active' => true, 'features' => []],
+            'media' => ['active' => true, 'features' => []],
+            'organization' => ['active' => true, 'features' => ['multi-tenancy' => true]],
+        ]);
         $isolated->bootstrapWith([RegisterProviders::class, BootProviders::class]);
 
         try {

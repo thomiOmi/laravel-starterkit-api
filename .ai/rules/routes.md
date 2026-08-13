@@ -22,11 +22,14 @@ Module route files in `modules/{Module}/Routes/V1.php`, loaded by the base `Modu
 
 ## Example
 
+Route files in `modules/{Module}/Routes/V1.php` are relative: the base `ModuleServiceProvider` wraps them with `prefix('api/{version}')`, `middleware(['api'])`, and `name('{version}.{alias}.')`. Add module-specific middleware (auth, throttle, feature.flag) on the route group or route inside the file, then the base prefix completes the URL.
+
 ```php
-Route::middleware(['auth:sanctum', 'throttle:api'])
-    ->prefix('api/v1/iam')
-    ->name('v1.iam.')
-    ->group(function (): void {
-        Route::post('/register', RegisterController::class)->name('register');
-    });
+Route::prefix('auth')->name('auth.')->group(function (): void {
+    Route::post('/register', RegisterController::class)
+        ->middleware('feature.flag:iam.self-registration')
+        ->name('register');
+});
 ```
+
+Final URL `/api/v1/auth/register`, final name `v1.iam.auth.register`.

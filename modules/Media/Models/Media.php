@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,7 @@ use Illuminate\Support\Carbon;
 use Modules\IAM\Models\User;
 use Modules\Media\Builders\MediaBuilder;
 use Modules\Media\Database\Factories\MediaFactory;
+use Modules\Media\Policies\MediaPolicy;
 
 /**
  * @property string $id The unique identifier (ULID).
@@ -33,6 +35,7 @@ use Modules\Media\Database\Factories\MediaFactory;
 #[Hidden(['path'])]
 #[UseFactory(MediaFactory::class)]
 #[UseEloquentBuilder(MediaBuilder::class)]
+#[UsePolicy(MediaPolicy::class)]
 class Media extends Model
 {
     /** @use HasFactory<MediaFactory> */

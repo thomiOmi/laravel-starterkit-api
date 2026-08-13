@@ -11,10 +11,19 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
- * Gate route access behind a Pennant feature flag.
+ * Gate route access behind a build-time or runtime feature flag.
  *
- * Usage: `Route::get(...)->middleware('feature.flag:beta-feature')`
- * Returns 403 when the feature is inactive.
+ * Usage: `Route::get(...)->middleware('feature.flag:iam.self-registration')`
+ *
+ * The flag is resolved in two ways:
+ * - Build-time: `{alias}.{feature}` resolves to the central registry features
+ *   array, merged by the base ModuleServiceProvider into
+ *   `config('{alias}.features.{feature}')`.
+ * - Runtime: any other name falls back to a Pennant feature
+ *   (Feature::active), e.g. a class under app/Features/ or a module
+ *   Features/ directory.
+ *
+ * Returns 403 when the flag is off.
  */
 final readonly class FeatureFlagMiddleware
 {
@@ -23,10 +32,28 @@ final readonly class FeatureFlagMiddleware
      */
     public function handle(Request $request, Closure $next, string $feature): Response
     {
-        if (! Feature::active($feature)) {
+        if (! $this->isActive($feature)) {
             throw new AccessDeniedHttpException(__('auth.http_forbidden'));
         }
 
         return $next($request);
+    }
+
+    /**
+     * Resolve a build-time registry feature first, then fall back to Pennant.
+     */
+    protected function isActive(string $feature): bool
+    {
+        $parts = explode('.', $feature, 2);
+
+        if (count($parts) === 2) {
+            [$alias, $name] = $parts;
+
+            if (config()->has("{$alias}.features.{$name}")) {
+                return config()->boolean("{$alias}.features.{$name}", false);
+            }
+        }
+
+        return Feature::active($feature);
     }
 }

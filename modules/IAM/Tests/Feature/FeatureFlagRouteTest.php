@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Config;
-use Laravel\Pennant\Feature;
 use Modules\IAM\Database\Seeders\IAMSeeder;
 
 describe('self-registration feature flag', function (): void {
@@ -26,7 +25,7 @@ describe('self-registration feature flag', function (): void {
     })->group('module:iam');
 
     it('rejects registration with a problem response when the flag is deactivated', function (): void {
-        Feature::deactivate('iam.self-registration');
+        Config::set('iam.features.self-registration', false);
 
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Jane Doe',
@@ -39,8 +38,8 @@ describe('self-registration feature flag', function (): void {
     })->group('module:iam');
 
     it('allows registration again once the flag is reactivated', function (): void {
-        Feature::deactivate('iam.self-registration');
-        Feature::activate('iam.self-registration');
+        Config::set('iam.features.self-registration', false);
+        Config::set('iam.features.self-registration', true);
 
         $this->postJson('/api/v1/auth/register', [
             'name' => 'Jane Doe',

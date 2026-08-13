@@ -77,14 +77,15 @@ modules/
 │   │   ├── factories/
 │   │   ├── migrations/
 │   │   └── seeders/
-│   ├── Filters/         # Query string filtering (extends BaseFilter)
+│   ├── Builders/         # Query string filtering (extends BaseBuilder)
 │   ├── Models/
 │   ├── Payloads/        # Immutable DTOs with constructor promotion
 │   ├── Providers/       # Service providers
 │   ├── Requests/        # Form request validation
 │   ├── Resources/       # API resources
 │   ├── Routes/          # V1.php, V2.php
-│   └── Tests/           # Feature and unit tests
+│   ├── Tests/           # Feature and unit tests
+│   └── ...              # Other module-specific directories (e.g., Notifications, Jobs, etc.)
 └── ...
 app/                     # Shared application code
 ├── Concerns/            # Traits (FormatDates, HasDefaultBehavior, etc.)
@@ -105,9 +106,7 @@ routes/
 tests/                   # Shared tests / global test helpers
 ├── Architecture/        # Architecture tests (N+1, module isolation, etc.)
 ├── Feature/             # Infrastructure tests (middleware, responses, etc.)
-│   └── Infrastructure/
-├── Unit/
-└── Integration/
+└── Unit/
 ```
 
 ## Documentation

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Modules\IAM\Models\User;
@@ -22,8 +23,10 @@ final readonly class DeleteAccountAction
             ]);
         }
 
-        $user->tokens()->delete();
+        DB::transaction(function () use ($user): void {
+            $user->tokens()->delete();
 
-        $user->delete();
+            $user->delete();
+        });
     }
 }

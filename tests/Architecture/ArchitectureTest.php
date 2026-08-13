@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Builders\BaseQueryBuilder;
+use App\Http\Requests\PaginationRequest;
+use FilesystemIterator;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\ServiceProvider;
 use PHPUnit\Framework\Assert;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /*
 |--------------------------------------------------------------------------
@@ -203,6 +207,30 @@ arch('module actions should not use HTTP Request')
     ->expect(Request::class)
     ->not->toBeUsedIn('Modules\*\Actions');
 
+arch('module actions should not use abort helpers')
+    ->expect(['abort', 'abort_if', 'abort_unless'])
+    ->not->toBeUsedIn('Modules\*\Actions');
+
+/*
+|--------------------------------------------------------------------------
+| Module requests
+|--------------------------------------------------------------------------
+*/
+
+it('module list requests extend PaginationRequest', function (): void {
+    $listRequests = glob(base_path('modules/*/Requests/V1/*ListRequest.php')) ?: [];
+
+    expect($listRequests)->not->toBeEmpty();
+
+    foreach ($listRequests as $file) {
+        $module = basename(dirname($file, 3));
+        $request = basename($file, '.php');
+        $class = "Modules\\{$module}\\Requests\\V1\\{$request}";
+
+        expect($class)->toExtend(PaginationRequest::class);
+    }
+});
+
 /*
 |--------------------------------------------------------------------------
 | Module services
@@ -319,3 +347,112 @@ arch('modules should be isolated')
         'Database\Factories',
         'Modules\*\Database',
     ]);
+
+/*
+|--------------------------------------------------------------------------
+| Module communication (public API seam)
+|--------------------------------------------------------------------------
+|
+| The rules below are manual it() tests, not arch() assertions, because the
+| arch() DSL cannot express them:
+|
+| - "Not used by OTHER modules" needs per-module self-exclusion. The arch()
+|   toOnlyBeUsedIn()/toBeUsedIn() wildcards match every module, including
+|   the owning one, so a cross-module internal import would pass the
+|   "modules should be isolated" test above. This enforces the module
+|   communication rule: models + contracts are the public API seam of a
+|   module; Actions, Services, Payloads, Support, Builders, Enums are
+|   internal layers that must not be imported by another module.
+| - File-level checks (seeder cross-calls, ListRequest extension) iterate
+|   directories because not every module has every folder, and the arch()
+|   pattern "*ListRequest" crashes the Symfony Finder on missing
+|   directories (e.g. Media and Organization have no Requests folder).
+|
+| Do not refactor these back into arch() assertions without proving the
+| constraint is still enforced.
+|
+|--------------------------------------------------------------------------
+*/
+
+it('module internal layers are not referenced by other modules', function (): void {
+    $internalLayers = ['Actions', 'Services', 'Payloads', 'Support', 'Builders', 'Enums'];
+
+    $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
+
+    $crossReferences = [];
+
+    foreach ($modules as $source) {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(base_path("modules/{$source}"), FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (! $file instanceof SplFileInfo || ! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $content = (string) file_get_contents($file->getPathname());
+
+            foreach ($modules as $target) {
+                if ($source === $target) {
+                    continue;
+                }
+
+                foreach ($internalLayers as $layer) {
+                    if (str_contains($content, "Modules\\{$target}\\{$layer}\\")) {
+                        $crossReferences[] = sprintf(
+                            '%s references Modules\%s\%s',
+                            str_replace(base_path('modules/'), '', $file->getPathname()),
+                            $target,
+                            $layer
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    expect($crossReferences)->toBeEmpty();
+});
+
+it('module seeders do not call seeders from other modules', function (): void {
+    $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
+
+    $violations = [];
+
+    foreach ($modules as $source) {
+        $seederDirectory = base_path("modules/{$source}/Database/Seeders");
+
+        if (! is_dir($seederDirectory)) {
+            continue;
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($seederDirectory, FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (! $file instanceof SplFileInfo || ! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $content = (string) file_get_contents($file->getPathname());
+
+            foreach ($modules as $target) {
+                if ($source === $target) {
+                    continue;
+                }
+
+                if (str_contains($content, "Modules\\{$target}\\Database\\Seeders\\")) {
+                    $violations[] = sprintf(
+                        '%s references %s seeder',
+                        $file->getBasename(),
+                        $target
+                    );
+                }
+            }
+        }
+    }
+
+    expect($violations)->toBeEmpty();
+});

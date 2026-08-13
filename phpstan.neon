@@ -34,6 +34,7 @@ parameters:
     # Translation files (Laravel 13 uses lang/, not resources/lang/)
     translationDirectories:
         - lang
+        - modules/*/Lang
 
     # Cache parsed migrations between runs
     enableMigrationCache: true

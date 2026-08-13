@@ -4,59 +4,32 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Providers;
 
-use Illuminate\Support\Facades\Gate;
+use App\Providers\ModuleServiceProvider;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\ServiceProvider;
-use Laravel\Pennant\Feature;
 use Modules\IAM\Http\Middleware\EnsureUserIsActive;
-use Modules\IAM\Models\Permission;
-use Modules\IAM\Models\Role;
-use Modules\IAM\Models\User;
-use Modules\IAM\Policies\PermissionPolicy;
-use Modules\IAM\Policies\RolePolicy;
-use Modules\IAM\Policies\UserPolicy;
 
-class IAMServiceProvider extends ServiceProvider
+/**
+ * Wires the IAM module into the framework.
+ *
+ * Declaration-only provider: the base class handles config merge, build-time
+ * features, migrations, routes, and translations. This provider only declares
+ * the module name and registers IAM-specific middleware aliases.
+ */
+class IAMServiceProvider extends ModuleServiceProvider
 {
-    public function boot(): void
-    {
-        $this->configurePolicies();
-
-        $this->registerMiddlewareAliases();
-
-        $this->defineFeatures();
-    }
-
-    public function register(): void {}
-
     /**
-     * Register module policies explicitly.
-     *
-     * Laravel's policy auto-discovery only covers App\Models, so module
-     * models require an explicit mapping.
+     * The TitleCase module folder name.
      */
-    protected function configurePolicies(): void
+    protected function moduleName(): string
     {
-        Gate::policy(User::class, UserPolicy::class);
-        Gate::policy(Role::class, RolePolicy::class);
-        Gate::policy(Permission::class, PermissionPolicy::class);
+        return 'IAM';
     }
 
     /**
-     * Register middleware aliases used by the module routes.
-     *
-     * Route discovery is centralized in RouteServiceProvider.
+     * Register IAM-specific middleware aliases used by the module routes.
      */
-    protected function registerMiddlewareAliases(): void
+    protected function bootModule(): void
     {
         Route::aliasMiddleware('active', EnsureUserIsActive::class);
-    }
-
-    /**
-     * Define Pennant feature flags owned by the IAM module.
-     */
-    protected function defineFeatures(): void
-    {
-        Feature::define('iam.self-registration', fn () => true);
     }
 }

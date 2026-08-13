@@ -4,28 +4,22 @@ declare(strict_types=1);
 
 namespace Modules\Media\Providers;
 
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\ServiceProvider;
-use Modules\Media\Models\Media;
-use Modules\Media\Policies\MediaPolicy;
+use App\Providers\ModuleServiceProvider;
 
-class MediaServiceProvider extends ServiceProvider
+/**
+ * Wires the Media module into the framework.
+ *
+ * Declaration-only provider: the base class handles config merge, build-time
+ * features, migrations, routes, and translations. Media has no module-specific
+ * middleware aliases or bindings today.
+ */
+class MediaServiceProvider extends ModuleServiceProvider
 {
-    public function boot(): void
-    {
-        $this->configurePolicies();
-    }
-
-    public function register(): void {}
-
     /**
-     * Register module policies explicitly.
-     *
-     * Laravel's policy auto-discovery only covers App\Models, so module
-     * models require an explicit mapping.
+     * The TitleCase module folder name.
      */
-    protected function configurePolicies(): void
+    protected function moduleName(): string
     {
-        Gate::policy(Media::class, MediaPolicy::class);
+        return 'Media';
     }
 }

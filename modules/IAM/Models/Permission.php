@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Carbon;
 use Modules\IAM\Builders\PermissionBuilder;
 use Modules\IAM\Database\Factories\PermissionFactory;
+use Modules\IAM\Policies\PermissionPolicy;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 
 /**
@@ -31,6 +33,7 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
 #[Hidden(['guard_name'])]
 #[UseFactory(PermissionFactory::class)]
 #[UseEloquentBuilder(PermissionBuilder::class)]
+#[UsePolicy(PermissionPolicy::class)]
 class Permission extends SpatiePermission
 {
     /** @use HasFactory<PermissionFactory> */
