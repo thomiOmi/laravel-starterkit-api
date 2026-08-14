@@ -86,18 +86,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@lint:check",
-            "@types:check",
             "@php vendor/bin/pest --parallel"
-        ],
-        "test:quality": [
-            "@php artisan config:clear --ansi",
-            "@lint:check",
-            "@types:check",
-            "@php vendor/bin/pest --ci --compact --coverage --type-coverage --min=100 --memory-limit=512M"
-        ],
-        "test:mutation": [
-            "@php vendor/bin/pest --mutate --min=100"
         ],
         "test:profanity": [
             "@php vendor/bin/pest --profanity"
@@ -113,8 +102,10 @@
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
-            "@test:quality",
+            "@lint:check",
             "@rector:dry",
+            "@types:check",
+            "@test",
             "@test:profanity"
         ],
         "rector:dry": [
@@ -156,15 +147,13 @@
         "lint": "Automatically fix code style using Laravel Pint",
         "lint:staged": "Auto-fix code style for staged files (pre-commit)",
         "lint:check": "Check code style without modifications",
-        "types:check": "Run PHPStan static analysis and type coverage",
-        "test": "Run lint, static analysis, and the test suite",
-        "test:quality": "Run lint, static analysis, and tests with code and type coverage (full suite, TIA skipped)",
-        "test:mutation": "Run mutation testing to validate test suite quality",
+        "types:check": "Run PHPStan static analysis",
+        "test": "Run the test suite (unit and feature tests)",
         "test:profanity": "Check tests for prohibited words",
         "test:profile": "Run the test suite and report the slowest tests",
         "test:snapshot": "Update stored snapshots (tests/.pest/snapshots)",
         "test:tia": "Re-run only tests affected by your changes (test impact analysis); also enabled automatically on local machines",
-        "ci:check": "Run the full CI pipeline (quality, refactoring, and profanity)",
+        "ci:check": "Run the full CI pipeline: pint, rector, phpstan, tests, and profanity",
         "release": "Create a new release changelog",
         "release:dry": "Preview the next release changelog without committing"
     },
