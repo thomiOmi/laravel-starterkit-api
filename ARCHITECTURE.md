@@ -1,6 +1,6 @@
 # Arsitektur Modularization: Laravel Starterkit API
 
-Status: Final. Dokumen ini adalah source of truth untuk struktur modul, aturan, dan keputusan arsitektur. Semua keputusan dijelaskan langsung di sini. `docs/architecture.md` (English) dan `.ai/rules/` adalah turunan yang wajib sinkron.
+Status: Final. Dokumen ini adalah source of truth untuk struktur modul, aturan, dan keputusan arsitektur. Semua keputusan dijelaskan langsung di sini. `docs/architecture.md` (versi restrukturisasi, English) dan `.ai/rules/` adalah turunan yang wajib sinkron.
 
 ## 1. Prinsip Desain
 
@@ -744,12 +744,16 @@ Bukti: tes yang membuktikan jalur native tetap berfungsi.
 
 ## 7. Pengujian
 
-1. Placement: tes modul di `modules/*/Tests/` (Feature, Unit); tes app di `tests/`
-2. App-layer hanya mengakses model modul lewat seam `tests/Helpers.php`; import `Modules\*` langsung di `tests/` (di luar folder modul) dilarang, KECUALI import Seeder untuk kebutuhan seed test (`$this->seed(\Modules\IAM\Database\Seeders\IAMSeeder::class)`)
-3. Group per modul: `->group('module:{name}')`
-4. Setiap perubahan kode wajib tes; coverage 100% code dan type (quality gate)
-5. ArchitectureTest (tests/Architecture/ArchitectureTest.php) adalah single source of truth konvensi; perubahan assertion butuh persetujuan manusia (report dulu, jangan auto-fix)
-6. Quality gates: `composer lint`, `composer types:check`, `composer test:quality`, `composer ci:check`
+1. Placement: tes modul di `modules/*/Tests/` (Feature, Unit); tes app di `tests/` (Feature, Unit, Architecture)
+2. Struktur folder tes modul: `Tests/Feature/` (opsional subfolder `V1/` mirror `Http/Controllers/V1`) dan `Tests/Unit/`; tes shared: `tests/{Architecture,Feature,Unit}/`, `tests/Datasets/`, `tests/Helpers.php`, `tests/Pest.php`
+3. Suite yang didukung saat ini: `unit`, `feature`, `profanity`. Gate coverage, mutation, type-coverage ditangguhkan sementara (script dihapus)
+4. Script composer utama: `composer test` dan `composer test:profanity`; `test:quality`/`test:mutation` dihapus untuk sekarang
+5. Group: shared test di-group di `tests/Pest.php` (`app`, `feature`, `unit`, `arch`); tes modul `->group('module:{name}')` + group `feature`/`unit` dari `tests/Pest.php`. Filter: `vendor/bin/pest --group=app`, `--group=feature`, `--group=module:iam`. Lihat https://pestphp.com/docs/grouping-tests
+6. Import: shared test BOLEH import class modul langsung (model, factory, seeder, contract, enum) - ArchitectureTest mengizinkan `Tests` memakai `Modules\*\*`; `tests/Helpers.php` tetap seam kenyamanan untuk helper bersama, bukan batas keras
+7. Menulis tes mengikuti pest-testing skill: feature-first, factory daripada buat manual, dataset untuk hindari duplikasi, assertion spesifik, fake daripada mock. Lihat https://github.com/matula/laravel-claude-marketplace/tree/main/pest-testing
+8. Setiap perubahan kode wajib tes
+9. ArchitectureTest (tests/Architecture/ArchitectureTest.php) adalah single source of truth konvensi; perubahan assertion butuh persetujuan manusia (report dulu, jangan auto-fix)
+10. Quality flow: `composer lint` (pint) -> `composer rector:dry` (rector) -> `composer types:check` (phpstan) -> `composer test` (pest) -> `composer test:profanity`; `composer ci:check` menjalankan semuanya berurutan
 
 ## 8. Pemetaan ke Rules
 

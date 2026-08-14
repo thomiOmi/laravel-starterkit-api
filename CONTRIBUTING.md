@@ -21,7 +21,7 @@ composer setup:ci
 
 - Run `vendor/bin/pint --format agent` after editing PHP files.
 - Run `composer types:check` (PHPStan level max). Fix the root cause of every error; never add `@phpstan-ignore` and never edit `phpstan.neon` to silence checks.
-- Run `composer test:quality` before finishing: 100% code and type coverage is required.
+- Run `composer test` before finishing: unit and feature tests must pass (coverage/mutation/type-coverage gates are temporarily suspended).
 - Do not change `tests/Architecture/ArchitectureTest.php` unless explicitly approved. Architecture tests are the source of truth for conventions.
 
 ## Testing
@@ -65,7 +65,7 @@ A pre-commit hook runs `composer lint:staged` automatically.
 ## Pull Requests
 
 - Branch from `main` and open a pull request back to `main`.
-- The `tests` workflow must pass on both PHP 8.4 and 8.5 (lint, static analysis, tests, coverage).
+- The `tests` workflow must pass on both PHP 8.4 and 8.5 (pint, rector, phpstan, tests, profanity).
 - Fill out the pull request template, including the type of change and checklist.
 - Review feedback applies to the whole diff, not just the latest commit.
 

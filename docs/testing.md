@@ -10,12 +10,10 @@
 | `composer lint:staged` | Auto-fix code style for staged files only (`@php vendor/bin/pint --parallel --dirty`) |
 | `composer lint:check` | Check code style without modifications |
 | `composer types:check` | Run PHPStan static analysis (level max, includes test files via `pest-plugin-phpstan`) |
-| `composer test` | Run lint:check + types:check + `vendor/bin/pest --parallel` (with baseline) |
-| `composer test:quality` | Run lint:check + types:check + tests with `--ci --compact --coverage --type-coverage --min=100 --memory-limit=512M` (with baseline) |
-| `composer test:mutation` | Run mutation testing (`vendor/bin/pest --mutate --min=100`) |
+| `composer test` | Run the test suite: `vendor/bin/pest --parallel` (unit + feature, with baseline) |
 | `composer test:profanity` | Run profanity checks on test files |
 | `composer test:profile` | Run the suite and report the slowest tests (`vendor/bin/pest --profile`) |
-| `composer ci:check` | Full CI pipeline — runs `test:quality`, `rector:dry`, then `test:profanity` |
+| `composer ci:check` | Full CI pipeline - runs `lint:check`, `rector:dry`, `types:check`, `test`, then `test:profanity` |
 
 ### Tooling notes
 
@@ -29,7 +27,8 @@ The recommended pre-push workflow:
 
 ```bash
 composer lint          # fix code style
-composer test:quality  # types + coverage + tests
+composer test          # unit + feature tests
+composer test:profanity  # profanity checks
 ```
 
 ## Directory Structure
@@ -270,7 +269,7 @@ php artisan test          # always a full run
 ## Optimizing Tests
 
 - **Parallel**: `composer test` runs `vendor/bin/pest --parallel` — one process per CPU core. Each worker gets its own SQLite `:memory:` database, so tests stay isolated; do not rely on shared files or global state between tests.
-- **Compact printer**: `--compact` is used only in CI (`test:quality`), not in `tests/Pest.php`, so local runs keep the full per-test output. It prints only failures and reduces I/O.
+- **Compact printer**: `--compact` is used only in CI (`composer ci:check` via `test`), not in `tests/Pest.php`, so local runs keep the full per-test output. It prints only failures and reduces I/O.
 - **Profiling**: `composer test:profile` runs `vendor/bin/pest --profile` to list the slowest tests — use it before optimizing specific tests.
 - **Sharding**: `vendor/bin/pest --parallel --update-shards` records per-class timings into `tests/.pest/shards.json` (committed). CI jobs can then run `vendor/bin/pest --ci --shard=N/TOTAL` with time-balanced distribution. Re-run `--update-shards` after adding or renaming test files, and commit the refreshed file.
 

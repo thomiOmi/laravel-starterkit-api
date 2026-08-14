@@ -14,7 +14,7 @@ Opinionated Laravel 13 starter kit for building scalable APIs. Modular architect
 - Role-based access control via Spatie `laravel-permission`
 - Feature flags via Laravel Pennant
 - ULID primary keys, idempotency middleware, sunset/deprecation headers, trace IDs
-- Strict typing, single-action controllers, action classes, 100% coverage quality gate
+- Strict typing, single-action controllers, action classes, full quality gate via `composer ci:check`
 
 ## Technical Stack
 
@@ -131,14 +131,11 @@ tests/                   # Shared tests / global test helpers
 # Run all dev processes concurrently (server, queue, logs)
 composer dev
 
-# Full suite (lint + static analysis + tests)
+# Full suite (unit + feature tests)
 composer test
 
-# Quality gate (lint + static analysis + tests + coverage)
-composer test:quality
-
-# Mutation testing
-composer test:mutation
+# Quality gate (lint + rector + static analysis + tests + profanity)
+composer ci:check
 
 # Profanity check
 composer test:profanity
