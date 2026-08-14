@@ -17,7 +17,7 @@ beforeEach(function (): void {
  */
 function moduleTableHeaders(): array
 {
-    return ['Module Name', 'Status', 'Controllers', 'Actions', 'Payloads', 'Filters', 'Migrations', 'Routes'];
+    return ['Module Name', 'Status', 'Controllers', 'Actions', 'Payloads', 'Builders', 'Migrations', 'Routes'];
 }
 
 function putModuleFile(string $relativePath, string $content = '<?php'): void
@@ -44,7 +44,7 @@ describe('module:list command', function () {
             putModuleFile('Billing/Actions/Nested/ShouldNotCount.php');
             putModuleFile('Billing/Payloads/InvoicePayload.php');
             putModuleFile('Billing/Payloads/Nested/DeepPayload.php');
-            putModuleFile('Billing/Filters/StatusFilter.php');
+            putModuleFile('Billing/Builders/StatusBuilder.php');
             putModuleFile('Billing/Database/Migrations/2026_01_01_create_invoices_table.php');
 
             artisanCommand($this, 'module:list')
@@ -90,12 +90,12 @@ describe('module:list command', function () {
 
     describe('file counting', function () {
         it('does not count nested files for non-recursive directories', function (): void {
-            // Actions and Filters are configured as non-recursive.
+            // Actions and Builders are configured as non-recursive.
             putModuleFile('Reporting/Providers/ReportingServiceProvider.php');
             putModuleFile('Reporting/Actions/TopLevelAction.php');
             putModuleFile('Reporting/Actions/Sub/NestedAction.php'); // must be ignored
-            putModuleFile('Reporting/Filters/TopLevelFilter.php');
-            putModuleFile('Reporting/Filters/Sub/NestedFilter.php'); // must be ignored
+            putModuleFile('Reporting/Builders/TopLevelBuilder.php');
+            putModuleFile('Reporting/Builders/Sub/NestedBuilder.php'); // must be ignored
 
             // Controllers and Payloads are recursive — nested files must count.
             putModuleFile('Reporting/Controllers/TopController.php');

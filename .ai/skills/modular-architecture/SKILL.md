@@ -2,7 +2,7 @@
 name: modular-architecture
 description: >
   Scaffold and extend Laravel modules following the project's DDD-style
-  structure with Actions, Controllers, Filters, Payloads, Requests, Resources,
+  structure with Actions, Builders, Controllers, Payloads, Requests, Resources,
   Routes, Services, and Database layers. Use when creating a new module
   ("buat module baru"), adding a feature ("add feature", "bikin controller",
   "create action", "tambah filter"), or following the project's modular
@@ -20,13 +20,13 @@ Each module lives under `modules/{ModuleName}/` and follows this layout:
 ```
 modules/{ModuleName}/
   Actions/             -- Single-responsibility business actions
+  Builders/            -- BaseQueryBuilder subclasses for list queries
   Controllers/
     V1/                -- Invokable single-action controllers (API v1)
   Database/
     Factories/         -- Model factories
     Migrations/        -- Database migrations
     Seeders/           -- Database seeders
-  Filters/             -- Query builder filters extending BaseFilter
   Models/              -- Eloquent models
   Payloads/
     V1/                -- Immutable DTOs for action input (API v1)
@@ -72,7 +72,7 @@ Follow this order when adding a new CRUD feature (e.g., a new resource):
 6. **Action** -- Create single-responsibility action
 7. **Payload** -- Create immutable DTO (for create/update)
 8. **Request** -- Create FormRequest with validation + authorization
-9. **Filter** -- Create filter extending `BaseFilter` (for list actions)
+9. **Builder** -- Extend `BaseQueryBuilder` with filter/sort/field whitelists (for list queries)
 10. **Resource** -- Create API resource
 11. **ServiceProvider** -- Register routes in the module provider
 12. **Unit Test** -- Test the Action in isolation
@@ -157,32 +157,27 @@ final readonly class {Resource}Payload
 - Must have `toArray()` method (filtering null for updates)
 - Must not import or reference Model classes
 
-### Filter
+### Builder
 
 ```php
-/** @extends BaseFilter<{Model}> */
-class {Resource}Filter extends BaseFilter
+/** @extends BaseQueryBuilder<{Model}> */
+class {Resource}Builder extends BaseQueryBuilder
 {
     protected array $allowedFilters = ['name', 'status'];
     protected array $allowedSorts = ['name', 'created_at'];
     protected array $allowedFields = ['id', 'name', 'created_at', 'updated_at'];
-
-    public function search(Builder $builder, string $value): Builder
-    {
-        return $this->applySearch($builder, $value, ['name']);
-    }
-
-    public function status(Builder $builder, mixed $value): Builder
-    {
-        // custom filter logic
-    }
+    protected array $allowedIncludes = [];
+    protected array $searchableColumns = ['name'];
+    protected array $exactMatchColumns = [];
 }
 ```
 
-- Namespace: `Modules\{Module}\Filters`
-- Must extend `BaseFilter`
-- Must whitelist `$allowedFilters`, `$allowedSorts`, `$allowedFields`
-- Filter methods are dispatched by `BaseFilter` from `?filter[key]=value` query params
+- Namespace: `Modules\{Module}\Builders`
+- Must extend `App\Builders\BaseQueryBuilder`
+- Must whitelist `$allowedFilters`, `$allowedSorts`, `$allowedFields`; add `$allowedIncludes` and `$searchableColumns` as needed
+- Registered on the model via the `#[UseEloquentBuilder]` attribute
+- Chain `allowedSearch()`, `allowedFilters()`, `allowedSorts()`, `allowedFields()`, `allowedIncludes()` in list actions
+- Strategy methods (camelCased filter key) and model named scopes (e.g. Spatie's `role`) are dispatched automatically
 
 ### Request
 
@@ -304,7 +299,7 @@ Unit test per Action (test business logic in isolation). Feature test per endpoi
 
 - Return `SuccessResponse` or `ProblemResponse` from controllers (never `JsonResponse`)
 - Use `payload()` method on Request to get the Payload DTO
-- Extend `BaseFilter` for all query filtering
+- Extend `App\Builders\BaseQueryBuilder` for all query filtering (`allowedSearch`, `allowedFilters`, `allowedSorts`, `allowedFields`, `allowedIncludes`)
 - Use `App\Concerns\FormatDate` trait on all Resources
 - Use `App\Concerns\HasDefaultBehavior` trait on all Models
 - Use PHP 8 attributes (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`) on Models, not class properties

@@ -22,7 +22,7 @@ class ModuleListCommand extends Command
         'controllers' => ['path' => 'Controllers', 'recursive' => true],
         'actions' => ['path' => 'Actions', 'recursive' => false],
         'payloads' => ['path' => 'Payloads', 'recursive' => true],
-        'filters' => ['path' => 'Filters', 'recursive' => false],
+        'builders' => ['path' => 'Builders', 'recursive' => false],
         'migrations' => ['path' => 'Database/Migrations', 'recursive' => false],
     ];
 
@@ -80,7 +80,7 @@ class ModuleListCommand extends Command
                 (string) $counts['controllers'],
                 (string) $counts['actions'],
                 (string) $counts['payloads'],
-                (string) $counts['filters'],
+                (string) $counts['builders'],
                 (string) $counts['migrations'],
                 $hasRoutes ? 'Yes' : 'No',
             ];
@@ -88,7 +88,7 @@ class ModuleListCommand extends Command
 
         /** @var array<int, array<int, string>> $data */
         table(
-            ['Module Name', 'Status', 'Controllers', 'Actions', 'Payloads', 'Filters', 'Migrations', 'Routes'],
+            ['Module Name', 'Status', 'Controllers', 'Actions', 'Payloads', 'Builders', 'Migrations', 'Routes'],
             $data
         );
     }

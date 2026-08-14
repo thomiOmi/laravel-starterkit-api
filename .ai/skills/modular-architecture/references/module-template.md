@@ -203,21 +203,21 @@ final class {Resource}Request extends FormRequest
 }
 ```
 
-## Filter
+## Builder
 
-`modules/{Module}/Filters/{Resource}Filter.php`
+`modules/{Module}/Builders/{Resource}Builder.php`
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Filters;
+namespace Modules\{Module}\Builders;
 
-use Illuminate\Database\Eloquent\Builder;
+use App\Builders\BaseQueryBuilder;
 
-/** @extends BaseFilter<{Resource}> */
-class {Resource}Filter extends BaseFilter
+/** @extends BaseQueryBuilder<{Resource}> */
+class {Resource}Builder extends BaseQueryBuilder
 {
     protected array $allowedFilters = [
         'status',
@@ -237,10 +237,12 @@ class {Resource}Filter extends BaseFilter
         'deleted_at',
     ];
 
-    public function search(Builder $builder, string $value): Builder
-    {
-        return $this->applySearch($builder, $value, ['name', 'description']);
-    }
+    protected array $allowedIncludes = [];
+
+    protected array $searchableColumns = [
+        'name',
+        'description',
+    ];
 }
 ```
 

@@ -143,7 +143,7 @@ Named datasets used via `->with('name')`. Created with `php artisan pest:dataset
 
 | File | Rows | Used by |
 |---|---|---|
-| `FilterOperators.php` | 7 (`eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `like`) | `BaseFilterTest` |
+| `FilterOperators.php` | 8 (`eq`, `neq`, `gt`, `gte`, `lt`, `lte`, `like`, `in`) | `BaseQueryBuilderTest` |
 | `SecurityFailCases.php` | 14 (`APP_DEBUG`, `APP_ENV`, `APP_URL`, etc.) | `ProductionSecurityCheckTest` |
 
 ### Adding a new dataset

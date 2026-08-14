@@ -35,7 +35,7 @@ modules/{Module}/
     Factories/          -- Model factories
     Migrations/         -- Database migrations
     Seeders/            -- Database seeders
-  Filters/              -- Query string filtering
+  Builders/             -- BaseQueryBuilder subclasses for list queries
   Models/               -- Eloquent models
   Payloads/V1/          -- DTOs for action input
   Providers/            -- Service provider
