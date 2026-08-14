@@ -27,13 +27,13 @@
 
 Target: Complete the core and infrastructure gate sequence (rules coverage, native-first, wrapper classification, toolkit items, module consistency, feature toggles) and reach release readiness for tag v1.0.0.
 
-* [In Progress] P0: Roadmap and Execution Tracker
+* [Done] P0: Roadmap and Execution Tracker
     * Description: Define the v1.0.0 gate sequence and phase workflow in ROADMAP.md and maintain the daily execution tracker in TASKS.md.
     * Issue Reference:
     * Impact: Gives the project a single source of truth for scope and priorities.
     * Dependencies: None
 
-* [Planned] P1: Rules Coverage (G5)
+* [Done] P1: Rules Coverage (G5)
     * Description: Cover every file type in the repository with structured rules (23 rule files), record ADR-0026 and revise ADR-0007, align architecture docs, and enforce conventions via ArchitectureTest.
     * Issue Reference:
     * Impact: Enforces consistent, reviewable conventions across all modules and reduces friction for contributors and AI-assisted development.
