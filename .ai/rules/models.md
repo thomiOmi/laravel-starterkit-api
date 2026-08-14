@@ -1,13 +1,14 @@
 ---
 paths:
   - 'modules/*/Models/**'
+  - 'app/Models/**'
 ---
 
 # Models
 
 ## Goal
 
-Module-owned Eloquent models in `modules/{Module}/Models/`. Data access belongs to the module.
+Module-owned Eloquent models in `modules/{Module}/Models/`. Data access belongs to the module. `app/Models` holds only framework overrides that must extend vendor classes (e.g. `Sanctum/PersonalAccessToken`); domain models never live in `app/Models`.
 
 ## Rules
 

@@ -3,7 +3,6 @@ paths:
   - 'bootstrap/app.php'
   - 'modules/*/Actions/**'
   - 'modules/*/Controllers/**'
-  - 'app/Exceptions/**'
 ---
 
 # Error Handling & Exception Helpers

@@ -3,13 +3,15 @@ paths:
   - 'modules/*/Providers/**'
   - 'app/Providers/ModuleServiceProvider.php'
   - 'app/Providers/ModuleLoaderServiceProvider.php'
+  - 'app/Providers/AppServiceProvider.php'
+  - 'app/Providers/RouteServiceProvider.php'
 ---
 
 # Providers
 
 ## Goal
 
-`modules/{Module}/Providers/{Module}ServiceProvider.php` wires the module into the framework. Every module provider extends the abstract base `ModuleServiceProvider` (`app/Providers/`); the orchestrator `ModuleLoaderServiceProvider` (app) loads providers of ACTIVE modules from the central registry `config/modules.php`.
+`modules/{Module}/Providers/{Module}ServiceProvider.php` wires the module into the framework. Every module provider extends the abstract base `ModuleServiceProvider` (`app/Providers/`); the orchestrator `ModuleLoaderServiceProvider` (app) loads providers of ACTIVE modules from the central registry `config/modules.php`. `app/Providers` also hosts framework wiring only (`AppServiceProvider` for env-driven defaults, `RouteServiceProvider` for web routes); module behavior never lives in app providers.
 
 ## Rules
 

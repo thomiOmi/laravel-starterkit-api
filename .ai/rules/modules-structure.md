@@ -1,6 +1,7 @@
 ---
 paths:
   - 'modules/**'
+  - 'resources/stubs/**'
 ---
 
 # Module Structure
@@ -30,3 +31,9 @@ On-demand layers (Jobs, Events, Listeners, Mail, Rules, Exceptions, Lang, Observ
 
 - No empty folders as placeholders
 - No per-module package overhead (composer.json, module.json, vite config)
+
+## Module Generator Stubs (`resources/stubs/module/`)
+
+1. One stub per generated file type (action.*, controller.*, model, migration, factory, seeder, request.*, resource, builder, payload.*, route, provider, event, test.*); no stub for files the kit does not generate (no Filter stub - filtering is builder-based)
+2. Stubs use `{Module}`, `{Resource}`, `{Action}` placeholders and must stay in sync with the module conventions (final readonly actions/controllers, PHP 8 attributes on models, FormatDate on resources, `#[\UseEloquentBuilder]` on models with builders)
+3. New kit layers require a matching stub so the generator produces convention-compliant files
