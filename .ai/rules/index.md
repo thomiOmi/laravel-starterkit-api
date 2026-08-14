@@ -8,6 +8,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | modules/*/Builders/**, app/Builders/** | .ai/rules/builders.md |
 | modules/*/Http/Controllers/**, modules/*/Controllers/**, app/Http/Requests/BulkActionRequest.php | .ai/rules/bulk-actions.md |
 | modules/*/Console/Commands/**, modules/*/Commands/**, app/Console/Commands/** | .ai/rules/commands.md |
+| app/Concerns/FormatDate.php | .ai/rules/concerns.md |
 | modules/*/Config/**, config/**, config/modules.php | .ai/rules/config.md |
 | modules/*/Contracts/**, app/Contracts/** | .ai/rules/contracts.md |
 | modules/*/Http/Controllers/**, modules/*/Controllers/** | .ai/rules/controllers.md |
