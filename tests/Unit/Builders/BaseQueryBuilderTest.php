@@ -2,11 +2,14 @@
 
 declare(strict_types=1);
 
+namespace Tests\Unit\Builders;
+
 use App\Builders\BaseQueryBuilder;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Modules\IAM\Models\User;
-use Tests\Unit\Builders\TestQueryBuilder;
+use ReflectionMethod;
 
 covers(BaseQueryBuilder::class);
 

@@ -4,26 +4,16 @@ declare(strict_types=1);
 
 use App\Builders\BaseQueryBuilder;
 use App\Http\Requests\PaginationRequest;
-use FilesystemIterator;
+use Illuminate\Console\Command;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Notifications\Notification;
 use Illuminate\Support\ServiceProvider;
 use PHPUnit\Framework\Assert;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-
-/*
-|--------------------------------------------------------------------------
-| Presets
-|--------------------------------------------------------------------------
-*/
-
-arch()->preset()->laravel()
-    ->ignoring(['Modules', 'Tests', 'bootstrap/app.php']);
 
 /*
 |--------------------------------------------------------------------------
@@ -77,6 +67,10 @@ arch('avoid remaining debug functions')
     ->expect(['var_dump', 'print_r'])
     ->not->toBeUsed();
 
+arch('avoid dump and exit helpers')
+    ->expect(['dd', 'ddd', 'dump', 'ray', 'exit'])
+    ->not->toBeUsed();
+
 arch('avoid sleep in application code')
     ->expect(['sleep', 'usleep'])
     ->not->toBeUsed();
@@ -99,10 +93,146 @@ arch('app contracts should be interfaces')
     ->expect('App\Contracts')
     ->toBeInterfaces();
 
+arch('app concerns should be traits')
+    ->expect('App\Concerns')
+    ->toBeTraits();
+
+arch('app enums should be enums')
+    ->expect('App\Enums')
+    ->toBeEnums();
+
+/*
+|--------------------------------------------------------------------------
+| App http layer
+|--------------------------------------------------------------------------
+*/
+
+arch('app http should only be used in allowed layers')
+    ->expect('App\Http')
+    ->toOnlyBeUsedIn(['App\Http', 'App\Providers', 'Modules', 'Tests']);
+
+arch('app http controllers should have Controller suffix')
+    ->expect('App\Http\Controllers')
+    ->classes()
+    ->toHaveSuffix('Controller');
+
+arch('app http middleware should have handle method')
+    ->expect('App\Http\Middleware')
+    ->classes()
+    ->toHaveMethod('handle');
+
+arch('app http requests should extend FormRequest and have rules')
+    ->expect('App\Http\Requests')
+    ->classes()
+    ->toExtend(FormRequest::class)
+    ->toHaveMethod('rules');
+
+arch('app http requests should have Request suffix')
+    ->expect('App\Http\Requests')
+    ->toHaveSuffix('Request');
+
 arch('app http responses should implement Responsable')
     ->expect('App\Http\Responses')
     ->classes()
     ->toImplement(Responsable::class);
+
+/*
+|--------------------------------------------------------------------------
+| App models, notifications, commands and providers
+|--------------------------------------------------------------------------
+*/
+
+arch('app models should extend Eloquent Model')
+    ->expect('App\Models')
+    ->classes()
+    ->toExtend(Model::class);
+
+arch('app models should not have Model suffix')
+    ->expect('App\Models')
+    ->classes()
+    ->not->toHaveSuffix('Model');
+
+arch('app notifications should extend Notification')
+    ->expect('App\Notifications')
+    ->classes()
+    ->toExtend(Notification::class);
+
+arch('app commands should extend Command and have handle')
+    ->expect('App\Console\Commands')
+    ->classes()
+    ->toExtend(Command::class)
+    ->toHaveMethod('handle');
+
+arch('app commands should have Command suffix')
+    ->expect('App\Console\Commands')
+    ->classes()
+    ->toHaveSuffix('Command');
+
+arch('app providers should extend ServiceProvider')
+    ->expect('App\Providers')
+    ->classes()
+    ->toExtend(ServiceProvider::class);
+
+arch('app providers should have ServiceProvider suffix')
+    ->expect('App\Providers')
+    ->toHaveSuffix('ServiceProvider');
+
+arch('app providers should not be used')
+    ->expect('App\Providers')
+    ->classes()
+    ->not->toBeUsed()
+    ->ignoring('Modules');
+
+/*
+|--------------------------------------------------------------------------
+| App namespace boundaries
+|--------------------------------------------------------------------------
+*/
+
+arch('app classes should not be enums outside App\Enums')
+    ->expect('App')
+    ->not->toBeEnums()
+    ->ignoring('App\Enums');
+
+arch('app classes should not implement Throwable outside App\Exceptions')
+    ->expect('App')
+    ->not->toImplement(Throwable::class)
+    ->ignoring('App\Exceptions');
+
+arch('app classes should not extend Model outside App\Models')
+    ->expect('App')
+    ->not->toExtend(Model::class)
+    ->ignoring('App\Models');
+
+arch('app classes should not extend FormRequest outside App\Http\Requests')
+    ->expect('App')
+    ->not->toExtend(FormRequest::class)
+    ->ignoring('App\Http\Requests');
+
+arch('app classes should not extend Command outside App\Console\Commands')
+    ->expect('App')
+    ->not->toExtend(Command::class)
+    ->ignoring('App\Console\Commands');
+
+arch('app classes should not extend Notification outside App\Notifications')
+    ->expect('App')
+    ->not->toExtend(Notification::class)
+    ->ignoring('App\Notifications');
+
+arch('app classes should not extend ServiceProvider outside App\Providers')
+    ->expect('App')
+    ->not->toExtend(ServiceProvider::class)
+    ->ignoring('App\Providers');
+
+arch('app Controller suffix should only be used in App\Http\Controllers')
+    ->expect('App')
+    ->not->toHaveSuffix('Controller')
+    ->ignoring('App\Http\Controllers');
+
+arch('app ServiceProvider suffix should only be used in App\Providers')
+    ->expect('App')
+    ->not->toHaveSuffix('ServiceProvider')
+    ->ignoring('App\Providers');
 
 /*
 |--------------------------------------------------------------------------
@@ -353,16 +483,21 @@ arch('modules should be isolated')
 | Module communication (public API seam)
 |--------------------------------------------------------------------------
 |
-| The rules below are manual it() tests, not arch() assertions, because the
-| arch() DSL cannot express them:
+| The rules below are manual it() tests, not arch() assertions, because a
+| single arch() assertion cannot express them:
 |
 | - "Not used by OTHER modules" needs per-module self-exclusion. The arch()
 |   toOnlyBeUsedIn()/toBeUsedIn() wildcards match every module, including
-|   the owning one, so a cross-module internal import would pass the
-|   "modules should be isolated" test above. This enforces the module
-|   communication rule: models + contracts are the public API seam of a
-|   module; Actions, Services, Payloads, Support, Builders, Enums are
-|   internal layers that must not be imported by another module.
+|   the owning one (the pattern regex is unanchored, `*` = one segment),
+|   and ignoring() filters both sides of the check, so a cross-module
+|   internal import would pass the "modules should be isolated" test
+|   above. This enforces the module communication rule: models + contracts
+|   are the public API seam of a module; Actions, Services, Payloads,
+|   Support, Builders, Enums are internal layers that must not be imported
+|   by another module. A per-module arch() loop could express this, but
+|   the file-level scan below is kept because it also catches references
+|   in non-class files (Routes, config-style arrays) and is easier to
+|   audit.
 | - File-level checks (seeder cross-calls, ListRequest extension) iterate
 |   directories because not every module has every folder, and the arch()
 |   pattern "*ListRequest" crashes the Symfony Finder on missing
