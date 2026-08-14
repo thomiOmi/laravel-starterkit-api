@@ -220,7 +220,7 @@ final class {Resource}Request extends FormRequest
 ```php
 class {Resource}Resource extends JsonResource
 {
-    use FormatDates;
+    use FormatDate;
 
     public function toArray(Request $request): array
     {
@@ -235,7 +235,7 @@ class {Resource}Resource extends JsonResource
 
 - Namespace: `Modules\{Module}\Resources`
 - Must extend `JsonResource`
-- Must use `App\Concerns\FormatDates` trait
+- Must use `App\Concerns\FormatDate` trait
 - Must guard eager-loaded relations with `relationLoaded()`
 - All datetime fields must use `Y-m-d H:i:s` format
 
@@ -305,7 +305,7 @@ Unit test per Action (test business logic in isolation). Feature test per endpoi
 - Return `SuccessResponse` or `ProblemResponse` from controllers (never `JsonResponse`)
 - Use `payload()` method on Request to get the Payload DTO
 - Extend `BaseFilter` for all query filtering
-- Use `App\Concerns\FormatDates` trait on all Resources
+- Use `App\Concerns\FormatDate` trait on all Resources
 - Use `App\Concerns\HasDefaultBehavior` trait on all Models
 - Use PHP 8 attributes (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`) on Models, not class properties
 - Use `config()->string()` / `config()->integer()` / `config()->boolean()` / `config()->array()` for config access

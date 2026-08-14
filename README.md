@@ -88,7 +88,7 @@ modules/
 │   └── ...              # Other module-specific directories (e.g., Notifications, Jobs, etc.)
 └── ...
 app/                     # Shared application code
-├── Concerns/            # Traits (FormatDates, HasDefaultBehavior, etc.)
+├── Concerns/            # Traits (FormatDate, HasDefaultBehavior, etc.)
 ├── Contracts/           # Interfaces (Identity)
 ├── Http/
 │   ├── Middleware/      # Sunset, TraceId, SetLocale, PlanFeature, SecurityHeaders

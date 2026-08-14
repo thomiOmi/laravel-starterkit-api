@@ -255,13 +255,13 @@ declare(strict_types=1);
 
 namespace Modules\{Module}\Resources;
 
-use App\Concerns\FormatDates;
+use App\Concerns\FormatDate;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class {Resource}Resource extends JsonResource
 {
-    use FormatDates;
+    use FormatDate;
 
     public function toArray(Request $request): array
     {
