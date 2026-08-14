@@ -3,11 +3,11 @@ name: update-tasks
 description: >
   Maintain TASKS.md, the project's operational tracker and agent scratchpad.
   Use whenever work starts or finishes, a plan is made, status needs recording
-  ("catat progress", "update TASKS", "apa yang dikerjakan", "snapshot status"),
+  ("record progress", "update TASKS", "what was done", "snapshot status"),
   a backlog/known issue item is opened or closed, or a session hands off to a
   future one. Also use when deciding where information belongs: decisions go to
   ADRs (create-adr), product scope to PRDs (create-prd), conventions to
-  .ai/rules — TASKS.md only tracks execution.
+  .ai/rules - TASKS.md only tracks execution.
 metadata:
   version: "1.0"
 ---
@@ -24,12 +24,12 @@ Keep the sections in this order and update them as they change:
 
 - **Header**: one line stating the file is the operational tracker, not the decision source of truth.
 - **Status snapshot** (`## Status snapshot (YYYY-MM-DD)`): date, branch + HEAD short SHA, one-line summary of project state, and dated bullets of notable changes. Refresh the date and HEAD on every update (`git rev-parse --short HEAD`).
-- **Fokus aktif**: the current work, in priority order. Fill when starting work; empty it when work ends.
-- **Backlog**: deferred items, each with a status word (DITUNDA / SKIP / DITUTUP) and a date.
-- **Known issues**: open issues; closed ones stay listed with a DITUTUP date and reopening conditions.
+- **Active focus**: the current work, in priority order. Fill when starting work; empty it when work ends.
+- **Backlog**: deferred items, each with a status word (DITUNDA = deferred / SKIP / DITUTUP = closed) and a date.
+- **Known issues**: open issues; closed ones stay listed with a DITUTUP (closed) date and reopening conditions.
 - **Agent notes**: non-obvious pitfalls and working knowledge that would otherwise be lost between sessions (e.g. queue semantics, auth pitfalls). One or two lines each.
 - **Definition of Done**: the project quality gate (lint, types, coverage, tests).
-- **Pointer dokumen**: the `docs/` map so any session can navigate without re-discovery.
+- **Document pointer**: the `docs/` map so any session can navigate without re-discovery.
 
 ## Update rules
 

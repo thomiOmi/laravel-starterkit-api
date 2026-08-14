@@ -20,7 +20,12 @@ Structured Pest tests with typed helpers; module tests self-contained in `module
 6. RefreshDatabase for feature tests; beforeEach seeds roles, `forgetCachedPermissions()`, creates admin via `loginAsUser`; reusable helpers go to `tests/Helpers.php` (3+ files), named datasets to `tests/Datasets/{Name}.php` (2+ uses)
 7. ArchitectureTest (tests/Architecture/ArchitectureTest.php) is the single source of truth for conventions; assertion changes require human approval (report first, do not auto-fix)
 8. Asserting a literal config value: always pass the default argument. `config('modules.modules.iam.active', false)` is inferred by larastan as `bool`, so `expect(...)->toBeTrue()` is fine. Omitting the default (`config('modules.modules.iam.active')`) lets larastan resolve the exact literal from `config/modules.php`, and phpstan flags `pest.expectation.redundant` ("assertion is redundant" on `Expectation<true>`). Also avoid asserting an already-known literal directly (`expect(true)->toBeTrue()` is redundant). Because rector loads `phpstan.neon` but ignores its extensions (larastan is not loaded), rector will happily rewrite `$this->assertTrue(...)` to `expect(...)` even when phpstan considers the result redundant - so write the chained `expect()` form with default args from the start. See https://getrector.com/documentation/config-configuration#content-phpstan-integration.
-9. Writing style follows the pest-testing skill: feature-first, factories over manual creation, datasets to avoid duplication, specific assertions (`assertOk()` not `assertStatus(200)`), fakes over mocks. See https://github.com/matula/laravel-claude-marketplace/tree/main/pest-testing
+9. Writing style follows the pest-testing skill, applied inline here:
+   - Create tests with `php artisan make:test --pest {Name}`; never include the suite directory in the name (`SomeFeatureTest`, not `Feature/SomeFeatureTest` - the latter doubles the path)
+   - Feature tests before unit tests; factories over manual model creation; datasets to avoid duplication (inline when used once, named in `tests/Datasets/` when reused)
+   - Specific assertions over `assertStatus`: `assertSuccessful()` not `assertStatus(200)`, `assertNotFound()` not `assertStatus(404)`, `assertForbidden()` not `assertStatus(403)`
+   - Fakes over mocks; when mocking, import the helper (`use function Pest\Laravel\mock;`)
+   - Run the minimum needed before finishing: `php artisan test --compact --filter=testName`
 
 ## Forbidden
 

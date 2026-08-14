@@ -3,8 +3,8 @@ name: create-prd
 description: >
   Create a Product Requirements Document (PRD) following the project's
   documentation conventions. Use whenever the user asks for a PRD, feature
-  requirements, a spec for a new feature, "buat PRD", "tulis requirement",
-  "feature specification", or wants to capture product scope before coding —
+  requirements, a spec for a new feature, "write a PRD", "write requirements",
+  "feature specification", or wants to capture product scope before coding -
   even when they just describe an idea or say "write this feature up". If the
   request is about an architecture or design decision instead, use the
   create-adr skill; if it is about tracking work, use update-tasks.
@@ -36,7 +36,7 @@ The PRD captures WHAT the product needs and WHY, before any code is written. It 
 - Save as `docs/prd/{feature-slug}.md` (e.g. `docs/prd/social-auth.md`). Only create a dedicated PRD file when the feature has product-level scope beyond a single module — otherwise a section in the main PRD suffices.
 - Add the document to the index table in `docs/prd/README.md`.
 - If the feature belongs in the main PRD: add the requirements there and link the new PRD.
-- Record the pending work in `TASKS.md` (Fokus aktif) via the `update-tasks` skill so the next session knows it is queued.
+- Record the pending work in `TASKS.md` (Active focus) via the `update-tasks` skill so the next session knows it is queued.
 
 ## Do not
 

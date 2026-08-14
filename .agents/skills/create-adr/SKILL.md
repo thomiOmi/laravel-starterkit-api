@@ -3,8 +3,8 @@ name: create-adr
 description: >
   Record an Architecture Decision Record (ADR) for a settled design decision
   in Nygard format. Use whenever the user makes or changes an architectural
-  choice, asks "kenapa kode ini begini", "should we do X or Y", "deviasi dari
-  keputusan lama", or a decision needs a written rationale before coding —
+  choice, asks "why is this code like this", "should we do X or Y", "deviation
+  from a past decision", or a decision needs a written rationale before coding -
   also when reviewing existing ADRs or deciding whether a convention change
   needs one. If the request is about product requirements instead, use the
   create-prd skill; for tracking work use update-tasks.

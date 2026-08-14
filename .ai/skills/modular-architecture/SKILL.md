@@ -4,8 +4,8 @@ description: >
   Scaffold and extend Laravel modules following the project's DDD-style
   structure with Actions, Builders, Controllers, Payloads, Requests, Resources,
   Routes, Services, and Database layers. Use when creating a new module
-  ("buat module baru"), adding a feature ("add feature", "bikin controller",
-  "create action", "tambah filter"), or following the project's modular
+  ("create new module"), adding a feature ("add feature", "make a controller",
+  "create action", "add a filter"), or following the project's modular
   conventions ("module pattern", "modular structure").
 metadata:
   version: "1.0"
