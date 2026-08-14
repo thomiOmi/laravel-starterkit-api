@@ -31,6 +31,8 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0023](0023-tenancy-opt-in-organization-module.md) | Tenancy as an Opt-In Organization Module (Single Database) | Accepted | 2026-08-11 |
 | [0024](0024-module-registry-allow-list.md) | Module Registry Allow-List Without Environment Toggle | Accepted | 2026-08-11 |
 | [0025](0025-global-users-organization-membership.md) | Global Users With Organization Membership (Single-DB Data Model) | Accepted | 2026-08-11 |
+| [0026](0026-rules-coverage-decisions.md) | Rules Coverage Decisions (G5) | Accepted | 2026-08-14 |
+| [0027](0027-module-anatomy-migration-and-api-v2.md) | Module Anatomy Migration Timing and API V2 Versioning | Accepted | 2026-08-14 |
 
 ## Process
 
