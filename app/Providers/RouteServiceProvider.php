@@ -10,9 +10,8 @@ use Illuminate\Support\Facades\Route;
 /**
  * Registers application-level routes only.
  *
- * Module API routes are loaded by each module's provider (base
- * ModuleServiceProvider) while the module is active, so no central
- * discovery lives here anymore.
+ * Module API routes are loaded by each module's route service provider
+ * while the module is enabled, so no central discovery lives here anymore.
  */
 class RouteServiceProvider extends ServiceProvider
 {
