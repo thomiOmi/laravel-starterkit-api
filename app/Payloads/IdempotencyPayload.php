@@ -27,10 +27,31 @@ final readonly class IdempotencyPayload
     ) {}
 
     /**
+     * Determine whether a raw cached array is a valid, replayable payload.
+     *
+     * A payload is replayable only when all fields exist with the expected
+     * types and the status is a success or redirect code, matching what
+     * IdempotencyMiddleware stores.
+     *
+     * @param  array<mixed, mixed>  $data  The raw array from cache storage.
+     */
+    public static function isValidArray(array $data): bool
+    {
+        return isset($data['status'], $data['body'], $data['content_type'], $data['body_hash'])
+            && is_int($data['status'])
+            && $data['status'] >= Response::HTTP_OK
+            && $data['status'] < Response::HTTP_BAD_REQUEST
+            && is_string($data['body'])
+            && is_string($data['content_type'])
+            && is_string($data['body_hash']);
+    }
+
+    /**
      * Rehydrate an IdempotencyPayload from a plain array retrieved from cache.
      *
      * Defensive checks are applied because cache entries may be corrupted,
      * manually edited, or stored by a driver that does not preserve PHP types.
+     * Callers should validate with isValidArray() before replaying.
      *
      * @param  array<mixed, mixed>  $data  The raw array from cache storage.
      * @return self The rehydrated payload with safe defaults.

@@ -18,13 +18,19 @@ final class BulkActionRequest extends FormRequest
         }
 
         $routeName = (string) $this->route()?->getName();
-        $action = $this->resolveBulkAction($routeName);
+        $context = $this->resolveBulkContext($routeName);
 
-        if ($action === null) {
+        if ($context === null) {
             return false;
         }
 
-        if (str_contains($routeName, '.user.')) {
+        [$resource, $action] = $context;
+
+        if ($this->has('action') && $this->string('action')->toString() !== $action) {
+            return false;
+        }
+
+        if ($resource === 'user') {
             if ($action === 'delete') {
                 return $user->can(PermissionEnum::UserDelete->value);
             }
@@ -36,7 +42,7 @@ final class BulkActionRequest extends FormRequest
             return false;
         }
 
-        if (str_contains($routeName, '.role.')) {
+        if ($resource === 'role') {
             if ($action === 'delete') {
                 return $user->can(PermissionEnum::RoleDelete->value);
             }
@@ -47,28 +53,32 @@ final class BulkActionRequest extends FormRequest
         return false;
     }
 
-    private function resolveBulkAction(string $routeName): ?string
+    /**
+     * Resolve the resource and action segments from the route name.
+     *
+     * Bulk routes follow `v1.{module}.{resource}.bulk.{action}`, so the
+     * resource is the segment before `bulk` and the action the one after.
+     *
+     * @return array{0: string, 1: string}|null
+     */
+    private function resolveBulkContext(string $routeName): ?array
     {
         $segments = explode('.', $routeName);
 
-        $routeAction = null;
         $index = array_search('bulk', $segments, true);
 
-        if ($index !== false) {
-            $routeAction = $segments[$index + 1] ?? null;
+        if ($index === false) {
+            return null;
         }
 
-        if ($routeAction !== null && $this->has('action')) {
-            $bodyAction = $this->string('action')->toString();
+        $resource = $segments[$index - 1] ?? null;
+        $action = $segments[$index + 1] ?? null;
 
-            if ($bodyAction !== $routeAction) {
-                return null;
-            }
+        if ($resource === null || $action === null) {
+            return null;
         }
 
-        $bodyAction = $this->string('action')->toString();
-
-        return $routeAction ?? ($bodyAction !== '' ? $bodyAction : null);
+        return [$resource, $action];
     }
 
     /**

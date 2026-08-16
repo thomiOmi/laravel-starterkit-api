@@ -68,11 +68,15 @@ final readonly class IdempotencyMiddleware
         $stored = Cache::get($cacheKey);
 
         if (is_array($stored)) {
-            return $this->resolveStored(
-                IdempotencyPayload::fromArray($stored),
-                $bodyHash,
-                $key
-            );
+            if (! IdempotencyPayload::isValidArray($stored)) {
+                Cache::forget($cacheKey);
+            } else {
+                return $this->resolveStored(
+                    IdempotencyPayload::fromArray($stored),
+                    $bodyHash,
+                    $key
+                );
+            }
         }
 
         $lock = Cache::lock(
@@ -89,7 +93,7 @@ final readonly class IdempotencyMiddleware
         try {
             $stored = Cache::get($cacheKey);
 
-            if (is_array($stored)) {
+            if (is_array($stored) && IdempotencyPayload::isValidArray($stored)) {
                 return $this->resolveStored(
                     IdempotencyPayload::fromArray($stored),
                     $bodyHash,

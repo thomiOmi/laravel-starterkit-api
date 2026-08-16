@@ -94,6 +94,60 @@ describe('replay behavior', function (): void {
             ->assertHeader('Idempotency-Replayed', 'true')
             ->assertJsonPath('created', $first->json('created'));
     });
+
+    it('forgets a corrupt cached entry and executes the request fresh', function (): void {
+        $key = (string) Str::uuid();
+
+        $cacheKey = 'idempotency:'.hash('sha256', implode('|', [
+            'POST',
+            '_test/idempotency',
+            (string) auth()->id(),
+            Str::lower($key),
+        ]));
+
+        Cache::put($cacheKey, [
+            'status' => 'not-an-int',
+            'body' => '{}',
+            'content_type' => 'application/json',
+            'body_hash' => 'deadbeef',
+        ], 3600);
+
+        $response = $this->postJson('/_test/idempotency', [], ['Idempotency-Key' => $key]);
+
+        $response->assertOk()
+            ->assertHeaderMissing('Idempotency-Replayed')
+            ->assertJsonPath('timestamp', fn ($ts) => filled($ts));
+
+        $replaced = Cache::get($cacheKey);
+        $status = is_array($replaced) ? $replaced['status'] : null;
+
+        expect($replaced)->toBeArray()
+            ->and($status)->toBe(Response::HTTP_OK);
+    });
+
+    it('does not replay entries whose status is outside the cached 2xx/3xx range', function (): void {
+        $key = (string) Str::uuid();
+
+        $cacheKey = 'idempotency:'.hash('sha256', implode('|', [
+            'POST',
+            '_test/idempotency',
+            (string) auth()->id(),
+            Str::lower($key),
+        ]));
+
+        Cache::put($cacheKey, [
+            'status' => 500,
+            'body' => '{"error":"stale"}',
+            'content_type' => 'application/json',
+            'body_hash' => hash('sha256', ''),
+        ], 3600);
+
+        $response = $this->postJson('/_test/idempotency', [], ['Idempotency-Key' => $key]);
+
+        $response->assertOk()
+            ->assertHeaderMissing('Idempotency-Replayed')
+            ->assertJsonPath('timestamp', fn ($ts) => filled($ts));
+    });
 });
 
 describe('user scope isolation', function (): void {
