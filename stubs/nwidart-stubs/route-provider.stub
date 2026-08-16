@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace $NAMESPACE$;
 
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
@@ -7,12 +9,18 @@ use Illuminate\Support\Facades\Route;
 
 class $CLASS$ extends ServiceProvider
 {
+    /**
+     * The name of the module.
+     */
     protected string $name = '$MODULE$';
 
     /**
+     * The lowercase version of the module name.
+     */
+    protected string $nameLower = '$LOWER_NAME$';
+
+    /**
      * Called before routes are registered.
-     *
-     * Register any model bindings or pattern based filters.
      */
     public function boot(): void
     {
@@ -25,26 +33,33 @@ class $CLASS$ extends ServiceProvider
     public function map(): void
     {
         $this->mapApiRoutes();
-        $this->mapWebRoutes();
     }
 
     /**
-     * Define the "web" routes for the application.
+     * Define the versioned API routes for the module.
      *
-     * These routes all receive session state, CSRF protection, etc.
-     */
-    protected function mapWebRoutes(): void
-    {
-        Route::middleware('web')->group(module_path($this->name, '$WEB_ROUTES_PATH$'));
-    }
-
-    /**
-     * Define the "api" routes for the application.
-     *
-     * These routes are typically stateless.
+     * The route files live under routes/ and are versioned by filename
+     * (V1.php, V2.php). Each file is mounted on the api/v1 prefix; the
+     * module alias only participates in the v1.{alias}. route naming
+     * contract, matching the kit's URL scheme (api/v1/users, not
+     * api/v1/iam/users).
      */
     protected function mapApiRoutes(): void
     {
-        Route::middleware('api')->prefix('api')->name('api.')->group(module_path($this->name, '$API_ROUTES_PATH$'));
+        /** @var array<int, string> $versions */
+        $versions = config()->array('apiroute.supported_versions', ['V1']);
+
+        foreach ($versions as $version) {
+            $routeFile = module_path($this->name, "routes/{$version}.php");
+
+            if (! file_exists($routeFile)) {
+                continue;
+            }
+
+            Route::prefix('api/'.strtolower($version))
+                ->middleware(['api'])
+                ->name(strtolower($version).'.'.$this->nameLower.'.')
+                ->group($routeFile);
+        }
     }
 }

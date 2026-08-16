@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace $NAMESPACE$;
 
 use Nwidart\Modules\Support\ModuleServiceProvider;
-use Illuminate\Console\Scheduling\Schedule;
 
 class $CLASS$ extends ModuleServiceProvider
 {
@@ -18,29 +19,21 @@ class $CLASS$ extends ModuleServiceProvider
     protected string $nameLower = '$LOWER_NAME$';
 
     /**
-     * Command classes to register.
-     *
-     * @var string[]
-     */
-    // protected array $commands = [];
-
-    /**
      * Provider classes to register.
      *
      * @var string[]
      */
     protected array $providers = [
-        EventServiceProvider::class,
         RouteServiceProvider::class,
     ];
 
     /**
-     * Define module schedules.
-     * 
-     * @param $schedule
+     * Bootstrap any application services.
      */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
+    public function boot(): void
+    {
+        parent::boot();
+
+        // Register module-specific middleware aliases, bindings, or features here.
+    }
 }
