@@ -13,8 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Set application locale based on the incoming Accept-Language header.
  *
- * Resolves available locales from the lang/ directory, caches them
- * for 24 hours, and sets the best matching locale on the App facade.
+ * Available locales are read from `app.available_locales` (single source
+ * of truth). When that config is empty, locales are resolved from the
+ * lang/ directory and cached for 24 hours.
  */
 final readonly class SetLocaleMiddleware
 {
@@ -45,14 +46,24 @@ final readonly class SetLocaleMiddleware
     }
 
     /**
-     * Load available locales from cache or fall back to scanning filesystem.
+     * Resolve the available locales from config, falling back to scanning
+     * the lang/ directory when config is empty.
      *
      * @return array<int, string>
      */
     private function resolveLocales(): array
     {
+        $configured = array_values(array_filter(
+            config()->array('app.available_locales', []),
+            fn (mixed $locale): bool => is_string($locale) && $locale !== ''
+        ));
+
+        if ($configured !== []) {
+            return $configured;
+        }
+
         /** @var array<int, string> $locales */
-        $locales = Cache::remember('app.available_locales', 86400, function (): array {
+        $locales = Cache::remember('set-locale.available_locales', 86400, function (): array {
             $paths = glob(lang_path('*'), GLOB_ONLYDIR);
             $directories = $paths !== false ? $paths : [];
 

@@ -12,14 +12,15 @@ use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 beforeEach(function () {
-    Cache::forget('app.available_locales');
+    Cache::forget('set-locale.available_locales');
+    config()->set('app.available_locales', ['en', 'id']);
 });
 
 describe('SetLocaleMiddleware', function () {
 
     describe('locale resolution', function () {
         it('sets locale from Accept-Language header when matching available locale', function () {
-            Cache::set('app.available_locales', ['en', 'id'], 86400);
+            config()->set('app.available_locales', ['en', 'id']);
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'id');
@@ -30,7 +31,7 @@ describe('SetLocaleMiddleware', function () {
 
         it('falls back to default locale when Accept-Language has no match', function () {
             config()->set('app.locale', 'en');
-            Cache::set('app.available_locales', ['en', 'id'], 86400);
+            config()->set('app.available_locales', ['en', 'id']);
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'fr');
@@ -40,7 +41,7 @@ describe('SetLocaleMiddleware', function () {
         });
 
         it('picks highest quality matching locale', function () {
-            Cache::set('app.available_locales', ['en', 'id', 'de'], 86400);
+            config()->set('app.available_locales', ['en', 'id', 'de']);
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'de-DE,de;q=0.9,id;q=0.8');
@@ -50,7 +51,7 @@ describe('SetLocaleMiddleware', function () {
         });
 
         it('persists locale for the rest of the request lifecycle', function () {
-            Cache::set('app.available_locales', ['id'], 86400);
+            config()->set('app.available_locales', ['id']);
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'id');
@@ -60,13 +61,34 @@ describe('SetLocaleMiddleware', function () {
         });
     });
 
-    describe('caching', function () {
-        it('caches locales from lang directory on first request', function () {
-            Cache::forget('app.available_locales');
+    describe('config resolution', function () {
+        it('prefers configured locales over cached lang directory scan', function () {
+            Cache::set('set-locale.available_locales', ['de'], 86400);
+            config()->set('app.available_locales', ['en', 'id']);
+
+            $request = new Request;
+            $request->headers->set('Accept-Language', 'de');
+            (new SetLocaleMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+
+            expect(App::getLocale())->toBe('en');
+        });
+
+        it('filters out empty configured values', function () {
+            config()->set('app.available_locales', ['en', '']);
+
+            $request = new Request;
+            $request->headers->set('Accept-Language', 'en');
+            (new SetLocaleMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+
+            expect(App::getLocale())->toBe('en');
+        });
+
+        it('caches locales from lang directory when config is empty', function () {
+            config()->set('app.available_locales', []);
 
             (new SetLocaleMiddleware)->handle(new Request, fn (Request $req): Response => new Response('OK'));
 
-            $cached = Cache::get('app.available_locales');
+            $cached = Cache::get('set-locale.available_locales');
             expect($cached)->toBeArray()
                 ->toContain('en', 'id');
         });
