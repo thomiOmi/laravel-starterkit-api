@@ -37,7 +37,7 @@ return [
     */
     'stubs' => [
         'enabled' => true,
-        'path' => base_path('stubs/nwidart-stubs'),
+        'path' => base_path('stubs/module-generator'),
         'files' => [
             'routes/api' => 'routes/V1.php',
             'scaffold/config' => 'config/config.php',
@@ -82,6 +82,29 @@ return [
             ],
         ],
         'gitkeep' => true,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Frontend Scaffold
+    |--------------------------------------------------------------------------
+    |
+    | Frontend stack used by module:make --frontend. When the flag is passed
+    | without a value, the default stack is used. Each stack lists the stub
+    | files that get added to the generated module; stub files must exist
+    | in the stubs path above.
+    |
+    */
+    'frontend' => [
+        'default' => 'vite',
+        'stacks' => [
+            'vite' => [
+                'package' => 'package.json',
+                'vite' => 'vite.config.js',
+                'assets/js/app' => 'resources/js/app.js',
+                'assets/css/app' => 'resources/css/app.css',
+            ],
+        ],
     ],
     'paths' => [
         /*

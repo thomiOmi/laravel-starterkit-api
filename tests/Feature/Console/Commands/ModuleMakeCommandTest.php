@@ -9,7 +9,7 @@ covers(ModuleMakeCommand::class);
 afterEach(function () {
     $files = app('files');
 
-    foreach (['Blog', 'Shop'] as $module) {
+    foreach (['Blog', 'Shop', 'Gadget', 'Fake'] as $module) {
         $files->deleteDirectory(base_path("modules/{$module}"));
     }
 
@@ -20,7 +20,7 @@ afterEach(function () {
     /** @var array<string, bool> $statuses */
     $statuses = json_decode($contents, true);
 
-    unset($statuses['Blog'], $statuses['Shop']);
+    unset($statuses['Blog'], $statuses['Shop'], $statuses['Gadget'], $statuses['Fake']);
 
     $json = json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
@@ -81,7 +81,7 @@ describe('module:make command', function () {
     });
 
     it('adds a Vite frontend scaffold when the --frontend flag is passed', function () {
-        artisanCommand($this, 'module:make', ['name' => ['Shop'], '--frontend' => true, '--disabled' => true])
+        artisanCommand($this, 'module:make', ['name' => ['Shop'], '--frontend' => true])
             ->expectsOutputToContain('Module [Shop] created successfully.')
             ->assertSuccessful();
 
@@ -102,5 +102,22 @@ describe('module:make command', function () {
 
         $css = file_get_contents($modulePath.'/resources/css/app.css');
         expect($css)->toContain('Shop module styles');
+    });
+
+    it('supports an explicit frontend stack via --frontend=vite', function () {
+        artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--frontend' => 'vite', '--disabled' => true])
+            ->expectsOutputToContain('Module [Gadget] created successfully.')
+            ->assertSuccessful();
+
+        $modulePath = base_path('modules/Gadget');
+
+        foreach (['package.json', 'vite.config.js', 'resources/js/app.js', 'resources/css/app.css'] as $file) {
+            expect($modulePath.'/'.$file)->toBeFile();
+        }
+    });
+
+    it('rejects an unsupported frontend stack', function () {
+        expect(fn () => artisanCommand($this, 'module:make', ['name' => ['Fake'], '--frontend' => 'react', '--disabled' => true]))
+            ->toThrow(InvalidArgumentException::class, 'Unsupported frontend stack [react]. Supported stacks: vite.');
     });
 });

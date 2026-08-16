@@ -8,15 +8,21 @@ use Illuminate\Config\Repository;
 use Nwidart\Modules\Commands\Make\ModuleMakeCommand as NwidartModuleMakeCommand;
 use Symfony\Component\Console\Input\InputOption;
 
+use function implode;
+use function is_string;
+use function sprintf;
+
 /**
  * Kit-aware module scaffolder.
  *
  * Extends the nWidart module:make command so generated modules follow the
  * starter kit anatomy: backend-only by default (no controllers, views,
- * package.json, or vite config), with an optional Vite frontend scaffold
- * behind the --frontend flag. The signature cannot be an attribute here
- * because Laravel's #[Signature] would bypass the parent getArguments()
- * and getOptions() that the nWidart generator relies on.
+ * package.json, or vite config), with an optional frontend scaffold behind
+ * the --frontend flag. The frontend stack is chosen with --frontend=vite
+ * (or any stack registered in config/modules.php); passing the flag without
+ * a value uses the configured default stack. The signature cannot be an
+ * attribute here because Laravel's #[Signature] would bypass the parent
+ * getArguments() and getOptions() that the nWidart generator relies on.
  */
 class ModuleMakeCommand extends NwidartModuleMakeCommand
 {
@@ -39,7 +45,7 @@ class ModuleMakeCommand extends NwidartModuleMakeCommand
     {
         return [
             ...parent::getOptions(),
-            ['frontend', null, InputOption::VALUE_NONE, 'Generate a module with a Vite frontend scaffold. Default is backend-only.'],
+            ['frontend', null, InputOption::VALUE_OPTIONAL, 'Generate a module with a frontend scaffold. Use --frontend=stack to pick a stack, or omit the value to use the configured default.', null],
         ];
     }
 
@@ -48,7 +54,9 @@ class ModuleMakeCommand extends NwidartModuleMakeCommand
      */
     public function handle(): int
     {
-        $this->configureFrontendScaffold();
+        if ($this->input->hasParameterOption('--frontend')) {
+            $this->configureFrontendScaffold();
+        }
 
         return parent::handle();
     }
@@ -58,15 +66,23 @@ class ModuleMakeCommand extends NwidartModuleMakeCommand
      */
     private function configureFrontendScaffold(): void
     {
-        if (! $this->option('frontend')) {
-            return;
+        /** @var array<string, array<string, string>> $stacks */
+        $stacks = $this->config->get('modules.frontend.stacks', []);
+
+        $stack = $this->option('frontend');
+
+        if (! is_string($stack) || $stack === '') {
+            $stack = $this->config->get('modules.frontend.default', 'vite');
         }
 
-        $this->config->set('modules.stubs.files', array_merge($this->config->get('modules.stubs.files', []), [
-            'package' => 'package.json',
-            'vite' => 'vite.config.js',
-            'assets/js/app' => 'resources/js/app.js',
-            'assets/css/app' => 'resources/css/app.css',
-        ]));
+        if (! isset($stacks[$stack])) {
+            throw new \InvalidArgumentException(sprintf(
+                'Unsupported frontend stack [%s]. Supported stacks: %s.',
+                $stack,
+                implode(', ', array_keys($stacks))
+            ));
+        }
+
+        $this->config->set('modules.stubs.files', array_merge($this->config->get('modules.stubs.files', []), $stacks[$stack]));
     }
 }
