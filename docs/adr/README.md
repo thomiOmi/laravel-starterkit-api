@@ -33,6 +33,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0025](0025-global-users-organization-membership.md) | Global Users With Organization Membership (Single-DB Data Model) | Accepted | 2026-08-11 |
 | [0026](0026-rules-coverage-decisions.md) | Rules Coverage Decisions (G5) | Accepted | 2026-08-14 |
 | [0027](0027-module-anatomy-migration-and-api-v2.md) | Module Anatomy Migration Timing and API V2 Versioning | Accepted | 2026-08-14 |
+| [0028](0028-ensure-email-is-verified-override.md) | EnsureEmailIsVerified Overrides the Native `verified` Middleware | Accepted | 2026-08-14 |
 
 ## Process
 

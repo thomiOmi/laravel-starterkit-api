@@ -881,11 +881,18 @@ The `/* @chisel-{feature} */` and `/* @end-chisel-{feature} */` pattern (from th
 
 Every wrapper must have a documented native escape hatch:
 
-- **BaseQueryBuilder**: actions may still use plain `User::where(...)`.
-- **Responses**: the handler still maps exceptions to problem details.
-- **Middleware**: routes may skip special middleware when not needed.
+- **BaseQueryBuilder**: actions may still use plain `User::query()->where(...)` on models with a custom builder attached; the builder never blocks native Eloquent (scopes, eager loading, plain where clauses).
+- **PersonalAccessTokenBuilder**: Sanctum's default token model remains usable; the builder only adds convenience methods.
+- **Responses**: controllers may still return `response()->json(...)` directly; the exception handler still maps exceptions to problem details.
+- **Middleware**: opt-in middleware (`feature.flag`, `idempotency`, `sunset`) only runs on routes that declare them; routes may skip them when not needed. Global middleware (trace.id, security.headers, set.locale) attaches to the `api` group only.
+- **ModuleLoaderServiceProvider**: module providers can be registered manually in `bootstrap/providers.php` instead of via the central registry.
+- **ModuleServiceProvider (base)**: a module provider may extend `Illuminate\Support\ServiceProvider` directly instead of the base class.
+- **Identity contract**: any `Authenticatable` model can replace the `Identity` implementation; the contract only composes native Laravel auth interfaces.
+- **Concerns (FormatDate, HasDefaultBehavior)**: traits are optional; models work without them.
+- **Payloads / validation rule helpers**: native inline validation and native request handling remain valid.
+- **EnsureEmailIsVerified**: the `verified` alias overrides Laravel's native middleware to throw `401`/`403` problem responses instead of redirecting to a web verification route (API-only deviation); teams with web flows can register the native middleware instead.
 
-**Proof:** tests proving the native path still works.
+**Proof:** tests proving the native path still works (`tests/Feature/Builders/NativePathTest.php`, `tests/Feature/Http/Middleware/NativePathMiddlewareTest.php`, exception handler tests, module registry tests).
 
 ---
 
