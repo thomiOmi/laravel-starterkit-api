@@ -20,25 +20,40 @@ Each module lives under `modules/{ModuleName}/` and follows this layout:
 ```
 modules/{ModuleName}/
 ├── Actions/             # Single-responsibility business actions
+
 ├── Builders/            # BaseQueryBuilder subclasses for list queries
+
 ├── Controllers/
 │   └── V1/              # Invokable single-action controllers (API v1)
+
 ├── Database/
 │   ├── Factories/       # Model factories
+
 │   ├── Migrations/      # Database migrations
+
 │   └── Seeders/         # Database seeders
+
 ├── Models/              # Eloquent models
+
 ├── Payloads/
 │   └── V1/              # Immutable DTOs for action input (API v1)
+
 ├── Providers/           # Module service provider
+
 ├── Requests/
 │   └── V1/              # FormRequest validation (API v1)
+
 ├── Resources/           # Eloquent API resources
+
 ├── Routes/              # Route definitions
+
 ├── Services/            # Business services (optional)
+
 └── Tests/
     ├── Feature/         # Pest feature tests
+
     └── Unit/            # Pest unit tests
+
 ```
 
 ## Auto-Discovery
