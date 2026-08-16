@@ -89,16 +89,16 @@ return [
     | Frontend Scaffold
     |--------------------------------------------------------------------------
     |
-    | Frontend stack used by module:make --frontend. When the flag is passed
-    | without a value, the default stack is used. Each stack lists the stub
-    | files that get added to the generated module; stub files must exist
-    | in the stubs path above.
+    | Frontend stacks used by module:make --frontend and the framework flags
+    | (--vue, --react, --svelte). Stacks are keyed by framework name matching
+    | the modules.inertia.frontend values; an explicit framework flag wins
+    | over the config default. Each stack lists the stub files that get added
+    | to the generated module; stub files must exist in the stubs path above.
     |
     */
     'frontend' => [
-        'default' => 'vite',
         'stacks' => [
-            'vite' => [
+            'vue' => [
                 'package' => 'package.json',
                 'vite' => 'vite.config.js',
                 'assets/js/app' => 'resources/js/app.js',

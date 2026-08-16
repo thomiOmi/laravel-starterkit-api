@@ -9,7 +9,7 @@ covers(ModuleMakeCommand::class);
 afterEach(function () {
     $files = app('files');
 
-    foreach (['Blog', 'Shop', 'Gadget', 'Fake'] as $module) {
+    foreach (['Blog', 'Shop', 'Gadget', 'Fake', 'Widget', 'Store'] as $module) {
         $files->deleteDirectory(base_path("modules/{$module}"));
     }
 
@@ -20,7 +20,7 @@ afterEach(function () {
     /** @var array<string, bool> $statuses */
     $statuses = json_decode($contents, true);
 
-    unset($statuses['Blog'], $statuses['Shop'], $statuses['Gadget'], $statuses['Fake']);
+    unset($statuses['Blog'], $statuses['Shop'], $statuses['Gadget'], $statuses['Fake'], $statuses['Widget'], $statuses['Store']);
 
     $json = json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
@@ -80,8 +80,8 @@ describe('module:make command', function () {
             ->toContain('Providers\\\\BlogServiceProvider');
     });
 
-    it('adds a Vite frontend scaffold when the --frontend flag is passed', function () {
-        artisanCommand($this, 'module:make', ['name' => ['Shop'], '--frontend' => true])
+    it('adds a Vite frontend scaffold when the --vue flag is passed', function () {
+        artisanCommand($this, 'module:make', ['name' => ['Shop'], '--vue' => true, '--disabled' => true])
             ->expectsOutputToContain('Module [Shop] created successfully.')
             ->assertSuccessful();
 
@@ -104,8 +104,8 @@ describe('module:make command', function () {
         expect($css)->toContain('Shop module styles');
     });
 
-    it('supports an explicit frontend stack via --frontend=vite', function () {
-        artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--frontend' => 'vite', '--disabled' => true])
+    it('uses the configured default framework when the --frontend flag is passed', function () {
+        artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--frontend' => true, '--disabled' => true])
             ->expectsOutputToContain('Module [Gadget] created successfully.')
             ->assertSuccessful();
 
@@ -116,8 +116,20 @@ describe('module:make command', function () {
         }
     });
 
+    it('does not generate a frontend scaffold when the --no-frontend flag is passed', function () {
+        artisanCommand($this, 'module:make', ['name' => ['Widget'], '--no-frontend' => true, '--disabled' => true])
+            ->expectsOutputToContain('Module [Widget] created successfully.')
+            ->assertSuccessful();
+
+        $modulePath = base_path('modules/Widget');
+
+        foreach (['package.json', 'vite.config.js', 'resources'] as $file) {
+            expect(file_exists($modulePath.'/'.$file))->toBeFalse();
+        }
+    });
+
     it('rejects an unsupported frontend stack', function () {
-        expect(fn () => artisanCommand($this, 'module:make', ['name' => ['Fake'], '--frontend' => 'react', '--disabled' => true]))
-            ->toThrow(InvalidArgumentException::class, 'Unsupported frontend stack [react]. Supported stacks: vite.');
+        expect(fn () => artisanCommand($this, 'module:make', ['name' => ['Fake'], '--react' => true, '--disabled' => true]))
+            ->toThrow(InvalidArgumentException::class, 'Unsupported frontend stack [react]. Supported stacks: vue.');
     });
 });

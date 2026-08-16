@@ -9,7 +9,6 @@ use Nwidart\Modules\Commands\Make\ModuleMakeCommand as NwidartModuleMakeCommand;
 use Symfony\Component\Console\Input\InputOption;
 
 use function implode;
-use function is_string;
 use function sprintf;
 
 /**
@@ -17,12 +16,13 @@ use function sprintf;
  *
  * Extends the nWidart module:make command so generated modules follow the
  * starter kit anatomy: backend-only by default (no controllers, views,
- * package.json, or vite config), with an optional frontend scaffold behind
- * the --frontend flag. The frontend stack is chosen with --frontend=vite
- * (or any stack registered in config/modules.php); passing the flag without
- * a value uses the configured default stack. The signature cannot be an
- * attribute here because Laravel's #[Signature] would bypass the parent
- * getArguments() and getOptions() that the nWidart generator relies on.
+ * package.json, or vite config). A frontend scaffold is added with --frontend
+ * (using the framework from config modules.inertia.frontend) or with an
+ * explicit framework flag (--vue, --react, --svelte); --no-frontend is the
+ * explicit backend-only form, which is also the default. The signature
+ * cannot be an attribute here because Laravel's #[Signature] would bypass
+ * the parent getArguments() and getOptions() that the nWidart generator
+ * relies on.
  */
 class ModuleMakeCommand extends NwidartModuleMakeCommand
 {
@@ -45,7 +45,11 @@ class ModuleMakeCommand extends NwidartModuleMakeCommand
     {
         return [
             ...parent::getOptions(),
-            ['frontend', null, InputOption::VALUE_OPTIONAL, 'Generate a module with a frontend scaffold. Use --frontend=stack to pick a stack, or omit the value to use the configured default.', null],
+            ['no-frontend', null, InputOption::VALUE_NONE, 'Do not generate a frontend scaffold (default).'],
+            ['frontend', null, InputOption::VALUE_NONE, 'Generate a module with the default frontend framework from config modules.inertia.frontend.'],
+            ['vue', null, InputOption::VALUE_NONE, 'Generate a module with a Vue frontend scaffold.'],
+            ['react', null, InputOption::VALUE_NONE, 'Generate a module with a React frontend scaffold.'],
+            ['svelte', null, InputOption::VALUE_NONE, 'Generate a module with a Svelte frontend scaffold.'],
         ];
     }
 
@@ -54,35 +58,34 @@ class ModuleMakeCommand extends NwidartModuleMakeCommand
      */
     public function handle(): int
     {
-        if ($this->input->hasParameterOption('--frontend')) {
-            $this->configureFrontendScaffold();
+        $framework = $this->option('vue') ? 'vue'
+            : ($this->option('react') ? 'react'
+            : ($this->option('svelte') ? 'svelte'
+            : ($this->option('frontend') ? $this->config->get('modules.inertia.frontend', 'vue') : null)));
+
+        if (is_string($framework)) {
+            $this->configureFrontendScaffold($framework);
         }
 
         return parent::handle();
     }
 
     /**
-     * Add the frontend scaffold stubs to the config when the --frontend flag is set.
+     * Add the frontend scaffold stubs to the config for the given framework.
      */
-    private function configureFrontendScaffold(): void
+    private function configureFrontendScaffold(string $framework): void
     {
         /** @var array<string, array<string, string>> $stacks */
         $stacks = $this->config->get('modules.frontend.stacks', []);
 
-        $stack = $this->option('frontend');
-
-        if (! is_string($stack) || $stack === '') {
-            $stack = $this->config->get('modules.frontend.default', 'vite');
-        }
-
-        if (! isset($stacks[$stack])) {
+        if (! isset($stacks[$framework])) {
             throw new \InvalidArgumentException(sprintf(
                 'Unsupported frontend stack [%s]. Supported stacks: %s.',
-                $stack,
+                $framework,
                 implode(', ', array_keys($stacks))
             ));
         }
 
-        $this->config->set('modules.stubs.files', array_merge($this->config->get('modules.stubs.files', []), $stacks[$stack]));
+        $this->config->set('modules.stubs.files', array_merge($this->config->get('modules.stubs.files', []), $stacks[$framework]));
     }
 }
