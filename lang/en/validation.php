@@ -7,6 +7,7 @@ return [
     'social_account_exists' => 'This social account is already linked.',
     'social_not_linked' => 'This social account is not linked to your account.',
     'avatar_invalid' => 'The selected avatar is invalid.',
+    'avatar_unavailable' => 'The avatar service is unavailable.',
 
     /*
     |--------------------------------------------------------------------------

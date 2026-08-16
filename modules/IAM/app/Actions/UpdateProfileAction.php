@@ -4,15 +4,24 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Storage;
+use App\Contracts\AvatarResolver;
 use InvalidArgumentException;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UpdateProfilePayload;
-use Modules\Media\Models\Media;
 
 final readonly class UpdateProfileAction
 {
+    /**
+     * @param  AvatarResolver|null  $avatarResolver  The cross-module avatar
+     *                                               resolver, when the Media
+     *                                               module is present. Null
+     *                                               disables the avatar
+     *                                               feature.
+     */
+    public function __construct(
+        private ?AvatarResolver $avatarResolver = null,
+    ) {}
+
     /**
      * @return array{user: User, verification_required: bool}
      */
@@ -34,11 +43,10 @@ final readonly class UpdateProfileAction
             $user->avatar = $this->resolveAvatarUrl($payload->avatarMediaId, $user);
         }
 
+        $user->save();
+
         if ($verificationRequired) {
-            $user->save();
             $user->sendEmailVerificationNotification();
-        } else {
-            $user->save();
         }
 
         return [
@@ -49,15 +57,10 @@ final readonly class UpdateProfileAction
 
     private function resolveAvatarUrl(string $mediaId, User $user): string
     {
-        $media = Media::query()->find($mediaId);
-
-        if ($media === null || $media->disk !== 'public' || $media->uploaded_by !== $user->id) {
-            throw new InvalidArgumentException(__('validation.avatar_invalid'));
+        if ($this->avatarResolver === null) {
+            throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
 
-        /** @var FilesystemAdapter $storage */
-        $storage = Storage::disk('public');
-
-        return $storage->url($media->path);
+        return $this->avatarResolver->resolve($mediaId, $user);
     }
 }

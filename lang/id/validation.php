@@ -7,6 +7,7 @@ return [
     'social_account_exists' => 'Akun sosial ini sudah ditautkan.',
     'social_not_linked' => 'Akun sosial ini tidak tertaut dengan akun Anda.',
     'avatar_invalid' => 'Avatar yang dipilih tidak valid.',
+    'avatar_unavailable' => 'Layanan avatar tidak tersedia.',
 
     /*
     |--------------------------------------------------------------------------
