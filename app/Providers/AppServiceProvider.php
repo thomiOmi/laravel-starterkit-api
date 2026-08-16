@@ -84,6 +84,10 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureDevCommands(): void
     {
+        if (! $this->app->environment('local')) {
+            return;
+        }
+
         DevCommands::except('vite');
 
         $url = config()->string('app.url', 'http://localhost');
