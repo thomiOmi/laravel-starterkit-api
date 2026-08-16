@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\IAM\Http\Controllers\V1;
+
+use App\Http\Controllers\Controller;
+use App\Http\Responses\SuccessResponse;
+use Illuminate\Http\Request;
+use Modules\IAM\Http\Resources\PermissionResource;
+use Modules\IAM\Models\Permission;
+
+final readonly class PermissionShowController extends Controller
+{
+    /**
+     * Display the specified permission.
+     *
+     * @return SuccessResponse<PermissionResource>
+     */
+    public function __invoke(Request $request, Permission $permission): SuccessResponse
+    {
+        return new SuccessResponse(
+            data: new PermissionResource($permission),
+            title: 'OK',
+            detail: __('general.resource_retrieved', ['resource' => 'Permission']),
+        );
+    }
+}

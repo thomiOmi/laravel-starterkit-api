@@ -16,9 +16,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * Usage: `Route::get(...)->middleware('feature.flag:iam.self-registration')`
  *
  * The flag is resolved in two ways:
- * - Build-time: `{alias}.{feature}` resolves to the central registry features
- *   array, merged by the base ModuleServiceProvider into
- *   `config('{alias}.features.{feature}')`.
+ * - Build-time: `{alias}.{feature}` resolves to the module features array,
+ *   merged by the nWidart base ModuleServiceProvider from the module
+ *   Config/config.php into `config('{alias}.features.{feature}')`.
  * - Runtime: any other name falls back to a Pennant feature
  *   (Feature::active), e.g. a class under app/Features/ or a module
  *   Features/ directory.
