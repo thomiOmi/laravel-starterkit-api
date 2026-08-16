@@ -38,10 +38,12 @@ class IAMServiceProvider extends ModuleServiceProvider
     ];
 
     /**
-     * Register IAM-specific middleware aliases used by the module routes.
+     * Bootstrap any application services.
      */
-    public function bootModule(): void
+    public function boot(): void
     {
+        parent::boot();
+
         Route::aliasMiddleware('active', EnsureUserIsActive::class);
     }
 }

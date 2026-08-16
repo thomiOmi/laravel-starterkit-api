@@ -247,7 +247,7 @@ arch('module actions are final and readonly')
     ->toBeReadonly();
 
 arch('module controllers are final and readonly')
-    ->expect('Modules\*\Controllers')
+    ->expect('Modules\*\Http\Controllers')
     ->classes()
     ->toBeFinal()
     ->toBeReadonly();
@@ -282,7 +282,7 @@ arch('models should not be final')
 
 arch('module models should not be used in form requests')
     ->expect('Modules\*\Models')
-    ->not->toBeUsedIn('Modules\*\Requests');
+    ->not->toBeUsedIn('Modules\*\Http\Requests');
 
 arch('module models should not be used in payloads')
     ->expect('Modules\*\Models')
@@ -295,21 +295,21 @@ arch('module models should not be used in payloads')
 */
 
 arch('module controllers should be invokable')
-    ->expect('Modules\*\Controllers')
+    ->expect('Modules\*\Http\Controllers')
     ->classes()
     ->toBeInvokable();
 
 arch('module controllers should not use Model')
-    ->expect('Modules\*\Controllers')
+    ->expect('Modules\*\Http\Controllers')
     ->classes()
     ->not->toUse(Model::class);
 
 arch('module controllers should have Controller suffix')
-    ->expect('Modules\*\Controllers')
+    ->expect('Modules\*\Http\Controllers')
     ->toHaveSuffix('Controller');
 
 arch('module controllers should only have construct and invoke')
-    ->expect('Modules\*\Controllers')
+    ->expect('Modules\*\Http\Controllers')
     ->classes()
     ->not->toHavePublicMethodsBesides(['__construct', '__invoke']);
 
@@ -348,7 +348,7 @@ arch('module actions should not use abort helpers')
 */
 
 it('module list requests extend PaginationRequest', function (): void {
-    $listRequests = glob(base_path('modules/*/Requests/V1/*ListRequest.php')) ?: [];
+    $listRequests = glob(base_path('modules/*/app/Http/Requests/V1/*ListRequest.php')) ?: [];
 
     expect($listRequests)->not->toBeEmpty();
 
@@ -397,13 +397,13 @@ arch('module payloads should have toArray method')
 */
 
 arch('module requests should extend FormRequest and have rules')
-    ->expect('Modules\*\Requests')
+    ->expect('Modules\*\Http\Requests')
     ->classes()
     ->toExtend(FormRequest::class)
     ->toHaveMethod('rules');
 
 arch('module requests should have Request suffix')
-    ->expect('Modules\*\Requests')
+    ->expect('Modules\*\Http\Requests')
     ->toHaveSuffix('Request');
 
 /*
@@ -413,7 +413,7 @@ arch('module requests should have Request suffix')
 */
 
 arch('module resources should extend JsonResource')
-    ->expect('Modules\*\Resources')
+    ->expect('Modules\*\Http\Resources')
     ->classes()
     ->toExtend(JsonResource::class);
 
@@ -556,7 +556,7 @@ it('module seeders do not call seeders from other modules', function (): void {
     $violations = [];
 
     foreach ($modules as $source) {
-        $seederDirectory = base_path("modules/{$source}/Database/Seeders");
+        $seederDirectory = base_path("modules/{$source}/database/seeders");
 
         if (! is_dir($seederDirectory)) {
             continue;
