@@ -108,6 +108,20 @@ describe('AUTH-03 logout', function (): void {
 
         $this->withToken($token->plainTextToken)->getJson('/api/v1/auth/me')->assertUnauthorized();
     })->group('module:iam', 'smoke');
+
+    it('allows unverified users to revoke their session via logout', function (): void {
+        $user = UserFactory::new()->unverified()->createOne([
+            'email' => 'unverified-logout@example.com',
+            'password' => 'secret-password',
+        ]);
+        $token = $user->createToken('test-device', ['*']);
+
+        $response = $this->withToken($token->plainTextToken)->postJson('/api/v1/auth/logout');
+
+        assertSuccessResponse($response, 204);
+
+        expect(PersonalAccessToken::query()->whereKey($token->accessToken->getKey())->exists())->toBeFalse();
+    })->group('module:iam');
 });
 
 describe('AUTH-04 device management', function (): void {

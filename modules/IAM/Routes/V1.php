@@ -68,9 +68,11 @@ Route::prefix('auth')->name('auth.')->group(function () {
         Route::delete('account', DeleteAccountController::class)
             ->name('account.delete');
 
+        Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');
+
+        Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
+
         Route::middleware('verified')->group(function () {
-            Route::post('logout', LogoutController::class)->middleware('ability:auth:manage')->name('logout');
-            Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
             Route::put('me', UpdateProfileController::class)->name('me.update');
 
             Route::get('social/{provider}/link', SocialLinkController::class)->name('social.link');

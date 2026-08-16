@@ -103,6 +103,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Access Denied / Forbidden (403)
         $exceptions->render(function (AccessDeniedHttpException|InvalidSignatureException|AuthorizationException $e, Request $request): ProblemResponse {
+            /** @var array<string, string|int|array<int, string>|null> $headers */
+            $headers = $e instanceof HttpExceptionInterface ? $e->getHeaders() : [];
+
             return new ProblemResponse(
                 typeKey: 'forbidden',
                 title: __('auth.http_forbidden'),
@@ -111,17 +114,22 @@ return Application::configure(basePath: dirname(__DIR__))
                     $e instanceof InvalidSignatureException => __('auth.invalid_signature'),
                     $e->getMessage() !== '' => $e->getMessage(),
                     default => __('auth.access_denied'),
-                }
+                },
+                headers: $headers,
             );
         });
 
         // Not Found Exception (404)
         $exceptions->render(function (NotFoundHttpException|ModelNotFoundException $e, Request $request): ProblemResponse {
+            /** @var array<string, string|int|array<int, string>|null> $headers */
+            $headers = $e instanceof HttpExceptionInterface ? $e->getHeaders() : [];
+
             return new ProblemResponse(
                 typeKey: 'not_found',
                 title: __('auth.http_not_found'),
                 status: Response::HTTP_NOT_FOUND,
                 detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.not_found_detail'),
+                headers: $headers,
             );
         });
 

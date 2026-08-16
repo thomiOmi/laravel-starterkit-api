@@ -81,6 +81,17 @@ describe('ExceptionHandler', function () {
             expect($response->json('detail'))->toBe(__('auth.invalid_signature'));
         })->group('smoke');
 
+        it('forwards custom headers from access denied exceptions', function () {
+            $response = renderApiException(new AccessDeniedHttpException(
+                'Access denied.',
+                null,
+                0,
+                ['X-Custom-Header' => 'custom-value'],
+            ));
+
+            $response->assertHeader('X-Custom-Header', 'custom-value');
+        })->group('smoke');
+
     });
 
     describe('not found', function () {
@@ -97,6 +108,17 @@ describe('ExceptionHandler', function () {
             $response = renderApiException(new ModelNotFoundException);
 
             assertProblemResponse($response, Response::HTTP_NOT_FOUND, 'resource-not-found');
+        })->group('smoke');
+
+        it('forwards custom headers from not found exceptions', function () {
+            $response = renderApiException(new NotFoundHttpException(
+                'Resource missing.',
+                null,
+                0,
+                ['X-Custom-Header' => 'custom-value'],
+            ));
+
+            $response->assertHeader('X-Custom-Header', 'custom-value');
         })->group('smoke');
 
     });

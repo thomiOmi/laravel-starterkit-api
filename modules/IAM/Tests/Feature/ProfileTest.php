@@ -109,7 +109,11 @@ describe('PROF-02 email change re-verification', function (): void {
 
         $this->putJson('/api/v1/auth/me', ['email' => 'new@example.com'])->assertOk();
 
-        $this->getJson('/api/v1/auth/me')->assertForbidden();
+        $response = $this->getJson('/api/v1/auth/me')->assertOk();
+
+        expect($response->json('data.email_verified_at'))->toBeNull();
+
+        $this->putJson('/api/v1/auth/me', ['name' => 'New Name'])->assertForbidden();
     })->group('module:iam');
 
     it('restores access after verifying the new email via the signed link', function (): void {
