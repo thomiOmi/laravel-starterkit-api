@@ -39,7 +39,7 @@ Target: Complete the core and infrastructure gate sequence (rules coverage, nati
     * Impact: Enforces consistent, reviewable conventions across all modules and reduces friction for contributors and AI-assisted development.
     * Dependencies: P0
 
-* [Planned] P2: Native-First (G4)
+* [Done] P2: Native-First (G4)
     * Description: Audit every customization to prove the native Laravel path still works and document escape hatches.
     * Issue Reference:
     * Impact: Adopters can always fall back to standard Laravel behavior without fighting the kit.
