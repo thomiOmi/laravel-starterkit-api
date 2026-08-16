@@ -80,40 +80,56 @@ describe('module:make command', function () {
             ->toContain('Providers\\\\BlogServiceProvider');
     });
 
-    it('adds a Vite frontend scaffold when the --vue flag is passed', function () {
+    it('generates Vue Inertia pages when the --vue flag is passed', function () {
         artisanCommand($this, 'module:make', ['name' => ['Shop'], '--vue' => true, '--disabled' => true])
             ->expectsOutputToContain('Module [Shop] created successfully.')
             ->assertSuccessful();
 
         $modulePath = base_path('modules/Shop');
 
-        foreach (['package.json', 'vite.config.js', 'resources/js/app.js', 'resources/css/app.css'] as $file) {
-            expect($modulePath.'/'.$file)->toBeFile();
+        foreach (['Index', 'Create', 'Show', 'Edit'] as $page) {
+            expect($modulePath."/resources/js/Pages/{$page}.vue")->toBeFile();
         }
 
-        $vite = file_get_contents($modulePath.'/vite.config.js');
-        expect($vite)->toContain("'build-shop'")
-            ->toContain('resources/js/app.js')
-            ->toContain('resources/css/app.css');
+        $index = file_get_contents($modulePath.'/resources/js/Pages/Index.vue');
+        expect($index)->toContain('@inertiajs/vue3')
+            ->toContain('Shop - Index');
 
-        $package = file_get_contents($modulePath.'/package.json');
-        expect($package)->toContain('laravel-vite-plugin')
-            ->toContain('"vite"');
-
-        $css = file_get_contents($modulePath.'/resources/css/app.css');
-        expect($css)->toContain('Shop module styles');
+        foreach (['package.json', 'vite.config.js', 'resources/css'] as $file) {
+            expect(file_exists($modulePath.'/'.$file))->toBeFalse();
+        }
     });
 
-    it('uses the configured default framework when the --frontend flag is passed', function () {
-        artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--frontend' => true, '--disabled' => true])
+    it('generates Svelte Inertia pages when the --svelte flag is passed', function () {
+        artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--svelte' => true, '--disabled' => true])
             ->expectsOutputToContain('Module [Gadget] created successfully.')
             ->assertSuccessful();
 
         $modulePath = base_path('modules/Gadget');
 
-        foreach (['package.json', 'vite.config.js', 'resources/js/app.js', 'resources/css/app.css'] as $file) {
-            expect($modulePath.'/'.$file)->toBeFile();
+        foreach (['Index', 'Create', 'Show', 'Edit'] as $page) {
+            expect($modulePath."/resources/js/Pages/{$page}.svelte")->toBeFile();
         }
+
+        $index = file_get_contents($modulePath.'/resources/js/Pages/Index.svelte');
+        expect($index)->toContain('@inertiajs/svelte')
+            ->toContain('Gadget - Index');
+    });
+
+    it('generates React Inertia pages when the --react flag is passed', function () {
+        artisanCommand($this, 'module:make', ['name' => ['Fake'], '--react' => true, '--disabled' => true])
+            ->expectsOutputToContain('Module [Fake] created successfully.')
+            ->assertSuccessful();
+
+        $modulePath = base_path('modules/Fake');
+
+        foreach (['Index', 'Create', 'Show', 'Edit'] as $page) {
+            expect($modulePath."/resources/js/Pages/{$page}.jsx")->toBeFile();
+        }
+
+        $index = file_get_contents($modulePath.'/resources/js/Pages/Index.jsx');
+        expect($index)->toContain('@inertiajs/react')
+            ->toContain('Fake - Index');
     });
 
     it('does not generate a frontend scaffold when the --no-frontend flag is passed', function () {
@@ -126,10 +142,5 @@ describe('module:make command', function () {
         foreach (['package.json', 'vite.config.js', 'resources'] as $file) {
             expect(file_exists($modulePath.'/'.$file))->toBeFalse();
         }
-    });
-
-    it('rejects an unsupported frontend stack', function () {
-        expect(fn () => artisanCommand($this, 'module:make', ['name' => ['Fake'], '--react' => true, '--disabled' => true]))
-            ->toThrow(InvalidArgumentException::class, 'Unsupported frontend stack [react]. Supported stacks: vue.');
     });
 });

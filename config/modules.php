@@ -86,26 +86,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Frontend Scaffold
+    | Paths
     |--------------------------------------------------------------------------
     |
-    | Frontend stacks used by module:make --frontend and the framework flags
-    | (--vue, --react, --svelte). Stacks are keyed by framework name matching
-    | the modules.inertia.frontend values; an explicit framework flag wins
-    | over the config default. Each stack lists the stub files that get added
-    | to the generated module; stub files must exist in the stubs path above.
+    | Customise the paths where the folders will be generated.
+    | Setting the generate key to false will not generate that folder.
     |
     */
-    'frontend' => [
-        'stacks' => [
-            'vue' => [
-                'package' => 'package.json',
-                'vite' => 'vite.config.js',
-                'assets/js/app' => 'resources/js/app.js',
-                'assets/css/app' => 'resources/css/app.css',
-            ],
-        ],
-    ],
     'paths' => [
         /*
         |--------------------------------------------------------------------------
