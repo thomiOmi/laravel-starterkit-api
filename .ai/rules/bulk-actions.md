@@ -1,7 +1,7 @@
 ---
 paths:
-  - 'modules/*/Http/Controllers/**'
-  - 'modules/*/Controllers/**'
+  - 'modules/*/app/Http/Controllers/**'
+  - 'modules/*/app/Http/Controllers/**'
   - 'app/Http/Requests/BulkActionRequest.php'
 ---
 

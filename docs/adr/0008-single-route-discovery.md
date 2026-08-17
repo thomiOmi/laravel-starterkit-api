@@ -1,6 +1,6 @@
 # ADR-0008: Single Route Discovery via RouteServiceProvider
 
-- Status: Accepted
+- Status: Superseded by ADR-0029
 - Date: 2026-08-08
 
 ## Context

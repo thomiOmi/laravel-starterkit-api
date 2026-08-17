@@ -4,7 +4,7 @@ Concrete file examples from the `IAM` module. Use these as templates when creati
 
 ## Service Provider
 
-`modules/{Module}/Providers/{Module}ServiceProvider.php`
+`modules/{Module}/app/Providers/{Module}ServiceProvider.php`
 
 ```php
 <?php
@@ -14,30 +14,89 @@ declare(strict_types=1);
 namespace Modules\{Module}\Providers;
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\ServiceProvider;
+use Nwidart\Modules\Support\ModuleServiceProvider;
 
-class {Module}ServiceProvider extends ServiceProvider
+class {Module}ServiceProvider extends ModuleServiceProvider
 {
+    /**
+     * The name of the module.
+     */
+    protected string $name = '{Module}';
+
+    /**
+     * The lowercase version of the module name.
+     */
+    protected string $nameLower = '{lower}';
+
+    /**
+     * Provider classes to register.
+     *
+     * @var string[]
+     */
+    protected array $providers = [
+        RouteServiceProvider::class,
+    ];
+
+    /**
+     * Bootstrap any application services.
+     */
     public function boot(): void
     {
-        $this->configureRoutes();
+        parent::boot();
+
+        Route::aliasMiddleware('active', EnsureUserIsActive::class);
+    }
+}
+```
+
+## Module Route Service Provider
+
+`modules/{Module}/app/Providers/RouteServiceProvider.php` mounts each existing `routes/{Version}.php` on `api/{version}` with name prefix `{version}.{alias}.`:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\{Module}\Providers;
+
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
+
+class RouteServiceProvider extends ServiceProvider
+{
+    protected string $name = '{Module}';
+
+    protected string $nameLower = '{lower}';
+
+    public function map(): void
+    {
+        $this->mapApiRoutes();
     }
 
-    public function register(): void {}
-
-    protected function configureRoutes(): void
+    protected function mapApiRoutes(): void
     {
-        Route::prefix('api/v1')
-            ->middleware('api')
-            ->name('v1.')
-            ->group(base_path('modules/{Module}/Routes/V1.php'));
+        $versions = config()->array('apiroute.supported_versions', ['V1']);
+
+        foreach ($versions as $version) {
+            $routeFile = module_path($this->name, "routes/{$version}.php");
+
+            if (! file_exists($routeFile)) {
+                continue;
+            }
+
+            Route::prefix('api/'.strtolower($version))
+                ->middleware(['api'])
+                ->name(strtolower($version).'.'.$this->nameLower.'.')
+                ->group($routeFile);
+        }
     }
 }
 ```
 
 ## Route
 
-`modules/{Module}/Routes/V1.php`
+`modules/{Module}/routes/V1.php`
 
 ```php
 <?php
@@ -45,11 +104,11 @@ class {Module}ServiceProvider extends ServiceProvider
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Modules\{Module}\Controllers\V1\{Resource}CreateController;
-use Modules\{Module}\Controllers\V1\{Resource}DeleteController;
-use Modules\{Module}\Controllers\V1\{Resource}ListController;
-use Modules\{Module}\Controllers\V1\{Resource}ShowController;
-use Modules\{Module}\Controllers\V1\{Resource}UpdateController;
+use Modules\{Module}\Http\Controllers\V1\{Resource}CreateController;
+use Modules\{Module}\Http\Controllers\V1\{Resource}DeleteController;
+use Modules\{Module}\Http\Controllers\V1\{Resource}ListController;
+use Modules\{Module}\Http\Controllers\V1\{Resource}ShowController;
+use Modules\{Module}\Http\Controllers\V1\{Resource}UpdateController;
 
 Route::prefix('{resources}')
     ->name('{resource}.')
@@ -65,19 +124,19 @@ Route::prefix('{resources}')
 
 ## Controller
 
-`modules/{Module}/Controllers/V1/{Resource}{Action}Controller.php`
+`modules/{Module}/app/Http/Controllers/V1/{Resource}{Action}Controller.php`
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Controllers\V1;
+namespace Modules\{Module}\Http\Controllers\V1;
 
 use App\Http\Responses\SuccessResponse;
 use Modules\{Module}\Actions\{CreateAction};
-use Modules\{Module}\Requests\V1\{Resource}Request;
-use Modules\{Module}\Resources\{Resource}Resource;
+use Modules\{Module}\Http\Requests\V1\{Resource}Request;
+use Modules\{Module}\Http\Resources\{Resource}Resource;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class {Resource}CreateController
@@ -102,7 +161,7 @@ final readonly class {Resource}CreateController
 
 ## Action
 
-`modules/{Module}/Actions/{Action}.php`
+`modules/{Module}/app/Actions/{Action}.php`
 
 ```php
 <?php
@@ -125,7 +184,7 @@ final readonly class Create{Resource}Action
 
 ## Payload
 
-`modules/{Module}/Payloads/V1/{Resource}Payload.php`
+`modules/{Module}/app/Payloads/V1/{Resource}Payload.php`
 
 ```php
 <?php
@@ -134,7 +193,7 @@ declare(strict_types=1);
 
 namespace Modules\{Module}\Payloads\V1;
 
-use Modules\{Module}\Requests\V1\{Resource}Request;
+use Modules\{Module}\Http\Requests\V1\{Resource}Request;
 
 final readonly class {Resource}Payload
 {
@@ -165,14 +224,14 @@ final readonly class {Resource}Payload
 
 ## Request
 
-`modules/{Module}/Requests/V1/{Resource}Request.php`
+`modules/{Module}/app/Http/Requests/V1/{Resource}Request.php`
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Requests\V1;
+namespace Modules\{Module}\Http\Requests\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\{Module}\Payloads\V1\{Resource}Payload;
@@ -205,7 +264,7 @@ final class {Resource}Request extends FormRequest
 
 ## Builder
 
-`modules/{Module}/Builders/{Resource}Builder.php`
+`modules/{Module}/app/Builders/{Resource}Builder.php`
 
 ```php
 <?php
@@ -248,14 +307,14 @@ class {Resource}Builder extends BaseQueryBuilder
 
 ## Resource
 
-`modules/{Module}/Resources/{Resource}Resource.php`
+`modules/{Module}/app/Http/Resources/{Resource}Resource.php`
 
 ```php
 <?php
 
 declare(strict_types=1);
 
-namespace Modules\{Module}\Resources;
+namespace Modules\{Module}\Http\Resources;
 
 use App\Concerns\FormatDate;
 use Illuminate\Http\Request;
@@ -281,7 +340,7 @@ class {Resource}Resource extends JsonResource
 
 ## Model
 
-`modules/{Module}/Models/{Resource}.php`
+`modules/{Module}/app/Models/{Resource}.php`
 
 ```php
 <?php
@@ -308,7 +367,7 @@ class {Resource} extends Model
 
 ## Unit Test
 
-`modules/{Module}/Tests/Unit/Create{Resource}ActionTest.php`
+`modules/{Module}/tests/Unit/Create{Resource}ActionTest.php`
 
 ```php
 <?php
@@ -337,7 +396,7 @@ describe('Create{Resource}Action', function () {
 
 ## Feature Test
 
-`modules/{Module}/Tests/Feature/{Resource}ManagementTest.php`
+`modules/{Module}/tests/Feature/{Resource}ManagementTest.php`
 
 ```php
 <?php

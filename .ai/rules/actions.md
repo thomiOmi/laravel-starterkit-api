@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Actions/**'
+  - 'modules/*/app/Actions/**'
 ---
 
 # Actions
@@ -15,7 +15,7 @@ Single-responsibility business logic: one `final readonly` class performs exactl
 2. Never receive `Request`; controllers extract data and pass it along
 3. No HTTP logic (status codes, redirects, json)
 4. Validation happens in the Request layer, not in actions
-5. Every action has a unit test in `modules/*/Tests/Unit` (Pest, `expect()->toThrow` for exceptions, specific expectations over `toBeTrue()`/`toBeFalse()` wrappers)
+5. Every action has a unit test in `modules/*/tests/Unit` (Pest, `expect()->toThrow` for exceptions, specific expectations over `toBeTrue()`/`toBeFalse()` wrappers)
 6. Business errors via `throw_if`/`throw_unless` + domain exceptions (`InvalidArgumentException` maps to 422, `ModelNotFoundException` to 404 for ownership checks)
 7. Interdependent multi-step writes (2+ writes) must be wrapped in `DB::transaction` or equivalent (`saveOrFail`/`deleteOrFail` for instances, `syncOrFail`/`attachOrFail` for pivots); single-model writes use plain `create`/`update`/`save`/`delete`
 8. No base class/interface for Actions: the structure is a convention enforced by ArchitectureTest, not inheritance; interfaces only for real cross-module polymorphism (see contracts rule)

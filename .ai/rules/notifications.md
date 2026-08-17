@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Notifications/**'
+  - 'modules/*/app/Notifications/**'
   - 'app/Notifications/**'
 ---
 

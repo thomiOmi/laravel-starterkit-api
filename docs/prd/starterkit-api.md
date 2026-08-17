@@ -71,7 +71,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 
 | ID | Requirement | Status |
 |----|-------------|--------|
-| ORG-01 | Modules activate via a Fortify-style allow-list (`config/modules.php`), no env toggle; unlisted modules are fully inert | Done (ADR-0024) |
+| ORG-01 | Modules activate via a Fortify-style allow-list (`modules_statuses.json`), no env toggle; non-enabled modules are fully inert | Done (ADR-0024, ADR-0029) |
 | ORG-02 | Multi-tenancy ships as the opt-in `Organization` module wrapping stancl/tenancy ^3.10, disabled by default | Done (ADR-0023) |
 | ORG-03 | Single-database tenancy: tenant data scoped by `tenant_id` columns; no per-tenant databases | Done (design) - scoping contract in later phase |
 | ORG-04 | Users stay global; organizations (tenants) and membership are Organization-module concerns | Done (design, ADR-0025) |
@@ -112,8 +112,8 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 
 ## Architecture Overview
 
-- **Modules**: `modules/` registry with Fortify-style allow-list (`config/modules.php`, ADR-0024). `IAM` (core) + `Media` (first feature module) ship enabled; `Organization` (tenancy) ships disabled. Modules communicate through contracts (`App\Contracts\Identity`), never direct imports (ADR-0004, ADR-0005).
-- **Routing**: single discovery via `RouteServiceProvider`; names `v1.{module}.{name}` (ADR-0008).
+- **Modules**: nWidart/laravel-modules; activation via `modules_statuses.json` (FileActivator, `module:enable`/`disable`, ADR-0024, ADR-0029). `IAM` (core) + `Media` (first feature module) ship enabled; `Organization` (tenancy) ships disabled. Modules communicate through contracts (`App\Contracts\Identity`), never direct imports (ADR-0004, ADR-0005).
+- **Routing**: per-module `RouteServiceProvider` loads `routes/V1.php` with prefix `api/v1`; names `v1.{module}.{name}` (ADR-0029).
 - **Controllers**: plain `abstract readonly Controller` base; invokable `final readonly` controllers (ADR-0009).
 - **Responses**: `SuccessResponse` / `ProblemResponse` (RFC 9457), no `success` boolean.
 - **Testing**: Pest 5, `describe()`/`it()`, typed helpers in `tests/Helpers.php`, module groups `module:{name}` — see [docs/testing.md](../testing.md).
@@ -132,7 +132,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 
 - Full test suite green serial + parallel, `composer ci:check` pass (coverage/mutation/type-coverage gates temporarily suspended)
 - Architecture test suite (46/46) is the single source of truth for conventions; changes require human approval
-- New project can scaffold a module (`make:module`) and extend IAM patterns without fighting infrastructure
+- New project can scaffold a module (`module:make`) and extend IAM patterns without fighting infrastructure
 
 ## Document Relations
 

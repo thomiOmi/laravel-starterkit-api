@@ -1,8 +1,6 @@
 ---
 paths:
-  - 'modules/*/Providers/**'
-  - 'app/Providers/ModuleServiceProvider.php'
-  - 'app/Providers/ModuleLoaderServiceProvider.php'
+  - 'modules/*/app/Providers/**'
   - 'app/Providers/AppServiceProvider.php'
   - 'app/Providers/RouteServiceProvider.php'
 ---
@@ -11,20 +9,19 @@ paths:
 
 ## Goal
 
-`modules/{Module}/Providers/{Module}ServiceProvider.php` wires the module into the framework. Every module provider extends the abstract base `ModuleServiceProvider` (`app/Providers/`); the orchestrator `ModuleLoaderServiceProvider` (app) loads providers of ACTIVE modules from the central registry `config/modules.php`. `app/Providers` also hosts framework wiring only (`AppServiceProvider` for env-driven defaults, `RouteServiceProvider` for web routes); module behavior never lives in app providers.
+`modules/{Module}/app/Providers/{Module}ServiceProvider.php` wires the module into the framework. Every module provider extends `Nwidart\Modules\Support\ModuleServiceProvider` (auto-discovered by nwidart via `module.json` + `modules_statuses.json`); the nwidart base merges `config/config.php`, loads `database/migrations` and `database/factories`, and registers the module's providers from the `$providers` array (e.g. `RouteServiceProvider`). `app/Providers` hosts framework wiring only (`AppServiceProvider` for env-driven defaults, `RouteServiceProvider` for web routes); module behavior never lives in app providers.
 
 ## Rules
 
-1. The base class provides loading boilerplate: merges `Config/{alias}.php`, merges `features` from the registry, loads migrations, loads routes `Routes/V1.php`, loads translations `Lang/`, registers commands `Console/Commands` (no `withCommands` in `bootstrap/app.php`; module commands are registered by the base provider)
-2. Module providers are declaration-only: `moduleName()` (abstract) and the `bootModule()` hook for middleware aliases, Pennant features, bindings (policies via `#[UsePolicy]` on models)
-3. `register()`/`boot()` on the base are `final`; the loading order cannot be reordered by subclasses
-4. Module activation only through the central registry (allow-list); an unregistered module = its provider is never booted. The base also guards `isModuleActive()` = `config()->boolean("modules.modules.{alias}.active", false)`, so a non-active module's provider stays inert even if registered manually. `mergeModuleFeatures()` publishes the registry `features` into `config("{alias}.features")`.
-5. No hidden registration; middleware aliases are explicit, not magic discovery
-6. The module alias is derived from `moduleName()` via `Str::snake()` (`'Media'` to `'media'`); the alias is used for config keys (`config('media.*')`), the `Config/{alias}.php` merge, and the route prefix (`api/v1/{module}`, see routes rule)
-7. `OrganizationServiceProvider` is the exception: it extends stancl `TenancyServiceProvider` (not the base) because tenancy is opt-in via its own provider lifecycle
+1. The nwidart base class provides loading boilerplate: merges `config/{Module}.php`, loads `database/migrations` and `database/factories`, registers the module's providers (`EventServiceProvider`, `RouteServiceProvider`) from the generated provider list
+2. Module providers are declaration-only: `$this->loadMigrationsFrom()`, `boot()` hook for middleware aliases, Pennant features, bindings (policies via `#[UsePolicy]` on models)
+3. Module activation is managed by nwidart (FileActivator + `modules_statuses.json`); a disabled module's provider is never booted
+4. No hidden registration; middleware aliases are explicit, not magic discovery
+5. The module alias is the lowercase module name (nwidart convention); used for config keys (`config('iam.*')`), the `config/{Module}.php` merge, and the route name prefix (see routes rule)
+6. `OrganizationServiceProvider` is the exception: it extends stancl `TenancyServiceProvider` (not the nwidart base) because tenancy is opt-in via its own provider lifecycle
 
 ## Forbidden
 
-- No module provider extending `ServiceProvider` directly (must extend base `ModuleServiceProvider`)
-- No provider registering routes outside `Routes/`
+- No module provider extending `Illuminate\Support\ServiceProvider` directly (must extend `Nwidart\Modules\Support\ModuleServiceProvider`)
+- No provider registering routes outside the module's `routes/` directory (routes load via the module's own `RouteServiceProvider`)
 - No `env()` in providers

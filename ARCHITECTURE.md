@@ -12,23 +12,23 @@ Struktur folder modul mencerminkan struktur `app/` bawaan Laravel, termasuk fold
 
 ### 1.2 Aktivasi via config, tanpa env (config-driven activation)
 
-Kapabilitas diaktifkan dengan mendaftarkannya pada array di config, bukan environment variable. `config/modules.php` adalah central registry: satu-satunya tempat me-manage modul (aktif/non-aktif) dan toggle feature-nya. Sumber inspirasi: Laravel Fortify (`features` array di `config/fortify.php`), Nuxt Layers (file config sebagai penanda layer). Central registry adalah allow-list: modul yang tidak terdaftar sepenuhnya inert, tanpa auto-discovery.
+Kapabilitas diaktifkan lewat status operasional, bukan environment variable. Aktivasi modul dikelola `nwidart/laravel-modules` (FileActivator): status live di `modules_statuses.json` (mis. `{"iam": true}`), dan modul hanya di-boot saat entry-nya `true`. Tidak ada auto-discovery tanpa status; modul yang tidak aktif sepenuhnya inert. Sumber inspirasi: nWidart/laravel-modules (keputusan ini merekam ADR-0029).
 
 ### 1.3 Actions single-responsibility, di-wire oleh provider
 
-Logika bisnis adalah kelas action yang melakukan satu operasi bisnis. Service provider bertugas me-wire: mendaftarkan config, action, dan routes ke framework. Setiap modul punya satu provider (`modules/{Module}/Providers/{Module}ServiceProvider.php`) yang extends base abstract `ModuleServiceProvider` (`app/Providers/`); orchestrator `ModuleLoaderServiceProvider` me-load provider modul AKTIF dari central registry. Sumber inspirasi: Laravel Fortify (`app/Actions/Fortify/CreateNewUser.php`), nWidart/laravel-modules (service provider per modul).
+Logika bisnis adalah kelas action yang melakukan satu operasi bisnis. Service provider bertugas me-wire: mendaftarkan config, action, dan routes ke framework. Setiap modul punya satu provider (`modules/{Module}/app/Providers/{Module}ServiceProvider.php`) yang extends base `Nwidart\Modules\Support\ModuleServiceProvider`; nWidart yang me-load provider modul AKTIF. Sumber inspirasi: Laravel Fortify (`app/Actions/Fortify/CreateNewUser.php`), nWidart/laravel-modules (service provider per modul).
 
 ### 1.4 Modul self-contained
 
-Migrations, factories, seeders, routes, request, resource, dan tests hidup di dalam modul. Modul bisa dipindah, dihapus, atau diaktifkan tanpa menyentuh file di luar modul (kecuali central registry `config/modules.php`). Sumber inspirasi: nWidart/laravel-modules.
+Migrations, factories, seeders, routes, request, resource, dan tests hidup di dalam modul. Modul bisa dipindah, dihapus, atau diaktifkan tanpa menyentuh file di luar modul (kecuali status aktivasi di `modules_statuses.json`). Sumber inspirasi: nWidart/laravel-modules.
 
 ### 1.5 Shared vocabulary terpisah di app
 
 Kontrak yang dipakai lintas modul (interface, enum shared, response contract) tinggal di `app/`. Modul tidak saling import langsung; komunikasi lewat kontrak. Sumber inspirasi: `shared/` di Nuxt Layers.
 
-### 1.6 Tanpa overhead per modul
+### 1.6 Metadata modul minimal
 
-Deviasi sadar dari nWidart/laravel-modules: modul TIDAK punya `composer.json`, `module.json`, `resources/assets`, atau `vite.config.js` sendiri. Satu repo, satu dependency graph, satu build. Filosofi: production-ready, not overengineered.
+Setiap modul membawa metadata nWidart: `composer.json` + `module.json` (deviasi dari Laravel app skeleton). Satu repo, satu dependency graph, satu build; modul TIDAK punya `resources/assets` atau `vite.config.js` sendiri. Filosofi: production-ready, not overengineered.
 
 ### 1.7 Native-first escape hatch
 
@@ -44,7 +44,7 @@ project/
 │   ├── Builders/                # BaseQueryBuilder (filter/sort/search/include whitelist)
 │   ├── Concerns/                # Trait shared (HasDefaultBehavior, FormatDate, dll.)
 │   ├── Console/
-│   │   └── Commands/            # Artisan command global (make:module, security:check)
+│   │   └── Commands/            # Artisan command global (security:check, dll.)
 │   ├── Contracts/               # Interface lintas modul (Identity)
 │   ├── Enums/                   # Enum shared vocab lintas modul (RoleEnum, PermissionEnum)
 │   ├── Events/                  # Event shared lintas modul (module A dispatch, module B listen)
@@ -58,50 +58,52 @@ project/
 │   ├── Models/                  # Model shared (Sanctum PersonalAccessToken)
 │   ├── Notifications/           # Notifikasi shared (VerifyEmail, ResetPassword)
 │   ├── Payloads/                # DTO shared (IdempotencyPayload)
-│   ├── Providers/               # AppServiceProvider, ModuleLoaderServiceProvider,
-│   │                           # ModuleServiceProvider (base abstract), RouteServiceProvider
+│   ├── Providers/               # AppServiceProvider, RouteServiceProvider
 │   └── Support/                 # Util teknis global (ProductionSecurityCheck)
-├── config/                      # Config global (modules.php = central registry modul)
+├── config/                      # Config global (modules.php = config nWidart)
 ├── database/
 │   ├── factories/               # Factory shared
 │   ├── migrations/              # Migration shared
 │   └── seeders/                 # Seeder shared
 ├── modules/
 │   └── {Module}/                # Satu modul (folder TitleCase, alias lowercase)
-│       ├── Http/                # Mirror app/Http: semua layer HTTP di sini
-│       │   ├── Controllers/     # V1/, V2/ untuk API versioning (invokable single-action)
-│       │   ├── Middleware/      # Middleware module-specific
-│       │   ├── Requests/        # V1/ (FormRequest validation)
-│       │   └── Resources/       # API resource transformer
-│       ├── Console/
-│       │   └── Commands/        # Artisan command module-specific
-│       ├── Exceptions/          # Exception class module-specific
-│       ├── Features/            # Pennant class-based feature module-specific (runtime flag)
-│       ├── Jobs/                # Queue job module-specific
-│       ├── Mail/                # Mail module-specific
-│       ├── Rules/               # Custom validation rule module-specific
-│       ├── Events/              # Event module-specific
-│       ├── Listeners/           # Listener module-specific
-│       ├── Lang/                # {locale}/ (translasi modul, dimuat saat aktif)
-│       ├── Models/              # Model Eloquent modul
-│       ├── Observers/           # Observer model (didaftarkan #[ObservedBy])
-│       ├── Policies/            # Policy authorization modul (didaftarkan #[UsePolicy])
-│       ├── Scopes/              # Global scope (didaftarkan #[ScopedBy])
-│       ├── Providers/           # (wajib) {Module}ServiceProvider extends ModuleServiceProvider (base)
-│       ├── Notifications/       # Notifikasi module-specific
-│       ├── Actions/             # Kit-specific: satu operasi bisnis, final readonly, handle()
-│       ├── Builders/            # Kit-specific: query builder, extends BaseQueryBuilder
-│       ├── Services/            # Kit-specific: logika lintas use-case
-│       ├── Payloads/            # Kit-specific: DTO input action
-│       ├── Support/             # Kit-specific: util teknis murni
-│       ├── Contracts/           # Kit-specific: kontrak module-specific
-│       ├── Enums/               # Kit-specific: enum module-specific
-│       ├── Config/              # Kit-specific: {alias}.php (di-merge base provider)
-│       ├── Routes/              # (wajib) V1.php, V2.php (dimuat base provider)
-│       ├── Database/            # Kit-specific: Migrations, Factories, Seeders
-│       └── Tests/               # (wajib) Feature dan unit test modul
+│       ├── app/                 # Mirror skeleton app/ Laravel
+│       │   ├── Http/            # Mirror app/Http: semua layer HTTP di sini
+│       │   │   ├── Controllers/ # V1/, V2/ untuk API versioning (invokable single-action)
+│       │   │   ├── Middleware/  # Middleware module-specific
+│       │   │   ├── Requests/    # V1/ (FormRequest validation)
+│       │   │   └── Resources/   # API resource transformer
+│       │   ├── Console/
+│       │   │   └── Commands/    # Artisan command module-specific
+│       │   ├── Exceptions/      # Exception class module-specific
+│       │   ├── Features/        # Pennant class-based feature module-specific (runtime flag)
+│       │   ├── Jobs/            # Queue job module-specific
+│       │   ├── Mail/            # Mail module-specific
+│       │   ├── Rules/           # Custom validation rule module-specific
+│       │   ├── Events/          # Event module-specific
+│       │   ├── Listeners/       # Listener module-specific
+│       │   ├── Lang/            # {locale}/ (translasi modul, dimuat saat aktif)
+│       │   ├── Models/          # Model Eloquent modul
+│       │   ├── Observers/       # Observer model (didaftarkan #[ObservedBy])
+│       │   ├── Policies/        # Policy authorization modul (didaftarkan #[UsePolicy])
+│       │   ├── Scopes/          # Global scope (didaftarkan #[ScopedBy])
+│       │   ├── Providers/       # (wajib) {Module}ServiceProvider extends nWidart base + RouteServiceProvider
+│       │   ├── Notifications/   # Notifikasi module-specific
+│       │   ├── Actions/         # Kit-specific: satu operasi bisnis, final readonly, handle()
+│       │   ├── Builders/        # Kit-specific: query builder, extends BaseQueryBuilder
+│       │   ├── Services/        # Kit-specific: logika lintas use-case
+│       │   ├── Payloads/        # Kit-specific: DTO input action
+│       │   ├── Support/         # Kit-specific: util teknis murni
+│       │   ├── Contracts/       # Kit-specific: kontrak module-specific
+│       │   └── Enums/           # Kit-specific: enum module-specific
+│       ├── config/              # Kit-specific: config.php (di-merge nWidart base provider)
+│       ├── database/            # Kit-specific: migrations, factories, seeders (lowercase)
+│       ├── routes/              # (wajib) V1.php, V2.php (dimuat RouteServiceProvider modul)
+│       ├── tests/               # (wajib) Feature dan unit test modul (lowercase)
+│       ├── composer.json        # Metadata package modul (nWidart)
+│       └── module.json          # Manifest modul nWidart (name, priority, providers)
 ├── routes/
-│   ├── api.php                  # Reserved; routes API didaftarkan modul (Routes/V1.php)
+│   ├── api.php                  # Reserved; routes API didaftarkan modul (routes/V1.php)
 │   ├── console.php              # Route console
 │   └── web.php                  # Route web
 └── tests/                       # Test app global
@@ -111,7 +113,7 @@ project/
     └── Helpers.php              # Seam akses model modul (bukan import langsung)
 ```
 
-Prinsip mirror (1.1): `modules/{Module}/` adalah mirror skeleton `app/` bawaan Laravel; folder kontainer `Http/` dan `Console/` menampung layer HTTP/CLI persis seperti `app/Http` dan `app/Console`. Folder wajib pada modul AKTIF hanya 3: `Providers`, `Routes`, `Tests`; sisanya optional dan dibuat saat dibutuhkan. Layer kit-specific tanpa padanan di skeleton: Actions, Services, Payloads, Builders, Features, Config, Routes, Database, Tests, Lang. `app/Http/Responses` adalah kontrak global dan tidak dimirror ke modul.
+Prinsip mirror (1.1): `modules/{Module}/app/` adalah mirror skeleton `app/` bawaan Laravel; folder kontainer `Http/` dan `Console/` menampung layer HTTP/CLI persis seperti `app/Http` dan `app/Console`. Folder wajib pada modul AKTIF: `app/Providers`, `routes`, `tests`; sisanya optional dan dibuat saat dibutuhkan. Layer kit-specific tanpa padanan di skeleton: Actions, Services, Payloads, Builders, Features, Config, Routes, Database, Tests, Lang. `app/Http/Responses` adalah kontrak global dan tidak dimirror ke modul.
 
 ### 2.2 Folder matrix
 
@@ -119,56 +121,54 @@ Folder required (wajib ada pada modul AKTIF):
 
 | Folder | Isi |
 |---|---|
-| Providers | {Module}ServiceProvider extends base ModuleServiceProvider |
-| Routes | File route (V1.php) |
-| Tests | Feature dan unit test |
+| app/Providers | {Module}ServiceProvider extends nWidart base ModuleServiceProvider + RouteServiceProvider |
+| routes | File route (V1.php) |
+| tests | Feature dan unit test |
 
 Folder optional (hanya dibuat jika berisi minimal 1 file, dilarang folder kosong):
 
 | Folder | Isi |
 |---|---|
-| Http | Controllers, Middleware, Requests, Resources (mirror app/Http) |
-| Console | Commands (mirror app/Console) |
-| Exceptions | Exception class module-specific |
-| Features | Pennant class-based feature (runtime flag) |
-| Jobs | Queue job module-specific |
-| Mail | Mail module-specific |
-| Rules | Custom validation rule module-specific |
-| Events | Event module-specific |
-| Listeners | Listener module-specific |
-| Lang | Translasi modul ({locale}/) |
-| Models | Model Eloquent |
-| Observers | Observer model (via #[ObservedBy]) |
-| Policies | Policy authorization (via #[UsePolicy]) |
-| Scopes | Global scope (via #[ScopedBy]) |
-| Notifications | Notifikasi module-specific |
-| Actions | Logika bisnis, satu operasi per kelas |
-| Builders | Query builder (extends BaseQueryBuilder) |
-| Services | Logika lintas use-case |
-| Payloads | DTO input action |
-| Support | Util teknis murni |
-| Contracts | Kontrak module-specific |
-| Enums | Enum module-specific |
-| Config | {alias}.php (di-merge base provider) |
-| Database | Migrations, Factories, Seeders |
+| app/Http | Controllers, Middleware, Requests, Resources (mirror app/Http) |
+| app/Console | Commands (mirror app/Console) |
+| app/Exceptions | Exception class module-specific |
+| app/Features | Pennant class-based feature (runtime flag) |
+| app/Jobs | Queue job module-specific |
+| app/Mail | Mail module-specific |
+| app/Rules | Custom validation rule module-specific |
+| app/Events | Event module-specific |
+| app/Listeners | Listener module-specific |
+| app/Lang | Translasi modul ({locale}/) |
+| app/Models | Model Eloquent |
+| app/Observers | Observer model (via #[ObservedBy]) |
+| app/Policies | Policy authorization (via #[UsePolicy]) |
+| app/Scopes | Global scope (via #[ScopedBy]) |
+| app/Notifications | Notifikasi module-specific |
+| app/Actions | Logika bisnis, satu operasi per kelas |
+| app/Builders | Query builder (extends BaseQueryBuilder) |
+| app/Services | Logika lintas use-case |
+| app/Payloads | DTO input action |
+| app/Support | Util teknis murni |
+| app/Contracts | Kontrak module-specific |
+| app/Enums | Enum module-specific |
+| config | config.php (di-merge nWidart base provider) |
+| database | migrations, factories, seeders (lowercase) |
 
-Modul non-aktif (tidak terdaftar aktif di central registry) minimal berisi `Providers`, `Tests`. Contoh: Organization. Sisa struktur muncul saat modul diaktifkan.
+Modul non-aktif (tidak enabled di `modules_statuses.json`) minimal berisi `app/Providers`, `tests`. Contoh: Organization. Sisa struktur muncul saat modul diaktifkan.
 
 ### 2.3 Sumber inspirasi dan deviasi
 
 | Aspek | Nuxt Layers | Laravel Fortify | nWidart/laravel-modules | Keputusan kit |
 |---|---|---|---|---|
-| Struktur modul | Mirror app standar | Paket terstruktur | app/ + resources + vite | Mirror app/ (Http/ kontainer) |
-| Aktivasi | Config layer | Config features array | module.json + auto-discovery | Central registry config/modules.php (allow-list) |
-| Metadata modul | nuxt.config | - | module.json di dalam modul | Central registry (active, features) |
-| Feature toggle | - | features array | - | Registry (build-time) + Pennant class (runtime) |
+| Struktur modul | Mirror app standar | Paket terstruktur | app/ + resources + vite | Mirror app/ (Http/ kontainer), root lowercase |
+| Aktivasi | Config layer | Config features array | module.json + FileActivator | Status live modules_statuses.json (ADR-0029) |
+| Metadata modul | nuxt.config | - | module.json di dalam modul | module.json + composer.json di dalam modul |
+| Feature toggle | - | features array | - | Config modul (build-time) + Pennant class (runtime) |
 | Logika bisnis | Composables/utils | Actions | Service classes | Actions + Services |
 | Resource DB | - | Migrations via publish | Migrations/factories/seeders di modul | Di dalam modul |
-| Overhead per modul | nuxt.config | composer package | composer.json + module.json | Tidak ada |
+| Overhead per modul | nuxt.config | composer package | composer.json + module.json | module.json + composer.json |
 | Shared code | shared/ | Vendor namespace | Modules namespace | app/ (shared vocabulary) |
 | Repositories | - | - | Repositories layer | TIDAK dipakai (Eloquent adalah repository) |
-
-Catatan keputusan: flag `--repository` dihapus dari generator (Eloquent adalah repository); `--event` dipertahankan (`Events/` optional, dibuat saat dibutuhkan). Eksekusi saat implementasi generator.
 
 ## 3. Tanggung Jawab Layer
 
@@ -183,7 +183,7 @@ Aturan:
 2. TIDAK menerima `Request`; controller mengekstrak data dan meneruskannya
 3. TIDAK menulis logika HTTP (status code, redirect, json)
 4. Validasi terjadi di Request layer, bukan di action
-5. Setiap action punya unit test di `modules/*/Tests/Unit`
+5. Setiap action punya unit test di `modules/*/tests/Unit`
 6. Error bisnis via `throw_if`/`throw_unless` + exception domain (`InvalidArgumentException` dipetakan ke 422, `ModelNotFoundException` ke 404 untuk ownership check)
 7. Write multi-langkah yang saling terkait (2+ write) wajib dibungkus `DB::transaction` atau setara (`saveOrFail`/`deleteOrFail` untuk instance, `syncOrFail`/`attachOrFail` dst untuk pivot); single-model write pakai `create`/`update`/`save`/`delete` biasa
 8. TIDAK ada base class/interface untuk Action: struktur (`final readonly`, `handle()`) adalah konvensi yang di-enforce ArchitectureTest, bukan inheritance (prinsip 1.6 tanpa overhead per modul); interface hanya bila butuh polimorfisme lintas modul nyata (lihat 3.14)
@@ -209,7 +209,7 @@ final readonly class CreateUserAction
 
 ### 3.2 Controllers
 
-Definisi: kelas `final readonly` invokable single-action di `modules/{Module}/Http/Controllers/V1/`. Hanya menangani urusan HTTP: parse request, panggil action, kembalikan response.
+Definisi: kelas `final readonly` invokable single-action di `modules/{Module}/app/Http/Controllers/V1/`. Hanya menangani urusan HTTP: parse request, panggil action, kembalikan response.
 
 Aturan:
 1. `final readonly`, extend base `Controller`, satu method `__invoke(Request|FormRequest $request): SuccessResponse`; parameter boleh type-hint FormRequest subclass (contoh: `RegisterController`); error tidak dikembalikan controller, tapi dilempar sebagai exception yang dipetakan handler ke `ProblemResponse` (3.23)
@@ -242,7 +242,7 @@ final readonly class RegisterController extends Controller
 
 ### 3.3 Models
 
-Definisi: model Eloquent di `modules/{Module}/Models/`. Data access milik modul.
+Definisi: model Eloquent di `modules/{Module}/app/Models/`. Data access milik modul.
 
 Aturan:
 1. ULID primary key via `HasDefaultBehavior` (HasUlids + serializeDate Y-m-d H:i:s)
@@ -333,7 +333,7 @@ Larangan:
 
 ### 3.8 Requests
 
-Definisi: FormRequest per endpoint di `modules/{Module}/Http/Requests/V1/`. Request lintas modul (pagination, bulk action) hidup di `app/Http/Requests/` (shared).
+Definisi: FormRequest per endpoint di `modules/{Module}/app/Http/Requests/V1/`. Request lintas modul (pagination, bulk action) hidup di `app/Http/Requests/` (shared).
 
 Aturan:
 1. Satu FormRequest per endpoint/aksi; pengecualian hanya request shared di `app/Http/Requests/` (`PaginationRequest`, `BulkActionRequest`) yang dipakai lintas endpoint
@@ -349,7 +349,7 @@ Larangan:
 
 ### 3.9 Resources
 
-Definisi: API resource transformer di `modules/{Module}/Http/Resources/`.
+Definisi: API resource transformer di `modules/{Module}/app/Http/Resources/`.
 
 Aturan:
 1. `extends JsonResource`, envelope kontrak via SuccessResponse
@@ -375,24 +375,23 @@ Larangan:
 
 ### 3.11 Providers
 
-Definisi: `modules/{Module}/Providers/{Module}ServiceProvider.php` yang me-wire modul ke framework. Setiap provider modul extends base abstract `ModuleServiceProvider` (`app/Providers/`); orchestrator `ModuleLoaderServiceProvider` (app) yang me-load provider modul AKTIF dari central registry `config/modules.php`.
+Definisi: `modules/{Module}/app/Providers/{Module}ServiceProvider.php` yang me-wire modul ke framework. Setiap provider modul extends base `Nwidart\Modules\Support\ModuleServiceProvider`; nWidart me-load provider modul AKTIF dari `module.json` + status di `modules_statuses.json`.
 
 Aturan:
-1. Base class menyediakan boilerplate loading: merge `Config/{alias}.php`, merge `features` dari registry, load migrations, load routes `Routes/V1.php`, load translations `Lang/`, register commands `Console/Commands` (tidak ada `withCommands` di `bootstrap/app.php`; command modul didaftarkan base provider)
-2. Provider modul hanya deklarasi: `moduleName()` (abstract) dan hook `bootModule()` untuk middleware alias, Pennant features, binding (policy via `#[UsePolicy]` di model)
-3. `register()`/`boot()` base bersifat `final`; urutan loading tidak bisa diacak subclass
-4. Aktivasi modul hanya lewat central registry (allow-list); modul tidak terdaftar = provider tidak pernah di-boot
-5. Tanpa registrasi tersembunyi; middleware alias didaftarkan eksplisit, bukan magic discovery
-6. Alias modul diturunkan dari `moduleName()` via `Str::snake()` (`'Media'` ke `'media'`); alias dipakai untuk key config (`config('media.*')`), merge `Config/{alias}.php`, dan route prefix (`api/v1/{module}`, 3.18)
+1. Base nWidart menyediakan boilerplate loading: merge `config/config.php`, load `database/migrations` + `database/factories`, register provider dari array `$providers` (EventServiceProvider, RouteServiceProvider)
+2. Provider modul hanya deklarasi: `$name`, `$nameLower`, array `$providers`, dan hook `boot()` untuk middleware alias, Pennant features, binding (policy via `#[UsePolicy]` di model)
+3. Aktivasi modul via FileActivator (status live di `modules_statuses.json`); modul non-enabled = provider tidak pernah di-boot
+4. Tanpa registrasi tersembunyi; middleware alias didaftarkan eksplisit, bukan magic discovery
+5. Alias modul = lowercase nama modul (`'Media'` ke `'media'`); alias dipakai untuk key config (`config('media.*')`) dan route name prefix (`v1.media.`, 3.18)
 
 Larangan:
-- Dilarang provider modul extends `ServiceProvider` langsung (harus base `ModuleServiceProvider`)
-- Dilarang provider mendaftarkan routes di luar `Routes/`
+- Dilarang provider modul extends `Illuminate\Support\ServiceProvider` langsung (harus nWidart base `ModuleServiceProvider`)
+- Dilarang provider mendaftarkan routes di luar `routes/` modul (route dimuat RouteServiceProvider modul sendiri)
 - Dilarang env() di provider
 
 ### 3.12 Middleware
 
-Definisi: middleware module-specific di `modules/{Module}/Http/Middleware/`; middleware global di `app/Http/Middleware/`.
+Definisi: middleware module-specific di `modules/{Module}/app/Http/Middleware/`; middleware global di `app/Http/Middleware/`.
 
 Aturan:
 1. Middleware yang hanya dipakai route modul tertentu tinggal di modul
@@ -405,7 +404,7 @@ Larangan:
 
 ### 3.13 Enums
 
-Definisi: enum khusus modul di `modules/{Module}/Enums/`; enum shared vocab (dipakai 2+ modul) di `app/Enums/`.
+Definisi: enum khusus modul di `modules/{Module}/app/Enums/`; enum shared vocab (dipakai 2+ modul) di `app/Enums/`.
 
 Aturan:
 1. 1 call-site modul saja: di modul. 2+ modul: di app
@@ -418,7 +417,7 @@ Larangan:
 
 ### 3.14 Contracts
 
-Definisi: kontrak modul di `modules/{Module}/Contracts/`; kontrak lintas modul (shared vocabulary) di `app/Contracts/`.
+Definisi: kontrak modul di `modules/{Module}/app/Contracts/`; kontrak lintas modul (shared vocabulary) di `app/Contracts/`.
 
 Aturan:
 1. Modul berkomunikasi lewat kontrak atau public API seam, bukan import kelas internal modul lain
@@ -433,7 +432,7 @@ Mekanisme komunikasi antar modul (4 jalur, dari yang paling disukai):
 1. Shared vocabulary di `app/`: enum shared, contract, shared request, response contract dipakai 2+ modul tanpa import lintas modul
 2. Public API seam: model + contract modul lain boleh diimport langsung - data + relasi Eloquent (contoh: `Media::uploadedBy()` import `Modules\IAM\Models\User`), otorisasi (`MediaPolicy` type-hint `User` + `App\Enums\PermissionEnum`), seeder (`MediaSeeder` firstOrCreate `Role`/`Permission` IAM)
 3. Kontrak untuk perilaku lintas modul: interface di `app/Contracts/` yang diimplementasikan modul pemilik dan di-binding provider (contoh: `Identity` mengabstraksi actor auth)
-4. Event pub/sub untuk decoupling longgar: shared event class di `app/Events/` (module A dispatch), listener di modul pendengar didaftarkan eksplisit di `bootModule()` (3.21); listener global di `app/Listeners` ter-auto-discovery
+4. Event pub/sub untuk decoupling longgar: shared event class di `app/Events/` (module A dispatch), listener di modul pendengar didaftarkan eksplisit di `boot()` (3.21); listener global di `app/Listeners` ter-auto-discovery
 
 Kapan model langsung vs interface:
 
@@ -445,7 +444,7 @@ Rule of thumb base class/interface per layer: hanya jika (1) ada logika yang die
 
 ### 3.15 Config
 
-Definisi: config global di `config/`; config modul di `modules/{Module}/Config/{alias}.php` (alias lowercase dari central registry, bukan nama folder TitleCase).
+Definisi: config global di `config/`; config modul di `modules/{Module}/config/config.php` (di-merge nWidart menggunakan nama modul TitleCase, diakses via alias lowercase `config('iam.*')`).
 
 Aturan:
 1. Config modul di-merge provider saat modul aktif
@@ -458,7 +457,7 @@ Larangan:
 
 ### 3.16 Notifications
 
-Definisi: notifikasi di `app/Notifications/` (global) atau `modules/{Module}/Notifications/` (module-specific).
+Definisi: notifikasi di `app/Notifications/` (global) atau `modules/{Module}/app/Notifications/` (module-specific).
 
 Aturan:
 1. Queue-able, via `ShouldQueue`
@@ -469,32 +468,32 @@ Larangan:
 
 ### 3.17 Commands
 
-Definisi: Artisan command di `app/Console/Commands/` (global) atau `modules/{Module}/Console/Commands/` (module-specific).
+Definisi: Artisan command di `app/Console/Commands/` (global) atau `modules/{Module}/app/Console/Commands/` (module-specific).
 
 Aturan:
 1. PHP 8 attributes: `#[Signature]`, `#[Description]`, `#[Help]`, `#[Usage]`
 2. `handle(): int` dengan exit code
-3. Command modul didaftarkan base `ModuleServiceProvider` saat modul aktif (tidak ada `withCommands` di `bootstrap/app.php`); command global di `app/Console/Commands` ter-auto-discovery
+3. Command modul didaftarkan base nWidart `ModuleServiceProvider` saat modul aktif (tidak ada `withCommands` di `bootstrap/app.php`); command global di `app/Console/Commands` ter-auto-discovery
 
 Larangan:
 - Dilarang command tanpa attributes signature
 
 ### 3.18 Routes
 
-Definisi: route file modul di `modules/{Module}/Routes/V1.php`, dimuat base `ModuleServiceProvider` saat modul aktif (menggantikan discover sentral di RouteServiceProvider).
+Definisi: route file modul di `modules/{Module}/routes/V1.php`, dimuat `app/Providers/RouteServiceProvider.php` modul sendiri (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`) saat modul aktif; provider mengiterasi `apiroute.supported_versions` (default `['V1']`), meng-guard `file_exists`, dan me-mount `api/{version}` dengan name prefix `{version}.{alias}.`.
 
 Aturan:
-1. Base prefix `api/v1/{module}`; route name `v1.{module}.{name}`
+1. Base prefix `api/v1/{path}` (tanpa segmen modul di URL); route name `v1.{module}.{name}`
 2. Middleware eksplisit di route group (auth:sanctum, throttle, permission, feature.flag)
 3. Route file hanya dimuat jika modul aktif
 
 Larangan:
-- Dilarang registrasi route di luar `Routes/`
+- Dilarang registrasi route di luar `routes/` modul
 - Dilarang middleware tersembunyi di provider
 
 ### 3.19 Database
 
-Definisi: schema modul di `modules/{Module}/Database/` (Migrations, Factories, Seeders), dimuat base `ModuleServiceProvider` saat modul aktif.
+Definisi: schema modul di `modules/{Module}/database/` (migrations, factories, seeders), dimuat nWidart base `ModuleServiceProvider` saat modul aktif.
 
 Aturan:
 1. Enum value sebagai default kolom (`->default(StatusEnum::Pending->value)`)
@@ -502,7 +501,7 @@ Aturan:
 3. Factory + Seeder untuk tiap model
 4. Perubahan schema = review gate (butuh persetujuan)
 5. Seeder modul dieksekusi via `php artisan db:seed --class=Modules\{Module}\Database\Seeders\{Name}Seeder` atau dari `database/seeders/DatabaseSeeder`; dilarang seeder memanggil seeder modul lain (dependensi di-seed berurutan dari caller, contoh: `MediaSeeder` tidak memanggil `IAMSeeder`)
-6. Rollback migration modul via `php artisan migrate:rollback --path=modules/{Module}/Database/Migrations` (tanpa `--path`, rollback hanya batch terakhir global)
+6. Rollback migration modul via `php artisan migrate:rollback --path=modules/{Module}/database/migrations` (tanpa `--path`, rollback hanya batch terakhir global)
 
 Larangan:
 - Dilarang edit schema tanpa persetujuan
@@ -510,10 +509,10 @@ Larangan:
 
 ### 3.20 Features
 
-Definisi: feature flag modul. Build-time toggle: array `features` di central registry (`config/modules.php`). Runtime per-user: Pennant class di `modules/{Module}/Features/` (dipakai 2+ modul: `app/Features/`), diperiksa via `FeatureFlagMiddleware`.
+Definisi: feature flag modul. Build-time toggle: array `features` di `config/config.php` modul (di-merge nWidart ke `config('{alias}.features')`). Runtime per-user: Pennant class di `modules/{Module}/app/Features/` (dipakai 2+ modul: `app/Features/`), diperiksa via `FeatureFlagMiddleware`.
 
 Aturan:
-1. Build-time: nilai boolean di registry; di-merge base provider ke `config('{alias}.features')`
+1. Build-time: nilai boolean di config modul; di-merge base provider ke `config('{alias}.features')`
 2. Runtime: `final class {Feature} extends Feature`, `resolve()` berisi logika per-user
 3. Naming: `{module}.{feature}` (mis. `iam.self-registration`)
 4. Feature yang tidak terdaftar dianggap off (default false)
@@ -528,9 +527,9 @@ Definisi: folder optional yang hidup di modul ketika dibutuhkan, mengikuti konve
 
 Aturan:
 1. Dibuat hanya jika berisi minimal 1 file (dilarang folder kosong)
-2. `Lang/` dimuat base `ModuleServiceProvider` saat modul aktif
+2. `Lang/` dimuat base nWidart `ModuleServiceProvider` saat modul aktif
 3. Aturan detail cukup mengikuti konvensi Laravel; tidak dibuat rule file terpisah per folder
-4. Listener modul TIDAK ter-auto-discovery (bootstrap hanya scan `app/Listeners`); daftarkan listener eksplisit di `bootModule()` via `Event::listen`/`Event::subscribe`
+4. Listener modul TIDAK ter-auto-discovery (bootstrap hanya scan `app/Listeners`); daftarkan listener eksplisit di `boot()` provider modul via `Event::listen`/`Event::subscribe`
 
 Larangan:
 - Dilarang folder kosong sebagai placeholder
@@ -572,7 +571,7 @@ Larangan:
 2. Format tanggal semua field response: `Y-m-d H:i:s`
 3. `declare(strict_types=1)` di setiap file PHP
 4. PHP 8 attributes diutamakan atas properties (model, job, command)
-5. Route name `v1.{module}.{name}`; modul lowercase di central registry
+5. Route name `v1.{module}.{name}`; modul lowercase di status aktivasi
 6. Kelas operasional: `final readonly`; gunakan constructor property promotion
 7. Dokumen (docs, rule, roadmap): ASCII murni, tanpa emoji, tanpa em/en dash, tanpa arrow, pakai hyphen
 8. Bahasa kode dan komentar: English
@@ -582,66 +581,49 @@ Larangan:
 ### 5.1 Membuat modul
 
 ```bash
-php artisan make:module Blog
+php artisan module:make Blog
 ```
 
-Generator membuat struktur required: `Providers`, `Routes`, `Tests`. Optional layer ditambah saat dibutuhkan (bukan di awal).
+Generator nWidart (stub kit di `stubs/module-generator/`) membuat struktur: `module.json`, `composer.json`, `config/config.php`, `routes/api.php`, `app/Providers/*`, `app/Http/Controllers/{Module}Controller.php`, `database/seeders/`, `tests/`. Opsi: `--api`, `--disabled`, `--plain`. Optional layer ditambah saat dibutuhkan (bukan di awal).
 
 ### 5.2 Mengaktifkan modul
 
-Central registry `config/modules.php` adalah satu-satunya tempat me-manage modul dan fiturnya:
+Status aktivasi di `modules_statuses.json` (FileActivator) dikelola command artisan:
 
-```php
-return [
-    'modules' => [
-        'iam' => [
-            'active'   => true,
-            'features' => [
-                'register'    => true,
-                'social-auth' => true,
-            ],
-        ],
-        'media' => [
-            'active'   => true,
-            'features' => [
-                'upload'     => true,
-                'signed-url' => false,
-            ],
-        ],
-        'organization' => [
-            'active'   => false,
-            'features' => [
-                'multi-tenancy' => false,
-            ],
-        ],
-    ],
-];
+```bash
+php artisan module:enable Blog    # atau module:disable
 ```
 
-`ModuleLoaderServiceProvider` membaca registry: entry dengan `active => true` me-load provider modul via konvensi `Modules\{Name}\Providers\{Name}ServiceProvider` (guard `class_exists`; folder modul absen = aman, tidak fatal). Base `ModuleServiceProvider` meng-merge config + features, lalu load migrations, routes, dan translations modul. Modul yang tidak terdaftar = sepenuhnya inert: provider, config, migrations, routes tidak dimuat (dibuktikan tes).
+`module.json` di dalam modul menyimpan metadata (name, priority, providers). `modules_statuses.json` berisi map alias lowercase ke boolean:
 
-Setelah mengubah registry, jalankan `php artisan config:cache` (+ `route:cache` bila routes ter-cache) agar perubahan aktif; di production registry ter-bake ke cache, lupa refresh = modul tetap pada status sebelumnya.
+```json
+{
+  "iam": true,
+  "media": true,
+  "organization": false
+}
+```
 
-Urutan boot antar modul = urutan deklarasi di central registry; key `priority` tidak dipakai sampai ada dependensi boot lintas modul yang nyata.
+Modul yang tidak enabled = sepenuhnya inert: provider, config, migrations, routes tidak dimuat (dibuktikan tes). Urutan boot antar modul mengikuti `priority` di `module.json`; default 0.
 
 ### 5.3 Menonaktifkan modul
 
-Hapus dari registry dengan `active => false` (atau hapus entry). Data modul tetap di database (migration tidak di-rollback otomatis); schema tetap ada, behavior off.
+`php artisan module:disable {Module}` (status `false` di `modules_statuses.json`). Data modul tetap di database (migration tidak di-rollback otomatis); schema tetap ada, behavior off.
 
 ### 5.4 Modul privat
 
-Folder modul privat disimpan di disk + ditambahkan ke `.gitignore` + tidak didaftarkan di central registry. Tidak pernah dikirim ke repo publik.
+Folder modul privat disimpan di disk + ditambahkan ke `.gitignore` + tidak di-enable di `modules_statuses.json`. Tidak pernah dikirim ke repo publik.
 
 ### 5.5 Kasus khusus: Organization (tenancy)
 
-Organization adalah modul non-aktif minimal (Providers, Tests) yang membungkus stancl/tenancy (opsi opt-in tenancy). Deviasi deliberate:
+Organization adalah modul non-aktif minimal (app/Providers, tests) yang membungkus stancl/tenancy (opsi opt-in tenancy). Deviasi deliberate:
 - Tenant model memakai UUID (stancl default), deviasi dari aturan ULID, terkurung di modul
 - Config `tenancy.php` di dalam modul
 - Sisa struktur tumbuh saat modul diaktifkan (MVP 2)
 
 ### 5.6 Menghapus modul
 
-Hapus folder modul dan entry central registry `config/modules.php`. Provider tidak di-boot (guard `class_exists`); folder absen tidak fatal. Data database tetap ada (migration tidak auto-rollback).
+`php artisan module:delete {Module} --force` (hapus folder + status di `modules_statuses.json`). Provider tidak di-boot saat modul non-enabled; folder absen tidak fatal. Data database tetap ada (migration tidak auto-rollback).
 
 ## 6. Toggle & Native-First
 
@@ -649,40 +631,37 @@ Hapus folder modul dan entry central registry `config/modules.php`. Provider tid
 
 | Level | Mekanisme | Waktu | Contoh |
 |---|---|---|---|
-| Module | Central registry `config/modules.php` (`active`) | Build-time | `organization` off = tenancy inert |
-| Feature (static) | Array `features` di registry per modul (ala Fortify) | Build-time | Media: upload vs signedUrl |
-| Feature (runtime) | Pennant flags (class di `Features/`) + FeatureFlagMiddleware | Runtime, per-user | beta flag, gradual rollout |
+| Module | `modules_statuses.json` (FileActivator, `module:enable`/`disable`) | Build-time | `organization` off = tenancy inert |
+| Feature (static) | Array `features` di config modul (ala Fortify) | Build-time | Media: upload vs signedUrl |
+| Feature (runtime) | Pennant flags (class di `app/Features/`) + FeatureFlagMiddleware | Runtime, per-user | beta flag, gradual rollout |
 
-### 6.2 Draf code: central registry
+### 6.2 Draf code: config modul
 
 ```php
-// config/modules.php
+// modules/Media/config/config.php
 return [
-    'modules' => [
-        'media' => [
-            'active'   => true,
-            'features' => [
-                'upload'     => true,
-                'signed-url' => false,
-            ],
-        ],
+    'name' => 'Media',
+    'features' => [
+        'upload'     => true,
+        'signed-url' => false,
     ],
 ];
 ```
 
-Base `ModuleServiceProvider` meng-merge `features` ke `config('media.features')` saat boot; provider modul tinggal deklarasi + hook:
+Base nWidart `ModuleServiceProvider` meng-merge config ke `config('media.*')` saat boot (termasuk `features`); provider modul tinggal deklarasi + hook:
 
 ```php
-// modules/Media/Providers/MediaServiceProvider.php
+// modules/Media/app/Providers/MediaServiceProvider.php
 final class MediaServiceProvider extends ModuleServiceProvider
 {
-    protected function moduleName(): string
-    {
-        return 'Media';
-    }
+    protected string $name = 'Media';
 
-    protected function bootModule(): void
+    protected string $nameLower = 'media';
+
+    public function boot(): void
     {
+        parent::boot();
+
         if (MediaFeatures::enabled(MediaFeatures::signedUrl())) {
             // register signed URL routes or middleware only when enabled
         }
@@ -691,7 +670,7 @@ final class MediaServiceProvider extends ModuleServiceProvider
 ```
 
 ```php
-// modules/Media/Support/MediaFeatures.php
+// modules/Media/app/Support/MediaFeatures.php
 final class MediaFeatures
 {
     public static function upload(): string
@@ -713,10 +692,10 @@ final class MediaFeatures
 
 ### 6.3 Pennant class (runtime, per-user)
 
-Feature yang butuh keputusan runtime (per user, gradual rollout) didefinisikan sebagai Pennant class di `modules/{Module}/Features/`:
+Feature yang butuh keputusan runtime (per user, gradual rollout) didefinisikan sebagai Pennant class di `modules/{Module}/app/Features/`:
 
 ```php
-// modules/Media/Features/MediaUpload.php
+// modules/Media/app/Features/MediaUpload.php
 final class MediaUpload extends Feature
 {
     public function resolve(User $user): bool
@@ -728,7 +707,7 @@ final class MediaUpload extends Feature
 
 Route dilindungi middleware `feature.flag` (FeatureFlagMiddleware). Feature yang dipakai 2+ modul tinggal di `app/Features/`.
 
-Catatan: Pennant class hanya untuk keputusan runtime (per-user, gradual rollout); toggle statis cukup memakai features array di registry (6.1/6.2) tanpa class Pennant.
+Catatan: Pennant class hanya untuk keputusan runtime (per-user, gradual rollout); toggle statis cukup memakai features array di config modul (6.1/6.2) tanpa class Pennant.
 
 ### 6.4 Chisel markers
 
@@ -744,8 +723,8 @@ Bukti: tes yang membuktikan jalur native tetap berfungsi.
 
 ## 7. Pengujian
 
-1. Placement: tes modul di `modules/*/Tests/` (Feature, Unit); tes app di `tests/` (Feature, Unit, Architecture)
-2. Struktur folder tes modul: `Tests/Feature/` (opsional subfolder `V1/` mirror `Http/Controllers/V1`) dan `Tests/Unit/`; tes shared: `tests/{Architecture,Feature,Unit}/`, `tests/Datasets/`, `tests/Helpers.php`, `tests/Pest.php`
+1. Placement: tes modul di `modules/*/tests/` (Feature, Unit); tes app di `tests/` (Feature, Unit, Architecture)
+2. Struktur folder tes modul: `tests/Feature/` (opsional subfolder `V1/` mirror `app/Http/Controllers/V1`) dan `tests/Unit/`; tes shared: `tests/{Architecture,Feature,Unit}/`, `tests/Datasets/`, `tests/Helpers.php`, `tests/Pest.php`
 3. Suite yang didukung saat ini: `unit`, `feature`, `profanity`. Gate coverage, mutation, type-coverage ditangguhkan sementara (script dihapus)
 4. Script composer utama: `composer test` dan `composer test:profanity`; `test:quality`/`test:mutation` dihapus untuk sekarang
 5. Group: shared test di-group di `tests/Pest.php` (`app`, `feature`, `unit`, `arch`); tes modul `->group('module:{name}')` + group `feature`/`unit` dari `tests/Pest.php`. Filter: `vendor/bin/pest --group=app`, `--group=feature`, `--group=module:iam`. Lihat https://pestphp.com/docs/grouping-tests
@@ -789,5 +768,4 @@ Dokumen ini dipecah ke `.ai/rules/` (format standar: frontmatter paths + Goal + 
 
 ## 9. Pertanyaan Terbuka (untuk review)
 
-1. Migrasi folder modul existing (IAM, Media) ke anatomi baru (`Http/Controllers`, `Http/Requests`, `Http/Resources`, `Console/Commands`) adalah breaking change: dieksekusi di phase berikutnya, bukan bagian review dokumen ini?
-2. Versioning API V2 belum terdefinisi: anatomi menyebut `V1/`, `V2/` di Controllers/Requests dan `Routes/V2.php`, tapi aturan 3.18 hanya mendefinisikan `api/v1/{module}`. Mekanisme V2 (header vs URL, kebijakan hidup/mati V1) ditunda sampai ada use case V2 pertama?
+1. Versioning API V2 belum terdefinisi: anatomi menyebut `V1/`, `V2/` di Controllers/Requests dan `routes/V2.php`, tapi aturan 3.18 hanya mendefinisikan `api/v1/{path}`. Mekanisme V2 (header vs URL, kebijakan hidup/mati V1) ditunda sampai ada use case V2 pertama?

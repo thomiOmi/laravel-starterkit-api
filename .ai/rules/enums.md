@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Enums/**'
+  - 'modules/*/app/Enums/**'
   - 'app/Enums/**'
 ---
 

@@ -1,8 +1,8 @@
 ---
 paths:
   - 'bootstrap/app.php'
-  - 'modules/*/Actions/**'
-  - 'modules/*/Controllers/**'
+  - 'modules/*/app/Actions/**'
+  - 'modules/*/app/Http/Controllers/**'
 ---
 
 # Error Handling & Exception Helpers

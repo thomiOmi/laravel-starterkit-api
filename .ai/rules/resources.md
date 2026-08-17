@@ -1,7 +1,7 @@
 ---
 paths:
-  - 'modules/*/Http/Resources/**'
-  - 'modules/*/Resources/**'
+  - 'modules/*/app/Http/Resources/**'
+  - 'modules/*/app/Http/Resources/**'
 ---
 
 # Resources

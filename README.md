@@ -54,7 +54,7 @@ php artisan serve
 | Media | File uploads and media storage | [ADR-0015](docs/adr/0015-media-storage-module.md) |
 | Organization | Multi-tenancy (stancl/tenancy, single database), disabled by default | - |
 
-Modules are loaded from the allow-list in `config/modules.php`, following the Laravel Fortify pattern: a module is only active once it is listed there. Directories under `modules/` that are not listed are silently ignored (service provider, migrations, and routes are skipped), which also enables private modules -- keep the directory on disk and in `.gitignore` without registering it for customers. Create new modules with `php artisan make:module` (see [module-generator.md](docs/module-generator.md)).
+Modules are booted by `nwidart/laravel-modules` (see [ADR-0029](docs/adr/0029-nwidart-laravel-modules.md)): live activation status lives in `modules_statuses.json` (e.g. `{"iam": true}`), and a module only loads when its entry is `true` -- a directory under `modules/` that is not enabled is silently ignored (config, migrations, and routes are skipped). This also enables private modules: keep the directory on disk and in `.gitignore` without enabling it for customers. Create new modules with `php artisan module:make` (see [module-generator.md](docs/module-generator.md)).
 
 ## Architecture
 
@@ -71,21 +71,26 @@ Request -> Middleware -> Controller (__invoke) -> Action -> Eloquent -> Response
 ```
 modules/
 ├── {Module}/
-│   ├── Actions/         # Single-purpose use cases
-│   ├── Controllers/     # V1/, V2/ for API versioning
-│   ├── Database/
+│   ├── app/               # Mirrors the Laravel app/ skeleton
+│   │   ├── Actions/       # Single-purpose use cases
+│   │   ├── Builders/      # Query string filtering (extends BaseBuilder)
+│   │   ├── Http/
+│   │   │   ├── Controllers/   # V1/, V2/ for API versioning
+│   │   │   ├── Requests/      # Form request validation
+│   │   │   └── Resources/     # API resources
+│   │   ├── Models/
+│   │   ├── Payloads/      # Immutable DTOs with constructor promotion
+│   │   ├── Providers/     # Service providers
+│   │   └── ...            # Other module-specific directories (e.g., Services, Support)
+│   ├── config/            # config.php merged into config('{alias}.*')
+│   ├── database/
 │   │   ├── factories/
 │   │   ├── migrations/
 │   │   └── seeders/
-│   ├── Builders/         # Query string filtering (extends BaseBuilder)
-│   ├── Models/
-│   ├── Payloads/        # Immutable DTOs with constructor promotion
-│   ├── Providers/       # Service providers
-│   ├── Requests/        # Form request validation
-│   ├── Resources/       # API resources
-│   ├── Routes/          # V1.php, V2.php
-│   ├── Tests/           # Feature and unit tests
-│   └── ...              # Other module-specific directories (e.g., Notifications, Jobs, etc.)
+│   ├── routes/            # V1.php, V2.php
+│   ├── tests/             # Feature and unit tests
+│   ├── composer.json      # Per-module package metadata (nwidart)
+│   └── module.json        # nwidart module manifest
 └── ...
 app/                     # Shared application code
 ├── Concerns/            # Traits (FormatDate, HasDefaultBehavior, etc.)
@@ -93,7 +98,7 @@ app/                     # Shared application code
 ├── Http/
 │   ├── Middleware/      # Sunset, TraceId, SetLocale, PlanFeature, SecurityHeaders
 │   └── Responses/       # SuccessResponse, ProblemResponse (RFC 9457)
-├── Providers/           # AppServiceProvider, ModuleServiceProvider
+├── Providers/           # AppServiceProvider, RouteServiceProvider
 └── Notifications/       # Shared notifications (VerifyEmail, ResetPassword)
 config/
 database/
@@ -101,7 +106,7 @@ database/
 ├── migrations/          # Shared migrations
 └── seeders/             # Shared seeders
 routes/
-├── api.php              # (reserved for future use -- modules auto-register via ModuleServiceProvider)
+├── api.php              # (reserved for future use -- module routes load via each module's RouteServiceProvider)
 └── console.php
 tests/                   # Shared tests / global test helpers
 ├── Architecture/        # Architecture tests (N+1, module isolation, etc.)
@@ -115,12 +120,12 @@ tests/                   # Shared tests / global test helpers
 |----------|---------|
 | [docs/](docs/README.md) | Document map and index |
 | [docs/prd/](docs/prd/README.md) | Product requirements (PRD, v1 scope) |
-| [docs/adr/](docs/adr/README.md) | Architecture Decision Records (22 decisions, Nygard format) |
+| [docs/adr/](docs/adr/README.md) | Architecture Decision Records (29 decisions, Nygard format) |
 | [docs/api-standard.md](docs/api-standard.md) | API response contract and envelope shapes |
 | [docs/architecture.md](docs/architecture.md) | Module structure and architecture patterns |
 | [docs/auth.md](docs/auth.md) | Authentication flows (Sanctum, email verification, password reset) |
 | [docs/coding-standards.md](docs/coding-standards.md) | Code style and language conventions |
-| [docs/module-generator.md](docs/module-generator.md) | `make:module` usage and module scaffolding |
+| [docs/module-generator.md](docs/module-generator.md) | `module:make` usage and module scaffolding |
 | [docs/rate-limiting.md](docs/rate-limiting.md) | Throttle configuration on auth routes |
 | [docs/rbac.md](docs/rbac.md) | Roles, permissions, policies (Spatie) |
 | [docs/testing.md](docs/testing.md) | Testing conventions: helpers, datasets, describe/it/group, TIA, probes |

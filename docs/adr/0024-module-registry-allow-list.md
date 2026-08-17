@@ -1,6 +1,6 @@
 # ADR-0024: Module Registry Allow-List Without Environment Toggle
 
-- Status: Accepted
+- Status: Superseded by ADR-0029
 - Date: 2026-08-11
 
 ## Context

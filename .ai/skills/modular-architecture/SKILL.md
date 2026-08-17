@@ -8,57 +8,66 @@ description: >
   "create action", "add a filter"), or following the project's modular
   conventions ("module pattern", "modular structure").
 metadata:
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Modular Architecture
 
 ## Module Directory Structure
 
-Each module lives under `modules/{ModuleName}/` and follows this layout:
+Each module lives under `modules/{ModuleName}/` and follows this layout (lowercase root dirs, `app/` mirrors Laravel):
 
 ```
 modules/{ModuleName}/
-├── Actions/             # Single-responsibility business actions
-├── Builders/            # BaseQueryBuilder subclasses for list queries
-├── Controllers/
-│   └── V1/              # Invokable single-action controllers (API v1)
-├── Database/
-│   ├── Factories/       # Model factories
-│   ├── Migrations/      # Database migrations
-│   └── Seeders/         # Database seeders
-├── Models/              # Eloquent models
-├── Payloads/
-│   └── V1/              # Immutable DTOs for action input (API v1)
-├── Providers/           # Module service provider
-├── Requests/
-│   └── V1/              # FormRequest validation (API v1)
-├── Resources/           # Eloquent API resources
-├── Routes/              # Route definitions
-├── Services/            # Business services (optional)
-└── Tests/
-    ├── Feature/         # Pest feature tests
-    └── Unit/            # Pest unit tests
+├── app/                   # Mirrors the stock Laravel app/ skeleton
+│   ├── Actions/           # Single-responsibility business actions
+│   ├── Builders/          # BaseQueryBuilder subclasses for list queries
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   └── V1/        # Invokable single-action controllers (API v1)
+│   │   ├── Middleware/    # Module-specific HTTP middleware
+│   │   ├── Requests/
+│   │   │   └── V1/        # FormRequest validation (API v1)
+│   │   └── Resources/     # Eloquent API resources
+│   ├── Models/            # Eloquent models
+│   ├── Payloads/
+│   │   └── V1/            # Immutable DTOs for action input (API v1)
+│   ├── Providers/         # {Module}ServiceProvider + RouteServiceProvider
+│   ├── Services/          # Business services (optional)
+│   └── Support/           # Module-specific helpers (optional)
+├── config/                # config.php merged into config('{alias}.*')
+├── database/
+│   ├── factories/         # Model factories
+│   ├── migrations/        # Database migrations
+│   └── seeders/           # Database seeders
+├── routes/                # Versioned route files (V1.php, V2.php)
+├── tests/
+│   ├── Feature/           # Pest feature tests
+│   └── Unit/              # Pest unit tests
+├── composer.json          # Per-module package metadata (nWidart)
+└── module.json            # nWidart module manifest (name, priority, providers)
 ```
 
 ## Auto-Discovery
 
-Module registration is automatic. `App\Providers\ModuleServiceProvider` scans all directories under `modules/` at boot time. For each directory it:
+Module registration is handled by `nwidart/laravel-modules`:
 
-1. Looks for `Modules\{Name}\Providers\{Name}ServiceProvider` and registers it
-2. Loads migrations from `modules/{Name}/Database/Migrations/`
+1. Each module has a `module.json` manifest; `config/modules.php` configures nWidart (FileActivator, paths, cache)
+2. Live activation state lives in `modules_statuses.json` (e.g. `{"iam": true}`); a module only boots when its entry is `true`
+3. The module's `app/Providers/{ModuleName}ServiceProvider.php` extends `Nwidart\Modules\Support\ModuleServiceProvider`, which auto-merges `config/config.php`, loads `database/migrations` + `database/factories`, and registers the providers listed in the `$providers` array
+4. Routes are loaded by the module's own `app/Providers/RouteServiceProvider.php` (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`), not the app `RouteServiceProvider`
 
 You do NOT need to register modules in `config/app.php`.
 
-The module's own `{ModuleName}ServiceProvider` is responsible for registering routes.
-
 ## Step: Create a New Module
 
-1. Create `modules/{ModuleName}/` with all subdirectories listed above
-2. Create `Providers/{ModuleName}ServiceProvider.php` extending `ServiceProvider`
-3. In the provider's `boot()` method, register routes via `Route::prefix('api/v1')...`
-4. Module is auto-discovered on next request (no manual registration needed)
-5. Run `php artisan make:migration --path=modules/{ModuleName}/Database/Migrations` for new tables
+1. Run `php artisan module:make {ModuleName}` -- generates `module.json`, `composer.json`, `config/config.php`, `routes/api.php`, `app/Providers/{ModuleName}ServiceProvider.php` + `EventServiceProvider.php` + `RouteServiceProvider.php`, `app/Http/Controllers/{ModuleName}Controller.php`, `database/seeders/{ModuleName}DatabaseSeeder.php`, and `tests/`
+   - `--api` generates API scaffolding, `--disabled` creates the module inactive, `--plain` skips scaffolding
+2. Rename/remove the generated `routes/api.php` to the versioned contract `routes/V1.php` for API modules
+3. In `app/Providers/RouteServiceProvider.php`, list `V1` (or the version) in `config('apiroute.supported_versions')` so `mapApiRoutes()` mounts it on `api/v1` with name prefix `v1.{alias}.`
+4. Enable the module with `php artisan module:enable {ModuleName}` (writes `modules_statuses.json`)
+5. Run `php artisan module:migrate` for the module's migrations (or `migrate --path=modules/{ModuleName}/database/migrations`)
+6. Add a feature test asserting the generated route contract (see console-commands rule); scaffolded modules must boot and pass the architecture tests
 
 ## Step: Add a New Feature
 
@@ -67,16 +76,15 @@ Follow this order when adding a new CRUD feature (e.g., a new resource):
 1. **Model** -- Define the Eloquent model with `#[Fillable]`, `#[Hidden]`, `#[UseFactory]` attributes
 2. **Migration** -- Create the table migration
 3. **Factory** -- Create the model factory
-4. **Route** -- Add routes to `Routes/V1.php`
+4. **Route** -- Add routes to `routes/V1.php`
 5. **Controller** -- Create invokable controller
 6. **Action** -- Create single-responsibility action
 7. **Payload** -- Create immutable DTO (for create/update)
 8. **Request** -- Create FormRequest with validation + authorization
 9. **Builder** -- Extend `BaseQueryBuilder` with filter/sort/field whitelists (for list queries)
 10. **Resource** -- Create API resource
-11. **ServiceProvider** -- Register routes in the module provider
-12. **Unit Test** -- Test the Action in isolation
-13. **Feature Test** -- Test the full HTTP flow
+11. **Unit Test** -- Test the Action in isolation
+12. **Feature Test** -- Test the full HTTP flow
 
 ## Layer Conventions
 
@@ -96,7 +104,7 @@ final readonly class {Resource}{Action}Controller
 }
 ```
 
-- Namespace: `Modules\{Module}\Controllers\V1`
+- Namespace: `Modules\{Module}\Http\Controllers\V1`
 - Must be `final readonly`
 - Must have `__invoke()` method
 - Must inject Action(s) via constructor
@@ -204,7 +212,7 @@ final class {Resource}Request extends FormRequest
 }
 ```
 
-- Namespace: `Modules\{Module}\Requests\V1`
+- Namespace: `Modules\{Module}\Http\Requests\V1`
 - Must have `payload()` method returning a Payload
 - Must implement `authorize()` with Spatie `can()` checks
 - Use `PasswordValidationRules` and `ProfileValidationRules` concerns when needed
@@ -228,13 +236,15 @@ class {Resource}Resource extends JsonResource
 }
 ```
 
-- Namespace: `Modules\{Module}\Resources`
+- Namespace: `Modules\{Module}\Http\Resources`
 - Must extend `JsonResource`
 - Must use `App\Concerns\FormatDate` trait
 - Must guard eager-loaded relations with `relationLoaded()`
 - All datetime fields must use `Y-m-d H:i:s` format
 
 ### Route
+
+`routes/V1.php` files are relative: the module's `RouteServiceProvider` mounts them on `api/{version}` with middleware `api` and name prefix `{version}.{alias}.`.
 
 ```php
 Route::prefix('{resources}')
@@ -249,7 +259,8 @@ Route::prefix('{resources}')
     });
 ```
 
-- Route names: `v1.{module}.{name}` (prefix set in ServiceProvider)
+- Final route names: `v1.{module}.{name}` (prefix set in RouteServiceProvider)
+- Final URL: `api/v1/{path}` -- no module segment in the URL (e.g. `/api/v1/users`, not `/api/v1/iam/users`)
 - Auth routes under `auth/` prefix
 - Resource routes under plural resource name prefix
 
@@ -272,28 +283,58 @@ class {Resource} extends Model
 ### Service Provider
 
 ```php
-class {Module}ServiceProvider extends ServiceProvider
+class {Module}ServiceProvider extends ModuleServiceProvider
 {
+    protected string $name = '{Module}';
+
+    protected string $nameLower = '{lower}';
+
+    /** @var string[] */
+    protected array $providers = [
+        RouteServiceProvider::class,
+    ];
+
     public function boot(): void
     {
-        $this->configureRoutes();
+        parent::boot();
+
+        Route::aliasMiddleware('active', EnsureUserIsActive::class);
     }
+}
+```
 
-    public function register(): void {}
+- Namespace: `Modules\{Module}\Providers` (under `app/Providers/`)
+- Must extend `Nwidart\Modules\Support\ModuleServiceProvider`
+- The nWidart base merges `config/config.php`, loads `database/migrations` + `database/factories`, and registers the `$providers` array (EventServiceProvider, RouteServiceProvider)
+- `boot()` is for declaration only: middleware aliases, Pennant features, bindings
 
-    protected function configureRoutes(): void
-    {
-        Route::prefix('api/v1')
-            ->middleware('api')
-            ->name('v1.')
-            ->group(base_path('modules/{Module}/Routes/V1.php'));
+### Module Route Service Provider
+
+`app/Providers/RouteServiceProvider.php` extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`, iterates `config('apiroute.supported_versions')` (default `['V1']`), and mounts each existing `routes/{Version}.php`:
+
+```php
+protected function mapApiRoutes(): void
+{
+    $versions = config()->array('apiroute.supported_versions', ['V1']);
+
+    foreach ($versions as $version) {
+        $routeFile = module_path($this->name, "routes/{$version}.php");
+
+        if (! file_exists($routeFile)) {
+            continue;
+        }
+
+        Route::prefix('api/'.strtolower($version))
+            ->middleware(['api'])
+            ->name(strtolower($version).'.'.$this->nameLower.'.')
+            ->group($routeFile);
     }
 }
 ```
 
 ### Tests
 
-Unit test per Action (test business logic in isolation). Feature test per endpoint (test the full HTTP request/response cycle). Use response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`.
+Unit test per Action (test business logic in isolation) in `tests/Unit`. Feature test per endpoint (test the full HTTP request/response cycle) in `tests/Feature`. Use response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`.
 
 ## Project-Specific Rules (Must Do)
 
@@ -316,15 +357,17 @@ Unit test per Action (test business logic in isolation). Feature test per endpoi
 - Do not use `Illuminate\Http\Request` in Actions
 - Do not use `Config` facade in business code
 - Do not use `@phpstan-ignore` comments -- fix the root cause
-- Do not register modules manually in `config/app.php` -- auto-discovery handles it
+- Do not register modules manually in `config/app.php` -- nWidart auto-discovery handles it
 - Do not use `$fillable`, `$hidden`, `$table` class properties -- use PHP attributes instead
 - Do not use PHP 8.4 property hooks on Eloquent model properties -- Eloquent's magic accessor system bypasses native property hooks; use accessors/mutators instead
+- Do not hand-roll module bootstrapping (custom auto-discovery providers, central registry in `config/modules.php`) -- nWidart handles activation via `modules_statuses.json` (FileActivator)
 
 ## Common Pitfalls
 
 - Forgetting `declare(strict_types=1)` at the top of every PHP file
 - Forgetting `#[UseFactory(ModelFactory::class)]` on Model
-- Route not registered in `{Module}ServiceProvider::boot()` -- module works but routes return 404
+- Route file not listed in `RouteServiceProvider::mapApiRoutes()` (missing from `apiroute.supported_versions` or missing `file_exists` guard) -- module works but routes return 404
+- Forgetting `module:enable` after scaffolding -- module exists but never boots
 - `toArray()` in Payload does not filter null values -- causes SQL errors on update when password is not provided
 - `authorize()` does not handle `$this->user()` returning null -- use null-safe `$this->user()?->can(...) ?? false`
 - Missing `relationLoaded()` check in Resource -- causes N+1 query

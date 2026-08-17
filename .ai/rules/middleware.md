@@ -1,7 +1,7 @@
 ---
 paths:
-  - 'modules/*/Http/Middleware/**'
-  - 'modules/*/Middleware/**'
+  - 'modules/*/app/Http/Middleware/**'
+  - 'modules/*/app/Http/Middleware/**'
   - 'app/Http/Middleware/**'
 ---
 

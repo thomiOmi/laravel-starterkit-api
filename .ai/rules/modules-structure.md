@@ -1,39 +1,40 @@
 ---
 paths:
   - 'modules/**'
-  - 'resources/stubs/**'
+  - 'stubs/module-generator/**'
 ---
 
 # Module Structure
 
 ## Goal
 
-Modules mirror the stock Laravel `app/` skeleton (mirror principle): `modules/{Module}/` mirrors `app/`, with the container folders `Http/` (Controllers, Middleware, Requests, Resources) and `Console/` (Commands) housing HTTP/CLI layers exactly like `app/Http` and `app/Console`. Module-scoped concerns live inside the module; shared concerns live in `app/` (shared vocabulary). No per-module overhead: no `composer.json`, `module.json`, `resources/assets`, or `vite.config.js` (deviation from nWidart/laravel-modules).
+Modules mirror the stock Laravel `app/` skeleton (mirror principle): `modules/{Module}/app/` mirrors `app/`, with the container folders `Http/` (Controllers, Middleware, Requests, Resources) housing HTTP layers exactly like `app/Http`. Module-scoped concerns live inside the module; shared concerns live in `app/` (shared vocabulary). Modules are generated with `php artisan module:make {Name}` (nwidart) and carry per-module metadata (`module.json`, `composer.json`) plus lowercase `config/`, `database/`, `routes/`, `tests/` directories (deviation from nwidart defaults, which use TitleCase `Database/` etc. - this kit standardizes on the Laravel lowercase convention).
 
 ## Rules
 
-1. Only 3 folders are required on ACTIVE modules: `Providers`, `Routes`, `Tests`; the rest are optional and created when needed
-2. Required folders: `Providers` ({Module}ServiceProvider extends base ModuleServiceProvider), `Routes` (V1.php), `Tests` (feature and unit tests)
-3. Optional folders (only created if they contain at least 1 file, empty folders forbidden): Http (Controllers, Middleware, Requests, Resources), Console (Commands), Exceptions, Features (Pennant class-based features), Jobs, Mail, Rules, Events, Listeners, Lang ({locale}/), Models, Observers, Policies, Scopes, Notifications, Actions, Builders, Services, Payloads, Support, Contracts, Enums, Config ({alias}.php), Database (Migrations, Factories, Seeders)
-4. Kit-specific layers without a skeleton counterpart: Actions, Services, Payloads, Builders, Features, Config, Routes, Database, Tests, Lang
-5. `app/Http/Responses` is a global contract and is not mirrored into modules
-6. Inactive modules (not registered as active in the central registry) minimally contain `Providers`, `Tests` (example: Organization); the rest of the structure appears when the module is activated
-7. Module alias is the lowercase registry key (`media`), not the TitleCase folder name; used for config keys, `Config/{alias}.php`, and the route prefix
+1. Module root layout: `app/` (mirrors Laravel app), `config/`, `database/` (factories, migrations, seeders), `routes/` (V1.php), `tests/` (Feature, Unit), `module.json`, `composer.json`
+2. Module provider `app/Providers/{Module}ServiceProvider.php` extends `Nwidart\Modules\Support\ModuleServiceProvider` (see providers rule); `app/Providers/RouteServiceProvider.php` loads `routes/` files (see routes rule)
+3. Required on ACTIVE modules: `app/Providers`, `routes`, `tests`; the rest are optional and created when needed
+4. Optional folders (only created if they contain at least 1 file, empty folders forbidden): Http (Controllers, Middleware, Requests, Resources), Console (Commands), Exceptions, Features (Pennant class-based features), Jobs, Mail, Rules, Events, Listeners, Lang ({locale}/), Models, Observers, Policies, Scopes, Notifications, Actions, Builders, Services, Payloads, Support, Contracts, Enums, Config ({alias}.php), Database (Migrations, Factories, Seeders)
+5. Kit-specific layers without a skeleton counterpart: Actions, Services, Payloads, Builders, Features, Config, Routes, Database, Tests, Lang
+6. `app/Http/Responses` is a global contract and is not mirrored into modules
+7. Module alias is the lowercase module name (`iam`), not the TitleCase folder name; used for config keys, `config/{Module}.php`, and the route name prefix (`v1.iam.`)
 
 On-demand layers (Jobs, Events, Listeners, Mail, Rules, Exceptions, Lang, Observers, Scopes):
 
 1. Created only if they contain at least 1 file (empty folders forbidden)
-2. `Lang/` is loaded by the base `ModuleServiceProvider` while the module is active
+2. `Lang/` is loaded by the nwidart base `ModuleServiceProvider` while the module is active
 3. Detailed rules just follow Laravel conventions; no separate rule file per folder
-4. Module listeners are NOT auto-discovered (bootstrap only scans `app/Listeners`); register listeners explicitly in `bootModule()` via `Event::listen`/`Event::subscribe`
+4. Module listeners are NOT auto-discovered (bootstrap only scans `app/Listeners`); register listeners explicitly in `boot()` via `Event::listen`/`Event::subscribe`
 
 ## Forbidden
 
 - No empty folders as placeholders
-- No per-module package overhead (composer.json, module.json, vite config)
+- No hand-rolled module bootstrapping (no custom auto-discovery providers, no `config/modules.php` registry wiring) - nwidart handles activation via `modules_statuses.json` (FileActivator)
 
-## Module Generator Stubs (`resources/stubs/module/`)
+## Module Generator (`stubs/module-generator/`)
 
-1. One stub per generated file type (action.*, controller.*, model, migration, factory, seeder, request.*, resource, builder, payload.*, route, provider, event, test.*); no stub for files the kit does not generate (no Filter stub - filtering is builder-based)
-2. Stubs use `{Module}`, `{Resource}`, `{Action}` placeholders and must stay in sync with the module conventions (final readonly actions/controllers, PHP 8 attributes on models, FormatDate on resources, `#[\UseEloquentBuilder]` on models with builders)
-3. New kit layers require a matching stub so the generator produces convention-compliant files
+1. `php artisan module:make {Name}` scaffolds a backend-only module: `module.json`, `composer.json`, `config/config.php`, `routes/api.php`, `app/Providers/{Module}ServiceProvider.php` + `EventServiceProvider.php` + `RouteServiceProvider.php`, `app/Http/Controllers/{Module}Controller.php`, `database/seeders/{Module}DatabaseSeeder.php`, `tests/`
+2. Options: `--api` (generates API routes/controller), `--disabled` (module.json disabled), `--plain` (no scaffolding)
+3. Stubs must stay in sync with the module conventions: final readonly resource controllers (no create), `declare(strict_types=1)` everywhere, `file_exists` guards in RouteServiceProvider, route name `v1.{module}.` prefix (see console-commands rule)
+4. New kit layers require a matching stub so the generator produces convention-compliant files

@@ -59,7 +59,7 @@ phpunit.baseline.xml          # Whitelisted deprecations/notices
 
 Notes:
 
-- `Pest.php` also registers module test paths: `modules/*/Tests/{Feature,Unit}`. `modules/IAM/Tests/` is currently empty.
+- `Pest.php` also registers module test paths: `modules/*/tests/{Feature,Unit}`. `modules/IAM/tests/` is currently empty.
 - `phpunit.xml` is strict (`failOnDeprecation`, `failOnNotice`, etc.) and declares the baseline — see Tooling notes above.
 
 ## Expectations (`tests/Expectations.php`)
@@ -278,7 +278,7 @@ php artisan test          # always a full run
 | Location | Contains |
 |---|---|
 | `tests/` | App-layer tests (middleware, filters, requests, responses, console commands) and shared suites (`Unit`, `Feature`, `Architecture`) |
-| `modules/*/Tests/` | Module-internal tests (controllers, actions, resources). Registered as the `Modules` testsuite in `phpunit.xml`; excluded from PHPStan paths |
+| `modules/*/tests/` | Module-internal tests (controllers, actions, resources). Registered as the `Modules` testsuite in `phpunit.xml`; excluded from PHPStan paths |
 
 Rules:
 

@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Support/**'
+  - 'modules/*/app/Support/**'
   - 'app/Support/**'
 ---
 

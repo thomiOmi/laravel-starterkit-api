@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Features/**'
+  - 'modules/*/app/Features/**'
   - 'app/Features/**'
   - 'config/modules.php'
 ---

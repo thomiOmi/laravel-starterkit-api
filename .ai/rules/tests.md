@@ -1,21 +1,21 @@
 ---
 paths:
   - 'tests/**'
-  - 'modules/*/Tests/**'
+  - 'modules/*/tests/**'
 ---
 
 # Tests
 
 ## Goal
 
-Structured Pest tests with typed helpers; module tests self-contained in `modules/*/Tests/`, shared app tests in `tests/`, all filterable by group.
+Structured Pest tests with typed helpers; module tests self-contained in `modules/*/tests/`, shared app tests in `tests/`, all filterable by group.
 
 ## Rules
 
 1. Every test file MUST use `describe()` blocks and `it()` (never bare `test()`); names describe behavior, not implementation
 2. Groups: shared tests are grouped in `tests/Pest.php` (`app`, `feature`, `unit`, `arch`); module tests tag `->group('module:{module}')` per test plus the `feature`/`unit` group from `tests/Pest.php`; use smoke/slow/integration tags sparingly. Filter with `vendor/bin/pest --group=app` (shared only), `--group=feature` (all feature tests), `--group=module:iam` (IAM only). See https://pestphp.com/docs/grouping-tests
 3. Use typed helpers from `tests/Helpers.php` (`assertSuccessResponse`, `assertProblemResponse`, `assertPaginatedResponse`, `loginAsUser`, `loginAsRole`, `responseData`, `artisanCommand`) instead of inline `getData()`/`artisan()`
-4. Shared tests MAY import module classes directly (models, factories, seeders, contracts, enums) - ArchitectureTest allows `Tests` to use `Modules\*\*`. `tests/Helpers.php` stays as a convenience seam for shared helpers, not a hard boundary. Module tests stay self-contained in `modules/*/Tests/` and may import their own module plus other modules' public API seam (models, contracts)
+4. Shared tests MAY import module classes directly (models, factories, seeders, contracts, enums) - ArchitectureTest allows `Tests` to use `Modules\*\*`. `tests/Helpers.php` stays as a convenience seam for shared helpers, not a hard boundary. Module tests stay self-contained in `modules/*/tests/` and may import their own module plus other modules' public API seam (models, contracts)
 5. Every code change requires tests; supported suites today: unit, feature, profanity (coverage/mutation/type-coverage gates temporarily suspended, scripts removed). Quality flow: `composer lint` (pint) -> `composer rector:dry` (rector) -> `composer types:check` (phpstan) -> `composer test` (pest) -> `composer test:profanity`; `composer ci:check` runs all in order
 6. RefreshDatabase for feature tests; beforeEach seeds roles, `forgetCachedPermissions()`, creates admin via `loginAsUser`; reusable helpers go to `tests/Helpers.php` (3+ files), named datasets to `tests/Datasets/{Name}.php` (2+ uses)
 7. ArchitectureTest (tests/Architecture/ArchitectureTest.php) is the single source of truth for conventions; assertion changes require human approval (report first, do not auto-fix)

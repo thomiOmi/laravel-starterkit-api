@@ -1,14 +1,14 @@
 ---
 paths:
   - 'lang/**'
-  - 'modules/*/Lang/**'
+  - 'modules/*/app/Lang/**'
 ---
 
 # Localization
 
 ## Goal
 
-User-facing strings come from translation files via `__()`, never hardcoded. App translations live in `lang/{locale}/`; module translations in `modules/{Module}/Lang/{locale}/` are loaded by the base `ModuleServiceProvider` while the module is active.
+User-facing strings come from translation files via `__()`, never hardcoded. App translations live in `lang/{locale}/`; module translations in `modules/{Module}/app/Lang/{locale}/` are loaded by the nWidart base `ModuleServiceProvider` while the module is active.
 
 ## Rules
 

@@ -13,7 +13,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0005](0005-app-shared-vocabulary.md) | `app/` Is Shared Vocabulary and Contract | Accepted | 2026-08-07 |
 | [0006](0006-module-policies-gate-policy.md) | Module Policies via `Gate::policy` | Accepted | 2026-08-08 |
 | [0007](0007-iam-enums-in-app.md) | IAM Enums Stay in `app/Enums` | Accepted | 2026-08-07 |
-| [0008](0008-single-route-discovery.md) | Single Route Discovery via RouteServiceProvider | Accepted | 2026-08-08 |
+| [0008](0008-single-route-discovery.md) | Single Route Discovery via RouteServiceProvider | Superseded by ADR-0029 | 2026-08-08 |
 | [0009](0009-plain-abstract-readonly-controller.md) | Plain Abstract Readonly Controller Base | Accepted | 2026-08-08 |
 | [0010](0010-typed-config-access.md) | Typed Config Access | Accepted | 2026-08-08 |
 | [0011](0011-response-headers-parity.md) | Response Headers Parity Without a Shared Trait | Accepted | 2026-08-08 |
@@ -29,11 +29,12 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0021](0021-social-auth-design.md) | Social Auth Design (Pivot, Stateless State, Email Binding) | Accepted | 2026-08-09 |
 | [0022](0022-feature-flag-middleware.md) | Custom FeatureFlagMiddleware over Native Pennant | Accepted | 2026-08-10 |
 | [0023](0023-tenancy-opt-in-organization-module.md) | Tenancy as an Opt-In Organization Module (Single Database) | Accepted | 2026-08-11 |
-| [0024](0024-module-registry-allow-list.md) | Module Registry Allow-List Without Environment Toggle | Accepted | 2026-08-11 |
+| [0024](0024-module-registry-allow-list.md) | Module Registry Allow-List Without Environment Toggle | Superseded by ADR-0029 | 2026-08-11 |
 | [0025](0025-global-users-organization-membership.md) | Global Users With Organization Membership (Single-DB Data Model) | Accepted | 2026-08-11 |
 | [0026](0026-rules-coverage-decisions.md) | Rules Coverage Decisions (G5) | Accepted | 2026-08-14 |
 | [0027](0027-module-anatomy-migration-and-api-v2.md) | Module Anatomy Migration Timing and API V2 Versioning | Accepted | 2026-08-14 |
 | [0028](0028-ensure-email-is-verified-override.md) | EnsureEmailIsVerified Overrides the Native `verified` Middleware | Accepted | 2026-08-14 |
+| [0029](0029-nwidart-laravel-modules.md) | Standardize on nwidart/laravel-modules | Accepted | 2026-08-17 |
 
 ## Process
 

@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Payloads/**'
+  - 'modules/*/app/Payloads/**'
   - 'app/Payloads/**'
 ---
 

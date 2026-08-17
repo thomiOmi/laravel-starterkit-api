@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Models/**'
+  - 'modules/*/app/Models/**'
   - 'app/Models/**'
 ---
 

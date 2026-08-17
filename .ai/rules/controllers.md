@@ -1,14 +1,14 @@
 ---
 paths:
-  - 'modules/*/Http/Controllers/**'
-  - 'modules/*/Controllers/**'
+  - 'modules/*/app/Http/Controllers/**'
+  - 'modules/*/app/Http/Controllers/**'
 ---
 
 # Controllers
 
 ## Goal
 
-Thin HTTP layer: parse the request, call the action, return the response. Single-action invokable classes in `modules/{Module}/Http/Controllers/V1/`.
+Thin HTTP layer: parse the request, call the action, return the response. Single-action invokable classes in `modules/{Module}/app/Http/Controllers/V1/`.
 
 ## Rules
 

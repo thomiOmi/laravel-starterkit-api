@@ -51,8 +51,8 @@ A pre-commit hook runs `composer lint:staged` automatically.
 
 ## Working on Modules
 
-- Create a module with `php artisan make:module`; see `docs/module-generator.md`.
-- Modules are self-contained under `modules/{Module}/` and auto-discovered by `ModuleServiceProvider`. Do not register module routes, models, or migrations in the shared `app/` or `routes/` areas.
+- Create a module with `php artisan module:make`; see `docs/module-generator.md`.
+- Modules are self-contained under `modules/{Module}/` and activated via `php artisan module:enable` (status in `modules_statuses.json`). Do not register module routes, models, or migrations in the shared `app/` or `routes/` areas.
 - Modules communicate through contracts, not direct imports. Keep the core (IAM) minimal and let feature modules extend it.
 - Read `.ai/rules/` before creating or editing module code; conventions are settled there.
 

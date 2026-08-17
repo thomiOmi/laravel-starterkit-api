@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Services/**'
+  - 'modules/*/app/Services/**'
 ---
 
 # Services

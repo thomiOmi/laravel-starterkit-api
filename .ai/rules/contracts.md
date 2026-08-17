@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Contracts/**'
+  - 'modules/*/app/Contracts/**'
   - 'app/Contracts/**'
 ---
 
@@ -8,7 +8,7 @@ paths:
 
 ## Goal
 
-Module contracts in `modules/{Module}/Contracts/`; cross-module contracts (shared vocabulary) in `app/Contracts/`. Modules communicate through contracts or public API seams, not by importing other modules' internal classes.
+Module contracts in `modules/{Module}/app/Contracts/`; cross-module contracts (shared vocabulary) in `app/Contracts/`. Modules communicate through contracts or public API seams, not by importing other modules' internal classes.
 
 ## Rules
 

@@ -1,6 +1,6 @@
 ---
 paths:
-  - 'modules/*/Builders/**'
+  - 'modules/*/app/Builders/**'
   - 'app/Builders/**'
 ---
 
