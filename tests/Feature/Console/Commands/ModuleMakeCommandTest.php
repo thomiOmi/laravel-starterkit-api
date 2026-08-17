@@ -87,7 +87,7 @@ describe('module:make command', function () {
         expect($routeProvider)->toContain('mapApiRoutes')
             ->toContain('mapWebRoutes')
             ->toContain('file_exists')
-            ->toContain("->name('api.')");
+            ->toContain("->name('v1.')");
 
         $routes = file_get_contents($modulePath.'/routes/api.php');
         expect($routes)->toContain("'auth:sanctum'")
