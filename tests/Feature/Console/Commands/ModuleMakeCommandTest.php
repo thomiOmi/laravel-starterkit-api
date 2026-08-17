@@ -58,7 +58,7 @@ describe('module:make command', function () {
             'module.json',
             'composer.json',
             'config/config.php',
-            'routes/api.php',
+            'routes/V1.php',
             'app/Providers/BlogServiceProvider.php',
             'app/Providers/RouteServiceProvider.php',
             'app/Providers/EventServiceProvider.php',
@@ -87,13 +87,14 @@ describe('module:make command', function () {
         expect($routeProvider)->toContain('mapApiRoutes')
             ->toContain('mapWebRoutes')
             ->toContain('file_exists')
-            ->toContain("->name('v1.')");
+            ->toContain('apiroute.supported_versions')
+            ->toContain("->name('api.'.strtolower(\$version).'.'.\$this->nameLower.'.')");
 
-        $routes = file_get_contents($modulePath.'/routes/api.php');
+        $routes = file_get_contents($modulePath.'/routes/V1.php');
         expect($routes)->toContain("'auth:sanctum'")
-            ->toContain("->prefix('v1')")
             ->toContain('apiResource')
-            ->toContain("->names('blog')");
+            ->not->toContain("->prefix('v1')")
+            ->not->toContain("->names('blog')");
 
         $config = file_get_contents($modulePath.'/config/config.php');
         expect($config)->toContain("'name' => 'Blog'");
@@ -135,7 +136,7 @@ describe('module:make command', function () {
         foreach ([
             'composer.json',
             'config/config.php',
-            'routes/api.php',
+            'routes/V1.php',
             'app/Providers/GadgetServiceProvider.php',
             'app/Providers/RouteServiceProvider.php',
             'app/Providers/EventServiceProvider.php',

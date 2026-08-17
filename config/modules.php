@@ -39,7 +39,7 @@ return [
         'path' => base_path('stubs/module-generator'),
         'files' => [
             // 'routes/web' => 'routes/web.php',
-            'routes/api' => 'routes/api.php',
+            'routes/V1' => 'routes/V1.php',
             'scaffold/config' => 'config/config.php',
             'composer' => 'composer.json',
             // TODO: support frontend
@@ -73,7 +73,7 @@ return [
              * Note: Keys should be in UPPERCASE.
              */
             'routes/web' => ['LOWER_NAME', 'STUDLY_NAME', 'PLURAL_LOWER_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
-            'routes/api' => ['LOWER_NAME', 'STUDLY_NAME', 'PLURAL_LOWER_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
+            'routes/V1' => ['LOWER_NAME', 'STUDLY_NAME', 'PLURAL_LOWER_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'CONTROLLER_NAMESPACE'],
             'vite' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME'],
             'json' => ['LOWER_NAME', 'STUDLY_NAME', 'KEBAB_NAME', 'MODULE_NAMESPACE', 'PROVIDER_NAMESPACE'],
             'views/index' => ['LOWER_NAME'],

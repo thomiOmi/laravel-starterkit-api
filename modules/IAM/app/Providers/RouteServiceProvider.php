@@ -29,10 +29,10 @@ class RouteServiceProvider extends ServiceProvider
      * Define the versioned API routes for the module.
      *
      * The route files live under routes/ and are versioned by filename
-     * (V1.php, V2.php). Each file is mounted on the api/v1 prefix; the
-     * module alias only participates in the v1.{alias}. route naming
-     * contract, matching the kit's URL scheme (api/v1/users, not
-     * api/v1/iam/users).
+     * (V1.php, V2.php). Each file is mounted on the api/{version} prefix;
+     * the name prefix follows the api.{version}.{alias}. contract (for
+     * example api.v1.iam.users.index), matching the kit's URL scheme
+     * (api/v1/users, not api/v1/iam/users).
      */
     protected function mapApiRoutes(): void
     {
@@ -48,7 +48,7 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::prefix('api/'.strtolower($version))
                 ->middleware(['api'])
-                ->name(strtolower($version).'.'.$this->nameLower.'.')
+                ->name('api.'.strtolower($version).'.'.$this->nameLower.'.')
                 ->group($routeFile);
         }
     }
