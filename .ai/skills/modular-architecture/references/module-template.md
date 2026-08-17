@@ -51,7 +51,7 @@ class {Module}ServiceProvider extends ModuleServiceProvider
 
 ## Module Route Service Provider
 
-`modules/{Module}/app/Providers/RouteServiceProvider.php` mounts each existing `routes/{Version}.php` on `api/{version}` with name prefix `{version}.{alias}.`:
+`modules/{Module}/app/Providers/RouteServiceProvider.php` mounts each existing `routes/{Version}.php` on `api/{version}` with name prefix `api.{version}.{alias}.`:
 
 ```php
 <?php
@@ -87,7 +87,7 @@ class RouteServiceProvider extends ServiceProvider
 
             Route::prefix('api/'.strtolower($version))
                 ->middleware(['api'])
-                ->name(strtolower($version).'.'.$this->nameLower.'.')
+                ->name('api.'.strtolower($version).'.'.$this->nameLower.'.')
                 ->group($routeFile);
         }
     }

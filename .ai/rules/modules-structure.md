@@ -18,7 +18,7 @@ Modules mirror the stock Laravel `app/` skeleton (mirror principle): `modules/{M
 4. Optional folders (only created if they contain at least 1 file, empty folders forbidden): Http (Controllers, Middleware, Requests, Resources), Console (Commands), Exceptions, Features (Pennant class-based features), Jobs, Mail, Rules, Events, Listeners, Lang ({locale}/), Models, Observers, Policies, Scopes, Notifications, Actions, Builders, Services, Payloads, Support, Contracts, Enums, Config ({alias}.php), Database (Migrations, Factories, Seeders)
 5. Kit-specific layers without a skeleton counterpart: Actions, Services, Payloads, Builders, Features, Config, Routes, Database, Tests, Lang
 6. `app/Http/Responses` is a global contract and is not mirrored into modules
-7. Module alias is the lowercase module name (`iam`), not the TitleCase folder name; used for config keys, `config/{Module}.php`, and the route name prefix (`v1.iam.`)
+7. Module alias is the lowercase module name (`iam`), not the TitleCase folder name; used for config keys, `config/{Module}.php`, and the route name prefix (`api.v1.iam.`)
 
 On-demand layers (Jobs, Events, Listeners, Mail, Rules, Exceptions, Lang, Observers, Scopes):
 
@@ -34,7 +34,7 @@ On-demand layers (Jobs, Events, Listeners, Mail, Rules, Exceptions, Lang, Observ
 
 ## Module Generator (`stubs/module-generator/`)
 
-1. `php artisan module:make {Name}` scaffolds a backend-only module: `module.json`, `composer.json`, `config/config.php`, `routes/api.php`, `app/Providers/{Module}ServiceProvider.php` + `EventServiceProvider.php` + `RouteServiceProvider.php`, `app/Http/Controllers/{Module}Controller.php`, `database/seeders/{Module}DatabaseSeeder.php`, `tests/`
+1. `php artisan module:make {Name}` scaffolds a backend-only module: `module.json`, `composer.json`, `config/config.php`, `routes/V1.php`, `app/Providers/{Module}ServiceProvider.php` + `EventServiceProvider.php` + `RouteServiceProvider.php`, `app/Http/Controllers/{Module}Controller.php`, `database/seeders/{Module}DatabaseSeeder.php`, `tests/`
 2. Options: `--api` (generates API routes/controller), `--disabled` (module.json disabled), `--plain` (no scaffolding)
-3. Stubs must stay in sync with the module conventions: final readonly resource controllers (no create), `declare(strict_types=1)` everywhere, `file_exists` guards in RouteServiceProvider, route name `v1.{module}.` prefix (see console-commands rule)
+3. Stubs must stay in sync with the module conventions: final readonly resource controllers (no create), `declare(strict_types=1)` everywhere, `file_exists` guards in RouteServiceProvider, route name `api.{version}.{module}.` prefix (see console-commands rule)
 4. New kit layers require a matching stub so the generator produces convention-compliant files

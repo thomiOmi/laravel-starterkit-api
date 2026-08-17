@@ -382,7 +382,7 @@ Aturan:
 2. Provider modul hanya deklarasi: `$name`, `$nameLower`, array `$providers`, dan hook `boot()` untuk middleware alias, Pennant features, binding (policy via `#[UsePolicy]` di model)
 3. Aktivasi modul via FileActivator (status live di `modules_statuses.json`); modul non-enabled = provider tidak pernah di-boot
 4. Tanpa registrasi tersembunyi; middleware alias didaftarkan eksplisit, bukan magic discovery
-5. Alias modul = lowercase nama modul (`'Media'` ke `'media'`); alias dipakai untuk key config (`config('media.*')`) dan route name prefix (`v1.media.`, 3.18)
+5. Alias modul = lowercase nama modul (`'Media'` ke `'media'`); alias dipakai untuk key config (`config('media.*')`) dan route name prefix (`api.v1.media.`, 3.18)
 
 Larangan:
 - Dilarang provider modul extends `Illuminate\Support\ServiceProvider` langsung (harus nWidart base `ModuleServiceProvider`)
@@ -480,10 +480,10 @@ Larangan:
 
 ### 3.18 Routes
 
-Definisi: route file modul di `modules/{Module}/routes/V1.php`, dimuat `app/Providers/RouteServiceProvider.php` modul sendiri (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`) saat modul aktif; provider mengiterasi `apiroute.supported_versions` (default `['V1']`), meng-guard `file_exists`, dan me-mount `api/{version}` dengan name prefix `{version}.{alias}.`.
+Definisi: route file modul di `modules/{Module}/routes/V1.php`, dimuat `app/Providers/RouteServiceProvider.php` modul sendiri (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`) saat modul aktif; provider mengiterasi `apiroute.supported_versions` (default `['V1']`), meng-guard `file_exists`, dan me-mount `api/{version}` dengan name prefix `api.{version}.{alias}.`.
 
 Aturan:
-1. Base prefix `api/v1/{path}` (tanpa segmen modul di URL); route name `v1.{module}.{name}`
+1. Base prefix `api/v1/{path}` (tanpa segmen modul di URL); route name `api.{version}.{module}.{name}`
 2. Middleware eksplisit di route group (auth:sanctum, throttle, permission, feature.flag)
 3. Route file hanya dimuat jika modul aktif
 
@@ -542,7 +542,7 @@ Aturan:
 1. Wajib `BulkActionRequest` (shared) untuk semua endpoint bulk; otorisasi per aksi via `authorize()` berbasis route name
 2. Action bulk = satu query `whereIn` (delete/restore), return count
 3. `Bus::bulk`/`Bus::batch` TIDAK dipakai untuk mutasi sinkron; hanya untuk per-item processing berat yang butuh queue (belum ada use case; aturan ditambah saat muncul)
-4. Routing: `POST /{resource}/bulk/{action}`, route name `v1.{module}.{resource}.bulk.{action}`
+4. Routing: `POST /{resource}/bulk/{action}`, route name `api.{version}.{module}.{resource}.bulk.{action}`
 5. Catatan: query bulk tidak memicu model events/observer per row (trade-off disengaja)
 
 Larangan:
@@ -571,7 +571,7 @@ Larangan:
 2. Format tanggal semua field response: `Y-m-d H:i:s`
 3. `declare(strict_types=1)` di setiap file PHP
 4. PHP 8 attributes diutamakan atas properties (model, job, command)
-5. Route name `v1.{module}.{name}`; modul lowercase di status aktivasi
+5. Route name `api.{version}.{module}.{name}`; modul lowercase di status aktivasi
 6. Kelas operasional: `final readonly`; gunakan constructor property promotion
 7. Dokumen (docs, rule, roadmap): ASCII murni, tanpa emoji, tanpa em/en dash, tanpa arrow, pakai hyphen
 8. Bahasa kode dan komentar: English
@@ -584,7 +584,7 @@ Larangan:
 php artisan module:make Blog
 ```
 
-Generator nWidart (stub kit di `stubs/module-generator/`) membuat struktur: `module.json`, `composer.json`, `config/config.php`, `routes/api.php`, `app/Providers/*`, `app/Http/Controllers/{Module}Controller.php`, `database/seeders/`, `tests/`. Opsi: `--api`, `--disabled`, `--plain`. Optional layer ditambah saat dibutuhkan (bukan di awal).
+Generator nWidart (stub kit di `stubs/module-generator/`) membuat struktur: `module.json`, `composer.json`, `config/config.php`, `routes/V1.php`, `app/Providers/*`, `app/Http/Controllers/{Module}Controller.php`, `database/seeders/`, `tests/`. Opsi: `--api`, `--disabled`, `--plain`. Optional layer ditambah saat dibutuhkan (bukan di awal).
 
 ### 5.2 Mengaktifkan modul
 

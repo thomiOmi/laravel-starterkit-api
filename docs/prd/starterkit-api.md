@@ -113,7 +113,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 ## Architecture Overview
 
 - **Modules**: nWidart/laravel-modules; activation via `modules_statuses.json` (FileActivator, `module:enable`/`disable`, ADR-0024, ADR-0029). `IAM` (core) + `Media` (first feature module) ship enabled; `Organization` (tenancy) ships disabled. Modules communicate through contracts (`App\Contracts\Identity`), never direct imports (ADR-0004, ADR-0005).
-- **Routing**: per-module `RouteServiceProvider` loads `routes/V1.php` with prefix `api/v1`; names `v1.{module}.{name}` (ADR-0029).
+- **Routing**: per-module `RouteServiceProvider` loads `routes/V1.php` with prefix `api/v1`; names `api.{version}.{module}.{name}` (ADR-0029).
 - **Controllers**: plain `abstract readonly Controller` base; invokable `final readonly` controllers (ADR-0009).
 - **Responses**: `SuccessResponse` / `ProblemResponse` (RFC 9457), no `success` boolean.
 - **Testing**: Pest 5, `describe()`/`it()`, typed helpers in `tests/Helpers.php`, module groups `module:{name}` — see [docs/testing.md](../testing.md).

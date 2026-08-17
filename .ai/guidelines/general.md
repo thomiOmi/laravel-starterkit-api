@@ -31,7 +31,7 @@
 | Response | `SuccessResponse` / `ProblemResponse` — `{status, title?, detail?, data, meta?}` (NO `success` boolean) |
 | Error | `ProblemResponse` — RFC 9457 |
 | Date format | `Y-m-d H:i:s` |
-| Route names | `v1.{module}.{name}` |
+| Route names | `api.{version}.{module}.{name}` |
 
 ## Project Rules (`.ai/rules/`)
 

@@ -14,9 +14,9 @@ The kit originally shipped a hand-rolled module system: a custom `MakeModuleComm
 - Module activation is nwidart FileActivator: live status in `modules_statuses.json` (e.g. `{"iam": true}`); a module only boots when listed as enabled. `module:enable` / `module:disable` / `module:delete` manage status.
 - Module structure standardizes on lowercase root dirs mirroring Laravel: `app/` (mirrors `app/`, including `Http/Controllers`, `Http/Requests`, `Http/Resources`), `config/`, `database/` (factories, migrations, seeders), `routes/`, `tests/`. This deliberately deviates from nwidart TitleCase defaults (`Database/`, `Routes/`, `Tests/`).
 - Module providers extend `Nwidart\Modules\Support\ModuleServiceProvider`, which auto-merges `config/config.php`, loads `database/migrations` + `database/factories`, and registers the module's own providers from a `$providers` array.
-- Routes are loaded by each module's own `app/Providers/RouteServiceProvider.php` (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`), iterating `apiroute.supported_versions` (default `['V1']`), guarding each file with `file_exists`, mounting on `api/{version}` with name prefix `{version}.{alias}.` (supersedes ADR-0008's single central discovery).
-- The uniform route contract is unchanged: final URLs `api/v1/{path}` (no module segment), final names `v1.{module}.{name}` (e.g. `v1.iam.users.index`, `v1.blog.posts.index`).
-- Scaffold route files (`routes/api.php`) keep `declare(strict_types=1)`, `auth:sanctum` middleware, `apiResource`, and the `v1.` name prefix produced by the generated RouteServiceProvider.
+- Routes are loaded by each module's own `app/Providers/RouteServiceProvider.php` (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`), iterating `apiroute.supported_versions` (default `['V1']`), guarding each file with `file_exists`, mounting on `api/{version}` with name prefix `api.{version}.{alias}.` (supersedes ADR-0008's single central discovery).
+- The uniform route contract: final URLs `api/v1/{path}` (no module segment), final names `api.{version}.{module}.{name}` (e.g. `api.v1.iam.users.index`, `api.v1.blog.posts.index`).
+- Scaffold route files (`routes/V1.php`) keep `declare(strict_types=1)`, `auth:sanctum` middleware, `apiResource`, and the `api.{version}.{alias}.` name prefix produced by the generated RouteServiceProvider.
 
 ## Consequences
 

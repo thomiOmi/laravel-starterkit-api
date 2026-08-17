@@ -30,13 +30,13 @@ modules/{Module}/
   database/
     seeders/              -- {Module}DatabaseSeeder
   routes/
-    api.php               -- Scaffold routes (auth:sanctum, prefix v1, apiResource, names '{lower}')
+    V1.php                -- Scaffold routes (auth:sanctum, apiResource)
   tests/
   composer.json           -- Per-module package metadata (nwidart)
   module.json             -- nwidart module manifest
 ```
 
-All generated PHP files carry `declare(strict_types=1)`. The generated `RouteServiceProvider` guards both route files with `file_exists` and mounts api routes on `prefix('api')` with `name('v1.')`, producing the uniform contract: URL `api/v1/{path}`, route name `v1.{module}.{name}`.
+All generated PHP files carry `declare(strict_types=1)`. The generated `RouteServiceProvider` guards both route files with `file_exists`, iterates `apiroute.supported_versions`, and mounts api routes on `prefix('api/{version}')` with `name('api.{version}.{alias}.')`, producing the uniform contract: URL `api/v1/{path}`, route name `api.{version}.{module}.{name}`.
 
 ## Activation
 
@@ -44,10 +44,9 @@ Modules are activated via the nwidart FileActivator status in `modules_statuses.
 
 ## API Modules
 
-For API-only modules, follow the IAM contract:
+The scaffold already follows the IAM contract:
 
-1. Rename the scaffold `routes/api.php` to `routes/V1.php` (or keep `api.php` for non-versioned scaffolds)
-2. List the version in `config/apiroute.php` `supported_versions` (default `['V1']`)
-3. The module's `app/Providers/RouteServiceProvider.php` mounts each existing `routes/V{version}.php` on `api/{version}` with name prefix `{version}.{alias}.`
+1. `routes/V1.php` is generated versioned by default; additional versions follow `V{number}.php` casing and are listed in `config/apiroute.php` `supported_versions` (default `['V1']`)
+2. The module's `app/Providers/RouteServiceProvider.php` mounts each existing `routes/V{version}.php` on `api/{version}` with name prefix `api.{version}.{alias}.`
 
 See [architecture.md](architecture.md) for the full module anatomy.

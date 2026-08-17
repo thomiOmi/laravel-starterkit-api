@@ -10,7 +10,7 @@
 - Classes: `PascalCase` (e.g. `CreateUserAction`)
 - Methods/variables: `camelCase` (e.g. `isRegistered`)
 - Database tables: `snake_case` plural (e.g. `users`)
-- Route names: `v1.{module}.{name}` (e.g. `v1.auth.register`, `v1.user.index`)
+- Route names: `api.{version}.{module}.{name}` (e.g. `api.v1.iam.auth.register`, `api.v1.iam.user.index`)
 
 ## Architecture
 - Controllers: `final readonly` invokable classes with `__invoke()` -- no business logic

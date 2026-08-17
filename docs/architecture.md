@@ -316,7 +316,7 @@ project/
 | Shared code | shared/ | Vendor namespace | Modules namespace | app/ (shared vocabulary) |
 | Repositories | - | - | Repositories layer | NOT used (Eloquent is the repository) |
 
-**Decision note:** the `--repository` flag was removed from the generator (Eloquent is the repository); `--event` is kept (`Events/` optional, created when needed). Executed during generator implementation.
+**Decision note:** the kit disables frontend scaffolding in the generator: the `views`, `assets`, and `vite` stubs are commented out in `config/modules.php` (marked "TODO: support frontend"), so generated modules are backend-only. There is no `--repository` flag on `module:make` (nwidart v13); repositories are on-demand via `module:make-repository` when a real use case appears (Eloquent is the repository). `--event` is kept (`Events/` optional, created when needed). Executed during generator implementation.
 
 ---
 
@@ -380,7 +380,7 @@ project/
 2. **Date format** for all response fields: `Y-m-d H:i:s`.
 3. **`declare(strict_types=1)`** in every PHP file.
 4. **PHP 8 attributes** preferred over properties (model, job, command).
-5. **Route naming** `v1.{module}.{name}`; module lowercase in `modules_statuses.json`.
+5. **Route naming** `api.{version}.{module}.{name}`; module lowercase in `modules_statuses.json`.
 6. **Operational classes**: `final readonly`; use constructor property promotion.
 7. **Documents** (docs, rules, roadmap): pure ASCII, no emoji, no em/en dash, no arrows, use hyphens.
 8. **Code and comment language**: English.
@@ -590,7 +590,7 @@ User::query()
 2. Module providers only declare: `$name`, `$nameLower`, the `$providers` array, and the `boot()` hook for middleware aliases, Pennant features, bindings (policies via `#[UsePolicy]` on models).
 3. Module activation through nWidart FileActivator (`modules_statuses.json`); a non-enabled module = provider never boots.
 4. No hidden registrations; middleware aliases registered explicitly, not via magic discovery.
-5. The module alias is lowercase module name (`'Media'` becomes `'media'`); the alias is used for the config key (`config('media.*')`) and the route name prefix (`v1.media.`, 5.17).
+5. The module alias is lowercase module name (`'Media'` becomes `'media'`); the alias is used for the config key (`config('media.*')`) and the route name prefix (`api.v1.media.`, 5.17).
 6. `OrganizationServiceProvider` is the exception: extends stancl `TenancyServiceProvider` (not the base) because tenancy is opt-in via its own provider lifecycle.
 
 **Forbidden:** module providers extending `ServiceProvider` directly (must extend nWidart base `ModuleServiceProvider`); providers registering routes outside `routes/`; `env()` in providers.
@@ -653,11 +653,11 @@ User::query()
 
 ### 5.17 Routes
 
-**Definition:** module route files in `modules/{Module}/routes/V1.php`, loaded by the module's own `RouteServiceProvider` (in the `$providers` array) when the module is active. The provider extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`, iterates `apiroute.supported_versions` (default `['V1']`), guards with `file_exists`, and mounts `api/{version}` with name prefix `{version}.{alias}.`.
+**Definition:** module route files in `modules/{Module}/routes/V1.php`, loaded by the module's own `RouteServiceProvider` (in the `$providers` array) when the module is active. The provider extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`, iterates `apiroute.supported_versions` (default `['V1']`), guards with `file_exists`, and mounts `api/{version}` with name prefix `api.{version}.{alias}.`.
 
 **Rules:**
 
-1. Base prefix `api/v1/{path}` (no module segment in the URL); route name `v1.{module}.{name}`.
+1. Base prefix `api/v1/{path}` (no module segment in the URL); route name `api.{version}.{module}.{name}`.
 2. Explicit middleware on route groups (auth:sanctum, throttle, permission, feature.flag).
 3. Route files are only loaded when the module is active.
 
@@ -685,7 +685,7 @@ User::query()
 1. `BulkActionRequest` (shared) required for all bulk endpoints; per-action authorization via `authorize()` based on route name.
 2. Bulk Action = one `whereIn` query (delete/restore), returns count.
 3. `Bus::bulk`/`Bus::batch` is **NOT** used for synchronous mutations; only for heavy per-item processing needing a queue (no use case yet; rule added when one appears).
-4. Routing: `POST /{resource}/bulk/{action}`, route name `v1.{module}.{resource}.bulk.{action}`.
+4. Routing: `POST /{resource}/bulk/{action}`, route name `api.{version}.{module}.{resource}.bulk.{action}`.
 5. Note: bulk queries do not trigger model events/observers per row (deliberate trade-off).
 
 **Forbidden:** dispatching one job per item for simple delete/restore; query loops in controllers (loops, when needed, only in Actions).
@@ -713,7 +713,7 @@ User::query()
 php artisan module:make Blog
 ```
 
-The nWidart generator (stub kit in `stubs/module-generator/`) creates the structure: `module.json`, `composer.json`, `config/config.php`, `routes/api.php`, `app/Providers/*`, `app/Http/Controllers/{Module}Controller.php`, `database/seeders/`, `tests/`. Options: `--api`, `--disabled`, `--plain`. Optional layers are added when needed (not up front).
+The nWidart generator (stub kit in `stubs/module-generator/`) creates the structure: `module.json`, `composer.json`, `config/config.php`, `routes/V1.php`, `app/Providers/*`, `app/Http/Controllers/{Module}Controller.php`, `database/seeders/`, `tests/`. Options: `--api`, `--disabled`, `--plain`. Optional layers are added when needed (not up front).
 
 ### 6.2 Activating a module
 

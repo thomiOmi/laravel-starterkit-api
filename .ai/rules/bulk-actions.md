@@ -16,7 +16,7 @@ Mass mutation endpoints (delete, restore) processing many ids at once. Shared re
 1. `BulkActionRequest` (shared) is mandatory for all bulk endpoints; per-action authorization via `authorize()` based on the route name
 2. Bulk action = a single `whereIn` query (delete/restore), returns count
 3. `Bus::bulk`/`Bus::batch` NOT used for synchronous mutations; only for heavy per-item processing that needs a queue (no use case yet; rule added when one appears)
-4. Routing: `POST /{resource}/bulk/{action}`, route name `v1.{module}.{resource}.bulk.{action}`
+4. Routing: `POST /{resource}/bulk/{action}`, route name `api.{version}.{module}.{resource}.bulk.{action}`
 5. Note: bulk queries do not trigger per-row model events/observers (deliberate trade-off)
 
 ## Forbidden

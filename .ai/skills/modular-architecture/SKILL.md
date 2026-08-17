@@ -61,10 +61,10 @@ You do NOT need to register modules in `config/app.php`.
 
 ## Step: Create a New Module
 
-1. Run `php artisan module:make {ModuleName}` -- generates `module.json`, `composer.json`, `config/config.php`, `routes/api.php`, `app/Providers/{ModuleName}ServiceProvider.php` + `EventServiceProvider.php` + `RouteServiceProvider.php`, `app/Http/Controllers/{ModuleName}Controller.php`, `database/seeders/{ModuleName}DatabaseSeeder.php`, and `tests/`
+1. Run `php artisan module:make {ModuleName}` -- generates `module.json`, `composer.json`, `config/config.php`, `routes/V1.php`, `app/Providers/{ModuleName}ServiceProvider.php` + `EventServiceProvider.php` + `RouteServiceProvider.php`, `app/Http/Controllers/{ModuleName}Controller.php`, `database/seeders/{ModuleName}DatabaseSeeder.php`, and `tests/`
    - `--api` generates API scaffolding, `--disabled` creates the module inactive, `--plain` skips scaffolding
-2. Rename/remove the generated `routes/api.php` to the versioned contract `routes/V1.php` for API modules
-3. In `app/Providers/RouteServiceProvider.php`, list `V1` (or the version) in `config('apiroute.supported_versions')` so `mapApiRoutes()` mounts it on `api/v1` with name prefix `v1.{alias}.`
+2. The scaffold already produces the versioned contract: `routes/V1.php` is mounted by the generated `RouteServiceProvider` via `config('apiroute.supported_versions')` (default `['V1']`); additional versions follow `V{number}.php` casing
+3. In `app/Providers/RouteServiceProvider.php`, list `V1` (or the version) in `config('apiroute.supported_versions')` so `mapApiRoutes()` mounts it on `api/v1` with name prefix `api.v1.{alias}.`
 4. Enable the module with `php artisan module:enable {ModuleName}` (writes `modules_statuses.json`)
 5. Run `php artisan module:migrate` for the module's migrations (or `migrate --path=modules/{ModuleName}/database/migrations`)
 6. Add a feature test asserting the generated route contract (see console-commands rule); scaffolded modules must boot and pass the architecture tests
@@ -244,7 +244,7 @@ class {Resource}Resource extends JsonResource
 
 ### Route
 
-`routes/V1.php` files are relative: the module's `RouteServiceProvider` mounts them on `api/{version}` with middleware `api` and name prefix `{version}.{alias}.`.
+`routes/V1.php` files are relative: the module's `RouteServiceProvider` mounts them on `api/{version}` with middleware `api` and name prefix `api.{version}.{alias}.`.
 
 ```php
 Route::prefix('{resources}')
@@ -259,7 +259,7 @@ Route::prefix('{resources}')
     });
 ```
 
-- Final route names: `v1.{module}.{name}` (prefix set in RouteServiceProvider)
+- Final route names: `api.{version}.{module}.{name}` (prefix set in RouteServiceProvider)
 - Final URL: `api/v1/{path}` -- no module segment in the URL (e.g. `/api/v1/users`, not `/api/v1/iam/users`)
 - Auth routes under `auth/` prefix
 - Resource routes under plural resource name prefix
@@ -348,7 +348,7 @@ Unit test per Action (test business logic in isolation) in `tests/Unit`. Feature
 - Use `relationLoaded()` in Resources to guard against N+1
 - Write Unit test per Action + Feature test per endpoint
 - Use `(string)` / `(int)` / `(bool)` for type casting over function calls
-- Route naming format: `v1.{module}.{name}`
+- Route naming format: `api.{version}.{module}.{name}`
 - Use `#[Middleware]` attribute (Laravel 13+) on controllers as an alternative to defining middleware in route groups
 
 ## Project-Specific Prohibitions (Must Do Not)
