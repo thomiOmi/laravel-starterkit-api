@@ -10,6 +10,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | modules/*/Console/Commands/**, modules/*/Commands/**, app/Console/Commands/** | .ai/rules/commands.md |
 | app/Concerns/** | .ai/rules/concerns.md |
 | modules/*/Config/**, config/**, config/modules.php | .ai/rules/config.md |
+| stubs/module-generator/**, tests/Architecture/**, tests/Feature/Console/Commands/** | .ai/rules/console-commands.md |
 | modules/*/Contracts/**, app/Contracts/** | .ai/rules/contracts.md |
 | modules/*/Http/Controllers/**, modules/*/Controllers/** | .ai/rules/controllers.md |
 | database/migrations/**, modules/*/Database/** | .ai/rules/database.md |

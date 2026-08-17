@@ -13,8 +13,6 @@ class $NAME$ extends Seeder
      */
     public function run(): void
     {
-        // $this->call([
-        //     {Module}Seeder::class,
-        // ]);
+        // $this->call([]);
     }
 }

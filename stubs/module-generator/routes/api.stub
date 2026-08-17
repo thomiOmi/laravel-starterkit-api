@@ -3,21 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$\$STUDLY_NAME$Controller;
 
-/*
-|--------------------------------------------------------------------------
-| $STUDLY_NAME$ v1 API Routes
-|--------------------------------------------------------------------------
-|
-| Loaded by the module RouteServiceProvider with the 'api' middleware,
-| prefixed with api/v1, and named v1.$LOWER_NAME$.*. Keep middleware
-| explicit on the route group (auth:sanctum, throttle, permission,
-| feature.flag) - no hidden middleware in service providers.
-|
-| Kit conventions: controllers in app/Http/Controllers/V1, Form Requests
-| in app/Http/Requests/V1, resources in app/Http/Resources.
-|
-*/
-Route::middleware(['auth:sanctum'])->group(function (): void {
-    // Define the module's v1 routes here.
+Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
+    Route::apiResource('$PLURAL_LOWER_NAME$', $STUDLY_NAME$Controller::class)->names('$LOWER_NAME$');
 });

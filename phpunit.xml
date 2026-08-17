@@ -16,16 +16,17 @@
 >
     <testsuites>
         <testsuite name="Architecture">
-            <directory>tests/Architecture</directory>
+            <directory suffix="Test.php">tests/Architecture</directory>
         </testsuite>
         <testsuite name="Unit">
-            <directory>tests/Unit</directory>
+            <directory suffix="Test.php">tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
-            <directory>tests/Feature</directory>
+            <directory suffix="Test.php">tests/Feature</directory>
         </testsuite>
         <testsuite name="Modules">
-            <directory>modules/*/Tests</directory>
+            <directory suffix="Test.php">./modules/*/tests/Feature</directory>
+            <directory suffix="Test.php">./modules/*/tests/Unit</directory>
         </testsuite>
     </testsuites>
     <source baseline="phpunit.baseline.xml">
@@ -36,9 +37,11 @@
         <exclude>
             <directory>app/Providers</directory>
             <directory>database</directory>
-            <directory>modules/*/Tests</directory>
-            <directory>modules/*/Database</directory>
-            <directory>modules/*/Routes</directory>
+            <directory>modules/*/config</directory>
+            <directory>modules/*/database</directory>
+            <directory>modules/*/resources</directory>
+            <directory>modules/*/routes</directory>
+            <directory>modules/*/tests</directory>
         </exclude>
     </source>
     <php>

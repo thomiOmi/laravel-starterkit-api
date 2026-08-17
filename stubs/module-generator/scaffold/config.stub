@@ -4,19 +4,4 @@ declare(strict_types=1);
 
 return [
     'name' => '$STUDLY_NAME$',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Module Features
-    |--------------------------------------------------------------------------
-    |
-    | Build-time feature toggles for this module. The base ModuleServiceProvider
-    | merges them into config('{alias}.features') while the module is active.
-    | Runtime per-user toggles belong in modules/{Module}/Features as Pennant
-    | classes, not here.
-    |
-    */
-    'features' => [
-        // 'some-feature' => true,
-    ],
 ];

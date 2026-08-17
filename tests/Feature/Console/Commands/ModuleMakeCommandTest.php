@@ -2,33 +2,48 @@
 
 declare(strict_types=1);
 
-use App\Console\Commands\ModuleMakeCommand;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Process;
+use Nwidart\Modules\Commands\Make\ModuleMakeCommand;
 
 covers(ModuleMakeCommand::class);
 
-afterEach(function () {
+/**
+ * @return array<mixed, mixed>
+ */
+function decodeModuleJson(string $path): array
+{
+    $json = json_decode(file_get_contents($path) ?: '', true);
+
+    if (! is_array($json)) {
+        throw new RuntimeException("Invalid JSON in {$path}");
+    }
+
+    return $json;
+}
+
+beforeEach(function (): void {
+    Process::fake();
+});
+
+afterEach(function (): void {
     $files = app('files');
 
-    foreach (['Blog', 'Shop', 'Gadget', 'Fake', 'Widget', 'Store'] as $module) {
+    foreach (['Blog', 'Shop', 'Gadget', 'Fake'] as $module) {
         $files->deleteDirectory(base_path("modules/{$module}"));
     }
 
     $statusesPath = base_path('modules_statuses.json');
 
-    $contents = $files->get($statusesPath);
+    $statuses = decodeModuleJson($statusesPath);
 
-    /** @var array<string, bool> $statuses */
-    $statuses = json_decode($contents, true);
-
-    unset($statuses['Blog'], $statuses['Shop'], $statuses['Gadget'], $statuses['Fake'], $statuses['Widget'], $statuses['Store']);
+    unset($statuses['Blog'], $statuses['Shop'], $statuses['Gadget'], $statuses['Fake']);
 
     $json = json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-    if (! is_string($json)) {
-        return;
+    if (is_string($json)) {
+        $files->put($statusesPath, $json);
     }
-
-    $files->put($statusesPath, $json);
 });
 
 describe('module:make command', function () {
@@ -43,9 +58,11 @@ describe('module:make command', function () {
             'module.json',
             'composer.json',
             'config/config.php',
-            'routes/V1.php',
+            'routes/api.php',
             'app/Providers/BlogServiceProvider.php',
             'app/Providers/RouteServiceProvider.php',
+            'app/Providers/EventServiceProvider.php',
+            'app/Http/Controllers/BlogController.php',
             'database/factories/.gitkeep',
             'database/migrations/.gitkeep',
             'database/seeders/BlogDatabaseSeeder.php',
@@ -55,92 +72,96 @@ describe('module:make command', function () {
             expect($modulePath.'/'.$file)->toBeFile();
         }
 
-        foreach (['package.json', 'vite.config.js', 'resources', 'app/Http/Controllers'] as $file) {
+        foreach (['package.json', 'vite.config.js', 'resources', 'routes/web.php'] as $file) {
             expect(file_exists($modulePath.'/'.$file))->toBeFalse();
         }
 
         $provider = file_get_contents($modulePath.'/app/Providers/BlogServiceProvider.php');
-        expect($provider)->toContain('extends ModuleServiceProvider')
+        expect($provider)->toContain('declare(strict_types=1)')
+            ->toContain('extends ModuleServiceProvider')
             ->toContain("protected string \$name = 'Blog'")
+            ->toContain('EventServiceProvider::class')
             ->toContain('RouteServiceProvider::class');
 
         $routeProvider = file_get_contents($modulePath.'/app/Providers/RouteServiceProvider.php');
         expect($routeProvider)->toContain('mapApiRoutes')
-            ->toContain('v1.{alias}');
+            ->toContain('mapWebRoutes')
+            ->toContain('file_exists')
+            ->toContain("->name('api.')");
 
-        $routes = file_get_contents($modulePath.'/routes/V1.php');
-        expect($routes)->toContain("'auth:sanctum'");
+        $routes = file_get_contents($modulePath.'/routes/api.php');
+        expect($routes)->toContain("'auth:sanctum'")
+            ->toContain("->prefix('v1')")
+            ->toContain('apiResource')
+            ->toContain("->names('blog')");
 
         $config = file_get_contents($modulePath.'/config/config.php');
-        expect($config)->toContain("'name' => 'Blog'")
-            ->toContain("'features'");
+        expect($config)->toContain("'name' => 'Blog'");
+
+        $controller = file_get_contents($modulePath.'/app/Http/Controllers/BlogController.php');
+        expect($controller)->toContain('final readonly class BlogController extends Controller')
+            ->toContain('public function index')
+            ->toContain('public function store')
+            ->not->toContain('public function create');
+
+        $seeder = file_get_contents($modulePath.'/database/seeders/BlogDatabaseSeeder.php');
+        expect($seeder)->toContain('declare(strict_types=1)')
+            ->toContain('class BlogDatabaseSeeder extends Seeder');
+
+        $eventProvider = file_get_contents($modulePath.'/app/Providers/EventServiceProvider.php');
+        expect($eventProvider)->toContain('declare(strict_types=1)')
+            ->toContain('extends ServiceProvider');
 
         $json = file_get_contents($modulePath.'/module.json');
         expect($json)->toContain('"alias": "blog"')
             ->toContain('Providers\\\\BlogServiceProvider');
+
+        $composer = decodeModuleJson($modulePath.'/composer.json');
+
+        expect($composer['name'])->toBe('thomiomi/blog')
+            ->and(Arr::get($composer, 'autoload.psr-4.Modules\\Blog\\'))->toBe('app/')
+            ->and(Arr::get($composer, 'autoload.psr-4.Modules\\Blog\\Database\\Factories\\'))->toBe('database/factories/');
     });
 
-    it('generates Vue Inertia pages when the --vue flag is passed', function () {
-        artisanCommand($this, 'module:make', ['name' => ['Shop'], '--vue' => true, '--disabled' => true])
-            ->expectsOutputToContain('Module [Shop] created successfully.')
-            ->assertSuccessful();
-
-        $modulePath = base_path('modules/Shop');
-
-        foreach (['Index', 'Create', 'Show', 'Edit'] as $page) {
-            expect($modulePath."/resources/js/Pages/{$page}.vue")->toBeFile();
-        }
-
-        $index = file_get_contents($modulePath.'/resources/js/Pages/Index.vue');
-        expect($index)->toContain('@inertiajs/vue3')
-            ->toContain('Shop - Index');
-
-        foreach (['package.json', 'vite.config.js', 'resources/css'] as $file) {
-            expect(file_exists($modulePath.'/'.$file))->toBeFalse();
-        }
-    });
-
-    it('generates Svelte Inertia pages when the --svelte flag is passed', function () {
-        artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--svelte' => true, '--disabled' => true])
+    it('creates a plain module without providers, routes and controllers', function () {
+        artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--plain' => true, '--disabled' => true])
             ->expectsOutputToContain('Module [Gadget] created successfully.')
             ->assertSuccessful();
 
         $modulePath = base_path('modules/Gadget');
 
-        foreach (['Index', 'Create', 'Show', 'Edit'] as $page) {
-            expect($modulePath."/resources/js/Pages/{$page}.svelte")->toBeFile();
-        }
+        expect($modulePath.'/module.json')->toBeFile();
 
-        $index = file_get_contents($modulePath.'/resources/js/Pages/Index.svelte');
-        expect($index)->toContain('@inertiajs/svelte')
-            ->toContain('Gadget - Index');
-    });
-
-    it('generates React Inertia pages when the --react flag is passed', function () {
-        artisanCommand($this, 'module:make', ['name' => ['Fake'], '--react' => true, '--disabled' => true])
-            ->expectsOutputToContain('Module [Fake] created successfully.')
-            ->assertSuccessful();
-
-        $modulePath = base_path('modules/Fake');
-
-        foreach (['Index', 'Create', 'Show', 'Edit'] as $page) {
-            expect($modulePath."/resources/js/Pages/{$page}.jsx")->toBeFile();
-        }
-
-        $index = file_get_contents($modulePath.'/resources/js/Pages/Index.jsx');
-        expect($index)->toContain('@inertiajs/react')
-            ->toContain('Fake - Index');
-    });
-
-    it('does not generate a frontend scaffold when the --no-frontend flag is passed', function () {
-        artisanCommand($this, 'module:make', ['name' => ['Widget'], '--no-frontend' => true, '--disabled' => true])
-            ->expectsOutputToContain('Module [Widget] created successfully.')
-            ->assertSuccessful();
-
-        $modulePath = base_path('modules/Widget');
-
-        foreach (['package.json', 'vite.config.js', 'resources'] as $file) {
+        foreach ([
+            'composer.json',
+            'config/config.php',
+            'routes/api.php',
+            'app/Providers/GadgetServiceProvider.php',
+            'app/Providers/RouteServiceProvider.php',
+            'app/Providers/EventServiceProvider.php',
+            'app/Http/Controllers/GadgetController.php',
+            'database/seeders/GadgetDatabaseSeeder.php',
+        ] as $file) {
             expect(file_exists($modulePath.'/'.$file))->toBeFalse();
         }
+
+        $json = decodeModuleJson($modulePath.'/module.json');
+        expect($json['providers'])->toBeEmpty();
+    });
+
+    it('can delete a generated module', function () {
+        artisanCommand($this, 'module:make', ['name' => ['Shop'], '--disabled' => true])
+            ->assertSuccessful();
+
+        expect(base_path('modules/Shop'))->toBeDirectory();
+
+        artisanCommand($this, 'module:delete', ['module' => ['Shop']])
+            ->expectsConfirmation('Are you sure you want to run this command?', 'yes')
+            ->assertSuccessful();
+
+        expect(base_path('modules/Shop'))->not->toBeDirectory();
+
+        $statuses = decodeModuleJson(base_path('modules_statuses.json'));
+        expect($statuses)->not->toHaveKey('Shop');
     });
 });

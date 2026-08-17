@@ -27,7 +27,7 @@ pest()
     ->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->group('feature')
-    ->in('../modules/*/Tests/Feature');
+    ->in('../modules/*/tests/Feature');
 
 pest()
     ->extend(TestCase::class)
@@ -37,7 +37,7 @@ pest()
 pest()
     ->extend(TestCase::class)
     ->group('unit')
-    ->in('../modules/*/Tests/Unit');
+    ->in('../modules/*/tests/Unit');
 
 pest()
     ->extend(TestCase::class)
