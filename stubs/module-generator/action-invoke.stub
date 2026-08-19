@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace $CLASS_NAMESPACE$;
 
-class $CLASS$
+final readonly class $CLASS$
 {
-    public function __invoke() {}
+    public function __invoke(): void
+    {
+    }
 }

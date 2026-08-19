@@ -27,4 +27,11 @@ class $CLASS$ extends ModuleServiceProvider
         EventServiceProvider::class,
         RouteServiceProvider::class,
     ];
+
+    /**
+     * Artisan command classes to register (add module commands here).
+     *
+     * @var class-string<\Illuminate\Console\Command>[]
+     */
+    protected array $commands = [];
 }

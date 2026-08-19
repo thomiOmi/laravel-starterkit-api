@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace $CLASS_NAMESPACE$;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
 
-class $CLASS$ extends Controller
+final readonly class $CLASS$ extends Controller
 {
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): SuccessResponse
     {
-        return response()->json([]);
+        return new SuccessResponse(data: []);
     }
 }

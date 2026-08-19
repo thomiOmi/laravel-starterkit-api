@@ -5,48 +5,49 @@ declare(strict_types=1);
 namespace $CLASS_NAMESPACE$;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
+use App\Http\Responses\SuccessResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final readonly class $CLASS$ extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(): SuccessResponse
     {
-        return response()->json([]);
+        return new SuccessResponse(data: []);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): SuccessResponse
     {
-        return response()->json([]);
+        return new SuccessResponse(data: [], status: Response::HTTP_CREATED);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id): JsonResponse
+    public function show(string $id): SuccessResponse
     {
-        return response()->json([]);
+        return new SuccessResponse(data: []);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, string $id): SuccessResponse
     {
-        return response()->json([]);
+        return new SuccessResponse(data: []);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(string $id): SuccessResponse
     {
-        return response()->json([]);
+        return new SuccessResponse(data: []);
     }
 }

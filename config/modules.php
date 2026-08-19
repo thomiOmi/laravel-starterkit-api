@@ -148,16 +148,16 @@ return [
             'casts' => ['path' => 'app/Casts', 'generate' => false],
             'channels' => ['path' => 'app/Broadcasting', 'generate' => false],
             'class' => ['path' => 'app/Classes', 'generate' => false],
-            'command' => ['path' => 'app/Console', 'generate' => false],
+            'command' => ['path' => 'app/Console/Commands', 'generate' => false],
             'command_replacements' => ['path' => 'app/Console/Replacements', 'generate' => false],
             'component-class' => ['path' => 'app/View/Components', 'generate' => false],
-            'emails' => ['path' => 'app/Emails', 'generate' => false],
+            'emails' => ['path' => 'app/Mail', 'namespace' => 'Mail', 'generate' => false],
             'event' => ['path' => 'app/Events', 'generate' => false],
             'enums' => ['path' => 'app/Enums', 'generate' => false],
             'exceptions' => ['path' => 'app/Exceptions', 'generate' => false],
             'jobs' => ['path' => 'app/Jobs', 'generate' => false],
-            'helpers' => ['path' => 'app/Helpers', 'generate' => false],
-            'interfaces' => ['path' => 'app/Interfaces', 'generate' => false],
+            'helpers' => ['path' => 'app/Support', 'namespace' => 'Support', 'generate' => false],
+            'interfaces' => ['path' => 'app/Contracts', 'namespace' => 'Contracts', 'generate' => false],
             'listener' => ['path' => 'app/Listeners', 'generate' => false],
             'model' => ['path' => 'app/Models', 'generate' => false],
             'notifications' => ['path' => 'app/Notifications', 'generate' => false],
@@ -165,7 +165,7 @@ return [
             'policies' => ['path' => 'app/Policies', 'generate' => false],
             'provider' => ['path' => 'app/Providers', 'generate' => true],
             'repository' => ['path' => 'app/Repositories', 'generate' => false],
-            'resource' => ['path' => 'app/Transformers', 'generate' => false],
+            'resource' => ['path' => 'app/Http/Resources', 'namespace' => 'Http/Resources', 'generate' => false],
             'route-provider' => ['path' => 'app/Providers', 'generate' => true],
             'rules' => ['path' => 'app/Rules', 'generate' => false],
             'services' => ['path' => 'app/Services', 'generate' => false],
@@ -186,7 +186,7 @@ return [
             'seeder' => ['path' => 'database/seeders', 'generate' => true],
 
             // lang/
-            'lang' => ['path' => 'lang', 'generate' => false],
+            'lang' => ['path' => 'app/Lang', 'generate' => false],
 
             // resource/
             'assets' => ['path' => 'resources/assets', 'generate' => false],
