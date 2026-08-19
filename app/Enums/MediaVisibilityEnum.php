@@ -14,6 +14,6 @@ enum MediaVisibilityEnum: string
      */
     public function label(): string
     {
-        return __('enums.'.basename(self::class).'.'.$this->value);
+        return __('enums.'.class_basename(self::class).'.'.$this->value);
     }
 }
