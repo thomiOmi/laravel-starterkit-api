@@ -17,6 +17,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Core modules
+    |--------------------------------------------------------------------------
+    |
+    | Modules that are part of the platform core. Any module may depend on
+    | them, but they must not depend back on business modules.
+    |
+    */
+    'core' => ['IAM', 'Media', 'Organization'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Vapor Maintenance Mode
     |--------------------------------------------------------------------------
     |

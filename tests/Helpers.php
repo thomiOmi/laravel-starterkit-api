@@ -9,6 +9,8 @@ use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Models\User;
+use Nwidart\Modules\Contracts\ActivatorInterface;
+use Nwidart\Modules\Contracts\RepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 /*
@@ -239,4 +241,76 @@ function decodeModuleJson(string $path): array
     }
 
     return $json;
+}
+
+/**
+ * Scaffold a fixture module under tests/Fixtures/dependency-check for
+ * module tooling tests. Never touches the real modules/ directory or the
+ * real modules_statuses.json.
+ *
+ * @param  list<string>  $requires
+ */
+function writeFixtureModule(string $name, array $requires = [], bool $enabled = true): string
+{
+    $root = base_path('tests/Fixtures/dependency-check');
+    $files = app('files');
+    $modulePath = "{$root}/modules/{$name}";
+
+    $files->makeDirectory($modulePath, 0755, true);
+
+    $manifest = [
+        'name' => $name,
+        'alias' => strtolower($name),
+        'priority' => 0,
+        'providers' => [],
+    ];
+
+    if ($requires !== []) {
+        $manifest['requires'] = $requires;
+    }
+
+    $manifestJson = json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+    if ($manifestJson === false) {
+        throw new RuntimeException("Failed to encode module.json for {$name}.");
+    }
+
+    $files->put($modulePath.'/module.json', $manifestJson);
+    $files->put($modulePath.'/composer.json', '{}');
+
+    $statusesPath = "{$root}/statuses.json";
+    $statuses = is_file($statusesPath) ? decodeModuleJson($statusesPath) : [];
+
+    $statuses[$name] = $enabled;
+
+    $statusesJson = json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+
+    if ($statusesJson === false) {
+        throw new RuntimeException('Failed to encode the fixture statuses file.');
+    }
+
+    $files->put($statusesPath, $statusesJson);
+
+    return $modulePath;
+}
+
+/**
+ * Remove the fixture module root used by module tooling tests.
+ */
+function clearFixtureModules(): void
+{
+    app('files')->deleteDirectory(base_path('tests/Fixtures/dependency-check'));
+}
+
+/**
+ * Point the nwidart repository and activator at the dependency-check fixture
+ * root and drop any already-resolved singletons, so module tooling tests run
+ * against fixture state only.
+ */
+function bindFixtureModulePaths(string $root = 'tests/Fixtures/dependency-check'): void
+{
+    config()->set('modules.paths.modules', base_path("{$root}/modules"));
+    config()->set('modules.activators.file.statuses-file', base_path("{$root}/statuses.json"));
+    app()->forgetInstance(RepositoryInterface::class);
+    app()->forgetInstance(ActivatorInterface::class);
 }

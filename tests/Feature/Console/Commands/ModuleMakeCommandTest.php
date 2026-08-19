@@ -10,26 +10,20 @@ covers(ModuleMakeCommand::class);
 
 beforeEach(function (): void {
     Process::fake();
+
+    $root = base_path('tests/Fixtures/module-make');
+    $files = app('files');
+
+    $files->makeDirectory($root, 0755, true);
+    $files->put($root.'/statuses.json', '{}');
+
+    config()->set('modules.paths.modules', $root.'/modules');
+    config()->set('modules.activators.file.statuses-file', $root.'/statuses.json');
+    app()->forgetInstance('modules');
 });
 
 afterEach(function (): void {
-    $files = app('files');
-
-    foreach (['Blog', 'Shop', 'Gadget', 'Fake'] as $module) {
-        $files->deleteDirectory(base_path("modules/{$module}"));
-    }
-
-    $statusesPath = base_path('modules_statuses.json');
-
-    $statuses = decodeModuleJson($statusesPath);
-
-    unset($statuses['Blog'], $statuses['Shop'], $statuses['Gadget'], $statuses['Fake']);
-
-    $json = json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-    if (is_string($json)) {
-        $files->put($statusesPath, $json);
-    }
+    app('files')->deleteDirectory(base_path('tests/Fixtures/module-make'));
 });
 
 describe('module:make command', function () {
@@ -38,7 +32,7 @@ describe('module:make command', function () {
             ->expectsOutputToContain('Module [Blog] created successfully.')
             ->assertSuccessful();
 
-        $modulePath = base_path('modules/Blog');
+        $modulePath = base_path('tests/Fixtures/module-make/modules/Blog');
 
         foreach ([
             'module.json',
@@ -121,7 +115,7 @@ describe('module:make command', function () {
             ->expectsOutputToContain('Module [Gadget] created successfully.')
             ->assertSuccessful();
 
-        $modulePath = base_path('modules/Gadget');
+        $modulePath = base_path('tests/Fixtures/module-make/modules/Gadget');
 
         expect($modulePath.'/module.json')->toBeFile();
 
@@ -146,15 +140,15 @@ describe('module:make command', function () {
         artisanCommand($this, 'module:make', ['name' => ['Shop'], '--disabled' => true])
             ->assertSuccessful();
 
-        expect(base_path('modules/Shop'))->toBeDirectory();
+        expect(base_path('tests/Fixtures/module-make/modules/Shop'))->toBeDirectory();
 
         artisanCommand($this, 'module:delete', ['module' => ['Shop']])
             ->expectsConfirmation('Are you sure you want to run this command?', 'yes')
             ->assertSuccessful();
 
-        expect(base_path('modules/Shop'))->not->toBeDirectory();
+        expect(base_path('tests/Fixtures/module-make/modules/Shop'))->not->toBeDirectory();
 
-        $statuses = decodeModuleJson(base_path('modules_statuses.json'));
+        $statuses = decodeModuleJson(base_path('tests/Fixtures/module-make/statuses.json'));
         expect($statuses)->not->toHaveKey('Shop');
     });
 });

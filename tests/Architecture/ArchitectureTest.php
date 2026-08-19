@@ -14,6 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\ServiceProvider;
 use PHPUnit\Framework\Assert;
+use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /*
 |--------------------------------------------------------------------------
@@ -611,6 +612,234 @@ it('module seeders do not call seeders from other modules', function (): void {
                         $target
                     );
                 }
+            }
+        }
+    }
+
+    expect($violations)->toBeEmpty();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Module dependencies
+|--------------------------------------------------------------------------
+|
+| Modules declare their cross-module dependencies in the "requires" field
+| of module.json. The rules below are manual it() tests, not arch()
+| assertions, because they read manifest files and scan directories: the
+| dependency graph lives in JSON, not in class references the arch()
+| runner can see.
+|
+*/
+
+/**
+ * Read the "requires" field of a module.json manifest.
+ *
+ * @return list<string>
+ */
+function moduleRequires(string $path): array
+{
+    $json = is_file($path) ? file_get_contents($path) : false;
+
+    if ($json === false) {
+        return [];
+    }
+
+    $manifest = json_decode($json, true);
+
+    if (! is_array($manifest) || ! isset($manifest['requires']) || ! is_array($manifest['requires'])) {
+        return [];
+    }
+
+    return array_values(array_filter($manifest['requires'], is_string(...)));
+}
+
+/**
+ * Detect cycles in the module requires graph.
+ *
+ * @param  array<string, list<string>>  $graph
+ * @return list<string>
+ */
+function moduleGraphCycles(array $graph): array
+{
+    $cycles = [];
+
+    foreach (array_keys($graph) as $module) {
+        $cycle = moduleGraphFindCycle($graph, $module, []);
+
+        if ($cycle !== null) {
+            $cycles[] = implode(' -> ', $cycle);
+        }
+    }
+
+    return $cycles;
+}
+
+/**
+ * @param  array<string, list<string>>  $graph
+ * @param  list<string>  $path
+ * @return list<string>|null
+ */
+function moduleGraphFindCycle(array $graph, string $node, array $path): ?array
+{
+    if (in_array($node, $path, true)) {
+        return [...$path, $node];
+    }
+
+    foreach ($graph[$node] ?? [] as $dependency) {
+        $cycle = moduleGraphFindCycle($graph, $dependency, [...$path, $node]);
+
+        if ($cycle !== null) {
+            return $cycle;
+        }
+    }
+
+    return null;
+}
+
+it('module dependencies are declared in module.json', function (): void {
+    $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
+    $violations = [];
+
+    foreach ($modules as $source) {
+        $manifestPath = base_path("modules/{$source}/module.json");
+        $declared = moduleRequires($manifestPath);
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(base_path("modules/{$source}"), FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (! $file instanceof SplFileInfo || ! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $content = (string) file_get_contents($file->getPathname());
+
+            foreach ($modules as $target) {
+                if ($source === $target || in_array($target, $declared, true)) {
+                    continue;
+                }
+
+                if (str_contains($content, "Modules\\{$target}\\")) {
+                    $violations[] = sprintf(
+                        '%s uses Modules\%s but %s/module.json does not declare it in "requires"',
+                        str_replace(base_path('modules/'), '', $file->getPathname()),
+                        $target,
+                        $source
+                    );
+                }
+            }
+        }
+    }
+
+    expect($violations)->toBeEmpty();
+});
+
+it('module dependency graph has no cycles', function (): void {
+    $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
+    $graph = [];
+
+    foreach ($modules as $module) {
+        $graph[$module] = moduleRequires(base_path("modules/{$module}/module.json"));
+    }
+
+    expect(moduleGraphCycles($graph))->toBeEmpty();
+});
+
+it('core modules do not depend on business modules', function (): void {
+    $coreModules = array_values(array_filter(
+        config()->array('modules.core', ['IAM', 'Media', 'Organization']),
+        is_string(...)
+    ));
+    $violations = [];
+
+    foreach ($coreModules as $core) {
+        $manifestPath = base_path("modules/{$core}/module.json");
+        $declared = moduleRequires($manifestPath);
+
+        $nonCoreDeps = array_diff($declared, $coreModules);
+
+        if ($nonCoreDeps !== []) {
+            $violations[] = sprintf('%s depends on business module(s): %s', $core, implode(', ', $nonCoreDeps));
+        }
+    }
+
+    expect($violations)->toBeEmpty();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Module tenancy
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Modules whose models must be tenant-scoped.
+ *
+ * Empty until business modules with tenant data exist; every future
+ * business module must be added here unless all its models are genuinely
+ * global.
+ *
+ * @return list<string>
+ */
+function tenantScopedModules(): array
+{
+    return [];
+}
+
+it('tenant-scoped models use BelongsToTenant trait', function (): void {
+    $tenantScopedModules = tenantScopedModules();
+    $violations = [];
+
+    foreach ($tenantScopedModules as $module) {
+        $modelPath = base_path("modules/{$module}/app/Models");
+
+        if (! is_dir($modelPath)) {
+            continue;
+        }
+
+        foreach (glob("{$modelPath}/*.php") ?: [] as $file) {
+            $class = "Modules\\{$module}\\Models\\".basename($file, '.php');
+
+            if (! class_exists($class)) {
+                continue;
+            }
+
+            $traits = class_uses_recursive($class);
+
+            if (! in_array(BelongsToTenant::class, $traits, true)) {
+                $violations[] = "{$class} does not use BelongsToTenant trait";
+            }
+        }
+    }
+
+    expect($violations)->toBeEmpty();
+});
+
+it('tenant_id is not manually queried outside BelongsToTenant scope', function (): void {
+    $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
+    $violations = [];
+
+    foreach ($modules as $module) {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(base_path("modules/{$module}"), FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (! $file instanceof SplFileInfo || ! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            // Model classes exempt — trait/scope internals may legitimately reference the column.
+            if (str_contains($file->getPathname(), DIRECTORY_SEPARATOR.'Models'.DIRECTORY_SEPARATOR)) {
+                continue;
+            }
+
+            $content = (string) file_get_contents($file->getPathname());
+
+            if (preg_match("/where\\(\\s*['\"]tenant_id['\"]/", $content)) {
+                $violations[] = str_replace(base_path('modules/'), '', $file->getPathname());
             }
         }
     }
