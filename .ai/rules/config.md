@@ -22,3 +22,6 @@ Global config in `config/`; module config in `modules/{Module}/config/config.php
 
 - No `env()` outside config files
 - No module config loaded while the module is inactive
+
+## Keep modules.paths.modules lowercase (deviation from nwidart docs)
+Keep `paths.modules` as `base_path('modules')` (lowercase). This deliberately deviates from the nwidart docs default `base_path('Modules')`: the lowercase folder is the repo-wide convention (docs, rules, composer merge-plugin, arch tests all reference `modules/`). Never change the config casing without renaming the folder too — the nwidart scanner globs the literal config path (`FileRepository::scan()`), and on case-sensitive filesystems (Linux CI/prod) a mismatch silently discovers zero modules, while Windows stays broken-invisible because its filesystem is case-insensitive.
