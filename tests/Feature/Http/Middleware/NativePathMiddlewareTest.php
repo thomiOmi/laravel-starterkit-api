@@ -12,7 +12,7 @@ describe('native path for opt-in middleware', function (): void {
         Route::middleware('api')->match(['get', 'post'], '/_test/native-path', fn (): JsonResponse => response()->json(['ok' => true]));
     });
 
-    it('serves routes that do not declare feature.flag without any flag semantics', function (): void {
+    it('serves routes that do not declare feature-flag without any flag semantics', function (): void {
         $this->getJson('/_test/native-path')
             ->assertOk()
             ->assertJson(['ok' => true]);

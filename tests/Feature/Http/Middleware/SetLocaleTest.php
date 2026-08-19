@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\SetLocaleMiddleware;
+use App\Http\Middleware\SetLocale;
 
-covers(SetLocaleMiddleware::class);
+covers(SetLocale::class);
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -16,7 +16,7 @@ beforeEach(function () {
     config()->set('app.available_locales', ['en', 'id']);
 });
 
-describe('SetLocaleMiddleware', function () {
+describe('SetLocale', function () {
 
     describe('locale resolution', function () {
         it('sets locale from Accept-Language header when matching available locale', function () {
@@ -24,7 +24,7 @@ describe('SetLocaleMiddleware', function () {
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'id');
-            (new SetLocaleMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+            (new SetLocale)->handle($request, fn (Request $req): Response => new Response('OK'));
 
             expect(App::getLocale())->toBe('id');
         });
@@ -35,7 +35,7 @@ describe('SetLocaleMiddleware', function () {
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'fr');
-            (new SetLocaleMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+            (new SetLocale)->handle($request, fn (Request $req): Response => new Response('OK'));
 
             expect(App::getLocale())->toBe('en');
         });
@@ -45,7 +45,7 @@ describe('SetLocaleMiddleware', function () {
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'de-DE,de;q=0.9,id;q=0.8');
-            (new SetLocaleMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+            (new SetLocale)->handle($request, fn (Request $req): Response => new Response('OK'));
 
             expect(App::getLocale())->toBe('de');
         });
@@ -55,7 +55,7 @@ describe('SetLocaleMiddleware', function () {
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'id');
-            (new SetLocaleMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+            (new SetLocale)->handle($request, fn (Request $req): Response => new Response('OK'));
 
             expect(App::getLocale())->toBe('id');
         });
@@ -68,7 +68,7 @@ describe('SetLocaleMiddleware', function () {
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'de');
-            (new SetLocaleMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+            (new SetLocale)->handle($request, fn (Request $req): Response => new Response('OK'));
 
             expect(App::getLocale())->toBe('en');
         });
@@ -78,7 +78,7 @@ describe('SetLocaleMiddleware', function () {
 
             $request = new Request;
             $request->headers->set('Accept-Language', 'en');
-            (new SetLocaleMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+            (new SetLocale)->handle($request, fn (Request $req): Response => new Response('OK'));
 
             expect(App::getLocale())->toBe('en');
         });
@@ -86,7 +86,7 @@ describe('SetLocaleMiddleware', function () {
         it('caches locales from lang directory when config is empty', function () {
             config()->set('app.available_locales', []);
 
-            (new SetLocaleMiddleware)->handle(new Request, fn (Request $req): Response => new Response('OK'));
+            (new SetLocale)->handle(new Request, fn (Request $req): Response => new Response('OK'));
 
             $cached = Cache::get('set-locale.available_locales');
             expect($cached)->toBeArray()

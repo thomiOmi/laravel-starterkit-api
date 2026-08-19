@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Stores the trace ID in Laravel Context and Monolog for structured
  * logging, and appends it as the X-Trace-ID response header.
  */
-final readonly class TraceIdMiddleware
+final readonly class AddTraceId
 {
     /**
      * @param  Closure(Request): (Response)  $next

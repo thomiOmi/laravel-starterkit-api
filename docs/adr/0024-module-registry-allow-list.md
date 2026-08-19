@@ -21,5 +21,5 @@ The roadmap decision was a Fortify-style activation: a module is opt-in via an e
 - Enabling or disabling a module is a one-line change in `config/modules.php`; a shipped module stays inactive until a team explicitly opts in.
 - Private modules can live in the repository behind a git-ignore list; they never register when unlisted.
 - A new directory under `modules/` is not loaded until it is registered with `active => true`, which is the intended safety property.
-- The registry also carries build-time feature toggles per module (`features` array), merged by the base `ModuleServiceProvider` into `config('{alias}.features')` and gated by `FeatureFlagMiddleware`.
+- The registry also carries build-time feature toggles per module (`features` array), merged by the base `ModuleServiceProvider` into `config('{alias}.features')` and gated by `EnsureFeatureIsActive`.
 - A test locks the default registry to the shipped modules so the config and the directory cannot silently drift.

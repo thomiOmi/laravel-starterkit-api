@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\SecurityHeadersMiddleware;
-use App\Http\Middleware\SetLocaleMiddleware;
-use App\Http\Middleware\TraceIdMiddleware;
+use App\Http\Middleware\AddSecurityHeaders;
+use App\Http\Middleware\AddTraceId;
+use App\Http\Middleware\SetLocale;
 use App\Http\Responses\ProblemResponse;
 use Modules\IAM\Providers\IAMServiceProvider;
 
-covers([TraceIdMiddleware::class, SecurityHeadersMiddleware::class, SetLocaleMiddleware::class, ProblemResponse::class, IAMServiceProvider::class]);
+covers([AddTraceId::class, AddSecurityHeaders::class, SetLocale::class, ProblemResponse::class, IAMServiceProvider::class]);
 
 describe('global api middleware pipeline', function () {
 

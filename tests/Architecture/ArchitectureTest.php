@@ -5,12 +5,15 @@ declare(strict_types=1);
 use App\Builders\BaseQueryBuilder;
 use App\Http\Requests\PaginationRequest;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Container\ContextualAttribute;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Mail\Mailable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\ServiceProvider;
 use PHPUnit\Framework\Assert;
@@ -104,6 +107,57 @@ arch('app enums should be enums')
 
 /*
 |--------------------------------------------------------------------------
+| App future components (Pest Laravel preset compatibility)
+|--------------------------------------------------------------------------
+|
+| These rules mirror the Pest "Laravel" preset (pestphp/pest
+| ArchPresets\Laravel). Every preset rule is included, even for folders
+| that do not exist yet: arch() treats an empty namespace as a no-op, so
+| the rules pass trivially until a folder is introduced, then enforce the
+| convention from day one.
+|
+| Deviations from the preset are limited to:
+| - App\Http toOnlyBeUsedIn is widened to include Modules (the public
+|   seam), App\Providers, and Tests.
+| - App\Providers not->toBeUsed ignores Modules (providers bootstrap
+|   module features through service providers).
+|
+*/
+
+arch('app policies should have Policy suffix')
+    ->expect('App\Policies')
+    ->classes()
+    ->toHaveSuffix('Policy');
+
+arch('app traits should be traits')
+    ->expect('App\Traits')
+    ->toBeTraits();
+
+arch('app mail should be queued mailables')
+    ->expect('App\Mail')
+    ->classes()
+    ->toExtend(Mailable::class)
+    ->toImplement(ShouldQueue::class);
+
+arch('app jobs should be queued with handle')
+    ->expect('App\Jobs')
+    ->classes()
+    ->toImplement(ShouldQueue::class)
+    ->toHaveMethod('handle');
+
+arch('app listeners should have handle method')
+    ->expect('App\Listeners')
+    ->toHaveMethod('handle');
+
+arch('app attributes should be contextual attributes')
+    ->expect('App\Attributes')
+    ->classes()
+    ->toImplement(ContextualAttribute::class)
+    ->toHaveAttribute(Attribute::class)
+    ->toHaveMethod('resolve');
+
+/*
+|--------------------------------------------------------------------------
 | App http layer
 |--------------------------------------------------------------------------
 */
@@ -117,10 +171,19 @@ arch('app http controllers should have Controller suffix')
     ->classes()
     ->toHaveSuffix('Controller');
 
+arch('app http controllers should only have standard methods')
+    ->expect('App\Http\Controllers')
+    ->not->toHavePublicMethodsBesides(['__construct', '__invoke', 'index', 'show', 'create', 'store', 'edit', 'update', 'destroy', 'middleware']);
+
 arch('app http middleware should have handle method')
     ->expect('App\Http\Middleware')
     ->classes()
     ->toHaveMethod('handle');
+
+arch('app http middleware should not have Middleware suffix')
+    ->expect('App\Http\Middleware')
+    ->classes()
+    ->not->toHaveSuffix('Middleware');
 
 arch('app http requests should extend FormRequest and have rules')
     ->expect('App\Http\Requests')
@@ -200,6 +263,12 @@ arch('app classes should not implement Throwable outside App\Exceptions')
     ->not->toImplement(Throwable::class)
     ->ignoring('App\Exceptions');
 
+arch('app exceptions should implement Throwable')
+    ->expect('App\Exceptions')
+    ->classes()
+    ->toImplement(Throwable::class)
+    ->ignoring('App\Exceptions\Handler');
+
 arch('app classes should not extend Model outside App\Models')
     ->expect('App')
     ->not->toExtend(Model::class)
@@ -264,6 +333,15 @@ arch('module services are final and readonly')
     ->classes()
     ->toBeFinal()
     ->toBeReadonly();
+
+arch('module policies should have Policy suffix')
+    ->expect('Modules\*\Policies')
+    ->toHaveSuffix('Policy');
+
+arch('module policies should be final')
+    ->expect('Modules\*\Policies')
+    ->classes()
+    ->toBeFinal();
 
 it('module scaffolds follow the kit folder structure', function (): void {
     $requiredFolders = [

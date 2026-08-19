@@ -14,5 +14,5 @@ Middleware aliases are registered via `Route::aliasMiddleware()` inside the modu
 ## Consequences
 
 - `bootstrap/app.php` stays free of module imports.
-- Route files reference short aliases (`active`, `feature.flag`, `idempotency`) while the binding stays explicit and visible in the provider.
+- Route files reference short aliases (`active`, `feature-flag`, `idempotency`) while the binding stays explicit and visible in the provider.
 - New modules follow the same pattern for their own middleware.

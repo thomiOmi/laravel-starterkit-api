@@ -9,7 +9,7 @@ The first design applied the idempotency middleware to the whole `api` group. Re
 
 ## Decision
 
-Apply idempotency opt-in per route. Only `POST v1.iam.register` (auth.register) carries it, with middleware order `['feature.flag:iam.self-registration', 'throttle:auth', 'idempotency']` (flag outermost, throttle second, idempotency before the controller).
+Apply idempotency opt-in per route. Only `POST v1.iam.register` (auth.register) carries it, with middleware order `['feature-flag:iam.self-registration', 'throttle:auth', 'idempotency']` (flag outermost, throttle second, idempotency before the controller).
 
 ## Consequences
 

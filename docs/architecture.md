@@ -104,7 +104,7 @@ Deliberate deviation from nWidart/laravel-modules: modules keep the scaffold **m
 ```mermaid
 sequenceDiagram
     participant Client
-    participant MW as Middleware (auth, throttle, feature.flag)
+    participant MW as Middleware (auth, throttle, feature-flag)
     participant C as Controller (invokable, V1/)
     participant A as Action (final readonly)
     participant S as Service / Builder (optional)
@@ -192,7 +192,7 @@ project/
 │   ├── Features/                # Pennant class-based features used by 2+ modules
 │   ├── Http/
 │   │   ├── Controllers/         # Base Controller
-│   │   ├── Middleware/          # Global: Sunset, TraceId, SetLocale, SecurityHeaders, Idempotency
+│   │   ├── Middleware/          # Global: AddTraceId, AddSecurityHeaders, SetLocale, AddDeprecationHeaders, HandleIdempotentRequests
 │   │   ├── Requests/            # Shared requests (PaginationRequest, BulkActionRequest)
 │   │   └── Responses/           # SuccessResponse, ProblemResponse (RFC 9457)
 │   ├── Jobs/                    # Queue jobs shared across modules
@@ -660,14 +660,14 @@ User::query()
 **Rules:**
 
 1. Base prefix `api/v1/{path}` (no module segment in the URL); route name `api.{version}.{module}.{name}`.
-2. Explicit middleware on route groups (auth:sanctum, throttle, permission, feature.flag).
+2. Explicit middleware on route groups (auth:sanctum, throttle, permission, feature-flag).
 3. Route files are only loaded when the module is active.
 
 **Forbidden:** route registration outside `routes/`; hidden middleware in providers.
 
 ### 5.18 Features
 
-**Definition:** module feature flags. **Build-time toggle**: `features` array in the module's `config/config.php` (merged into `config('{alias}.features')`). **Runtime per-user**: Pennant classes in `modules/{Module}/app/Features/` (used by 2+ modules: `app/Features/`), checked via `FeatureFlagMiddleware`.
+**Definition:** module feature flags. **Build-time toggle**: `features` array in the module's `config/config.php` (merged into `config('{alias}.features')`). **Runtime per-user**: Pennant classes in `modules/{Module}/app/Features/` (used by 2+ modules: `app/Features/`), checked via `EnsureFeatureIsActive`.
 
 **Rules:**
 
@@ -795,7 +795,7 @@ Organization is a minimal inactive module (`app/Providers`, `tests`) wrapping st
 flowchart TB
     L1["Level 1 - Module: module.json + modules_statuses.json, build-time"]
     L2["Level 2 - Static feature: features array in module config, build-time"]
-    L3["Level 3 - Runtime feature: Pennant class + FeatureFlagMiddleware, per-user"]
+    L3["Level 3 - Runtime feature: Pennant class + EnsureFeatureIsActive, per-user"]
     L1 --> L2 --> L3
 ```
 
@@ -803,7 +803,7 @@ flowchart TB
 |---|---|---|---|
 | Module | `modules_statuses.json` (FileActivator, `module:enable`/`disable`) | Build-time | `organization` off = tenancy inert |
 | Feature (static) | `features` array in module `config/config.php` (Fortify-style) | Build-time | Media: upload vs signedUrl |
-| Feature (runtime) | Pennant flags (classes in `app/Features/`) + FeatureFlagMiddleware | Runtime, per-user | beta flag, gradual rollout |
+| Feature (runtime) | Pennant flags (classes in `app/Features/`) + EnsureFeatureIsActive | Runtime, per-user | beta flag, gradual rollout |
 
 ### 7.2 Draft code: module config
 
@@ -875,7 +875,7 @@ final class MediaUpload extends Feature
 }
 ```
 
-Routes are protected by the `feature.flag` middleware (FeatureFlagMiddleware). Features used by 2+ modules live in `app/Features/`.
+Routes are protected by the `feature-flag` middleware (EnsureFeatureIsActive). Features used by 2+ modules live in `app/Features/`.
 
 **Note:** Pennant classes are only for runtime decisions (per-user, gradual rollout); static toggles simply use the features array in the module config without a Pennant class.
 
@@ -890,14 +890,14 @@ Every wrapper must have a documented native escape hatch:
 - **BaseQueryBuilder**: actions may still use plain `User::query()->where(...)` on models with a custom builder attached; the builder never blocks native Eloquent (scopes, eager loading, plain where clauses).
 - **PersonalAccessTokenBuilder**: Sanctum's default token model remains usable; the builder only adds convenience methods.
 - **Responses**: controllers may still return `response()->json(...)` directly; the exception handler still maps exceptions to problem details.
-- **Middleware**: opt-in middleware (`feature.flag`, `idempotency`, `sunset`) only runs on routes that declare them; routes may skip them when not needed. Global middleware (trace.id, security.headers, set.locale) attaches to the `api` group only.
+- **Middleware**: opt-in middleware (`feature-flag`, `idempotency`, `sunset`) only runs on routes that declare them; routes may skip them when not needed. Global middleware (`AddTraceId`, `AddSecurityHeaders`, `SetLocale`) attaches to the `api` group only.
 - **Module provider**: a module provider may extend `Illuminate\Support\ServiceProvider` directly instead of the nWidart base class.
 - **Identity contract**: any `Authenticatable` model can replace the `Identity` implementation; the contract only composes native Laravel auth interfaces.
 - **Concerns (FormatDate, HasDefaultBehavior)**: traits are optional; models work without them.
 - **Payloads / validation rule helpers**: native inline validation and native request handling remain valid.
 - **EnsureEmailIsVerified**: the `verified` alias overrides Laravel's native middleware to throw `401`/`403` problem responses instead of redirecting to a web verification route (API-only deviation); teams with web flows can register the native middleware instead.
 
-**Proof:** tests proving the native path still works (`tests/Feature/Builders/NativePathTest.php`, `tests/Feature/Http/Middleware/NativePathMiddlewareTest.php`, exception handler tests, module activation tests).
+**Proof:** tests proving the native path still works (`tests/Feature/Builders/EloquentNativePathTest.php`, `tests/Feature/Http/Middleware/NativePathMiddlewareTest.php`, exception handler tests, module activation tests).
 
 ---
 

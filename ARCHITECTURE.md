@@ -484,7 +484,7 @@ Definisi: route file modul di `modules/{Module}/routes/V1.php`, dimuat `app/Prov
 
 Aturan:
 1. Base prefix `api/v1/{path}` (tanpa segmen modul di URL); route name `api.{version}.{module}.{name}`
-2. Middleware eksplisit di route group (auth:sanctum, throttle, permission, feature.flag)
+2. Middleware eksplisit di route group (auth:sanctum, throttle, permission, feature-flag)
 3. Route file hanya dimuat jika modul aktif
 
 Larangan:
@@ -509,7 +509,7 @@ Larangan:
 
 ### 3.20 Features
 
-Definisi: feature flag modul. Build-time toggle: array `features` di `config/config.php` modul (di-merge nWidart ke `config('{alias}.features')`). Runtime per-user: Pennant class di `modules/{Module}/app/Features/` (dipakai 2+ modul: `app/Features/`), diperiksa via `FeatureFlagMiddleware`.
+Definisi: feature flag modul. Build-time toggle: array `features` di `config/config.php` modul (di-merge nWidart ke `config('{alias}.features')`). Runtime per-user: Pennant class di `modules/{Module}/app/Features/` (dipakai 2+ modul: `app/Features/`), diperiksa via `EnsureFeatureIsActive`.
 
 Aturan:
 1. Build-time: nilai boolean di config modul; di-merge base provider ke `config('{alias}.features')`
@@ -633,7 +633,7 @@ Organization adalah modul non-aktif minimal (app/Providers, tests) yang membungk
 |---|---|---|---|
 | Module | `modules_statuses.json` (FileActivator, `module:enable`/`disable`) | Build-time | `organization` off = tenancy inert |
 | Feature (static) | Array `features` di config modul (ala Fortify) | Build-time | Media: upload vs signedUrl |
-| Feature (runtime) | Pennant flags (class di `app/Features/`) + FeatureFlagMiddleware | Runtime, per-user | beta flag, gradual rollout |
+| Feature (runtime) | Pennant flags (class di `app/Features/`) + EnsureFeatureIsActive | Runtime, per-user | beta flag, gradual rollout |
 
 ### 6.2 Draf code: config modul
 
@@ -705,7 +705,7 @@ final class MediaUpload extends Feature
 }
 ```
 
-Route dilindungi middleware `feature.flag` (FeatureFlagMiddleware). Feature yang dipakai 2+ modul tinggal di `app/Features/`.
+Route dilindungi middleware `feature-flag` (EnsureFeatureIsActive). Feature yang dipakai 2+ modul tinggal di `app/Features/`.
 
 Catatan: Pennant class hanya untuk keputusan runtime (per-user, gradual rollout); toggle statis cukup memakai features array di config modul (6.1/6.2) tanpa class Pennant.
 

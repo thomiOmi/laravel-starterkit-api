@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\IdempotencyMiddleware;
+use App\Http\Middleware\HandleIdempotentRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Modules\IAM\Database\Factories\UserFactory;
 use Symfony\Component\HttpFoundation\Response;
 
-covers(IdempotencyMiddleware::class);
+covers(HandleIdempotentRequests::class);
 
 beforeEach(function (): void {
     loginAsUser();
