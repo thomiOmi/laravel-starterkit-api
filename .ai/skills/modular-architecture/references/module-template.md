@@ -2,6 +2,27 @@
 
 Concrete file examples from the `IAM` module. Use these as templates when creating new modules or features.
 
+## Module manifest
+
+`modules/{Module}/module.json`
+
+```json
+{
+    "name": "{Module}",
+    "alias": "{lower}",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "requires": [],
+    "providers": [
+        "Modules\\{Module}\\Providers\\{Module}ServiceProvider"
+    ],
+    "files": []
+}
+```
+
+List inter-module dependencies (TitleCase folder names) in `requires`, e.g. `["IAM"]`; the core module (IAM) declares none. Validate declarations with `php artisan module:check-dependencies`.
+
 ## Service Provider
 
 `modules/{Module}/app/Providers/{Module}ServiceProvider.php`

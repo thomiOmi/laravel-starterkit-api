@@ -208,7 +208,7 @@ project/
 │   └── seeders/                 # Shared seeders
 ├── modules/
 │   └── {Module}/                # One module (TitleCase folder, lowercase alias)
-│       ├── module.json          # nWidart metadata (name, alias, priority, providers)
+│       ├── module.json          # nWidart metadata (name, alias, priority, requires, providers)
 │       ├── composer.json        # nWidart scaffold (package metadata)
 │       ├── app/                 # Mirrors app/: all module PHP code here
 │       │   ├── Http/            # All HTTP layers here
@@ -747,11 +747,33 @@ php artisan module:enable Blog    # or module:disable
 
 `php artisan module:disable {Module}` (status `false` in `modules_statuses.json`). Module data stays in the database (migrations are not rolled back automatically); the schema stays, behavior is off.
 
-### 6.4 Private modules
+### 6.4 Declaring module dependencies
+
+`module.json` carries an optional `requires` array listing the module names a module depends on (TitleCase folder names):
+
+```json
+{
+    "name": "Media",
+    "alias": "media",
+    "priority": 0,
+    "requires": ["IAM"],
+    "providers": ["Modules\\Media\\Providers\\MediaServiceProvider"]
+}
+```
+
+The core module (IAM) declares none. Validate the declarations with:
+
+```bash
+php artisan module:check-dependencies
+```
+
+The command fails when a declared dependency is not an installed module, is disabled, or when the `requires` graph contains a cycle. A module must not declare a dependency on a module that is not registered in the `config/modules.php` allow-list. New modules are scaffolded with an empty `"requires": []` by the generator.
+
+### 6.5 Private modules
 
 Private module folders are stored on disk + added to `.gitignore` + not enabled in `modules_statuses.json`. Never sent to a public repo.
 
-### 6.5 Special case: Organization (tenancy)
+### 6.6 Special case: Organization (tenancy)
 
 Organization is a minimal inactive module (`app/Providers`, `tests`) wrapping stancl/tenancy (opt-in tenancy option). Deliberate deviations:
 
@@ -759,7 +781,7 @@ Organization is a minimal inactive module (`app/Providers`, `tests`) wrapping st
 - Config `tenancy.php` inside the module.
 - The rest of the structure grows when the module is activated (MVP 2).
 
-### 6.6 Deleting a module
+### 6.7 Deleting a module
 
 `php artisan module:delete {Module} --force` (removes the folder + status in `modules_statuses.json`). The provider is not booted when the module is non-enabled; an absent folder is not fatal. Database data remains (migrations are not auto-rolled back).
 
