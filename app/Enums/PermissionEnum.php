@@ -34,6 +34,6 @@ enum PermissionEnum: string
      */
     public function label(): string
     {
-        return __('enums.'.basename(self::class).'.'.str_replace('.', '_', $this->value));
+        return __('enums.'.class_basename(self::class).'.'.str_replace('.', '_', $this->value));
     }
 }
