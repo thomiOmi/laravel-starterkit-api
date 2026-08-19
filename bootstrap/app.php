@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\AddDeprecationHeaders;
+use App\Http\Middleware\AddSecurityHeaders;
+use App\Http\Middleware\AddTraceId;
 use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Http\Middleware\FeatureFlagMiddleware;
-use App\Http\Middleware\IdempotencyMiddleware;
-use App\Http\Middleware\SecurityHeadersMiddleware;
-use App\Http\Middleware\SetLocaleMiddleware;
-use App\Http\Middleware\Sunset;
-use App\Http\Middleware\TraceIdMiddleware;
+use App\Http\Middleware\EnsureFeatureIsActive;
+use App\Http\Middleware\HandleIdempotentRequests;
+use App\Http\Middleware\SetLocale;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -48,10 +48,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
-            'feature.flag' => FeatureFlagMiddleware::class,
-            'idempotency' => IdempotencyMiddleware::class,
-            'sunset' => Sunset::class,
-            'trace.id' => TraceIdMiddleware::class,
+            'feature-flag' => EnsureFeatureIsActive::class,
+            'idempotency' => HandleIdempotentRequests::class,
+            'sunset' => AddDeprecationHeaders::class,
+            'trace-id' => AddTraceId::class,
         ]);
 
         $middleware->prependToPriorityList(
@@ -59,9 +59,9 @@ return Application::configure(basePath: dirname(__DIR__))
             prepend: EnsureFrontendRequestsAreStateful::class,
         );
 
-        $middleware->append(SetLocaleMiddleware::class);
-        $middleware->prependToGroup('api', TraceIdMiddleware::class);
-        $middleware->prependToGroup('api', SecurityHeadersMiddleware::class);
+        $middleware->append(SetLocale::class);
+        $middleware->prependToGroup('api', AddTraceId::class);
+        $middleware->prependToGroup('api', AddSecurityHeaders::class);
 
         $middleware->redirectGuestsTo(null);
 
@@ -203,9 +203,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->respond(function (ProblemResponse|Response $response, Throwable $e, Request $request): Response {
             $response = Router::toResponse($request, $response);
 
-            $response = TraceIdMiddleware::applyTraceId($response, $request);
+            $response = AddTraceId::applyTraceId($response, $request);
 
-            return SecurityHeadersMiddleware::applyHeaders($response);
+            return AddSecurityHeaders::applyHeaders($response);
         });
     })
     ->create();

@@ -24,7 +24,7 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
  * - Replays with mismatched body return 409 Conflict.
  * - Only 2xx/3xx responses are cached; failed requests can be retried.
  */
-final readonly class IdempotencyMiddleware
+final readonly class HandleIdempotentRequests
 {
     /** @var string The incoming request header that carries the idempotency key. */
     private const string HEADER_NAME = 'Idempotency-Key';

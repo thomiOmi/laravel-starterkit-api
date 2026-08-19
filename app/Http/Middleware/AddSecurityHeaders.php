@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
  * - HSTS is only sent in production environments.
  * - Remaining headers are set unconditionally.
  */
-final readonly class SecurityHeadersMiddleware
+final readonly class AddSecurityHeaders
 {
     private const array HEADERS = [
         'X-Content-Type-Options' => 'nosniff',

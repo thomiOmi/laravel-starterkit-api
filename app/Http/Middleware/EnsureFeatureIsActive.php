@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 /**
  * Gate route access behind a build-time or runtime feature flag.
  *
- * Usage: `Route::get(...)->middleware('feature.flag:iam.self-registration')`
+ * Usage: `Route::get(...)->middleware('feature-flag:iam.self-registration')`
  *
  * The flag is resolved in two ways:
  * - Build-time: `{alias}.{feature}` resolves to the module features array,
@@ -25,7 +25,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  *
  * Returns 403 when the flag is off.
  */
-final readonly class FeatureFlagMiddleware
+final readonly class EnsureFeatureIsActive
 {
     /**
      * @param  Closure(Request): (Response)  $next

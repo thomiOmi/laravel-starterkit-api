@@ -149,7 +149,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | A comma-separated list of locales that the application supports. This
-    | is used by the SetLocaleMiddleware to negotiate the preferred language
+    | is used by the SetLocale to negotiate the preferred language
     | with the client via the Accept-Language header. When empty or unset,
     | the middleware auto-detects available locales from the lang/ directory.
     |

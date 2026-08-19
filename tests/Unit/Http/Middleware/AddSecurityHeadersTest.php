@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\SecurityHeadersMiddleware;
+use App\Http\Middleware\AddSecurityHeaders;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-covers(SecurityHeadersMiddleware::class);
+covers(AddSecurityHeaders::class);
 
 function handleMiddleware(Request $request): Response
 {
-    return (new SecurityHeadersMiddleware)->handle($request, fn (Request $req): Response => new Response('OK'));
+    return (new AddSecurityHeaders)->handle($request, fn (Request $req): Response => new Response('OK'));
 }
 
-describe('SecurityHeadersMiddleware', function () {
+describe('AddSecurityHeaders', function () {
 
     it('sets X-Content-Type-Options header', function () {
         expect(handleMiddleware(new Request)->headers->get('X-Content-Type-Options'))->toBe('nosniff');
@@ -42,7 +42,7 @@ describe('SecurityHeadersMiddleware', function () {
     });
 
     it('does not modify existing response content', function () {
-        $middleware = new SecurityHeadersMiddleware;
+        $middleware = new AddSecurityHeaders;
 
         $response = $middleware->handle(new Request, fn (Request $req): Response => new Response('Original body'));
 

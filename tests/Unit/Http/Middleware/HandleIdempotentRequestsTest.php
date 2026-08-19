@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\IdempotencyMiddleware;
+use App\Http\Middleware\HandleIdempotentRequests;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\Repository;
 use Illuminate\Http\JsonResponse;
@@ -13,10 +13,10 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
-covers(IdempotencyMiddleware::class);
+covers(HandleIdempotentRequests::class);
 
 beforeEach(function (): void {
-    $this->middleware = new IdempotencyMiddleware;
+    $this->middleware = new HandleIdempotentRequests;
 
     Cache::swap(new Repository(new ArrayStore));
 });

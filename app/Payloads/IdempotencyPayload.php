@@ -31,7 +31,7 @@ final readonly class IdempotencyPayload
      *
      * A payload is replayable only when all fields exist with the expected
      * types and the status is a success or redirect code, matching what
-     * IdempotencyMiddleware stores.
+     * HandleIdempotentRequests stores.
      *
      * @param  array<mixed, mixed>  $data  The raw array from cache storage.
      */

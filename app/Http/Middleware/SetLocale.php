@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  * of truth). When that config is empty, locales are resolved from the
  * lang/ directory and cached for 24 hours.
  */
-final readonly class SetLocaleMiddleware
+final readonly class SetLocale
 {
     /**
      * @var array<int, string>

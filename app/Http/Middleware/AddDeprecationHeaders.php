@@ -33,7 +33,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Middleware parameters are **order-independent** — URL is detected by `http` prefix
  * and `enforce` is detected by exact string match.
  */
-final readonly class Sunset
+final readonly class AddDeprecationHeaders
 {
     /**
      * @param  Closure(Request): (Response)  $next

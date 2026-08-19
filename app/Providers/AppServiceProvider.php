@@ -26,7 +26,6 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Uri;
 use Illuminate\Validation\Rules\Password;
-use Laravel\Pennant\Feature;
 use Laravel\Sanctum\Sanctum;
 use RuntimeException;
 
@@ -34,8 +33,8 @@ use RuntimeException;
  * Central application configuration hub.
  *
  * Registers rate limiters, auth defaults (email verification, password reset),
- * feature flags, the SuperAdmin gate, production security monitoring, and
- * immutable date handling.
+ * the SuperAdmin gate, production security monitoring, and immutable date
+ * handling.
  */
 class AppServiceProvider extends ServiceProvider
 {
@@ -59,8 +58,6 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
 
         $this->configureRateLimiting();
-
-        $this->defineFeatures();
 
         $this->configureSuperAdminGate();
 
@@ -159,16 +156,6 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute($limit)
                 ->by($request->user()?->id ?: $request->ip());
-        });
-    }
-
-    /**
-     * Define Pennant feature flags for the application.
-     */
-    protected function defineFeatures(): void
-    {
-        Feature::define('beta-feature', function (Identity $user) {
-            return $user->hasRole(RoleEnum::Admin->value);
         });
     }
 
