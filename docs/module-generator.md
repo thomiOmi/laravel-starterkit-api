@@ -38,9 +38,32 @@ modules/{Module}/
 
 All generated PHP files carry `declare(strict_types=1)`. The generated `RouteServiceProvider` guards both route files with `file_exists`, iterates `apiroute.supported_versions`, and mounts api routes on `prefix('api/{version}')` with `name('api.{version}.{alias}.')`, producing the uniform contract: URL `api/v1/{path}`, route name `api.{version}.{module}.{name}`.
 
+## Layer commands
+
+Layer make commands write convention-compliant files into the module (paths + namespaces from `config/modules.php` `paths.generator`):
+
+| Command | Path | Notes |
+|---|---|---|
+| `module:make-model {Name}` | `app/Models/` | Attribute-based stub (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`), non-final |
+| `module:make-scope {Name}` | `app/Models/Scopes/` | nwidart derives the namespace from the model path |
+| `module:make-action` / `--invoke` | `app/Actions/` | `final readonly` |
+| `module:make-service` / `--invoke` | `app/Services/` | `final readonly` |
+| `module:make-helper` / `--invoke` | `app/Support/` | Final static-utility class (helpers = Support layer) |
+| `module:make-interface {Name}` | `app/Contracts/` | |
+| `module:make-resource` / `--collection` | `app/Http/Resources/` | |
+| `module:make-request {Name}` | `app/Http/Requests/` | |
+| `module:make-middleware` | `app/Http/Middleware/` | |
+| `module:make-command {Name}` | `app/Console/Commands/` | `#[Signature]`/`#[Description]`, `handle(): int` |
+| `module:make-mail {Name}` | `app/Mail/` | |
+| `module:make-factory` | `database/factories/` | |
+| `module:make-migration` | `database/migrations/` | |
+| `module:make-seeder` | `database/seeders/` | |
+
+Layer commands follow Laravel conventions for the rest (policy, observer, enum, exception, job, event, listener, rule, notification). Repository (`module:make-repository`) stays on-demand; casts, channels, classes, traits, component-class, and replacement remain nwidart defaults (outside the anatomy).
+
 ## Activation
 
-Modules are activated via the nwidart FileActivator status in `modules_statuses.json` (e.g. `{"iam": true}`). A module only boots (config merge, migrations, routes, providers) when its entry is `true`. `module:enable {name}` is the opt-in switch; there is no environment override.
+Modules are activated via the nwidart FileActivator status in `modules_statuses.json` (e.g. `{"IAM": true}`). A module only boots (config merge, migrations, routes, providers) when its entry is `true`. `module:enable {name}` is the opt-in switch; there is no environment override.
 
 ## API Modules
 

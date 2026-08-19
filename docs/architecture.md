@@ -227,9 +227,9 @@ project/
 │       │   ├── Listeners/       # Module-specific listeners
 │       │   ├── Lang/            # {locale}/ (module translations, loaded when active)
 │       │   ├── Models/          # Module Eloquent models
+│       │   │   └── Scopes/      # Global scopes (registered via #[ScopedBy])
 │       │   ├── Observers/       # Model observers (registered via #[ObservedBy])
 │       │   ├── Policies/        # Module authorization policies (registered via #[UsePolicy])
-│       │   ├── Scopes/          # Global scopes (registered via #[ScopedBy])
 │       │   ├── Providers/       # (required) {Module}ServiceProvider extends Nwidart base + RouteServiceProvider
 │       │   ├── Notifications/   # Module-specific notifications
 │       │   ├── Actions/         # Kit-specific: one business operation, final readonly, handle()
@@ -288,7 +288,7 @@ project/
 | `app/Models` | Eloquent models |
 | `app/Observers` | Model observers (via `#[ObservedBy]`) |
 | `app/Policies` | Authorization policies (via `#[UsePolicy]`) |
-| `app/Scopes` | Global scopes (via `#[ScopedBy]`) |
+| `app/Models/Scopes` | Global scopes (via `#[ScopedBy]`) |
 | `app/Notifications` | Module-specific notifications |
 | `app/Actions` | Business logic, one operation per class |
 | `app/Builders` | Query builders (extends `BaseQueryBuilder`) |
@@ -317,6 +317,8 @@ project/
 | Repositories | - | - | Repositories layer | NOT used (Eloquent is the repository) |
 
 **Decision note:** the kit disables frontend scaffolding in the generator: the `views`, `assets`, and `vite` stubs are commented out in `config/modules.php` (marked "TODO: support frontend"), so generated modules are backend-only. There is no `--repository` flag on `module:make` (nwidart v13); repositories are on-demand via `module:make-repository` when a real use case appears (Eloquent is the repository). `--event` is kept (`Events/` optional, created when needed). Executed during generator implementation.
+
+**Decision note (generator alignment):** the generator paths in `config/modules.php` are aligned with this anatomy: interfaces map to `app/Contracts` (namespace `Contracts`), emails to `app/Mail` (namespace `Mail`), resources to `app/Http/Resources` (namespace `Http/Resources`), commands to `app/Console/Commands` (namespace `Console/Commands`), lang to `app/Lang`, and helpers to `app/Support` (namespace `Support`). Global scopes generate into `app/Models/Scopes` (nwidart derives the scope namespace from the model path, so the docs mirror that location instead of moving the path). The remaining nwidart extras (casts, channels, classes, traits, components, replacements, plain classes) stay at vendor defaults and are outside the anatomy; repositories stay on-demand. All PHP stubs carry `declare(strict_types=1)` and follow kit conventions: model stubs are attribute-based (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`) and non-final, commands use `#[Signature]`/`#[Description]` with `handle(): int`, actions/services are `final readonly`, and controller stubs return `SuccessResponse`. Verified end-to-end with `module:make {Name}` plus layer commands against a scratch module.
 
 ---
 
@@ -647,7 +649,7 @@ User::query()
 
 1. PHP 8 attributes: `#[Signature]`, `#[Description]`, `#[Help]`, `#[Usage]`.
 2. `handle(): int` with exit code.
-3. Module commands are registered by the base `ModuleServiceProvider` when the module is active (no `withCommands` in `bootstrap/app.php`); global commands in `app/Console/Commands` are auto-discovered.
+3. Module commands are registered by adding the command class to the `$commands` array in the module's `{Module}ServiceProvider` (the nWidart base `ModuleServiceProvider` registers whatever is listed there; it does not auto-discover the folder); global commands in `app/Console/Commands` are auto-discovered
 
 **Forbidden:** commands without attribute signatures.
 

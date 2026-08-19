@@ -84,9 +84,9 @@ project/
 │       │   ├── Listeners/       # Listener module-specific
 │       │   ├── Lang/            # {locale}/ (translasi modul, dimuat saat aktif)
 │       │   ├── Models/          # Model Eloquent modul
+│       │   │   └── Scopes/      # Global scope (didaftarkan #[ScopedBy])
 │       │   ├── Observers/       # Observer model (didaftarkan #[ObservedBy])
 │       │   ├── Policies/        # Policy authorization modul (didaftarkan #[UsePolicy])
-│       │   ├── Scopes/          # Global scope (didaftarkan #[ScopedBy])
 │       │   ├── Providers/       # (wajib) {Module}ServiceProvider extends nWidart base + RouteServiceProvider
 │       │   ├── Notifications/   # Notifikasi module-specific
 │       │   ├── Actions/         # Kit-specific: satu operasi bisnis, final readonly, handle()
@@ -142,7 +142,7 @@ Folder optional (hanya dibuat jika berisi minimal 1 file, dilarang folder kosong
 | app/Models | Model Eloquent |
 | app/Observers | Observer model (via #[ObservedBy]) |
 | app/Policies | Policy authorization (via #[UsePolicy]) |
-| app/Scopes | Global scope (via #[ScopedBy]) |
+| app/Models/Scopes | Global scope (via #[ScopedBy]) |
 | app/Notifications | Notifikasi module-specific |
 | app/Actions | Logika bisnis, satu operasi per kelas |
 | app/Builders | Query builder (extends BaseQueryBuilder) |
@@ -473,7 +473,7 @@ Definisi: Artisan command di `app/Console/Commands/` (global) atau `modules/{Mod
 Aturan:
 1. PHP 8 attributes: `#[Signature]`, `#[Description]`, `#[Help]`, `#[Usage]`
 2. `handle(): int` dengan exit code
-3. Command modul didaftarkan base nWidart `ModuleServiceProvider` saat modul aktif (tidak ada `withCommands` di `bootstrap/app.php`); command global di `app/Console/Commands` ter-auto-discovery
+3. Command modul didaftarkan dengan menambahkan class command ke array `$commands` pada `{Module}ServiceProvider` (base nWidart `ModuleServiceProvider` mendaftarkan apa yang terdaftar di array itu, tidak auto-discovery folder); command global di `app/Console/Commands` ter-auto-discovery
 
 Larangan:
 - Dilarang command tanpa attributes signature

@@ -53,7 +53,7 @@ modules/{ModuleName}/
 Module registration is handled by `nwidart/laravel-modules`:
 
 1. Each module has a `module.json` manifest; `config/modules.php` configures nWidart (FileActivator, paths, cache)
-2. Live activation state lives in `modules_statuses.json` (e.g. `{"iam": true}`); a module only boots when its entry is `true`
+2. Live activation state lives in `modules_statuses.json` (e.g. `{"IAM": true}`); a module only boots when its entry is `true`
 3. The module's `app/Providers/{ModuleName}ServiceProvider.php` extends `Nwidart\Modules\Support\ModuleServiceProvider`, which auto-merges `config/config.php`, loads `database/migrations` + `database/factories`, and registers the providers listed in the `$providers` array
 4. Routes are loaded by the module's own `app/Providers/RouteServiceProvider.php` (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`), not the app `RouteServiceProvider`
 
@@ -63,6 +63,7 @@ You do NOT need to register modules in `config/app.php`.
 
 1. Run `php artisan module:make {ModuleName}` -- generates `module.json`, `composer.json`, `config/config.php`, `routes/V1.php`, `app/Providers/{ModuleName}ServiceProvider.php` + `EventServiceProvider.php` + `RouteServiceProvider.php`, `app/Http/Controllers/{ModuleName}Controller.php`, `database/seeders/{ModuleName}DatabaseSeeder.php`, and `tests/`
    - `--api` generates API scaffolding, `--disabled` creates the module inactive, `--plain` skips scaffolding
+   - Layer commands write into convention paths (see `docs/module-generator.md`): models -> `app/Models`, scopes -> `app/Models/Scopes`, actions/services -> `app/Actions`/`app/Services` (final readonly), helpers -> `app/Support`, interfaces -> `app/Contracts`, resources -> `app/Http/Resources`, commands -> `app/Console/Commands`, mail -> `app/Mail`
 2. The scaffold already produces the versioned contract: `routes/V1.php` is mounted by the generated `RouteServiceProvider` via `config('apiroute.supported_versions')` (default `['V1']`); additional versions follow `V{number}.php` casing
 3. In `app/Providers/RouteServiceProvider.php`, list `V1` (or the version) in `config('apiroute.supported_versions')` so `mapApiRoutes()` mounts it on `api/v1` with name prefix `api.v1.{alias}.`
 4. Enable the module with `php artisan module:enable {ModuleName}` (writes `modules_statuses.json`)

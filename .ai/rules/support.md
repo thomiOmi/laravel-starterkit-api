@@ -24,3 +24,7 @@ Purely technical utilities: self-contained, no business state, no Eloquent depen
 ## Example
 
 `SocialState` (creates and verifies OAuth state tokens with expiry).
+
+## Generator
+
+`module:make-helper {Name} {Module}` maps to `app/Support/` (config `paths.generator.helpers`), namespace `Support`; the scaffold is a `final` class for static utilities.
