@@ -14,6 +14,7 @@
 /.zcode/
 /auth.json
 /TASKS.md
+/tests/Fixtures/
 /node_modules
 /public/build
 /public/hot

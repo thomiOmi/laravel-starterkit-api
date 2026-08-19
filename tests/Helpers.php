@@ -224,3 +224,19 @@ function artisanCommand(TestCase $test, string $command, array $parameters = [])
 
     return $pending;
 }
+
+/**
+ * Decode a JSON file into an array.
+ *
+ * @return array<mixed, mixed>
+ */
+function decodeModuleJson(string $path): array
+{
+    $json = json_decode(file_get_contents($path) ?: '', true);
+
+    if (! is_array($json)) {
+        throw new RuntimeException("Invalid JSON in {$path}");
+    }
+
+    return $json;
+}

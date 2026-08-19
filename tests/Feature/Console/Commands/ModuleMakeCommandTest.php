@@ -8,20 +8,6 @@ use Nwidart\Modules\Commands\Make\ModuleMakeCommand;
 
 covers(ModuleMakeCommand::class);
 
-/**
- * @return array<mixed, mixed>
- */
-function decodeModuleJson(string $path): array
-{
-    $json = json_decode(file_get_contents($path) ?: '', true);
-
-    if (! is_array($json)) {
-        throw new RuntimeException("Invalid JSON in {$path}");
-    }
-
-    return $json;
-}
-
 beforeEach(function (): void {
     Process::fake();
 });
@@ -81,7 +67,8 @@ describe('module:make command', function () {
             ->toContain('extends ModuleServiceProvider')
             ->toContain("protected string \$name = 'Blog'")
             ->toContain('EventServiceProvider::class')
-            ->toContain('RouteServiceProvider::class');
+            ->toContain('RouteServiceProvider::class')
+            ->toContain('protected array $commands = [];');
 
         $routeProvider = file_get_contents($modulePath.'/app/Providers/RouteServiceProvider.php');
         expect($routeProvider)->toContain('mapApiRoutes')
@@ -101,9 +88,14 @@ describe('module:make command', function () {
 
         $controller = file_get_contents($modulePath.'/app/Http/Controllers/BlogController.php');
         expect($controller)->toContain('final readonly class BlogController extends Controller')
+            ->toContain('use App\Http\Responses\SuccessResponse;')
+            ->toContain('return new SuccessResponse(data: []);')
+            ->toContain('status: Response::HTTP_CREATED')
             ->toContain('public function index')
             ->toContain('public function store')
-            ->not->toContain('public function create');
+            ->not->toContain('public function create')
+            ->not->toContain('JsonResponse')
+            ->not->toContain('response()->json');
 
         $seeder = file_get_contents($modulePath.'/database/seeders/BlogDatabaseSeeder.php');
         expect($seeder)->toContain('declare(strict_types=1)')
