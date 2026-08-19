@@ -20,32 +20,53 @@ Each module lives under `modules/{ModuleName}/` and follows this layout (lowerca
 ```
 modules/{ModuleName}/
 ├── app/                   # Mirrors the stock Laravel app/ skeleton
+
 │   ├── Actions/           # Single-responsibility business actions
+
 │   ├── Builders/          # BaseQueryBuilder subclasses for list queries
+
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   └── V1/        # Invokable single-action controllers (API v1)
+
 │   │   ├── Middleware/    # Module-specific HTTP middleware
+
 │   │   ├── Requests/
 │   │   │   └── V1/        # FormRequest validation (API v1)
+
 │   │   └── Resources/     # Eloquent API resources
+
 │   ├── Models/            # Eloquent models
+
 │   ├── Payloads/
 │   │   └── V1/            # Immutable DTOs for action input (API v1)
+
 │   ├── Providers/         # {Module}ServiceProvider + RouteServiceProvider
+
 │   ├── Services/          # Business services (optional)
+
 │   └── Support/           # Module-specific helpers (optional)
+
 ├── config/                # config.php merged into config('{alias}.*')
+
 ├── database/
 │   ├── factories/         # Model factories
+
 │   ├── migrations/        # Database migrations
+
 │   └── seeders/           # Database seeders
+
 ├── routes/                # Versioned route files (V1.php, V2.php)
+
 ├── tests/
 │   ├── Feature/           # Pest feature tests
+
 │   └── Unit/              # Pest unit tests
+
 ├── composer.json          # Per-module package metadata (nWidart)
-└── module.json            # nWidart module manifest (name, priority, providers)
+
+└── module.json            # nWidart module manifest (name, alias, priority, requires, providers)
+
 ```
 
 ## Auto-Discovery
@@ -56,6 +77,7 @@ Module registration is handled by `nwidart/laravel-modules`:
 2. Live activation state lives in `modules_statuses.json` (e.g. `{"IAM": true}`); a module only boots when its entry is `true`
 3. The module's `app/Providers/{ModuleName}ServiceProvider.php` extends `Nwidart\Modules\Support\ModuleServiceProvider`, which auto-merges `config/config.php`, loads `database/migrations` + `database/factories`, and registers the providers listed in the `$providers` array
 4. Routes are loaded by the module's own `app/Providers/RouteServiceProvider.php` (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`), not the app `RouteServiceProvider`
+5. `module.json` carries an optional `requires` array listing dependency module names (TitleCase folder names, e.g. `{"requires": ["IAM"]}`); the core module (IAM) declares none. Validate declarations with `php artisan module:check-dependencies` (fails on missing/disabled dependency or a cycle). New modules are scaffolded with an empty `"requires": []`
 
 You do NOT need to register modules in `config/app.php`.
 
@@ -67,8 +89,9 @@ You do NOT need to register modules in `config/app.php`.
 2. The scaffold already produces the versioned contract: `routes/V1.php` is mounted by the generated `RouteServiceProvider` via `config('apiroute.supported_versions')` (default `['V1']`); additional versions follow `V{number}.php` casing
 3. In `app/Providers/RouteServiceProvider.php`, list `V1` (or the version) in `config('apiroute.supported_versions')` so `mapApiRoutes()` mounts it on `api/v1` with name prefix `api.v1.{alias}.`
 4. Enable the module with `php artisan module:enable {ModuleName}` (writes `modules_statuses.json`)
-5. Run `php artisan module:migrate` for the module's migrations (or `migrate --path=modules/{ModuleName}/database/migrations`)
-6. Add a feature test asserting the generated route contract (see console-commands rule); scaffolded modules must boot and pass the architecture tests
+5. Declare inter-module dependencies in `module.json` `requires` (empty by default); validate with `php artisan module:check-dependencies`
+6. Run `php artisan module:migrate` for the module's migrations (or `migrate --path=modules/{ModuleName}/database/migrations`)
+7. Add a feature test asserting the generated route contract (see console-commands rule); scaffolded modules must boot and pass the architecture tests
 
 ## Step: Add a New Feature
 
@@ -372,5 +395,6 @@ Unit test per Action (test business logic in isolation) in `tests/Unit`. Feature
 - `toArray()` in Payload does not filter null values -- causes SQL errors on update when password is not provided
 - `authorize()` does not handle `$this->user()` returning null -- use null-safe `$this->user()?->can(...) ?? false`
 - Missing `relationLoaded()` check in Resource -- causes N+1 query
+- Declaring a dependency in `module.json` `requires` that is not installed/enabled or creates a cycle -- run `php artisan module:check-dependencies` to catch it
 
 See [the reference guide](references/module-template.md) for concrete file examples from the IAM module.

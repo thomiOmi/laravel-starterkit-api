@@ -101,6 +101,7 @@ describe('module:make command', function () {
 
         $json = file_get_contents($modulePath.'/module.json');
         expect($json)->toContain('"alias": "blog"')
+            ->toContain('"requires": []')
             ->toContain('Providers\\\\BlogServiceProvider');
 
         $composer = decodeModuleJson($modulePath.'/composer.json');
@@ -133,7 +134,8 @@ describe('module:make command', function () {
         }
 
         $json = decodeModuleJson($modulePath.'/module.json');
-        expect($json['providers'])->toBeEmpty();
+        expect($json['providers'])->toBeEmpty()
+            ->and($json['requires'])->toBe([]);
     });
 
     it('can delete a generated module', function () {
