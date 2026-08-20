@@ -138,7 +138,7 @@ Folder optional (hanya dibuat jika berisi minimal 1 file, dilarang folder kosong
 | app/Rules | Custom validation rule module-specific |
 | app/Events | Event module-specific |
 | app/Listeners | Listener module-specific |
-| app/Lang | Translasi modul ({locale}/) |
+| lang | Translasi modul ({locale}/) |
 | app/Models | Model Eloquent |
 | app/Observers | Observer model (via #[ObservedBy]) |
 | app/Policies | Policy authorization (via #[UsePolicy]) |

@@ -157,7 +157,7 @@ flowchart LR
     E --> G["Merge features into config('{alias}.features')"]
     E --> H["Load migrations (modules/{Module}/database)"]
     E --> I["Load routes/V1.php (prefix api/{version})"]
-    E --> J["Load app/Lang/{locale}"]
+    E --> J["Load lang/{locale}"]
     E --> K["Register app/Console/Commands of module"]
     E --> L["boot() hook (middleware alias, feature, binding)"]
 ```
@@ -284,7 +284,7 @@ project/
 | `app/Rules` | Module-specific custom validation rules |
 | `app/Events` | Module-specific events |
 | `app/Listeners` | Module-specific listeners |
-| `app/Lang` | Module translations (`{locale}/`) |
+| `lang` | Module translations (`{locale}/`) |
 | `app/Models` | Eloquent models |
 | `app/Observers` | Model observers (via `#[ObservedBy]`) |
 | `app/Policies` | Authorization policies (via `#[UsePolicy]`) |
@@ -318,7 +318,7 @@ project/
 
 **Decision note:** the kit disables frontend scaffolding in the generator: the `views`, `assets`, and `vite` stubs are commented out in `config/modules.php` (marked "TODO: support frontend"), so generated modules are backend-only. There is no `--repository` flag on `module:make` (nwidart v13); repositories are on-demand via `module:make-repository` when a real use case appears (Eloquent is the repository). `--event` is kept (`Events/` optional, created when needed). Executed during generator implementation.
 
-**Decision note (generator alignment):** the generator paths in `config/modules.php` are aligned with this anatomy: interfaces map to `app/Contracts` (namespace `Contracts`), emails to `app/Mail` (namespace `Mail`), resources to `app/Http/Resources` (namespace `Http/Resources`), commands to `app/Console/Commands` (namespace `Console/Commands`), lang to `app/Lang`, and helpers to `app/Support` (namespace `Support`). Global scopes generate into `app/Models/Scopes` (nwidart derives the scope namespace from the model path, so the docs mirror that location instead of moving the path). The remaining nwidart extras (casts, channels, classes, traits, components, replacements, plain classes) stay at vendor defaults and are outside the anatomy; repositories stay on-demand. All PHP stubs carry `declare(strict_types=1)` and follow kit conventions: model stubs are attribute-based (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`) and non-final, commands use `#[Signature]`/`#[Description]` with `handle(): int`, actions/services are `final readonly`, and controller stubs return `SuccessResponse`. Verified end-to-end with `module:make {Name}` plus layer commands against a scratch module.
+**Decision note (generator alignment):** the generator paths in `config/modules.php` are aligned with this anatomy: interfaces map to `app/Contracts` (namespace `Contracts`), emails to `app/Mail` (namespace `Mail`), resources to `app/Http/Resources` (namespace `Http/Resources`), commands to `app/Console/Commands` (namespace `Console/Commands`), lang to `lang`, and helpers to `app/Support` (namespace `Support`). Global scopes generate into `app/Models/Scopes` (nwidart derives the scope namespace from the model path, so the docs mirror that location instead of moving the path). The remaining nwidart extras (casts, channels, classes, traits, components, replacements, plain classes) stay at vendor defaults and are outside the anatomy; repositories stay on-demand. All PHP stubs carry `declare(strict_types=1)` and follow kit conventions: model stubs are attribute-based (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`) and non-final, commands use `#[Signature]`/`#[Description]` with `handle(): int`, actions/services are `final readonly`, and controller stubs return `SuccessResponse`. Verified end-to-end with `module:make {Name}` plus layer commands against a scratch module.
 
 ---
 
@@ -694,12 +694,12 @@ User::query()
 
 ### 5.20 On-demand layers (Jobs, Events, Listeners, Mail, Rules, Exceptions, Lang, Observers, Scopes)
 
-**Definition:** optional folders that live in the module when needed, following Laravel conventions: Jobs (queue jobs), Events + Listeners (event bus), Mail (email), Rules (custom validation rules), Exceptions (module-specific exception classes), `app/Lang/{locale}` (module translations), Observers (model observers via `#[ObservedBy]`), Scopes (global scopes via `#[ScopedBy]`).
+**Definition:** optional folders that live in the module when needed, following Laravel conventions: Jobs (queue jobs), Events + Listeners (event bus), Mail (email), Rules (custom validation rules), Exceptions (module-specific exception classes), `lang/{locale}` (module translations), Observers (model observers via `#[ObservedBy]`), Scopes (global scopes via `#[ScopedBy]`).
 
 **Rules:**
 
 1. Created only if they contain at least 1 file (empty folders forbidden).
-2. `app/Lang/` is loaded by the nWidart base `ModuleServiceProvider` when the module is active.
+2. `lang/` is loaded by the nWidart base `ModuleServiceProvider` when the module is active.
 3. Detailed rules simply follow Laravel conventions; no separate rule file per folder.
 4. Module listeners are NOT auto-discovered (bootstrap only scans `app/Listeners`); register listeners explicitly in `boot()` via `Event::listen`/`Event::subscribe`.
 
