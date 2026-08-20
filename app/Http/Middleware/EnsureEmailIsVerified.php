@@ -11,6 +11,12 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
+/**
+ * Reject authenticated requests whose email is not yet verified.
+ *
+ * @throws AuthenticationException When the request has no authenticated user.
+ * @throws AccessDeniedHttpException When the user's email is not verified.
+ */
 final readonly class EnsureEmailIsVerified
 {
     public function handle(Request $request, Closure $next): Response

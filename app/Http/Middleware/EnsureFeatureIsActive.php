@@ -49,8 +49,8 @@ final readonly class EnsureFeatureIsActive
         if (count($parts) === 2) {
             [$alias, $name] = $parts;
 
-            if (config()->has("{$alias}.features.{$name}")) {
-                return config()->boolean("{$alias}.features.{$name}", false);
+            if (config()->has("$alias.features.$name")) {
+                return config()->boolean("$alias.features.$name", false);
             }
         }
 

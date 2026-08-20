@@ -40,7 +40,7 @@ class RouteServiceProvider extends ServiceProvider
         $versions = config()->array('apiroute.supported_versions', ['V1']);
 
         foreach ($versions as $version) {
-            $routeFile = module_path($this->name, "routes/{$version}.php");
+            $routeFile = module_path($this->name, "routes/$version.php");
 
             if (! file_exists($routeFile)) {
                 continue;

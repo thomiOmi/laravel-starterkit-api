@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Support\Production;
 
+use InvalidArgumentException;
+
 /**
  * Validate environment configuration for production safety.
  *
@@ -63,7 +65,7 @@ final readonly class ProductionSecurityCheck
             'status' => $env === 'production' ? 'pass' : 'fail',
             'detail' => $env === 'production'
                 ? 'APP_ENV is set to production'
-                : "APP_ENV is '{$env}', expected 'production'",
+                : "APP_ENV is '$env', expected 'production'",
         ];
     }
 
@@ -79,23 +81,25 @@ final readonly class ProductionSecurityCheck
             'status' => str_starts_with($url, 'https://') ? 'pass' : 'fail',
             'detail' => str_starts_with($url, 'https://')
                 ? 'APP_URL uses HTTPS'
-                : "APP_URL '{$url}' must use HTTPS in production",
+                : "APP_URL '$url' must use HTTPS in production",
         ];
     }
 
     /**
      * @return array{check: string, status: string, detail: string}
+     *
+     * @throws InvalidArgumentException When the configured value is not a string.
      */
     private function checkFrontendUrl(): array
     {
-        $url = (string) config()->get('app.frontend_url', '');
+        $url = config()->string('app.frontend_url', '');
 
         return [
             'check' => 'FRONTEND_URL',
             'status' => str_starts_with($url, 'https://') ? 'pass' : 'fail',
             'detail' => str_starts_with($url, 'https://')
                 ? 'FRONTEND_URL uses HTTPS'
-                : "FRONTEND_URL '{$url}' must use HTTPS in production",
+                : "FRONTEND_URL '$url' must use HTTPS in production",
         ];
     }
 
@@ -117,12 +121,14 @@ final readonly class ProductionSecurityCheck
 
     /**
      * @return array{check: string, status: string, detail: string}
+     *
+     * @throws InvalidArgumentException When the configured value is not a string.
      */
     private function checkAppKey(): array
     {
-        $key = config()->get('app.key');
+        $key = config()->string('app.key', '');
 
-        $isValid = is_string($key) && $key !== '' && str_starts_with($key, 'base64:') && strlen($key) > 7;
+        $isValid = $key !== '' && str_starts_with($key, 'base64:') && strlen($key) > 7;
 
         return [
             'check' => 'APP_KEY',
@@ -144,7 +150,7 @@ final readonly class ProductionSecurityCheck
             'check' => 'CACHE_STORE',
             'status' => $store !== 'array' ? 'pass' : 'fail',
             'detail' => $store !== 'array'
-                ? "CACHE_STORE is '{$store}'"
+                ? "CACHE_STORE is '$store'"
                 : "CACHE_STORE is 'array', use redis or database in production",
         ];
     }
@@ -160,7 +166,7 @@ final readonly class ProductionSecurityCheck
             'check' => 'SESSION_DRIVER',
             'status' => $driver !== 'file' ? 'pass' : 'fail',
             'detail' => $driver !== 'file'
-                ? "SESSION_DRIVER is '{$driver}'"
+                ? "SESSION_DRIVER is '$driver'"
                 : "SESSION_DRIVER is 'file', use redis or database in production",
         ];
     }
@@ -176,7 +182,7 @@ final readonly class ProductionSecurityCheck
             'check' => 'QUEUE_CONNECTION',
             'status' => $connection !== 'sync' ? 'pass' : 'fail',
             'detail' => $connection !== 'sync'
-                ? "QUEUE_CONNECTION is '{$connection}'"
+                ? "QUEUE_CONNECTION is '$connection'"
                 : "QUEUE_CONNECTION is 'sync', use redis or database in production",
         ];
     }
@@ -210,8 +216,8 @@ final readonly class ProductionSecurityCheck
             'check' => 'SESSION_SAME_SITE',
             'status' => in_array($sameSite, ['lax', 'strict'], true) ? 'pass' : 'fail',
             'detail' => in_array($sameSite, ['lax', 'strict'], true)
-                ? "SESSION_SAME_SITE is '{$sameSite}'"
-                : "SESSION_SAME_SITE is '{$sameSite}', use lax or strict in production to mitigate CSRF",
+                ? "SESSION_SAME_SITE is '$sameSite'"
+                : "SESSION_SAME_SITE is '$sameSite', use lax or strict in production to mitigate CSRF",
         ];
     }
 
@@ -226,8 +232,8 @@ final readonly class ProductionSecurityCheck
             'check' => 'MAIL_MAILER',
             'status' => ! in_array($mailer, ['log', 'array'], true) ? 'pass' : 'fail',
             'detail' => ! in_array($mailer, ['log', 'array'], true)
-                ? "MAIL_MAILER is '{$mailer}'"
-                : "MAIL_MAILER is '{$mailer}', use smtp, ses, mailgun, etc. in production",
+                ? "MAIL_MAILER is '$mailer'"
+                : "MAIL_MAILER is '$mailer', use smtp, ses, mailgun, etc. in production",
         ];
     }
 
@@ -242,7 +248,7 @@ final readonly class ProductionSecurityCheck
             'check' => 'LOG_CHANNEL',
             'status' => $channel !== 'single' ? 'pass' : 'fail',
             'detail' => $channel !== 'single'
-                ? "LOG_CHANNEL is '{$channel}'"
+                ? "LOG_CHANNEL is '$channel'"
                 : "LOG_CHANNEL is 'single', use 'daily' or 'stack' in production to prevent unbounded log files",
         ];
     }
@@ -258,7 +264,7 @@ final readonly class ProductionSecurityCheck
             'check' => 'MAIL_FROM_ADDRESS',
             'status' => $address !== '' ? 'pass' : 'fail',
             'detail' => $address !== ''
-                ? "MAIL_FROM_ADDRESS is '{$address}'"
+                ? "MAIL_FROM_ADDRESS is '$address'"
                 : 'MAIL_FROM_ADDRESS is not set',
         ];
     }

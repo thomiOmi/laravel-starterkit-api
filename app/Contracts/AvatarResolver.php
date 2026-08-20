@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
+use InvalidArgumentException;
+
 /**
  * Resolves a media reference to a public avatar URL for an authenticated user.
  *
@@ -12,9 +14,9 @@ namespace App\Contracts;
  * implementation is bound (Media module absent or inactive), the consumer
  * receives null and the avatar feature degrades gracefully.
  *
- * @throws \InvalidArgumentException when the media does not exist, is not
- *                                   stored on the public disk, or belongs
- *                                   to another user.
+ * @throws InvalidArgumentException when the media does not exist, is not
+ *                                  stored on the public disk, or belongs
+ *                                  to another user.
  */
 interface AvatarResolver
 {

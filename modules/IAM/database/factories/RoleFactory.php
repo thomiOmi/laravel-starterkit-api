@@ -16,8 +16,6 @@ class RoleFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array<model-property<Role>, mixed>
      */
     public function definition(): array
     {

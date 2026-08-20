@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Support;
 
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Support\Facades\Crypt;
 use InvalidArgumentException;
 use JsonException;
@@ -25,6 +26,9 @@ final readonly class SocialState
      * Create a signed state token.
      *
      * @param  array<string, string>  $payload  The payload to embed.
+     *
+     * @throws EncryptException When the payload cannot be encrypted.
+     * @throws JsonException When the payload cannot be JSON-encoded.
      */
     public static function create(string $action, array $payload = []): string
     {

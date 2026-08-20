@@ -25,8 +25,6 @@ class UserFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array<model-property<User>, mixed>
      */
     public function definition(): array
     {
@@ -37,7 +35,7 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'status' => UserStatusEnum::Active,
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make(filled($defaultPassword) ? (string) $defaultPassword : Str::random(32)),
+            'password' => static::$password ??= Hash::make(filled($defaultPassword) ? $defaultPassword : Str::random(32)),
             'remember_token' => Str::random(10),
             'avatar' => null,
             'deleted_at' => null,

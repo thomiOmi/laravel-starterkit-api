@@ -16,8 +16,6 @@ class PermissionFactory extends Factory
 
     /**
      * Define the model's default state.
-     *
-     * @return array<model-property<Permission>, mixed>
      */
     public function definition(): array
     {

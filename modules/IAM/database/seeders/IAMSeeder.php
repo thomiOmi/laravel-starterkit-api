@@ -71,7 +71,7 @@ class IAMSeeder extends Seeder
     private function seedUsers(): void
     {
         $rawPassword = config()->string('auth.default_password');
-        $password = Hash::make(filled($rawPassword) ? (string) $rawPassword : Str::random(32));
+        $password = Hash::make(filled($rawPassword) ? $rawPassword : Str::random(32));
 
         UserFactory::new()->superAdmin()->create([
             'name' => 'Super Admin',

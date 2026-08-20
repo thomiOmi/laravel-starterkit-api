@@ -80,7 +80,7 @@ final readonly class HandleIdempotentRequests
         }
 
         $lock = Cache::lock(
-            "{$cacheKey}:lock",
+            "$cacheKey:lock",
             config()->integer('idempotency.lock_timeout', 30)
         );
 
@@ -179,12 +179,12 @@ final readonly class HandleIdempotentRequests
             return;
         }
 
-        Cache::put($cacheKey, (new IdempotencyPayload(
+        Cache::put($cacheKey, new IdempotencyPayload(
             status: $response->getStatusCode(),
             body: $body,
             contentType: $response->headers->get('Content-Type') ?? 'application/json',
             bodyHash: $bodyHash,
-        ))->toArray(), config()->integer('idempotency.ttl', 86400));
+        )->toArray(), config()->integer('idempotency.ttl', 86400));
     }
 
     /**

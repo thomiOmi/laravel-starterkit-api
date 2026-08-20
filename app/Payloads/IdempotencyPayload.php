@@ -33,7 +33,7 @@ final readonly class IdempotencyPayload
      * types and the status is a success or redirect code, matching what
      * HandleIdempotentRequests stores.
      *
-     * @param  array<mixed, mixed>  $data  The raw array from cache storage.
+     * @param  array<array-key, mixed>  $data  The raw array from cache storage.
      */
     public static function isValidArray(array $data): bool
     {
@@ -53,7 +53,7 @@ final readonly class IdempotencyPayload
      * manually edited, or stored by a driver that does not preserve PHP types.
      * Callers should validate with isValidArray() before replaying.
      *
-     * @param  array<mixed, mixed>  $data  The raw array from cache storage.
+     * @param  array<array-key, mixed>  $data  The raw array from cache storage.
      * @return self The rehydrated payload with safe defaults.
      */
     public static function fromArray(array $data): self
