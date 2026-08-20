@@ -25,6 +25,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Modules\IAM\Builders\UserBuilder;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Policies\UserPolicy;
+use SensitiveParameter;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
@@ -98,7 +99,7 @@ class User extends Authenticatable implements Identity
      *
      * @param  string  $token  The password reset token.
      */
-    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    public function sendPasswordResetNotification(#[SensitiveParameter] $token): void
     {
         $this->notify(new ResetPassword($token));
     }

@@ -177,7 +177,7 @@ return [
         MiddlewareAuthSecurityStrategy::class,
         [
             'middleware' => ['auth:sanctum', 'auth'],
-            'scheme' => (new HttpSecurityScheme('bearer'))->as('bearerAuth'),
+            'scheme' => new HttpSecurityScheme('bearer')->as('bearerAuth'),
         ],
     ],
 ];

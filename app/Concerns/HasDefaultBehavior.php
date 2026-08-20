@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 
 /**
@@ -17,7 +18,7 @@ trait HasDefaultBehavior
     use FormatDate;
     use HasUlids;
 
-    protected function serializeDate(\DateTimeInterface $date): string
+    protected function serializeDate(DateTimeInterface $date): string
     {
         return $this->formatDateTime($date);
     }

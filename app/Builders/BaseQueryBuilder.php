@@ -148,7 +148,7 @@ abstract class BaseQueryBuilder extends Builder
 
         foreach ($filters as $key => $value) {
             if (! collect($this->allowedFilters)->containsStrict($key)) {
-                $this->reportWarning("BaseQueryBuilder: unknown filter key [{$key}] ignored.");
+                $this->reportWarning("BaseQueryBuilder: unknown filter key [$key] ignored.");
 
                 continue;
             }
@@ -210,7 +210,7 @@ abstract class BaseQueryBuilder extends Builder
             $isDesc = str_starts_with($segment, '-');
 
             if (! collect($this->allowedSorts)->containsStrict($column)) {
-                $this->reportWarning("BaseQueryBuilder: unknown sort column [{$column}] ignored.");
+                $this->reportWarning("BaseQueryBuilder: unknown sort column [$column] ignored.");
 
                 continue;
             }
@@ -252,7 +252,7 @@ abstract class BaseQueryBuilder extends Builder
         $selected = collect($requested)->intersect($this->allowedFields)->all();
 
         if ($unknown !== []) {
-            $this->reportWarning('BaseQueryBuilder: unknown fields ['.collect($unknown)->join(',')."] for table [{$table}] ignored.");
+            $this->reportWarning('BaseQueryBuilder: unknown fields ['.collect($unknown)->join(',')."] for table [$table] ignored.");
         }
 
         if ($selected !== []) {
@@ -321,7 +321,7 @@ abstract class BaseQueryBuilder extends Builder
      */
     protected function applySearch(Builder $query, string $value, array $columns): Builder
     {
-        $query->whereAny($columns, 'like', "%{$value}%");
+        $query->whereAny($columns, 'like', "%$value%");
 
         return $query;
     }
@@ -340,7 +340,7 @@ abstract class BaseQueryBuilder extends Builder
      */
     protected function trashed(mixed $value): void
     {
-        if (! is_string($value) || ! in_array($value, ['with', 'only'], true)) {
+        if (! in_array($value, ['with', 'only'], true)) {
             return;
         }
 
@@ -460,7 +460,7 @@ abstract class BaseQueryBuilder extends Builder
         } elseif (collect($this->exactMatchColumns)->containsStrict($column)) {
             $this->where($column, '=', $value);
         } else {
-            $this->where($column, 'like', "%{$value}%");
+            $this->where($column, 'like', "%$value%");
         }
     }
 

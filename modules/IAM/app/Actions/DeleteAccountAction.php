@@ -9,11 +9,15 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\DeleteAccountPayload;
+use Throwable;
 
 final readonly class DeleteAccountAction
 {
     /**
      * Soft-delete the authenticated user's account after verifying the password.
+     *
+     * @throws ValidationException When the password does not match.
+     * @throws Throwable When the account deletion transaction fails.
      */
     public function handle(User $user, DeleteAccountPayload $payload): void
     {

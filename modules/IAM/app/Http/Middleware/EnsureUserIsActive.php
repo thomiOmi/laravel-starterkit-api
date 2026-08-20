@@ -13,6 +13,9 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 /**
  * Reject authenticated requests from users whose account status does not
  * allow authentication (inactive, suspended, or banned).
+ *
+ * @throws AuthenticationException When the request has no authenticated user.
+ * @throws AccessDeniedHttpException When the user's status blocks authentication.
  */
 final readonly class EnsureUserIsActive
 {

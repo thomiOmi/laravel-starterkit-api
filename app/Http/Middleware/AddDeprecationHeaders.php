@@ -74,13 +74,9 @@ final readonly class AddDeprecationHeaders
      */
     private function resolveSuccessorUrl(array $params): ?string
     {
-        foreach ($params as $param) {
-            if (str_starts_with($param, 'http')) {
-                return $param;
-            }
-        }
+        $found = array_find($params, static fn (string $param): bool => str_starts_with($param, 'http'));
 
-        return null;
+        return is_string($found) ? $found : null;
     }
 
     /**

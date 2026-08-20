@@ -39,15 +39,15 @@ final readonly class ModuleDependencyCheck
 
                 if ($installed === null) {
                     $rows[] = [
-                        'check' => "{$module} -> {$dependency}",
+                        'check' => "$module -> $dependency",
                         'status' => 'fail',
-                        'detail' => "{$dependency} is not an installed module",
+                        'detail' => "$dependency is not an installed module",
                     ];
                 } elseif (! $installed->isEnabled()) {
                     $rows[] = [
-                        'check' => "{$module} -> {$dependency}",
+                        'check' => "$module -> $dependency",
                         'status' => 'fail',
-                        'detail' => "{$dependency} is disabled",
+                        'detail' => "$dependency is disabled",
                     ];
                 }
             }

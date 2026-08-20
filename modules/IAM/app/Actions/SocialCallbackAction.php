@@ -15,6 +15,7 @@ use Modules\IAM\Models\SocialAccount;
 use Modules\IAM\Models\User;
 use Modules\IAM\Services\UserAuthorizationService;
 use Modules\IAM\Support\SocialState;
+use Throwable;
 
 final readonly class SocialCallbackAction
 {
@@ -26,7 +27,14 @@ final readonly class SocialCallbackAction
     ) {}
 
     /**
+     * Complete a stateless OAuth callback: exchange the code for a user,
+     * link or create the account, and mint an access token.
+     *
      * @return array{user: User, access_token: string, token_type: string, expires_at: ?string, expires_in: ?int}
+     *
+     * @throws InvalidArgumentException When the provider is unsupported or
+     *                                  the state cannot be verified.
+     * @throws Throwable When the account transaction fails.
      */
     public function handle(string $provider, string $state, string $ipAddress, ?string $userAgent): array
     {
@@ -86,7 +94,7 @@ final readonly class SocialCallbackAction
 
         $existing = SocialAccount::query()
             ->where('provider', $provider)
-            ->where('provider_id', (string) $socialUser->getId())
+            ->where('provider_id', $socialUser->getId())
             ->first();
 
         if ($existing !== null) {
@@ -96,7 +104,7 @@ final readonly class SocialCallbackAction
         SocialAccount::query()->create([
             'user_id' => $user->id,
             'provider' => $provider,
-            'provider_id' => (string) $socialUser->getId(),
+            'provider_id' => $socialUser->getId(),
             'avatar' => $socialUser->getAvatar(),
         ]);
 
@@ -105,7 +113,7 @@ final readonly class SocialCallbackAction
 
     private function loginOrCreate(string $provider, SocialiteUser $socialUser): User
     {
-        $providerId = (string) $socialUser->getId();
+        $providerId = $socialUser->getId();
 
         $existing = SocialAccount::query()
             ->where('provider', $provider)
@@ -143,7 +151,7 @@ final readonly class SocialCallbackAction
 
         $user = new User([
             'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? 'Social User',
-            'email' => is_string($email) && $email !== '' ? $email : "{$provider}-{$providerId}@social.local",
+            'email' => is_string($email) && $email !== '' ? $email : "$provider-$providerId@social.local",
             'password' => null,
             'avatar' => $socialUser->getAvatar(),
         ]);
