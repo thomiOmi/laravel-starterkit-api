@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Support\Production;
 
-use InvalidArgumentException;
-
 /**
  * Validate environment configuration for production safety.
  *
@@ -87,12 +85,10 @@ final readonly class ProductionSecurityCheck
 
     /**
      * @return array{check: string, status: string, detail: string}
-     *
-     * @throws InvalidArgumentException When the configured value is not a string.
      */
     private function checkFrontendUrl(): array
     {
-        $url = config()->string('app.frontend_url', '');
+        $url = (string) config()->get('app.frontend_url', '');
 
         return [
             'check' => 'FRONTEND_URL',
@@ -121,14 +117,12 @@ final readonly class ProductionSecurityCheck
 
     /**
      * @return array{check: string, status: string, detail: string}
-     *
-     * @throws InvalidArgumentException When the configured value is not a string.
      */
     private function checkAppKey(): array
     {
-        $key = config()->string('app.key', '');
+        $key = config()->get('app.key');
 
-        $isValid = $key !== '' && str_starts_with($key, 'base64:') && strlen($key) > 7;
+        $isValid = is_string($key) && $key !== '' && str_starts_with($key, 'base64:') && strlen($key) > 7;
 
         return [
             'check' => 'APP_KEY',
