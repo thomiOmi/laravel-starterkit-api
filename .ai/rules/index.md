@@ -18,7 +18,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | bootstrap/app.php, modules/*/app/Actions/**, modules/*/app/Http/Controllers/** | .ai/rules/error-handling.md |
 | modules/*/app/Features/**, app/Features/**, config/modules.php | .ai/rules/features.md |
 | ** | .ai/rules/general.md |
-| lang/**, modules/*/app/Lang/** | .ai/rules/lang.md |
+| lang/**, modules/*/lang/** | .ai/rules/lang.md |
 | modules/*/app/Http/Middleware/**, modules/*/app/Http/Middleware/**, app/Http/Middleware/** | .ai/rules/middleware.md |
 | modules/*/app/Models/**, app/Models/** | .ai/rules/models.md |
 | modules/**, stubs/module-generator/** | .ai/rules/modules-structure.md |

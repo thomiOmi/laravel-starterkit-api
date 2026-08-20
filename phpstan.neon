@@ -33,12 +33,18 @@ parameters:
     # Module migration paths for schema inference
     databaseMigrationsPath:
         - database/migrations
-        - modules/*/Database/migrations
+        - modules/*/database/migrations
+
+    # Config dirs for config() type inference (literal, not globbed)
+    configDirectories:
+        - config
+        - modules/IAM/config
 
     # Translation files (Laravel 13 uses lang/, not resources/lang/)
+    # Note: larastan does NOT glob-expand these paths; list module lang dirs literally
     translationDirectories:
         - lang
-        - modules/*/Lang
+        - modules/IAM/lang
 
     # Cache parsed migrations between runs
     enableMigrationCache: true
