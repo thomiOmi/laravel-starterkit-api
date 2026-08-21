@@ -874,11 +874,11 @@ it('tenant-scoped models use BelongsToTenant trait', function (): void {
 });
 
 it('every non-core module is explicitly classified for tenant scoping', function (): void {
-    $coreModules = config()->array('modules.core', []);
+    $coreModules = array_values(array_filter(config()->array('modules.core', []), is_string(...)));
     $allModules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
-    $businessModules = array_diff($allModules, $coreModules);
+    $businessModules = array_values(array_diff($allModules, $coreModules));
 
-    $classified = [...tenantScopedModules(), ...array_keys(tenantExemptModules())];
+    $classified = array_merge(tenantScopedModules(), array_keys(tenantExemptModules()));
     $unclassified = array_values(array_diff($businessModules, $classified));
 
     expect($unclassified)->toBeEmpty(
@@ -944,13 +944,17 @@ it('module folder name matches module.json name field exactly', function (): voi
         }
 
         $manifest = json_decode((string) file_get_contents($manifestPath), true);
-        $declaredName = is_array($manifest) ? ($manifest['name'] ?? null) : null;
+        $declaredName = null;
+
+        if (is_array($manifest) && isset($manifest['name']) && is_string($manifest['name'])) {
+            $declaredName = $manifest['name'];
+        }
 
         if ($declaredName !== $folderName) {
             $violations[] = sprintf(
                 'Folder "%s" has module.json name "%s" — must match exactly.',
                 $folderName,
-                (string) $declaredName
+                $declaredName ?? ''
             );
         }
     }
