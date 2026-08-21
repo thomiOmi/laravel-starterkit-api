@@ -13,6 +13,6 @@ Merge into one seeder `IAMSeeder` in `Modules\IAM\Database\Seeders`, following t
 
 ## Consequences
 
-- Deterministic seed order; `DatabaseSeeder` calls exactly one IAM seeder.
+- Deterministic seed order; `DatabaseSeeder` auto-discovers each active module's single seeder (`{Module}Seeder`, with `{Module}DatabaseSeeder` as fallback for `make:module` scaffolds).
 - Parallel test runs no longer race on permission cache.
 - Test callers (`BulkActionRequestTest`, `AuthRateLimitTest`, `loginAsRole` helpers) updated to the single seeder.
