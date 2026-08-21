@@ -781,6 +781,14 @@ it('module dependencies pass validation (installed, enabled, acyclic)', function
     );
 });
 
+it('modules.core config key is explicitly defined', function (): void {
+    expect(config()->has('modules.core'))->toBeTrue(
+        'config/modules.php must define the "core" key — do not rely on test fallback defaults.'
+    );
+
+    expect(config()->array('modules.core'))->not->toBeEmpty();
+});
+
 it('core modules do not depend on business modules', function (): void {
     $coreModules = array_values(array_filter(
         config()->array('modules.core', ['IAM', 'Media', 'Organization']),
