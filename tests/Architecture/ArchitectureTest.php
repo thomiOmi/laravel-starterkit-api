@@ -931,3 +931,29 @@ it('tenant_id is not manually queried outside BelongsToTenant scope', function (
 
     expect($violations)->toBeEmpty();
 });
+
+it('module folder name matches module.json name field exactly', function (): void {
+    $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
+    $violations = [];
+
+    foreach ($modules as $folderName) {
+        $manifestPath = base_path("modules/{$folderName}/module.json");
+
+        if (! is_file($manifestPath)) {
+            continue;
+        }
+
+        $manifest = json_decode((string) file_get_contents($manifestPath), true);
+        $declaredName = is_array($manifest) ? ($manifest['name'] ?? null) : null;
+
+        if ($declaredName !== $folderName) {
+            $violations[] = sprintf(
+                'Folder "%s" has module.json name "%s" — must match exactly.',
+                $folderName,
+                (string) $declaredName
+            );
+        }
+    }
+
+    expect($violations)->toBeEmpty();
+});
