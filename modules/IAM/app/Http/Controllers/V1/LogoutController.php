@@ -9,7 +9,6 @@ use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Modules\IAM\Actions\LogoutAction;
 use Modules\IAM\Models\User;
-use Symfony\Component\HttpFoundation\Response;
 
 final readonly class LogoutController extends Controller
 {
@@ -28,9 +27,8 @@ final readonly class LogoutController extends Controller
 
         return new SuccessResponse(
             data: null,
-            title: 'No Content',
+            title: 'OK',
             detail: __('auth.logout_success'),
-            status: Response::HTTP_NO_CONTENT,
         );
     }
 }
