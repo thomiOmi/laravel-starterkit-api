@@ -45,5 +45,12 @@ pest()
     ->in('Architecture');
 
 pest()->beforeEach(function (): void {
+    // Prevent BaseQueryBuilder::reportWarning from writing to storage/logs/laravel.log
+    // during the "logs in production" test. The phpunit.xml LOG_CHANNEL=null should
+    // already use NullHandler, but ensure the config is correctly set for the test
+    // environment where app()->detectEnvironment('production') is used.
+    config(['logging.default' => 'null']);
+    app()->forgetInstance('log');
+
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 });
