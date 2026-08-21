@@ -866,6 +866,20 @@ function tenantScopedModules(): array
     return [];
 }
 
+/**
+ * Modules whose models are genuinely global (not tenant-scoped) and are
+ * explicitly exempt from the BelongsToTenant requirement. Every module here
+ * must have a one-line justification in the array value.
+ *
+ * @return array<string, string>
+ */
+function tenantExemptModules(): array
+{
+    return [
+        // 'ModuleName' => 'reason this module has no tenant-scoped data',
+    ];
+}
+
 it('tenant-scoped models use BelongsToTenant trait', function (): void {
     $tenantScopedModules = tenantScopedModules();
     $violations = [];
@@ -893,6 +907,23 @@ it('tenant-scoped models use BelongsToTenant trait', function (): void {
     }
 
     expect($violations)->toBeEmpty();
+});
+
+it('every non-core module is explicitly classified for tenant scoping', function (): void {
+    $coreModules = config()->array('modules.core', []);
+    $allModules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
+    $businessModules = array_diff($allModules, $coreModules);
+
+    $classified = [...tenantScopedModules(), ...array_keys(tenantExemptModules())];
+    $unclassified = array_values(array_diff($businessModules, $classified));
+
+    expect($unclassified)->toBeEmpty(
+        sprintf(
+            'The following modules are not classified as tenant-scoped or exempt: %s. '
+            .'Add them to tenantScopedModules() or tenantExemptModules() in this file.',
+            implode(', ', $unclassified)
+        )
+    );
 });
 
 /**
