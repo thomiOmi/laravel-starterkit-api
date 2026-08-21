@@ -895,9 +895,21 @@ it('tenant-scoped models use BelongsToTenant trait', function (): void {
     expect($violations)->toBeEmpty();
 });
 
+/**
+ * Best-effort guard: regex cannot cover every way tenant_id might be queried
+ * (e.g. DB::raw(), query builder assigned to a variable then chained across
+ * lines, dynamic column names). This test catches the common direct
+ * where/orWhere patterns; it is not an absolute guarantee.
+ */
 it('tenant_id is not manually queried outside BelongsToTenant scope', function (): void {
     $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
     $violations = [];
+
+    // Matches: where('tenant_id', ...), orWhere('tenant_id', ...),
+    // where(['tenant_id' => ...]), orWhere(['tenant_id' => ...])
+    // Case-insensitive on the where/orWhere token; allows an optional leading '[' for
+    // array-syntax where().
+    $pattern = "/(?:or)?[Ww]here\\(\\s*\\[?\\s*['\"]tenant_id['\"]/";
 
     foreach ($modules as $module) {
         $iterator = new RecursiveIteratorIterator(
@@ -916,7 +928,7 @@ it('tenant_id is not manually queried outside BelongsToTenant scope', function (
 
             $content = (string) file_get_contents($file->getPathname());
 
-            if (preg_match("/where\\(\\s*['\"]tenant_id['\"]/", $content)) {
+            if (preg_match($pattern, $content)) {
                 $violations[] = str_replace(base_path('modules/'), '', $file->getPathname());
             }
         }
