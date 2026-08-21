@@ -12,7 +12,7 @@ use Modules\IAM\Policies\UserPolicy;
 
 covers(UserPolicy::class);
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 describe('UserPolicy', function () {
     beforeEach(function () {

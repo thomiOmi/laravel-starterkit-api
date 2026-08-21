@@ -9,7 +9,7 @@ covers(LoginRequest::class);
 
 describe('LoginRequest', function () {
     it('extends FormRequest and authorizes all', function () {
-        $parent = (new ReflectionClass(LoginRequest::class))->getParentClass();
+        $parent = new ReflectionClass(LoginRequest::class)->getParentClass();
 
         expect($parent)->toBeInstanceOf(ReflectionClass::class);
 
@@ -28,6 +28,6 @@ describe('LoginRequest', function () {
     });
 
     it('exposes payload via FormRequest', function () {
-        expect((new ReflectionClass(LoginRequest::class))->hasMethod('payload'))->toBeTrue();
+        expect(new ReflectionClass(LoginRequest::class)->hasMethod('payload'))->toBeTrue();
     });
 });

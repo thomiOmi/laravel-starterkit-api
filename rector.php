@@ -9,6 +9,7 @@ use Rector\PHPUnit\Set\PHPUnitSetList;
 return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/tests',
+        __DIR__.'/modules/*/tests',
     ])
     ->withPhpSets(php84: true)
     ->withPreparedSets(

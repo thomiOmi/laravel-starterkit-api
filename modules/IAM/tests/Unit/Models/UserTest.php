@@ -9,7 +9,7 @@ use Modules\IAM\Models\User;
 
 covers(User::class);
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 describe('User', function () {
     it('has expected fillable attributes', function () {

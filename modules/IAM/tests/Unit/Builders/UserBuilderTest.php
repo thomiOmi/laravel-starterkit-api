@@ -9,7 +9,7 @@ covers(UserBuilder::class);
 
 describe('UserBuilder', function () {
     it('extends BaseQueryBuilder', function () {
-        $parent = (new ReflectionClass(UserBuilder::class))->getParentClass();
+        $parent = new ReflectionClass(UserBuilder::class)->getParentClass();
 
         expect($parent)->toBeInstanceOf(ReflectionClass::class);
 
