@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Builders\BaseQueryBuilder;
 use App\Http\Requests\PaginationRequest;
+use App\Support\Modules\ModuleDependencyCheck;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\ContextualAttribute;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -732,49 +733,6 @@ function moduleRequires(string $path): array
     return array_values(array_filter($manifest['requires'], is_string(...)));
 }
 
-/**
- * Detect cycles in the module requires graph.
- *
- * @param  array<string, list<string>>  $graph
- * @return list<string>
- */
-function moduleGraphCycles(array $graph): array
-{
-    $cycles = [];
-
-    foreach (array_keys($graph) as $module) {
-        $cycle = moduleGraphFindCycle($graph, $module, []);
-
-        if ($cycle !== null) {
-            $cycles[] = implode(' -> ', $cycle);
-        }
-    }
-
-    return $cycles;
-}
-
-/**
- * @param  array<string, list<string>>  $graph
- * @param  list<string>  $path
- * @return list<string>|null
- */
-function moduleGraphFindCycle(array $graph, string $node, array $path): ?array
-{
-    if (in_array($node, $path, true)) {
-        return [...$path, $node];
-    }
-
-    foreach ($graph[$node] ?? [] as $dependency) {
-        $cycle = moduleGraphFindCycle($graph, $dependency, [...$path, $node]);
-
-        if ($cycle !== null) {
-            return $cycle;
-        }
-    }
-
-    return null;
-}
-
 it('module dependencies are declared in module.json', function (): void {
     $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
     $violations = [];
@@ -814,15 +772,13 @@ it('module dependencies are declared in module.json', function (): void {
     expect($violations)->toBeEmpty();
 });
 
-it('module dependency graph has no cycles', function (): void {
-    $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
-    $graph = [];
+it('module dependencies pass validation (installed, enabled, acyclic)', function (): void {
+    $result = app(ModuleDependencyCheck::class)();
+    $failures = array_filter($result, fn (array $r): bool => $r['status'] === 'fail');
 
-    foreach ($modules as $module) {
-        $graph[$module] = moduleRequires(base_path("modules/{$module}/module.json"));
-    }
-
-    expect(moduleGraphCycles($graph))->toBeEmpty();
+    expect($failures)->toBeEmpty(
+        implode("\n", array_map(fn (array $f): string => $f['detail'], $failures))
+    );
 });
 
 it('core modules do not depend on business modules', function (): void {
