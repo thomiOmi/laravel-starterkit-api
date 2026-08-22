@@ -62,7 +62,11 @@ class IAMSeeder extends Seeder
         $admin->givePermissionTo(PermissionEnum::cases());
 
         $user = Role::firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
-        $user->givePermissionTo([PermissionEnum::UserView->value]);
+        $user->givePermissionTo([
+            PermissionEnum::UserView->value,
+            PermissionEnum::MediaView->value,
+            PermissionEnum::MediaCreate->value,
+        ]);
     }
 
     /**
