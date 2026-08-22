@@ -1,5 +1,3 @@
 {
-    "IAM": true,
-    "Blog": false,
-    "Gadget": false
+    "IAM": true
 }
