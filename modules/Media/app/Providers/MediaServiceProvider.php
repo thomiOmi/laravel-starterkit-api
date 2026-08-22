@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Media\Providers;
 
+use App\Contracts\AvatarResolver;
 use Illuminate\Console\Command;
+use Modules\Media\Services\MediaAvatarResolver;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class MediaServiceProvider extends ModuleServiceProvider
@@ -35,4 +37,15 @@ class MediaServiceProvider extends ModuleServiceProvider
      * @var class-string<Command>[]
      */
     protected array $commands = [];
+
+    /**
+     * Register any application services.
+     */
+    #[\Override]
+    public function register(): void
+    {
+        parent::register();
+
+        $this->app->singleton(AvatarResolver::class, MediaAvatarResolver::class);
+    }
 }
