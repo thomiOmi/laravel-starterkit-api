@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Media\Enums;
+namespace App\Enums;
 
 /**
  * Well-known media collections used across modules.
