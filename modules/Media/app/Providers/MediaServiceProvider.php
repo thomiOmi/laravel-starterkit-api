@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Media\Providers;
 
+use Illuminate\Console\Command;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class MediaServiceProvider extends ModuleServiceProvider
@@ -31,7 +32,7 @@ class MediaServiceProvider extends ModuleServiceProvider
     /**
      * Artisan command classes to register (add module commands here).
      *
-     * @var class-string<\Illuminate\Console\Command>[]
+     * @var class-string<Command>[]
      */
     protected array $commands = [];
 }
