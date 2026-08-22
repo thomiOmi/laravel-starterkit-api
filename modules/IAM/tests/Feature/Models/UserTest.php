@@ -3,13 +3,10 @@
 declare(strict_types=1);
 
 use App\Enums\UserStatusEnum;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Models\User;
 
 covers(User::class);
-
-pest()->use(RefreshDatabase::class);
 
 describe('User', function () {
     it('has expected fillable attributes', function () {

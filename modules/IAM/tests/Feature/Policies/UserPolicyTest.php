@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
 use Modules\IAM\Policies\UserPolicy;
 
 covers(UserPolicy::class);
-
-pest()->use(RefreshDatabase::class);
 
 describe('UserPolicy', function () {
     beforeEach(function () {
