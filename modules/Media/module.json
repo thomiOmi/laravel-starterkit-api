@@ -4,7 +4,7 @@
     "description": "User-uploaded media storage with avatar resolution.",
     "keywords": [],
     "priority": 0,
-    "requires": [],
+    "requires": ["IAM"],
     "providers": [
         "Modules\\Media\\Providers\\MediaServiceProvider"
     ],
