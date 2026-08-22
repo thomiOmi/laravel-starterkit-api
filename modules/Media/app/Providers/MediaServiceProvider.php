@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Media\Providers;
 
-use App\Contracts\AvatarResolver;
+use App\Contracts\MediaUrlResolver;
 use Illuminate\Console\Command;
-use Modules\Media\Services\MediaAvatarResolver;
+use Modules\Media\Services\MediaUrlResolver as MediaUrlResolverService;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class MediaServiceProvider extends ModuleServiceProvider
@@ -46,6 +46,6 @@ class MediaServiceProvider extends ModuleServiceProvider
     {
         parent::register();
 
-        $this->app->singleton(AvatarResolver::class, MediaAvatarResolver::class);
+        $this->app->singleton(MediaUrlResolver::class, MediaUrlResolverService::class);
     }
 }

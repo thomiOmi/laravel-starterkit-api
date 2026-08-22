@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Contracts\AvatarResolver;
+use App\Contracts\MediaUrlResolver;
+use App\Enums\MediaCollection;
 use InvalidArgumentException;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UpdateProfilePayload;
@@ -12,14 +13,14 @@ use Modules\IAM\Payloads\V1\UpdateProfilePayload;
 final readonly class UpdateProfileAction
 {
     /**
-     * @param  AvatarResolver|null  $avatarResolver  The cross-module avatar
-     *                                               resolver, when the Media
-     *                                               module is present. Null
-     *                                               disables the avatar
-     *                                               feature.
+     * @param  MediaUrlResolver|null  $mediaUrls  The cross-module media URL
+     *                                            resolver, when the Media
+     *                                            module is present. Null
+     *                                            disables the avatar
+     *                                            feature.
      */
     public function __construct(
-        private ?AvatarResolver $avatarResolver = null,
+        private ?MediaUrlResolver $mediaUrls = null,
     ) {}
 
     /**
@@ -57,10 +58,10 @@ final readonly class UpdateProfileAction
 
     private function resolveAvatarUrl(string $mediaId, User $user): string
     {
-        if ($this->avatarResolver === null) {
+        if ($this->mediaUrls === null) {
             throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
 
-        return $this->avatarResolver->resolve($mediaId, $user);
+        return $this->mediaUrls->forOwner($mediaId, $user, MediaCollection::Avatars->value);
     }
 }
