@@ -959,3 +959,43 @@ it('module folder name matches module.json name field exactly', function (): voi
 
     expect($violations)->toBeEmpty();
 });
+
+/*
+|--------------------------------------------------------------------------
+| Module testing conventions
+|--------------------------------------------------------------------------
+|
+| Unit tests isolate pure logic without bootstrapping the application or
+| touching a database; database-backed behaviour belongs to the module's
+| Feature suite where RefreshDatabase is applied automatically.
+|
+*/
+
+it('module unit tests do not use the database', function (): void {
+    $violations = [];
+
+    foreach (glob(base_path('modules/*/tests/Unit'), GLOB_ONLYDIR) ?: [] as $unitDir) {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($unitDir, FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if (! $file instanceof SplFileInfo || ! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            $content = (string) file_get_contents($file->getPathname());
+
+            if (str_contains($content, 'RefreshDatabase') || str_contains($content, 'DatabaseTransactions')) {
+                $violations[] = str_replace(base_path('modules/'), '', $file->getPathname());
+            }
+        }
+    }
+
+    expect($violations)->toBeEmpty(
+        sprintf(
+            "The following unit tests use database traits and must move to the module's Feature suite: %s.",
+            implode(', ', $violations)
+        )
+    );
+});
