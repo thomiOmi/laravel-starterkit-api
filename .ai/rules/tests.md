@@ -2,6 +2,7 @@
 paths:
   - 'tests/**'
   - 'modules/*/tests/**'
+  - 'tests/**/*.php'
 ---
 
 # Tests
@@ -48,3 +49,6 @@ describe('register', function () {
     })->group('module:iam');
 });
 ```
+
+## Isolate nwidart module singletons in fixture tests
+Any test overriding modules.* config (paths.modules or activators.file.statuses-file) MUST call forgetModuleSingletons() from tests/Helpers.php, which drops both RepositoryInterface and ActivatorInterface singletons. FileActivator memoizes the statuses-file path on first resolution, so forgetting only 'modules' lets writes land in the real modules_statuses.json. Prefer bindFixtureModulePaths($root) when the fixture uses the standard {root}/modules + {root}/statuses.json layout. After running module tooling tests, verify with: git diff --exit-code modules_statuses.json
