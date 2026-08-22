@@ -32,4 +32,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 | modules/*/routes/**, modules/*/app/Providers/RouteServiceProvider.php | .ai/rules/routes.md |
 | modules/*/app/Services/** | .ai/rules/services.md |
 | modules/*/app/Support/**, app/Support/** | .ai/rules/support.md |
-| tests/**, modules/*/tests/**, tests/**/*.php | .ai/rules/tests.md |
+| tests/**, modules/*/tests/**, tests/**/*.php, modules/*/tests/**/*.php | .ai/rules/tests.md |
