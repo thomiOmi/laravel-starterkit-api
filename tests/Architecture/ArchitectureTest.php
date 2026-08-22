@@ -962,19 +962,29 @@ it('module folder name matches module.json name field exactly', function (): voi
 
 /*
 |--------------------------------------------------------------------------
-| Module testing conventions
+| Testing conventions
 |--------------------------------------------------------------------------
 |
-| Unit tests isolate pure logic without bootstrapping the application or
-| touching a database; database-backed behaviour belongs to the module's
-| Feature suite where RefreshDatabase is applied automatically.
+| Unit tests (root and per-module) isolate pure logic: no database
+| traits or model persistence — reading config and container services
+| is allowed. Database-backed behaviour belongs to a Feature suite,
+| where RefreshDatabase is applied automatically.
 |
 */
 
-it('module unit tests do not use the database', function (): void {
+it('unit tests do not use the database', function (): void {
     $violations = [];
 
-    foreach (glob(base_path('modules/*/tests/Unit'), GLOB_ONLYDIR) ?: [] as $unitDir) {
+    $unitDirs = array_merge(
+        glob(base_path('modules/*/tests/Unit'), GLOB_ONLYDIR) ?: [],
+        [base_path('tests/Unit')]
+    );
+
+    foreach ($unitDirs as $unitDir) {
+        if (! is_dir($unitDir)) {
+            continue;
+        }
+
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($unitDir, FilesystemIterator::SKIP_DOTS)
         );
@@ -987,14 +997,16 @@ it('module unit tests do not use the database', function (): void {
             $content = (string) file_get_contents($file->getPathname());
 
             if (str_contains($content, 'RefreshDatabase') || str_contains($content, 'DatabaseTransactions')) {
-                $violations[] = str_replace(base_path('modules/'), '', $file->getPathname());
+                $path = str_replace('\\', '/', $file->getPathname());
+
+                $violations[] = str_replace([base_path('modules/'), base_path().'/'], '', $path);
             }
         }
     }
 
     expect($violations)->toBeEmpty(
         sprintf(
-            "The following unit tests use database traits and must move to the module's Feature suite: %s.",
+            'The following unit tests use database traits and must move to a Feature suite: %s.',
             implode(', ', $violations)
         )
     );
