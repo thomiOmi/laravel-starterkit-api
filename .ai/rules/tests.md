@@ -3,6 +3,7 @@ paths:
   - 'tests/**'
   - 'modules/*/tests/**'
   - 'tests/**/*.php'
+  - 'modules/*/tests/**/*.php'
 ---
 
 # Tests
@@ -52,3 +53,6 @@ describe('register', function () {
 
 ## Isolate nwidart module singletons in fixture tests
 Any test overriding modules.* config (paths.modules or activators.file.statuses-file) MUST call forgetModuleSingletons() from tests/Helpers.php, which drops both RepositoryInterface and ActivatorInterface singletons. FileActivator memoizes the statuses-file path on first resolution, so forgetting only 'modules' lets writes land in the real modules_statuses.json. Prefer bindFixtureModulePaths($root) when the fixture uses the standard {root}/modules + {root}/statuses.json layout. After running module tooling tests, verify with: git diff --exit-code modules_statuses.json
+
+## Modular Pest testing conventions (strict Unit/Feature split)
+Unit = pure logic only: no DB traits (RefreshDatabase/DatabaseTransactions), no HTTP calls, no app bootstrapping. Database-backed behaviour belongs in the module's Feature suite, where tests/Pest.php applies RefreshDatabase automatically (never add it per-file there). Prefer describe()/it() with datasets (->with([...])) over duplicated assertions. Assert envelopes via assertSuccessResponse/assertProblemResponse helpers; 422 responses expose an errors member so ->assertJsonValidationErrors([...]) works. Mock third parties at facade/driver boundaries (Socialite::shouldReceive), never final action classes.
