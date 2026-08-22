@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Modules\IAM\Actions\RegisterAction;
 use Modules\IAM\Models\Permission;
@@ -13,8 +12,6 @@ use Modules\IAM\Models\Role;
 use Modules\IAM\Payloads\V1\RegisterPayload;
 
 covers(RegisterAction::class);
-
-pest()->use(RefreshDatabase::class);
 
 describe('RegisterAction', function () {
     beforeEach(function () {
