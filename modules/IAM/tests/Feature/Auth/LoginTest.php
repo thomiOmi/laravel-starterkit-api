@@ -30,6 +30,7 @@ describe('POST /api/v1/auth/login', function () {
         ]);
 
         assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['email', 'password']);
     });
 
     it('rejects wrong password', function () {
@@ -41,6 +42,7 @@ describe('POST /api/v1/auth/login', function () {
         ]);
 
         assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['email', 'password']);
     });
 
     it('blocks banned user', function () {
