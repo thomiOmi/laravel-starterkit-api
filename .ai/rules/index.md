@@ -16,10 +16,10 @@ Before planning or editing, find the row whose globs match the file's path and r
 | database/migrations/**, modules/*/database/** | .ai/rules/database.md |
 | modules/*/app/Enums/**, app/Enums/** | .ai/rules/enums.md |
 | bootstrap/app.php, modules/*/app/Actions/**, modules/*/app/Http/Controllers/** | .ai/rules/error-handling.md |
-| modules/*/app/Features/**, app/Features/**, config/modules.php | .ai/rules/features.md |
+| modules/*/app/Features/**, app/Features/**, config/modules.php, stubs/feature.stub | .ai/rules/features.md |
 | ** | .ai/rules/general.md |
 | lang/**, modules/*/lang/** | .ai/rules/lang.md |
-| modules/*/app/Http/Middleware/**, modules/*/app/Http/Middleware/**, app/Http/Middleware/** | .ai/rules/middleware.md |
+| modules/*/app/Http/Middleware/**, app/Http/Middleware/** | .ai/rules/middleware.md |
 | modules/*/app/Models/**, app/Models/** | .ai/rules/models.md |
 | modules/**, stubs/module-generator/** | .ai/rules/modules-structure.md |
 | modules/*/app/Notifications/**, app/Notifications/** | .ai/rules/notifications.md |
@@ -32,4 +32,4 @@ Before planning or editing, find the row whose globs match the file's path and r
 | modules/*/routes/**, modules/*/app/Providers/RouteServiceProvider.php | .ai/rules/routes.md |
 | modules/*/app/Services/** | .ai/rules/services.md |
 | modules/*/app/Support/**, app/Support/** | .ai/rules/support.md |
-| tests/**, modules/*/tests/** | .ai/rules/tests.md |
+| tests/**, modules/*/tests/**, tests/**/*.php | .ai/rules/tests.md |
