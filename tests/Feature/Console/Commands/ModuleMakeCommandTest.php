@@ -17,9 +17,7 @@ beforeEach(function (): void {
     $files->makeDirectory($root, 0755, true);
     $files->put($root.'/statuses.json', '{}');
 
-    config()->set('modules.paths.modules', $root.'/modules');
-    config()->set('modules.activators.file.statuses-file', $root.'/statuses.json');
-    app()->forgetInstance('modules');
+    bindFixtureModulePaths('tests/Fixtures/module-make');
 });
 
 afterEach(function (): void {

@@ -11,7 +11,7 @@ beforeEach(function (): void {
     $modulePath = base_path('tests/Fixtures/modules/Widget');
 
     config()->set('modules.paths.modules', base_path('tests/Fixtures/modules'));
-    app()->forgetInstance('modules');
+    forgetModuleSingletons();
 
     $files->makeDirectory($modulePath, 0755, true);
 

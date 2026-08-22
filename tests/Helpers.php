@@ -303,6 +303,16 @@ function clearFixtureModules(): void
 }
 
 /**
+ * Drop resolved nwidart singletons so subsequent config overrides take
+ * effect for module tooling tests.
+ */
+function forgetModuleSingletons(): void
+{
+    app()->forgetInstance(RepositoryInterface::class);
+    app()->forgetInstance(ActivatorInterface::class);
+}
+
+/**
  * Point the nwidart repository and activator at the dependency-check fixture
  * root and drop any already-resolved singletons, so module tooling tests run
  * against fixture state only.
@@ -311,6 +321,5 @@ function bindFixtureModulePaths(string $root = 'tests/Fixtures/dependency-check'
 {
     config()->set('modules.paths.modules', base_path("{$root}/modules"));
     config()->set('modules.activators.file.statuses-file', base_path("{$root}/statuses.json"));
-    app()->forgetInstance(RepositoryInterface::class);
-    app()->forgetInstance(ActivatorInterface::class);
+    forgetModuleSingletons();
 }
