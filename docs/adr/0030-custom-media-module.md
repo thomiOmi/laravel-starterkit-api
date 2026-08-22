@@ -42,3 +42,10 @@ the IAM profile flow works with zero changes on the consumer side.
   upload their own avatars; staff keep full `media.*` control.
 - Future Spatie-style features can be layered onto this schema without
   breaking changes because collections and meta are already first-class.
+- Cross-module behaviour uses an `App\Contracts` port named by capability
+  (`MediaUrlResolver`); scope constraints such as the collection are
+  explicit arguments so the port stays generic. The `requires` field is
+  reserved for structural dependencies (models/factories) — bidirectional
+  requires are rejected by design by the cycle detector.
+- Enums shared across modules live in `App\Enums`
+  (`MediaCollection`, `MediaVisibilityEnum`).

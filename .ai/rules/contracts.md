@@ -35,3 +35,6 @@ Rule of thumb for base class/interface per layer: only if (1) there is logic exe
 
 - No importing internal classes across modules (Actions, Services, Payloads, Support, Builders, Enums); model + contract imports are allowed (public API seam, rule 3)
 - No base class/interface for mere "consistency" (structure conventions are enforced by ArchitectureTest, not inheritance)
+
+## Cross-module ports: capability contracts in the shared kernel
+Cross-module BEHAVIOUR uses capability-named contracts here (e.g. MediaUrlResolver), implemented by the providing module and bound as a singleton in its ServiceProvider. Consumers inject nullable (?Contract $dep = null) so an absent module degrades gracefully, and pass scope constraints (collection, etc.) as explicit arguments instead of hardcoding them in the port. One port per capability — generalize only when a second real consumer exists. Enums shared across modules belong in App\Enums. The module.json requires field is for STRUCTURAL dependencies only (models/factories); never declare bidirectional requires — the cycle detector rejects it. Data access uses the model public seam via requires; behaviour uses these ports; async reactions use events.
