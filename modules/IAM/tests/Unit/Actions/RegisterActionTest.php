@@ -41,7 +41,7 @@ describe('RegisterAction', function () {
     });
 
     it('handles payload without device name', function () {
-        $payload = new RegisterPayload(name: 'John', email: 'john2@example.com', password: 'password123', deviceName: null);
+        $payload = new RegisterPayload(name: 'John', email: 'john2@example.com', password: 'password123');
 
         $result = app(RegisterAction::class)->handle($payload);
 

@@ -29,7 +29,7 @@ describe('LoginAction', function () {
     });
 
     it('throws for unknown email', function () {
-        $payload = new LoginPayload(email: 'ghost@example.com', password: 'password123', deviceName: null);
+        $payload = new LoginPayload(email: 'ghost@example.com', password: 'password123');
 
         expect(fn () => app(LoginAction::class)->handle($payload))
             ->toThrow(ValidationException::class);
@@ -38,7 +38,7 @@ describe('LoginAction', function () {
     it('throws for wrong password', function () {
         UserFactory::new()->createOne(['email' => 'jane@example.com', 'password' => 'correct']);
 
-        $payload = new LoginPayload(email: 'jane@example.com', password: 'wrong', deviceName: null);
+        $payload = new LoginPayload(email: 'jane@example.com', password: 'wrong');
 
         expect(fn () => app(LoginAction::class)->handle($payload))
             ->toThrow(ValidationException::class);
@@ -48,14 +48,12 @@ describe('LoginAction', function () {
         $banned = UserFactory::new()->banned()->createOne(['email' => 'banned@example.com', 'password' => 'password123']);
         $suspended = UserFactory::new()->suspended()->createOne(['email' => 'suspended@example.com', 'password' => 'password123']);
 
-        $payloadBanned = new LoginPayload(email: 'banned@example.com', password: 'password123', deviceName: null);
-        $payloadSuspended = new LoginPayload(email: 'suspended@example.com', password: 'password123', deviceName: null);
+        $payloadBanned = new LoginPayload(email: 'banned@example.com', password: 'password123');
+        $payloadSuspended = new LoginPayload(email: 'suspended@example.com', password: 'password123');
 
         expect(fn () => app(LoginAction::class)->handle($payloadBanned))
-            ->toThrow(ValidationException::class, __($banned->status->blockedMessageKey()));
-
-        expect(fn () => app(LoginAction::class)->handle($payloadSuspended))
-            ->toThrow(ValidationException::class, __($suspended->status->blockedMessageKey()));
+            ->toThrow(ValidationException::class, __($banned->status->blockedMessageKey()))
+            ->and(fn () => app(LoginAction::class)->handle($payloadSuspended))->toThrow(ValidationException::class, __($suspended->status->blockedMessageKey()));
     });
 
     it('allows pending users to authenticate', function () {
@@ -64,7 +62,7 @@ describe('LoginAction', function () {
             'password' => 'password123',
         ]);
 
-        $payload = new LoginPayload(email: 'pending@example.com', password: 'password123', deviceName: null);
+        $payload = new LoginPayload(email: 'pending@example.com', password: 'password123');
 
         $result = app(LoginAction::class)->handle($payload);
 
