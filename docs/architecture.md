@@ -267,7 +267,7 @@ project/
 
 | Folder | Contents |
 |---|---|
-| `app/Providers` | `{Module}ServiceProvider` extends nWidart base `ModuleServiceProvider` + `RouteServiceProvider` |
+| `app/Providers` | `{Module}ServiceProvider` extends nWidart base `ModuleServiceProvider`, plus `EventServiceProvider` (verification auto-listener suppressed via empty `configureEmailVerification`) and `RouteServiceProvider` |
 | `routes` | Route file (`V1.php`) |
 | `tests` | Feature and unit tests |
 
@@ -983,3 +983,29 @@ This document is broken down into `.ai/rules/` (standard format: frontmatter pat
 
 1. ~~Migrating existing module folders (IAM, Media) to the new anatomy (`Http/Controllers`, `Http/Requests`, `Http/Resources`, `Console/Commands`) is a breaking change: should it be executed in the next phase instead of being part of this document's review?~~ **Resolved:** scheduled for phase P5 (Module Consistency, gate G1) — see ADR-0027.
 2. API V2 versioning is undefined: the anatomy mentions `V1/`, `V2/` in Controllers/Requests and `routes/V2.php`, but the routes rules only define `api/v1/{path}`. The V2 mechanism (header vs URL, V1 sunset policy) is **deferred** until the first V2 use case appears — see ADR-0027. Re-open when that use case lands.
+## 11. Static Analysis Tooling
+
+**Definition:** two complementary analyzers run on this repository with
+different goals - PHPStan is the correctness gate inside `composer ci:check`;
+PHPantom LSP (`phpantom_lsp analyze`) reports type-coverage gaps so editor
+completion keeps working everywhere.
+
+**Rules:**
+
+1. PHPStan findings must be fixed at the root cause; `@phpstan-ignore` and
+   baselines are forbidden.
+2. PHPantom findings are advisory. When a finding cannot be resolved without
+   contorting production types, document it here instead of changing code.
+
+### Known accepted divergences (as of 2026-08-23)
+
+1. `app/Builders/BaseQueryBuilder.php` dynamic filter/scope dispatch
+   (`$this->{$method}($value)`): PHPStan cannot resolve the dynamic target;
+   PHPantom resolves the callee signature and flags `int|string` query values.
+   Runtime is safe because named scopes accept scalar values.
+2. `database/seeders/DatabaseSeeder.php::activeModuleSeeders()`: PHPStan
+   narrows `class-string` via `is_subclass_of($seeder, Seeder::class)`;
+   PHPantom does not apply that narrowing and reports the declared
+   `list<class-string<Seeder>>` as incompatible.
+3. `TestResponse::assertJson(array)`: PHPantom's stub declares a string
+   first parameter; Laravel's signature takes an array.
