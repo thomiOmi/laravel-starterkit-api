@@ -29,7 +29,7 @@ final readonly class UpdateProfilePayload
     {
         return new self(
             name: $request->safe()->has('name') ? $request->safe()->string('name')->trim()->toString() : null,
-            email: $request->safe()->has('email') ? $request->safe()->string('email')->trim()->lower()->toString() : null,
+            email: $request->safe()->has('email') ? $request->safe()->string('email')->trim()->toString() : null,
             avatarMediaId: $request->safe()->has('avatar') ? $request->safe()->string('avatar')->toString() : null,
         );
     }

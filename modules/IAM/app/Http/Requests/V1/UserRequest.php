@@ -28,6 +28,18 @@ final class UserRequest extends FormRequest
     use PasswordValidationRules, ProfileValidationRules;
 
     /**
+     * Normalize the email before validation so the unique rule compares
+     * case-insensitively across database drivers.
+     */
+    #[\Override]
+    protected function prepareForValidation(): void
+    {
+        if (is_string($email = $this->input('email'))) {
+            $this->merge(['email' => strtolower(trim($email))]);
+        }
+    }
+
+    /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool

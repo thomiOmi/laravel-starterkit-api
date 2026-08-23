@@ -37,7 +37,7 @@ final readonly class UserPayload
     {
         return new self(
             name: $request->safe()->string('name')->trim()->toString(),
-            email: $request->safe()->string('email')->trim()->lower()->toString(),
+            email: $request->safe()->string('email')->trim()->toString(),
             password: $request->safe()->has('password') ? $request->safe()->string('password')->toString() : null,
             status: $request->safe()->has('status') ? $request->safe()->enum('status', UserStatusEnum::class) : null,
         );
