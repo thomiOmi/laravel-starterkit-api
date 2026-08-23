@@ -24,7 +24,7 @@ describe('GET /api/v1/users', function () {
 
     it('returns paginated users with permission', function () {
         Permission::firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
-        $viewer = loginAsUser();
+        $viewer = loginAsUser(UserFactory::new()->createOne(['name' => 'Viewer Zero']));
         $viewer->givePermissionTo(PermissionEnum::UserView->value);
         UserFactory::new()->count(2)->create();
 
@@ -37,7 +37,7 @@ describe('GET /api/v1/users', function () {
 
     it('filters by search', function () {
         Permission::firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
-        $viewer = loginAsUser();
+        $viewer = loginAsUser(UserFactory::new()->createOne(['name' => 'Viewer Zero']));
         $viewer->givePermissionTo(PermissionEnum::UserView->value);
         UserFactory::new()->createOne(['name' => 'Alice Wonderland']);
         UserFactory::new()->createOne(['name' => 'Bob Builder']);
