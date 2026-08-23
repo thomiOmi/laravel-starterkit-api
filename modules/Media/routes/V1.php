@@ -9,6 +9,8 @@ use Modules\Media\Http\Controllers\V1\MediaListController;
 use Modules\Media\Http\Controllers\V1\MediaShowController;
 use Modules\Media\Http\Controllers\V1\MediaUploadController;
 
+// Intentionally no 'verified' middleware: users may manage their own
+// uploads (e.g. avatars) before confirming their email address.
 Route::prefix('media')->name('media.')->middleware(['auth:sanctum', 'active', 'throttle:api'])->group(function (): void {
     Route::post('/', MediaUploadController::class)
         ->middleware('permission:'.PermissionEnum::MediaCreate->value)
