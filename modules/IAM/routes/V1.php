@@ -81,7 +81,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
             Route::get('devices', DeviceListController::class)->middleware('ability:auth:manage')->name('devices.index');
             Route::delete('devices/{device}', DeleteDeviceController::class)->middleware('ability:auth:manage')->name('devices.delete');
             Route::post('devices/logout-others', LogoutOtherDevicesController::class)->middleware('ability:auth:manage')->name('devices.logout-others');
-        })->whereUlid(['device']);
+        });
     });
 });
 

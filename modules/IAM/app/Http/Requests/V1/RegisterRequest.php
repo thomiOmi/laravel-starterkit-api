@@ -14,6 +14,20 @@ use Modules\IAM\Payloads\V1\RegisterPayload;
 
 final class RegisterRequest extends FormRequest
 {
+    /**
+     * Normalize the email before validation so the unique rule compares
+     * case-insensitively across database drivers.
+     */
+    #[\Override]
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email')) {
+            if (is_string($email = $this->input('email'))) {
+                $this->merge(['email' => strtolower(trim($email))]);
+            }
+        }
+    }
+
     use PasswordValidationRules, ProfileValidationRules;
 
     public function authorize(): bool
