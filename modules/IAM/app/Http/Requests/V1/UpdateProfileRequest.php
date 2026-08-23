@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Http\Requests\V1;
 
+use App\Concerns\ProfileValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -14,6 +15,8 @@ use Illuminate\Validation\Rules\Unique;
  */
 class UpdateProfileRequest extends FormRequest
 {
+    use ProfileValidationRules;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -29,6 +32,7 @@ class UpdateProfileRequest extends FormRequest
     #[\Override]
     protected function prepareForValidation(): void
     {
+        $this->normalizeEmail();
         if (is_string($email = $this->input('email'))) {
             $this->merge(['email' => strtolower(trim($email))]);
         }
