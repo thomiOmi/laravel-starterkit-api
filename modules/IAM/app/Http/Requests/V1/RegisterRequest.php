@@ -22,11 +22,6 @@ final class RegisterRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->normalizeEmail();
-        if ($this->has('email')) {
-            if (is_string($email = $this->input('email'))) {
-                $this->merge(['email' => strtolower(trim($email))]);
-            }
-        }
     }
 
     use PasswordValidationRules, ProfileValidationRules;

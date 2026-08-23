@@ -35,9 +35,6 @@ final class UserRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->normalizeEmail();
-        if (is_string($email = $this->input('email'))) {
-            $this->merge(['email' => strtolower(trim($email))]);
-        }
     }
 
     /**
