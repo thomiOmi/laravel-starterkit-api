@@ -19,7 +19,7 @@ describe('VerifyEmail notification', function () {
     });
 
     it('uses Queueable trait', function () {
-        expect(Queueable::class)->toBeIn(class_uses(VerifyEmail::class));
+        expect(Queueable::class)->toBeIn(class_uses(VerifyEmail::class) ?: []);
     });
 
 });

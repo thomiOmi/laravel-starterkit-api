@@ -18,7 +18,7 @@ describe('ResetPassword notification', function () {
     });
 
     it('uses Queueable trait', function () {
-        expect(Queueable::class)->toBeIn(class_uses(ResetPassword::class));
+        expect(Queueable::class)->toBeIn(class_uses(ResetPassword::class) ?: []);
     });
 
 });
