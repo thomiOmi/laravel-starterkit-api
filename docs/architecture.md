@@ -284,7 +284,7 @@ project/
 | `app/Rules` | Module-specific custom validation rules |
 | `app/Events` | Module-specific events |
 | `app/Listeners` | Module-specific listeners |
-| `lang` | Module translations (`{locale}/`) |
+| `lang` | Module translations (`{locale}/`) — optional, only when a module owns its own strings |
 | `app/Models` | Eloquent models |
 | `app/Observers` | Model observers (via `#[ObservedBy]`) |
 | `app/Policies` | Authorization policies (via `#[UsePolicy]`) |
