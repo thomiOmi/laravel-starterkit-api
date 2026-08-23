@@ -55,4 +55,20 @@ trait ProfileValidationRules
 
         return $rules;
     }
+
+    /**
+     * Normalize the email input (trim + lowercase) so the unique rule
+     * compares case-insensitively across database drivers.
+     *
+     * Call this from `prepareForValidation()` in form requests that carry
+     * an email field. Validation rules run on raw input, and the
+     * framework's `lowercase` rule only rejects uppercase input - it does
+     * not transform it.
+     */
+    protected function normalizeEmail(): void
+    {
+        if (is_string($email = $this->input('email'))) {
+            $this->merge(['email' => strtolower(trim($email))]);
+        }
+    }
 }
