@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Media\Http\Resources;
 
 use App\Concerns\FormatDate;
+use App\Enums\MediaVisibilityEnum;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -22,7 +23,10 @@ class MediaResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @return array{id: string, collection_name: string, mime_type: string, size: int, visibility: string, url: string, original_name: string|null, uploaded_by: string|null, created_at: ?string}
+     * The url is only resolved for publicly visible media; private media
+     * yields null until signed URLs are introduced (ADR-0030 roadmap).
+     *
+     * @return array{id: string, collection_name: string, mime_type: string, size: int, visibility: string, url: string|null, original_name: string|null, uploaded_by: string|null, created_at: ?string}
      */
     #[\Override]
     public function toArray(Request $request): array
@@ -36,7 +40,9 @@ class MediaResource extends JsonResource
             'mime_type' => $media->mime_type,
             'size' => $media->size,
             'visibility' => $media->visibility->value,
-            'url' => Storage::disk($media->disk)->url($media->path),
+            'url' => $media->visibility === MediaVisibilityEnum::Public
+                ? Storage::disk($media->disk)->url($media->path)
+                : null,
             'original_name' => is_array($media->meta) && is_string($media->meta['original_name'] ?? null)
                 ? $media->meta['original_name']
                 : null,

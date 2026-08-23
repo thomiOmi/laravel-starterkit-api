@@ -22,7 +22,7 @@ final readonly class MediaUploadController extends Controller
     /**
      * Upload a media file for the authenticated user.
      *
-     * @return SuccessResponse<array{media: MediaResource, url: string}>
+     * @return SuccessResponse<array{media: MediaResource, url: string|null}>
      */
     public function __invoke(MediaUploadRequest $request, #[CurrentUser] User $currentUser): SuccessResponse
     {
