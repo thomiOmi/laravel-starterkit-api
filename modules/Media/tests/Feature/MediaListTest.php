@@ -52,3 +52,15 @@ describe('GET /api/v1/media', function () {
         assertProblemResponse($this->getJson('/api/v1/media'), 403);
     });
 });
+
+it('returns null original_name when meta is absent', function () {
+    Permission::firstOrCreate(['name' => PermissionEnum::MediaView->value, 'guard_name' => 'sanctum']);
+    $viewer = loginAsUser();
+    $viewer->givePermissionTo(PermissionEnum::MediaView->value);
+    $media = MediaFactory::new()->forUser($viewer)->createOne(['meta' => null]);
+
+    $response = $this->getJson('/api/v1/media');
+
+    assertSuccessResponse($response, 200);
+    expect($response->json('data.0.original_name'))->toBeNull();
+});

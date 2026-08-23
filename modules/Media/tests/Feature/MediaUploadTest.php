@@ -37,6 +37,22 @@ describe('POST /api/v1/media', function () {
         Storage::disk('public')->assertExists($media->path);
     });
 
+    it('rejects invalid collection names', function (string $collection) {
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $response = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('photo.png', 10, 'image/png'),
+            'collection_name' => $collection,
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['collection_name']);
+    })->with([
+        'with space' => 'my collection',
+        'symbol' => 'col!ect',
+    ]);
+
     it('defaults the collection name', function () {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
