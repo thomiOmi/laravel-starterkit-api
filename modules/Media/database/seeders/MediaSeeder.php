@@ -9,10 +9,10 @@ use Illuminate\Database\Seeder;
 class MediaSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Run the database seeds. No seed data yet.
      */
     public function run(): void
     {
-        // $this->call([]);
+        //
     }
 }
