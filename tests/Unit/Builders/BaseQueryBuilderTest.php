@@ -32,7 +32,7 @@ function makeQueryBuilder(array $query = [], array $config = []): TestQueryBuild
 
     foreach ($source->getModel()->getGlobalScopes() as $identifier => $scope) {
         if ($scope instanceof Scope) {
-            $builder->withGlobalScope($identifier, $scope);
+            $builder->withGlobalScope((string) $identifier, $scope);
         }
     }
 
