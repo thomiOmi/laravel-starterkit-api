@@ -143,9 +143,13 @@ class AppServiceProvider extends ServiceProvider
             $perEmail = config()->integer('rate-limiting.auth.limit_per_email');
             $perIp = config()->integer('rate-limiting.auth.limit_per_ip');
 
+            // Guard against array input: the key must be a string.
+            $email = $request->input('email');
+            $emailKey = is_string($email) && $email !== '' ? $email : ($request->ip() ?? 'unknown');
+
             return [
                 Limit::perMinute($perEmail)
-                    ->by($request->input('email')),
+                    ->by($emailKey),
                 Limit::perMinute($perIp)
                     ->by($request->ip()),
             ];

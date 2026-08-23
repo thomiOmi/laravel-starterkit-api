@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Media\Actions;
 
+use App\Enums\MediaCollection;
 use App\Enums\MediaVisibilityEnum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +19,7 @@ use Throwable;
 final readonly class UploadMediaAction
 {
     /**
-     * @return array{media: Media, url: string}
+     * @return array{media: Media, url: string|null}
      *
      * @throws Throwable When the media row cannot be persisted; the stored
      *                   file is removed again so no orphan is left behind.
@@ -39,7 +40,9 @@ final readonly class UploadMediaAction
                 'mime_type' => $file->getMimeType(),
                 'size' => (int) $file->getSize(),
                 'path' => $fullPath,
-                'visibility' => MediaVisibilityEnum::Private->value,
+                'visibility' => $payload->collectionName === MediaCollection::Avatars->value
+                    ? MediaVisibilityEnum::Public->value
+                    : MediaVisibilityEnum::Private->value,
                 'meta' => ['original_name' => $file->getClientOriginalName()],
                 'uploaded_by' => $user->id,
             ]));

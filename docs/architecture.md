@@ -983,6 +983,7 @@ This document is broken down into `.ai/rules/` (standard format: frontmatter pat
 
 1. ~~Migrating existing module folders (IAM, Media) to the new anatomy (`Http/Controllers`, `Http/Requests`, `Http/Resources`, `Console/Commands`) is a breaking change: should it be executed in the next phase instead of being part of this document's review?~~ **Resolved:** scheduled for phase P5 (Module Consistency, gate G1) — see ADR-0027.
 2. API V2 versioning is undefined: the anatomy mentions `V1/`, `V2/` in Controllers/Requests and `routes/V2.php`, but the routes rules only define `api/v1/{path}`. The V2 mechanism (header vs URL, V1 sunset policy) is **deferred** until the first V2 use case appears — see ADR-0027. Re-open when that use case lands.
+3. Email reuse after account deletion: soft-deleted users keep their email, so the address cannot be re-registered (unique rule matches the trashed row). Options: rewrite email on delete (e.g. `{id}::{email}`, original preserved in meta) or a partial unique index (driver-dependent). **Deferred** as a product decision.
 ## 11. Static Analysis Tooling
 
 **Definition:** two complementary analyzers run on this repository with
