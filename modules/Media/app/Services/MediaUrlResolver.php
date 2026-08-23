@@ -32,7 +32,7 @@ final readonly class MediaUrlResolver implements \App\Contracts\MediaUrlResolver
             || $media->collection_name !== $collection
             || $media->disk !== config()->string('media.disk', 'public')
         ) {
-            throw new InvalidArgumentException(__('validation.avatar_unavailable'));
+            throw new InvalidArgumentException(__('validation.media_unavailable'));
         }
 
         return Storage::disk($media->disk)->url($media->path);

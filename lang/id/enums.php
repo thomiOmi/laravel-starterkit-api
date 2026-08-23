@@ -45,6 +45,11 @@ return [
         'media_delete' => 'Hapus media',
     ],
 
+    'MediaCollection' => [
+        'default' => 'Bawaan',
+        'avatars' => 'Avatar',
+    ],
+
     'MediaVisibilityEnum' => [
         'public' => 'Publik',
         'private' => 'Pribadi',

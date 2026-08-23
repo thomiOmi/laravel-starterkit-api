@@ -8,6 +8,7 @@ return [
     'social_not_linked' => 'This social account is not linked to your account.',
     'avatar_invalid' => 'The selected avatar is invalid.',
     'avatar_unavailable' => 'The avatar service is unavailable.',
+    'media_unavailable' => 'The media service is unavailable.',
 
     /*
     |--------------------------------------------------------------------------

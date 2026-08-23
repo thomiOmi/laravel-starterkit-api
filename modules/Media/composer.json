@@ -1,6 +1,6 @@
 {
     "name": "thomiomi/media",
-    "description": "",
+    "description": "Owner-scoped media storage with collections, visibility control, and avatar URL resolution.",
     "authors": [
         {
             "name": "Thomi Syauqi",
