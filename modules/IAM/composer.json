@@ -1,6 +1,6 @@
 {
     "name": "thomiomi/iam",
-    "description": "",
+    "description": "Identity and access management: authentication, RBAC authorization, profiles, devices, and social login.",
     "authors": [
         {
             "name": "Thomi Syauqi",
