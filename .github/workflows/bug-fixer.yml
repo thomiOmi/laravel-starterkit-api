@@ -30,21 +30,24 @@ jobs:
 
             ## Project Context
 
-            - **Framework:** Laravel 13, PHP 8.4
-            - **Architecture:** Modular DDD (Actions, Controllers, Filters, Payloads, Resources per module)
-            - **Auth:** Sanctum Bearer tokens (API-only)
-            - **Permissions:** Spatie Permission with Sanctum guard, `PermissionEnum`/`RoleEnum` enums
-            - **Tests:** Pest 4 with `--compact --parallel`
-            - **Code style:** PHP 8 attributes (`#[Fillable]`, `#[Hidden]`) over `$fillable`/`$hidden`
-            - **Test helpers:** `toBeSuccessResponse()`, `toBeProblemResponse()`, `toBePaginated()`
+            - **Framework:** Laravel 13, PHP 8.4, strict_types everywhere
+            - **Architecture:** Modular DDD - active modules are IAM and Media under `modules/`
+            - **Layer anatomy per module:** Actions, Builders, Http(Controllers|Middleware|Requests|Resources), Models, Payloads, Policies, Providers, Services, Support
+            - **Permissions:** Spatie Permission with Sanctum guard, `PermissionEnum` / `RoleEnum`
+            - **Code style:** PHP 8 attributes (`#[Fillable]`, `#[Hidden]`, `#[UseFactory]`) over `$fillable` / `$hidden`
+            - **Tests:** Pest 5; strict split Unit (no database) vs Feature (database via RefreshDatabase), enforced by architecture tests
+            - **Test helpers:** `assertSuccessResponse()`, `assertProblemResponse()`, `assertPaginatedResponse()` in tests/Helpers.php
+            - **Quality gate:** `composer ci:check` runs pint, rector:dry, phpstan, pest, profanity in sequence
+            - **Conventions:** read `.ai/rules/*.md`, `docs/architecture.md`; all commits and PR text must be English
+            - **Known accepted divergences:** docs/architecture.md section 11 lists five PHPantom findings that are intentionally left as-is
 
             ## Process
 
-            1. **Analysis** — Review the bug report and identify root cause
-            2. **Diagnosis** — Trace the issue through the codebase
-            3. **Fix** — Implement minimal, targeted fix (follow existing conventions)
-            4. **Testing** — Add regression test matching existing Pest patterns
-            5. **Documentation** — Add inline comments for non-obvious fix logic
+            1. Analysis - Review the bug report and identify root cause
+            2. Diagnosis - Trace the issue through the codebase
+            3. Fix - Implement minimal, targeted fix (follow existing conventions)
+            4. Testing - Add regression test matching existing Pest patterns
+            5. Documentation - Add inline comments for non-obvious fix logic
 
             ## Rules
 
@@ -52,6 +55,6 @@ jobs:
             - Use `declare(strict_types=1)` on every PHP file
             - `final readonly` for Action / Controller / Payload classes
             - Keep changes under 100 lines
-            - **Verification loop:** after applying fix, run `vendor/bin/pint --test && vendor/bin/phpstan analyse && php artisan test --compact --parallel`. If any step fails → diagnose → fix → re-run until all pass before creating PR.
+            - Verification loop: after applying fix, run `composer ci:check`. If any step fails, diagnose, fix, re-run until all pass before creating PR.
 
           jules_api_key: ${{ secrets.JULES_API_KEY }}
