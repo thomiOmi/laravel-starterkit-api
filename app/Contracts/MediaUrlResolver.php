@@ -38,4 +38,20 @@ interface MediaUrlResolver
      * or is stored outside the configured public disk.
      */
     public function public(string $mediaId): ?string;
+
+    /**
+     * Resolve a temporary signed streaming URL for a media item.
+     *
+     * The signature is the credential: whoever holds the URL may stream the
+     * file until it expires, regardless of the media visibility. Consumers
+     * MUST only hand these URLs to identities already authorized to see the
+     * media.
+     *
+     * @param  int  $ttlMinutes  Lifetime of the URL in minutes (1..1440).
+     *
+     * @throws InvalidArgumentException when the media does not exist or is
+     *                                  stored outside the configured public
+     *                                  disk.
+     */
+    public function signed(string $mediaId, int $ttlMinutes): string;
 }

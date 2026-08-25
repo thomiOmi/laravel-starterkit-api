@@ -10,10 +10,12 @@ use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Image;
+use Illuminate\Support\Facades\Storage;
 use Modules\IAM\Models\User;
 use Modules\Media\Http\Requests\V1\MediaVariantRequest;
 use Modules\Media\Models\Media;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class MediaVariantController extends Controller
 {
@@ -24,13 +26,15 @@ final readonly class MediaVariantController extends Controller
     private const int MAX_AGE = 31536000;
 
     /**
-     * Serve an on-the-fly resized variant of a stored image.
+     * Serve a resized variant of a stored image.
      *
-     * The transformation never upscales: a width above the original size
-     * yields the original dimensions. Variants are generated per request and
-     * made cacheable through an ETag plus one-year public max-age.
+     * The first request generates the variant, writes it under
+     * variants/{id}/{version}-{width}-{format}.{ext} and streams it; the
+     * timestamp in the path makes updated media produce fresh files while
+     * old ones fall out of use. Later requests are served straight from
+     * disk. Responses carry an ETag plus one-year public max-age.
      */
-    public function __invoke(MediaVariantRequest $variantRequest, #[CurrentUser] User $currentUser, Media $media): HttpResponse|ProblemResponse
+    public function __invoke(MediaVariantRequest $variantRequest, #[CurrentUser] User $currentUser, Media $media): HttpResponse|StreamedResponse|ProblemResponse
     {
         Gate::authorize('view', $media);
 
@@ -45,8 +49,8 @@ final readonly class MediaVariantController extends Controller
         $format = $variantRequest->string('format')->toString() ?: 'webp';
         $updatedAt = $media->updated_at;
         $version = $updatedAt !== null ? $updatedAt->timestamp : 0;
-        $fingerprint = $version.'|'.$media->id.'|'.$variantRequest->width().'|'.$format;
-        $etag = '"'.hash('xxh128', $fingerprint).'"';
+        $width = $variantRequest->width();
+        $etag = '"'.hash('xxh128', $version.'|'.$media->id.'|'.$width.'|'.$format).'"';
 
         if ($variantRequest->headers->get('If-None-Match') === $etag) {
             /** @var HttpResponse $notModified */
@@ -55,11 +59,23 @@ final readonly class MediaVariantController extends Controller
             return $notModified;
         }
 
-        return Image::fromStorage($media->path, $media->disk)
-            ->scale(width: $variantRequest->width())
+        $disk = Storage::disk($media->disk);
+        $variantPath = 'variants/'.$media->id.'/'.$version.'-'.$width.'-'.$format.'.'.($format === 'jpg' ? 'jpg' : 'webp');
+
+        if ($disk->exists($variantPath)) {
+            /** @var StreamedResponse $cached */
+            $cached = $disk->response($variantPath);
+
+            return $cached->setEtag($etag)->setMaxAge(self::MAX_AGE)->setPublic();
+        }
+
+        $image = Image::fromStorage($media->path, $media->disk)
+            ->scale(width: $width)
             ->toFormat($format)
-            ->quality(80)
-            ->toResponse($variantRequest)
+            ->quality(80);
+        $image->storeAs(dirname($variantPath), basename($variantPath), $media->disk);
+
+        return $image->toResponse($variantRequest)
             ->setEtag($etag)
             ->setMaxAge(self::MAX_AGE)
             ->setPublic();

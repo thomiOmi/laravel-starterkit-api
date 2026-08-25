@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Enums\MediaVisibilityEnum;
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\User;
+use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Http\Controllers\V1\MediaVariantController;
 use Modules\Media\Models\Media;
 
@@ -24,16 +24,8 @@ describe('GET /api/v1/media/{media}/variant', function () {
      */
     function seedImageMedia(User $owner, int $width = 200, int $height = 100): Media
     {
-        $media = Media::query()->create([
-            'collection_name' => 'default',
-            'disk' => 'public',
-            'mime_type' => 'image/jpeg',
-            'size' => 0,
-            'path' => 'default/'.fake()->unique()->md5().'.jpg',
-            'visibility' => MediaVisibilityEnum::Private->value,
-            'meta' => ['original_name' => 'seed.jpg'],
-            'uploaded_by' => $owner->id,
-        ]);
+        /** @var Media $media */
+        $media = MediaFactory::new()->forUser($owner)->createOne(['mime_type' => 'image/jpeg']);
 
         $file = UploadedFile::fake()->image('seed.jpg', $width, $height);
         Storage::disk('public')->put($media->path, (string) $file->getContent());
@@ -100,6 +92,27 @@ describe('GET /api/v1/media/{media}/variant', function () {
             ->and(imagesy($image))->toBe(40);
     });
 
+    it('caches the generated variant on disk and serves later requests from it', function () {
+        $user = loginAsUser();
+        $media = seedImageMedia($user);
+
+        $first = $this->getJson("/api/v1/media/{$media->id}/variant?w=32");
+        $first->assertOk();
+
+        expect(Storage::disk('public')->allFiles('variants/'.$media->id))->toHaveCount(1);
+
+        // Remove the original to prove the next response comes from the cache.
+        Storage::disk('public')->delete($media->path);
+
+        $second = $this->getJson("/api/v1/media/{$media->id}/variant?w=32");
+        $second->assertOk();
+        // The original is gone and the variant dir untouched, so a 200 with
+        // the same ETag can only have been served from the cached file.
+        expect($second->headers->get('ETag'))->toBe($first->headers->get('ETag'))
+            ->and(Storage::disk('public')->exists($media->path))->toBeFalse()
+            ->and(Storage::disk('public')->allFiles('variants/'.$media->id))->toHaveCount(1);
+    });
+
     it('rejects out-of-bounds widths and unsupported formats', function (array $query, string $field) {
         $user = loginAsUser();
         $media = seedImageMedia($user);
@@ -117,16 +130,7 @@ describe('GET /api/v1/media/{media}/variant', function () {
 
     it('rejects non-image media with a problem response', function () {
         $user = loginAsUser();
-        $media = Media::query()->create([
-            'collection_name' => 'default',
-            'disk' => 'public',
-            'mime_type' => 'application/pdf',
-            'size' => 9,
-            'path' => 'default/'.fake()->unique()->md5().'.pdf',
-            'visibility' => MediaVisibilityEnum::Private->value,
-            'meta' => ['original_name' => 'doc.pdf'],
-            'uploaded_by' => $user->id,
-        ]);
+        $media = MediaFactory::new()->forUser($user)->createOne(['mime_type' => 'application/pdf']);
         Storage::disk('public')->put($media->path, "%PDF-1.4\n");
 
         $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=64");

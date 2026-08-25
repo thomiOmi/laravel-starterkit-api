@@ -47,4 +47,38 @@ describe('GET /api/v1/media/{media}', function () {
 
         $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA')->assertNotFound();
     });
+
+    it('swaps the url for a signed link when expires is passed', function () {
+        $user = loginAsUser();
+        $media = MediaFactory::new()->forUser($user)->createOne();
+
+        $response = $this->getJson("/api/v1/media/{$media->id}?expires=30");
+
+        assertSuccessResponse($response, 200);
+        expect($response->json('data.url'))->toContain('/api/v1/media/'.$media->id.'/file')
+            ->and($response->json('data.url'))->toContain('signature=');
+    });
+
+    it('keeps the private url null without an expires parameter', function () {
+        $user = loginAsUser();
+        $media = MediaFactory::new()->forUser($user)->createOne();
+
+        $response = $this->getJson("/api/v1/media/{$media->id}");
+
+        assertSuccessResponse($response, 200);
+        expect($response->json('data.url'))->toBeNull();
+    });
+
+    it('rejects out-of-bounds expiry values', function (int $expires) {
+        $user = loginAsUser();
+        $media = MediaFactory::new()->forUser($user)->createOne();
+
+        $response = $this->getJson("/api/v1/media/{$media->id}?expires={$expires}");
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['expires']);
+    })->with([
+        'below minimum' => 0,
+        'above maximum' => 1441,
+    ]);
 });

@@ -21,10 +21,22 @@ class MediaResource extends JsonResource
     use FormatDate;
 
     /**
+     * @param  Media  $resource
+     * @param  string|null  $resolvedUrl  Pre-resolved override (e.g. a signed
+     *                                    link) taking precedence over the
+     *                                    default visibility-based url.
+     */
+    public function __construct($resource, private ?string $resolvedUrl = null)
+    {
+        parent::__construct($resource);
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * The url is only resolved for publicly visible media; private media
-     * yields null until signed URLs are introduced (ADR-0030 roadmap).
+     * yields null until a caller explicitly passes a pre-resolved url such
+     * as a temporary signed link.
      *
      * @return array{id: string, collection_name: string, mime_type: string, size: int, visibility: string, url: string|null, original_name: string|null, uploaded_by: string|null, created_at: ?string}
      */
@@ -40,9 +52,9 @@ class MediaResource extends JsonResource
             'mime_type' => $media->mime_type,
             'size' => $media->size,
             'visibility' => $media->visibility->value,
-            'url' => $media->visibility === MediaVisibilityEnum::Public
+            'url' => $this->resolvedUrl ?? ($media->visibility === MediaVisibilityEnum::Public
                 ? Storage::disk($media->disk)->url($media->path)
-                : null,
+                : null),
             'original_name' => is_array($media->meta) && is_string($media->meta['original_name'] ?? null)
                 ? $media->meta['original_name']
                 : null,

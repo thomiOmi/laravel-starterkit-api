@@ -7,6 +7,7 @@ namespace Modules\Media\Services;
 use App\Contracts\Identity;
 use App\Enums\MediaVisibilityEnum;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Uri;
 use InvalidArgumentException;
 use Modules\IAM\Models\User;
 use Modules\Media\Models\Media;
@@ -52,5 +53,24 @@ final readonly class MediaUrlResolver implements \App\Contracts\MediaUrlResolver
         }
 
         return Storage::disk($media->disk)->url($media->path);
+    }
+
+    #[\Override]
+    public function signed(string $mediaId, int $ttlMinutes): string
+    {
+        $media = Media::query()->find($mediaId);
+
+        if (
+            $media === null
+            || $media->disk !== config()->string('media.disk', 'public')
+        ) {
+            throw new InvalidArgumentException(__('validation.media_unavailable'));
+        }
+
+        return (string) Uri::temporarySignedRoute(
+            'api.v1.media.file',
+            now()->addMinutes($ttlMinutes),
+            ['media' => $media->id],
+        );
     }
 }

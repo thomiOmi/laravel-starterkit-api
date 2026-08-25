@@ -78,4 +78,29 @@ describe('MediaUrlResolver', function () {
             expect(app(MediaUrlResolver::class)->public('01AAAAAAAAAAAAAAAAAAAAAAAA'))->toBeNull();
         });
     });
+
+    describe('signed', function () {
+        it('mints a temporary signed streaming url for private media', function () {
+            $media = MediaFactory::new()->createOne();
+
+            $url = app(MediaUrlResolver::class)->signed($media->id, 15);
+
+            expect($url)->toContain('/api/v1/media/'.$media->id.'/file')
+                ->and($url)->toContain('signature=')
+                ->and($url)->toContain('expires=');
+        });
+
+        it('throws when the media is not found', function () {
+            expect(fn () => app(MediaUrlResolver::class)->signed('01AAAAAAAAAAAAAAAAAAAAAAAA', 15))
+                ->toThrow(InvalidArgumentException::class);
+        });
+
+        it('throws when stored on a foreign disk', function () {
+            $media = MediaFactory::new()->createOne();
+            $media->forceFill(['disk' => 's3'])->save();
+
+            expect(fn () => app(MediaUrlResolver::class)->signed($media->id, 15))
+                ->toThrow(InvalidArgumentException::class);
+        });
+    });
 });
