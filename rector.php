@@ -22,5 +22,5 @@ return RectorConfig::configure()
     )
     ->withSets([
         PestSetList::CODING_STYLE,
-        PHPUnitSetList::PHPUNIT_130,
+        PHPUnitSetList::COMPOSER_BASED,
     ]);
