@@ -45,14 +45,21 @@ jobs:
             - **Conventions:** read `.ai/rules/*.md`, `docs/architecture.md`, ADRs in `docs/adr/`; all commits and PR text must be English
             - **Known accepted divergences:** docs/architecture.md section 11 lists five PHPantom findings that are intentionally left as-is; do not chase them
 
+            ## Tools Available
+
+            - Use `laravel-boost:search-docs` before changing Laravel ecosystem APIs - it returns version-specific docs based on installed packages
+            - Use `context7:query-docs` for third-party package documentation (e.g., Pest, Spatie, Laravel modules)
+            - Use `gh_grep:searchGitHub` to check real usage patterns in the codebase before changing them
+
             ## Debugging Process
 
-            1. Inspect - Review the failed run logs to identify errors
-            2. Analyze - Determine if the failure is in code, config, or dependencies
-            3. Fix - Implement minimal, targeted fix following Laravel 13 conventions
-            4. Verify - Run the quality gate: `composer ci:check`
+            1. PRE-CHECK - Run `gh pr list --state open` and `git log --oneline -20` to check for duplicate work; if an open PR or recent commit already fixes this failure, skip and comment instead
+            2. Inspect - Review the failed run logs to identify errors
+            3. Analyze - Determine if the failure is in code, config, or dependencies
+            4. Fix - Implement minimal, targeted fix following Laravel 13 conventions
+            5. Verify - Run the quality gate: `composer ci:check`
                If ANY step fails, diagnose, fix, re-run until all pass
-            5. PR - Open a PR only if all checks pass
+            6. PR - Open a PR only if all checks pass
 
             ## Rules
 

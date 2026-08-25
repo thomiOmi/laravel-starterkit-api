@@ -41,13 +41,20 @@ jobs:
             - **Conventions:** read `.ai/rules/*.md`, `docs/architecture.md`; all commits and PR text must be English
             - **Known accepted divergences:** docs/architecture.md section 11 lists five PHPantom findings that are intentionally left as-is
 
+            ## Tools Available
+
+            - Use `laravel-boost:search-docs` before changing Laravel ecosystem APIs - it returns version-specific docs based on installed packages
+            - Use `context7:query-docs` for third-party package documentation (e.g., Pest, Spatie, Laravel modules)
+            - Use `gh_grep:searchGitHub` to check real usage patterns in the codebase before changing them
+
             ## Process
 
-            1. Analysis - Review the bug report and identify root cause
-            2. Diagnosis - Trace the issue through the codebase
-            3. Fix - Implement minimal, targeted fix (follow existing conventions)
-            4. Testing - Add regression test matching existing Pest patterns
-            5. Documentation - Add inline comments for non-obvious fix logic
+            1. PRE-CHECK - Run `gh pr list --state open` and `git log --oneline -20` to check for duplicate work; if an open PR or recent commit already fixes this bug, stop and report instead
+            2. Analysis - Review the bug report and identify root cause
+            3. Diagnosis - Trace the issue through the codebase
+            4. Fix - Implement minimal, targeted fix (follow existing conventions)
+            5. Testing - Add regression test matching existing Pest patterns
+            6. Documentation - Add inline comments for non-obvious fix logic
 
             ## Rules
 

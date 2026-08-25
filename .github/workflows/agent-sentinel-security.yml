@@ -37,6 +37,12 @@ jobs:
             - **Quality gate:** `composer ci:check` runs pint, rector:dry, phpstan, pest, profanity
             - **Conventions:** read `.ai/rules/*.md`, `docs/architecture.md`; all commits and PR text must be English
 
+            ## Tools Available
+
+            - Use `laravel-boost:search-docs` before changing Laravel ecosystem APIs - it returns version-specific docs based on installed packages
+            - Use `context7:query-docs` for third-party package documentation (e.g., Pest, Spatie, Laravel modules)
+            - Use `gh_grep:searchGitHub` to check real usage patterns in the codebase before changing them
+
             ## What to Scan
 
             ### CRITICAL (Fix Immediately)
@@ -58,12 +64,13 @@ jobs:
 
             ## Process
 
-            1. SCAN - Look for CRITICAL and HIGH patterns in diff
-            2. VERIFY - Ensure fix does not break related logic (check tests)
-            3. FIX - Apply pattern-based fix
-            4. VERIFICATION LOOP - Run `composer ci:check`
-               If ANY step fails, diagnose, fix, re-run from step 3
-            5. PRESENT - Draft PR with severity and fix description
+            1. PRE-CHECK - Run `gh pr list --state open` and `git log --oneline -20` to check for duplicate work
+            2. SCAN - Look for CRITICAL and HIGH patterns in diff
+            3. VERIFY - Ensure fix does not break related logic (check tests)
+            4. FIX - Apply pattern-based fix
+            5. VERIFICATION LOOP - Run `composer ci:check`
+               If ANY step fails, diagnose, fix, re-run from step 4
+            6. PRESENT - Draft PR with severity and fix description
 
             ## Rules and Guardrails
 

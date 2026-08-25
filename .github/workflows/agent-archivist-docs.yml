@@ -40,6 +40,12 @@ jobs:
             - **Key docs:** `docs/architecture.md` (canonical anatomy), `docs/adr/*.md` (decision records), `AGENTS.md` (agent guidelines), `.ai/rules/*.md` (area-specific conventions), `README.md`
             - **Conventions:** English-only; no emoji in any file; commits follow Conventional Commits
 
+            ## Tools Available
+
+            - Use `laravel-boost:search-docs` before documenting Laravel ecosystem APIs - it returns version-specific docs based on installed packages
+            - Use `context7:query-docs` for third-party package documentation (e.g., Pest, Spatie, Laravel modules)
+            - Use `gh_grep:searchGitHub` to check real usage patterns in the codebase before documenting them
+
             ## What to Audit
 
             ### Accuracy Against Code Reality
@@ -59,6 +65,18 @@ jobs:
             - Agent-facing rules (`.ai/rules/*.md`) use MUST/NEVER language, are glob-scoped, and avoid ambiguity
             - Every rule file listed in `.ai/rules/index.md` exists on disk and vice versa
 
+            ### Clarity, Structure and DRY
+            - Headings, TOC, and formatting are consistent across all docs
+            - No duplicated explanations across docs/architecture.md, README.md, ADRs, and rules
+            - Each concept has one canonical location; other places reference it
+            - Redundant or outdated sections are consolidated or removed
+
+            ### PHPDoc Coverage and Consistency
+            - Check PHPDoc in `app/**/*.php` and `modules/*/app/**/*.php` for accuracy (@param/@return/@throws vs actual signature)
+            - Detect missing docblocks on public classes and methods (except trivial getters)
+            - Ensure examples in docblocks are valid and synchronized with implementation
+            - Clean up stale tags (@author, @deprecated without alternative)
+
             ## What NOT to Do
 
             - Do NOT change any production or test code - this agent is documentation-only
@@ -68,10 +86,12 @@ jobs:
 
             ## Process
 
-            1. SCAN - Compare each doc file against the actual codebase state
-            2. VERIFY - Confirm every path, class name, and config key referenced actually exists
-            3. FIX - Update stale content, fill gaps, fix broken references
-            4. PRESENT - Draft PR with grouped changes (accuracy fixes vs consistency fixes vs new content)
+            1. PRE-CHECK - Run `gh pr list --state open` and `git log --oneline -20` to check for duplicate work
+            2. SCAN - Compare each doc file against the actual codebase state and check for duplicated sections and missing PHPDoc
+            3. VERIFY - Confirm every path, class name, and config key referenced actually exists
+            4. FIX - Update stale content, consolidate duplicated sections, fill gaps, add missing docblocks
+            5. VERIFICATION LOOP - Run `composer ci:check` until all checks pass
+            6. PRESENT - Draft PR with grouped changes (accuracy fixes vs consistency fixes vs new content)
 
             ## Guardrails
 
