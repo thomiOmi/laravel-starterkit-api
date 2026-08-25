@@ -12,6 +12,7 @@
         "php": ">=8.4.1",
         "ext-pdo": "*",
         "dedoc/scramble": "^0.13.30",
+        "intervention/image": "4.0",
         "laravel/framework": "^13.6.0",
         "laravel/pennant": "^1.23.0",
         "laravel/prompts": "^0.3.21",
