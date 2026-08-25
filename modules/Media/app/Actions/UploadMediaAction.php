@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Modules\IAM\Models\User;
+use Modules\Media\Events\MediaUploaded;
 use Modules\Media\Models\Media;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Throwable;
@@ -39,16 +40,29 @@ final readonly class UploadMediaAction
     public function handle(MediaUploadPayload $payload, User $user): array
     {
         if (! in_array((string) $payload->file->getMimeType(), self::PROCESSABLE_MIMES, true)) {
-            return $this->storeRaw($payload, $user);
+            return $this->dispatchUploaded($this->storeRaw($payload, $user));
         }
 
         try {
-            return $this->storeProcessedImage($payload, $user);
+            return $this->dispatchUploaded($this->storeProcessedImage($payload, $user));
         } catch (ImageException) {
             // Undecodable bytes that still passed extension validation are
             // stored untouched rather than failing the whole upload.
-            return $this->storeRaw($payload, $user);
+            return $this->dispatchUploaded($this->storeRaw($payload, $user));
         }
+    }
+
+    /**
+     * Announce a finished upload to listeners.
+     *
+     * @param  array{media: Media, url: string|null}  $result
+     * @return array{media: Media, url: string|null}
+     */
+    private function dispatchUploaded(array $result): array
+    {
+        event(new MediaUploaded($result['media']));
+
+        return $result;
     }
 
     /**

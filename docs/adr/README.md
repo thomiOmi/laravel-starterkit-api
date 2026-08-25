@@ -37,6 +37,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0029](0029-nwidart-laravel-modules.md) | Standardize on nwidart/laravel-modules | Accepted | 2026-08-17 |
 | [0030](0030-custom-media-module.md) | Custom Media Module Inspired by Spatie Media Library | Accepted | 2026-08-23 |
 | [0031](0031-first-party-image-processing.md) | First-Party Image Processing and On-The-Fly Variants | Accepted | 2026-08-26 |
+| [0032](0032-signed-media-events-cached-variants.md) | Signed Media URLs, Media Events, and Cached Variants | Accepted | 2026-08-26 |
 
 ## Process
 

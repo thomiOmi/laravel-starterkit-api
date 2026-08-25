@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Modules\IAM\Models\Permission;
+use Modules\Media\Events\MediaUploaded;
 use Modules\Media\Http\Controllers\V1\MediaUploadController;
 use Modules\Media\Models\Media;
 
@@ -18,6 +20,7 @@ describe('POST /api/v1/media', function () {
     });
 
     it('stores the upload and returns the created media', function () {
+        Event::fake([MediaUploaded::class]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -43,6 +46,7 @@ describe('POST /api/v1/media', function () {
             ->and($meta['height'] ?? 0)->toBeGreaterThan(0);
 
         Storage::disk('public')->assertExists($media->path);
+        Event::assertDispatched(MediaUploaded::class, fn (MediaUploaded $event): bool => $event->media->is($media));
     });
 
     it('normalizes decodable images to webp regardless of source format', function () {
