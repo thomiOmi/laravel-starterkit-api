@@ -9,6 +9,7 @@ return [
     'avatar_invalid' => 'The selected avatar is invalid.',
     'avatar_unavailable' => 'The avatar service is unavailable.',
     'media_unavailable' => 'The media service is unavailable.',
+    'media_not_image' => 'The requested media is not an image.',
 
     /*
     |--------------------------------------------------------------------------

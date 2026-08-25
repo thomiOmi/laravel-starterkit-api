@@ -35,6 +35,8 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0027](0027-module-anatomy-migration-and-api-v2.md) | Module Anatomy Migration Timing and API V2 Versioning | Accepted | 2026-08-14 |
 | [0028](0028-ensure-email-is-verified-override.md) | EnsureEmailIsVerified Overrides the Native `verified` Middleware | Accepted | 2026-08-14 |
 | [0029](0029-nwidart-laravel-modules.md) | Standardize on nwidart/laravel-modules | Accepted | 2026-08-17 |
+| [0030](0030-custom-media-module.md) | Custom Media Module Inspired by Spatie Media Library | Accepted | 2026-08-23 |
+| [0031](0031-first-party-image-processing.md) | First-Party Image Processing and On-The-Fly Variants | Accepted | 2026-08-26 |
 
 ## Process
 

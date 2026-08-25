@@ -13,6 +13,9 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * - HSTS is only sent in production environments.
  * - Remaining headers are set unconditionally.
+ * - The no-store Cache-Control is skipped for responses that declare their
+ *   own freshness validators (ETag or Last-Modified), so cacheable assets
+ *   such as generated image variants keep their explicit policy.
  */
 final readonly class AddSecurityHeaders
 {
@@ -40,6 +43,10 @@ final readonly class AddSecurityHeaders
     public static function applyHeaders(Response $response): Response
     {
         foreach (self::HEADERS as $header => $value) {
+            if ($header === 'Cache-Control' && self::declaresOwnFreshness($response)) {
+                continue;
+            }
+
             $response->headers->set($header, $value);
         }
 
@@ -51,5 +58,14 @@ final readonly class AddSecurityHeaders
         }
 
         return $response;
+    }
+
+    /**
+     * Determine whether the response carries explicit freshness validators,
+     * signalling that its cache policy is intentional.
+     */
+    private static function declaresOwnFreshness(Response $response): bool
+    {
+        return $response->headers->has('ETag') || $response->headers->has('Last-Modified');
     }
 }
