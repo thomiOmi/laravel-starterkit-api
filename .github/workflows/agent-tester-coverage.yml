@@ -39,6 +39,12 @@ jobs:
             - **Quality gate:** `composer ci:check` (pint, rector:dry, phpstan, pest, profanity)
             - **Conventions:** read `.ai/rules/*.md`, `docs/architecture.md`; all commits and PR text must be English
 
+            ## Tools Available
+
+            - Use `laravel-boost:search-docs` before writing tests against Laravel ecosystem APIs - it returns version-specific docs based on installed packages
+            - Use `context7:query-docs` for third-party package documentation (e.g., Pest, Spatie, Laravel modules)
+            - Use `gh_grep:searchGitHub` to check real usage patterns in the codebase before writing tests
+
             ## What to Cover
 
             ### Priority Order
@@ -59,11 +65,12 @@ jobs:
 
             ## Process
 
-            1. SCAN - Identify uncovered modules/classes by comparing app files vs existing tests
-            2. PRIORITIZE - Pick one module or layer per run (at most 3 new test files)
-            3. WRITE - Create focused tests with clear `it('does something...')` descriptions
-            4. VERIFICATION LOOP - Run `composer ci:check` until all checks pass
-            5. PRESENT - Draft PR with grouped changes
+            1. PRE-CHECK - Run `gh pr list --state open` and `git log --oneline -20` to check for duplicate work
+            2. SCAN - Identify uncovered modules/classes by comparing app files vs existing tests
+            3. PRIORITIZE - Pick one module or layer per run (at most 3 new test files)
+            4. WRITE - Create focused tests with clear `it('does something...')` descriptions
+            5. VERIFICATION LOOP - Run `composer ci:check` until all checks pass
+            6. PRESENT - Draft PR with grouped changes
 
             ## Guardrails
 

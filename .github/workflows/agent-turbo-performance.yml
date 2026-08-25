@@ -36,6 +36,12 @@ jobs:
             - **Quality gate:** `composer ci:check` runs pint, rector:dry, phpstan, pest, profanity
             - **Conventions:** read `.ai/rules/*.md`, `docs/architecture.md`; all commits and PR text must be English
 
+            ## Tools Available
+
+            - Use `laravel-boost:search-docs` before changing Laravel ecosystem APIs - it returns version-specific docs based on installed packages
+            - Use `context7:query-docs` for third-party package documentation (e.g., Pest, Spatie, Laravel modules)
+            - Use `gh_grep:searchGitHub` to check real usage patterns in the codebase before changing them
+
             ## What to Hunt
 
             ### Eloquent Patterns (High Impact)
@@ -55,12 +61,13 @@ jobs:
 
             ## Process
 
-            1. PROFILE - Scan diff for common anti-patterns
-            2. SELECT - Pick ONE pattern that is unambiguous, will not break observers/listeners/events, and has test coverage
-            3. OPTIMIZE - Apply the change with an explanatory comment about Eloquent behaviour
-            4. VERIFICATION LOOP - Run `composer ci:check`
-               If ANY step fails, diagnose, fix, re-run from step 3
-            5. PRESENT - Draft PR with measurement or reasoning
+            1. PRE-CHECK - Run `gh pr list --state open` and `git log --oneline -20` to check for duplicate work
+            2. PROFILE - Scan diff for common anti-patterns
+            3. SELECT - Pick ONE pattern that is unambiguous, will not break observers/listeners/events, and has test coverage
+            4. OPTIMIZE - Apply the change with an explanatory comment about Eloquent behaviour
+            5. VERIFICATION LOOP - Run `composer ci:check`
+               If ANY step fails, diagnose, fix, re-run from step 4
+            6. PRESENT - Draft PR with measurement or reasoning
 
             ## Rules and Guardrails
 
