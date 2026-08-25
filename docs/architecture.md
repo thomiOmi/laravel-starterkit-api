@@ -149,7 +149,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    A["module.json + modules_statuses.json"] --> B{FileActivator (nWidart)}
+    A["module.json + modules_statuses.json"] --> B{"FileActivator (nWidart)"}
     B -- "active = true" --> C["Register {Module}ServiceProvider (from module.json)"]
     B -- "active = false" --> D["Inert: provider, config, migration, route not loaded"]
     C --> E["Nwidart ModuleServiceProvider (register/boot)"]
