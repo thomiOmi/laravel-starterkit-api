@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Route;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Http\Middleware\EnsureUserIsActive;
 

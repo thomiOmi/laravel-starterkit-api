@@ -16,11 +16,6 @@ parameters:
     level: max
 
     checkConfigTypes: true
-
-    ignoreErrors:
-        # Pest arch internal API (ignoring()) used intentionally
-        - identifier: method.internalInterface
-
     # Larastan optional rules
     checkModelProperties: true
     checkModelMethodVisibility: true
