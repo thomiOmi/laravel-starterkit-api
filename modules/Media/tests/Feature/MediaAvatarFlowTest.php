@@ -19,7 +19,7 @@ describe('avatar end-to-end flow', function () {
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
         $upload = $this->post('/api/v1/media', [
-            'file' => UploadedFile::fake()->create('me.png', 12, 'image/png'),
+            'file' => UploadedFile::fake()->image('me.png', 32, 32),
             'collection_name' => 'avatars',
         ]);
 

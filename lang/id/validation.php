@@ -9,6 +9,7 @@ return [
     'avatar_invalid' => 'Avatar yang dipilih tidak valid.',
     'avatar_unavailable' => 'Layanan avatar tidak tersedia.',
     'media_unavailable' => 'Layanan media tidak tersedia.',
+    'media_not_image' => 'Media yang diminta bukan gambar.',
 
     /*
     |--------------------------------------------------------------------------
