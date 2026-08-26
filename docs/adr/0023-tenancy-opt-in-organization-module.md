@@ -16,7 +16,7 @@ Making tenancy part of the core would force every installation to pay its cost: 
 Install `stancl/tenancy:^3.10` as a dependency and wrap it in the `Organization` module, disabled by default (not listed in `config/modules.php`):
 
 - Package auto-discovery is disabled via `extra.laravel.dont-discover` so the package is fully inert while the module is off.
-- `OrganizationServiceProvider` extends `TenancyServiceProvider`, merging the module's `Config/tenancy.php`, central migrations, and tenant route file only when the module is enabled.
+- `OrganizationServiceProvider` extends `TenancyServiceProvider`, merging the module's `config/tenancy.php`, central migrations, and tenant route file only when the module is enabled.
 - Single-database tenancy: `DatabaseTenancyBootstrapper` is omitted; tenant data stays in one database and is scoped by `tenant_id` columns. Cache and filesystem bootstrappers are kept.
 - Tenant-scoped migrations live in `modules/Organization/Database/Migrations/tenant`, referenced by `tenancy.migration_parameters`.
 - The tenant model remains the stancl default with a UUID string key; a domain-based organization model is a later phase.
