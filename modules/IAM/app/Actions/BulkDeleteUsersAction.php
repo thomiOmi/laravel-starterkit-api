@@ -30,23 +30,18 @@ final readonly class BulkDeleteUsersAction
         /** @var User|null $currentUser */
         $currentUser = $this->auth->user();
 
+        $query = User::query()->whereIn('id', $ids);
+
         if ($currentUser === null || ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
-            $ids = User::query()
-                ->whereIn('id', $ids)
-                ->whereDoesntHave('roles', function (Builder $q): void {
-                    /** @var Builder<Role> $q */
-                    $q->where('name', RoleEnum::SuperAdmin->value);
-                })
-                ->pluck('id')
-                ->toArray();
+            $query->whereDoesntHave('roles', function (Builder $q): void {
+                /** @var Builder<Role> $q */
+                $q->where('name', RoleEnum::SuperAdmin->value);
+            });
         }
 
-        if ($ids === []) {
-            return 0;
-        }
-
+        // Apply filtering directly on the delete query builder to avoid double database round-trips via pluck().
         /** @var int $count */
-        $count = User::whereIn('id', $ids)->delete();
+        $count = $query->delete();
 
         return $count;
     }
