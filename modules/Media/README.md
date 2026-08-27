@@ -47,7 +47,6 @@ Visibility: `MediaVisibilityEnum` — `avatars` collection → `public`, others 
 erDiagram
     media ||--o{ users : uploaded_by
     users ||--o{ media : owns
-
     media {
         ulid id PK
         string collection_name
@@ -57,17 +56,15 @@ erDiagram
         string path UK
         enum visibility
         json meta
-        ulid uploaded_by FK_nullable
+        ulid uploaded_by FK "nullable"
         datetime created_at
         datetime updated_at
-    }
-    media {
         string meta_original_name
         int meta_width
         int meta_height
     }
     variants {
-        string path "variants/{id}/{ts}-{w}-{fmt}.webp/jpg"
+        string path PK
         string etag
     }
 ```
@@ -76,37 +73,37 @@ erDiagram
 
 ```mermaid
 flowchart TD
-    Req[POST /media + file + collection_name] --> Val{Validation: required file, mimes, max 2048, collection alpha_dash}
-    Val -- fail --> 422[422 Problem validation]
-    Val -- pass --> Mime{mime in PROCESSABLE_MIMES?}
-    Mime -- No --> Raw[Storage::putFileAs + visibility]
-    Mime -- Yes --> Img[Image::fromUpload->orient->optimize WebP]
-    Img -- ImageException undecodable --> Raw
-    Img --> Store[Image::store with visibility]
-    Store -- false --> Err[ImageException]
+    Req["POST /media + file + collection_name"] --> Val{"Validation: required file, mimes, max 2048, collection alpha_dash"}
+    Val -- "fail" --> N422["422 Problem validation"]
+    Val -- "pass" --> Mime{"mime in PROCESSABLE_MIMES?"}
+    Mime -- "No" --> Raw["Storage::putFileAs + visibility"]
+    Mime -- "Yes" --> Img["Image::fromUpload->orient->optimize WebP"]
+    Img -- "ImageException undecodable" --> Raw
+    Img --> Store["Image::store with visibility"]
+    Store -- "false" --> Err["ImageException"]
     Raw --> Persist
-    Store --> Meta[meta width/height + original_name]
-    Meta --> Persist[DB::transaction create Media row]
-    Persist --> Event[Event MediaUploaded]
-    Event --> Resp[201 SuccessResponse media+url]
+    Store --> Meta["meta width/height + original_name"]
+    Meta --> Persist["DB::transaction create Media row"]
+    Persist --> Event["Event MediaUploaded"]
+    Event --> Resp["201 SuccessResponse media+url"]
 ```
 
 ### Flowchart — Variant (resized)
 
 ```mermaid
 flowchart TD
-    Req[GET /media/{id}/variant?w=320&format=webp + Bearer] --> Auth{Gate view?}
-    Auth -- No --> 403
-    Auth -- Yes --> IsImg{mime startsWith image/?}
-    IsImg -- No --> 4222[422 media_not_image]
-    IsImg -- Yes --> ETag[Compute xxh128 version|id|w|fmt]
-    ETag --> Match{If-None-Match == ETag?}
-    Match -- Yes --> 304[304 Not Modified]
-    Match -- No --> Cache{variants/{id}/{ts}-{w}-{fmt} exists?}
-    Cache -- Yes --> StreamCache[Storage::response cached + ETag/max-age=31536000 public]
-    Cache -- No --> Gen[Image::fromStorage->scale->toFormat->quality80]
-    Gen --> Write[storeAs variants path + visibility]
-    Write --> StreamGen[Image::toResponse + ETag/max-age public]
+    Req["GET /media/{id}/variant?w=320&format=webp + Bearer"] --> Auth{"Gate view?"}
+    Auth -- "No" --> N403["403"]
+    Auth -- "Yes" --> IsImg{"mime startsWith image/?"}
+    IsImg -- "No" --> N422["422 media_not_image"]
+    IsImg -- "Yes" --> ETag["Compute xxh128 version|id|w|fmt"]
+    ETag --> Match{"If-None-Match == ETag?"}
+    Match -- "Yes" --> N304["304 Not Modified"]
+    Match -- "No" --> Cache{"variants/{id}/{ts}-{w}-{fmt} exists?"}
+    Cache -- "Yes" --> StreamCache["Storage::response cached + ETag/max-age=31536000 public"]
+    Cache -- "No" --> Gen["Image::fromStorage->scale->toFormat->quality80"]
+    Gen --> Write["storeAs variants path + visibility"]
+    Write --> StreamGen["Image::toResponse + ETag/max-age public"]
 ```
 
 ### Flowchart — Signed Streaming (private)
@@ -141,24 +138,24 @@ classDiagram
     }
     class MediaUploadPayload {
         +UploadedFile file
-        +string collectionName
+        +String collectionName
     }
     class UploadMediaAction {
-        +handle(Payload, User) {media, url}
-        -storeProcessedImage()
-        -storeRaw()
-        -resolveVisibility()
+        +handle(Payload, User) map
+        +storeProcessedImage() map
+        +storeRaw() map
+        +resolveVisibility() String
     }
     class MediaUrlResolver {
-        +forOwner() string
-        +public() ?string
-        +signed() string
+        +forOwner() String
+        +public() String
+        +signed() String
     }
     class MediaResource {
-        +toArray() {id, collection, mime, size, visibility, url, original_name}
+        +toArray() map
     }
     class MediaVariantController {
-        +__invoke() Image Response
+        +__invoke() Response
     }
     class MediaFileController {
         +__invoke() Stream
