@@ -71,9 +71,10 @@ final readonly class UploadMediaAction
     private function storeProcessedImage(MediaUploadPayload $payload, User $user): array
     {
         $disk = config()->string('media.disk', 'public');
+        $visibility = $this->resolveVisibility($payload->collectionName);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
 
-        $fullPath = $image->store($payload->collectionName, $disk);
+        $fullPath = $image->store($payload->collectionName, $disk, ['visibility' => $visibility->value]);
 
         if ($fullPath === false) {
             throw new ImageException('The processed image could not be stored.');
@@ -105,11 +106,12 @@ final readonly class UploadMediaAction
     private function storeRaw(MediaUploadPayload $payload, User $user): array
     {
         $disk = config()->string('media.disk', 'public');
+        $visibility = $this->resolveVisibility($payload->collectionName);
         $file = $payload->file;
         $filename = $file->hashName();
         $fullPath = $payload->collectionName.'/'.$filename;
 
-        Storage::disk($disk)->putFileAs($payload->collectionName, $file, $filename);
+        Storage::disk($disk)->putFileAs($payload->collectionName, $file, $filename, ['visibility' => $visibility->value]);
 
         $media = $this->persistRow(
             payload: $payload,
@@ -122,6 +124,13 @@ final readonly class UploadMediaAction
         );
 
         return ['media' => $media, 'url' => Storage::disk($disk)->url($media->path)];
+    }
+
+    private function resolveVisibility(string $collectionName): MediaVisibilityEnum
+    {
+        return $collectionName === MediaCollection::Avatars->value
+            ? MediaVisibilityEnum::Public
+            : MediaVisibilityEnum::Private;
     }
 
     /**
@@ -138,9 +147,7 @@ final readonly class UploadMediaAction
                 'mime_type' => $mimeType,
                 'size' => $size,
                 'path' => $fullPath,
-                'visibility' => $payload->collectionName === MediaCollection::Avatars->value
-                    ? MediaVisibilityEnum::Public->value
-                    : MediaVisibilityEnum::Private->value,
+                'visibility' => $this->resolveVisibility($payload->collectionName)->value,
                 'meta' => $meta,
                 'uploaded_by' => $user->id,
             ]));

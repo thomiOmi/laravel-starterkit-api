@@ -25,5 +25,5 @@ return [
     |
     */
     'max_size' => 2048,
-    'mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif'],
+    'mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'],
 ];
