@@ -73,7 +73,7 @@ final readonly class MediaVariantController extends Controller
             ->scale(width: $width)
             ->toFormat($format)
             ->quality(80);
-        $image->storeAs(dirname($variantPath), basename($variantPath), $media->disk);
+        $image->storeAs(dirname($variantPath), basename($variantPath), $media->disk, ['visibility' => $media->visibility->value]);
 
         return $image->toResponse($variantRequest)
             ->setEtag($etag)
