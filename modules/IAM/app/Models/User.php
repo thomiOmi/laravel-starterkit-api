@@ -11,6 +11,7 @@ use App\Notifications\ResetPassword;
 use App\Notifications\VerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
@@ -24,6 +25,7 @@ use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\IAM\Builders\UserBuilder;
 use Modules\IAM\Database\Factories\UserFactory;
+use Modules\IAM\Observers\UserObserver;
 use Modules\IAM\Policies\UserPolicy;
 use SensitiveParameter;
 use Spatie\Permission\Models\Permission;
@@ -51,22 +53,11 @@ use Spatie\Permission\Traits\HasRoles;
 #[UseFactory(UserFactory::class)]
 #[UseEloquentBuilder(UserBuilder::class)]
 #[UsePolicy(UserPolicy::class)]
+#[ObservedBy([UserObserver::class])]
 class User extends Authenticatable implements Identity
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable, SoftDeletes;
-
-    /**
-     * The "booted" method of the model.
-     */
-    protected static function booted(): void
-    {
-        static::saved(function (self $user) {
-            if ($user->wasChanged('email_verified_at') && $user->email_verified_at !== null) {
-                $user->updateQuietly(['status' => UserStatusEnum::Active]);
-            }
-        });
-    }
 
     /**
      * Get the social accounts linked to this user.
