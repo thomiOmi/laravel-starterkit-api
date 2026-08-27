@@ -48,6 +48,7 @@ Add to `.env`:
 GOOGLE_CLIENT_ID=xxx
 GOOGLE_CLIENT_SECRET=yyy
 GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/auth/social/google/callback
+
 GITHUB_CLIENT_ID=xxx
 GITHUB_CLIENT_SECRET=yyy
 GITHUB_REDIRECT_URI=http://localhost:8000/api/v1/auth/social/github/callback
@@ -70,18 +71,18 @@ erDiagram
         ulid id PK
         string name
         string email UK
-        string password_nullable
-        string avatar_url_nullable
+        string password "nullable"
+        string avatar_url "nullable"
         enum status
-        datetime email_verified_at_nullable
-        datetime deleted_at_nullable
+        datetime email_verified_at "nullable"
+        datetime deleted_at "nullable"
     }
     social_accounts {
         ulid id PK
         ulid user_id FK
         string provider
         string provider_id
-        string avatar_nullable
+        string avatar "nullable"
     }
     roles {
         ulid id PK
@@ -105,25 +106,22 @@ erDiagram
 
 ```mermaid
 flowchart TD
-    A[POST /auth/register] --> B{self-registration enabled?}
-    B -- No --> B1[403 Problem]
-    B -- Yes --> C[Validate + Create User status=pending]
-    C --> D[Send VerifyEmail signed URL via APP_FRONTEND_URL]
-    E[GET /auth/email/verify/{id}/{hash}?signature=&expires] --> F{Valid signed URL?}
-    F -- No --> F1[403]
-    F -- Yes --> G[Mark email_verified_at, UserObserver -> status=Active]
-
-    H[POST /auth/login] --> H1[Validate credentials]
-    H1 --> H2[LoginAction -> Sanctum token abilities='*']
-    H2 --> H3[Return Bearer token]
-
-    I[POST /auth/forgot-password] --> I1[Send ResetPassword link via APP_FRONTEND_URL]
-    J[POST /auth/reset-password + token] --> J1[Reset password]
-
-    S1[GET /auth/social/{provider}/redirect] --> S2[SocialRedirectAction -> Socialite URL]
-    S2 --> S3[Browser -> Provider OAuth]
-    S3 --> S4[GET /auth/social/{provider}/callback]
-    S4 --> S5[SocialCallbackAction: match provider+id -> email -> create user password=null -> Sanctum token]
+    A["POST /auth/register"] --> B{"self-registration enabled?"}
+    B -- "No" --> B1["403 Problem"]
+    B -- "Yes" --> C["Validate + Create User status=pending"]
+    C --> D["Send VerifyEmail signed URL via APP_FRONTEND_URL"]
+    E["GET /auth/email/verify/{id}/{hash}?signature=&expires"] --> F{"Valid signed URL?"}
+    F -- "No" --> F1["403"]
+    F -- "Yes" --> G["Mark email_verified_at, UserObserver -> status=Active"]
+    H["POST /auth/login"] --> H1["Validate credentials"]
+    H1 --> H2["LoginAction -> Sanctum token abilities='*'"]
+    H2 --> H3["Return Bearer token"]
+    I["POST /auth/forgot-password"] --> I1["Send ResetPassword link via APP_FRONTEND_URL"]
+    J["POST /auth/reset-password + token"] --> J1["Reset password"]
+    S1["GET /auth/social/{provider}/redirect"] --> S2["SocialRedirectAction -> Socialite URL"]
+    S2 --> S3["Browser -> Provider OAuth"]
+    S3 --> S4["GET /auth/social/{provider}/callback"]
+    S4 --> S5["SocialCallbackAction: match provider+id -> email -> create user password=null -> Sanctum token"]
 ```
 
 ### Flowchart — RBAC
@@ -150,21 +148,22 @@ classDiagram
         +hasPassword() bool
     }
     class UpdateProfilePayload {
-        +string avatarMediaId
+        +String avatarMediaId
         +fromRequest() Payload
     }
     class UpdateProfileAction {
         +handle(Payload, User) User
-        -resolveAvatarUrl() via MediaUrlResolver
+        +resolveAvatarUrl() String
     }
     class UserResource {
-        +toArray() {avatar, status, roles}
+        +toArray() Array
     }
     class UserPolicy {
-        +view/delete()
+        +view() bool
+        +delete() bool
     }
     class UserBuilder {
-        +allowedFilters: name,email,status
+        +allowedFilters String
     }
     User --> UpdateProfilePayload
     UpdateProfilePayload --> UpdateProfileAction
