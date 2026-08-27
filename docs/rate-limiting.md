@@ -1,6 +1,6 @@
 # Rate Limiting
 
-Tiered rate limiting configured in `config/rate-limiting.php` and `AppServiceProvider::configureRateLimiting()`.
+Tiered rate limiting configured in `config/rate-limiting.php` and `AppServiceProvider::configureRateLimiting()`. Auth-specific throttle details (`auth` tier: login/register) are documented in [`modules/IAM/README.md`](../modules/IAM/README.md#rate-limiting) — this file covers global tiers.
 
 ## Tiers
 

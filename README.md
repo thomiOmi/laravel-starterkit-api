@@ -50,8 +50,8 @@ php artisan serve
 
 | Module | Description | Docs |
 |--------|-------------|------|
-| IAM | Authentication, RBAC, social auth, feature flags | [auth.md](docs/auth.md), [rbac.md](docs/rbac.md) |
-| Media | File uploads and media storage | [ADR-0015](docs/adr/0015-media-storage-module.md) |
+| IAM | Authentication, RBAC, social auth, feature flags | [README.md](modules/IAM/README.md) |
+| Media | File uploads, image variants, signed URLs | [README.md](modules/Media/README.md) |
 | Organization | Multi-tenancy (stancl/tenancy, single database), disabled by default | - |
 
 Modules are booted by `nwidart/laravel-modules` (see [ADR-0029](docs/adr/0029-nwidart-laravel-modules.md)): live activation status lives in `modules_statuses.json` (e.g. `{"iam": true}`), and a module only loads when its entry is `true` -- a directory under `modules/` that is not enabled is silently ignored (config, migrations, and routes are skipped). This also enables private modules: keep the directory on disk and in `.gitignore` without enabling it for customers. Create new modules with `php artisan module:make` (see [module-generator.md](docs/module-generator.md)).
@@ -123,12 +123,12 @@ tests/                   # Shared tests / global test helpers
 | [docs/adr/](docs/adr/README.md) | Architecture Decision Records (29 decisions, Nygard format) |
 | [docs/api-standard.md](docs/api-standard.md) | API response contract and envelope shapes |
 | [docs/architecture.md](docs/architecture.md) | Module structure and architecture patterns |
-| [docs/auth.md](docs/auth.md) | Authentication flows (Sanctum, email verification, password reset) |
 | [docs/coding-standards.md](docs/coding-standards.md) | Code style and language conventions |
 | [docs/module-generator.md](docs/module-generator.md) | `module:make` usage and module scaffolding |
-| [docs/rate-limiting.md](docs/rate-limiting.md) | Throttle configuration on auth routes |
-| [docs/rbac.md](docs/rbac.md) | Roles, permissions, policies (Spatie) |
+| [docs/rate-limiting.md](docs/rate-limiting.md) | Throttle configuration (global tiers; auth details in `modules/IAM/README.md`) |
 | [docs/testing.md](docs/testing.md) | Testing conventions: helpers, datasets, describe/it/group, TIA, probes |
+| [modules/IAM/README.md](modules/IAM/README.md) | IAM: authentication, RBAC, social login, devices |
+| [modules/Media/README.md](modules/Media/README.md) | Media: uploads, image variants, signed URLs |
 
 ## Testing
 
