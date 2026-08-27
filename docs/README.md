@@ -10,12 +10,12 @@ Canonical documentation for the Laravel Starterkit API. This directory is the so
 | [adr/](adr/README.md) | Architecture Decision Records: 29 decisions with rationale (Nygard format) |
 | [api-standard.md](api-standard.md) | API response contract and envelope shapes |
 | [architecture.md](architecture.md) | Module structure and architecture patterns |
-| [auth.md](auth.md) | Authentication flows (Sanctum, email verification, password reset) |
 | [coding-standards.md](coding-standards.md) | Code style and language conventions |
 | [module-generator.md](module-generator.md) | `module:make` usage and module scaffolding |
-| [rate-limiting.md](rate-limiting.md) | Throttle configuration on auth routes |
-| [rbac.md](rbac.md) | Roles, permissions, policies (Spatie) |
+| [rate-limiting.md](rate-limiting.md) | Throttle configuration (global tiers; auth details in `modules/IAM/README.md`) |
 | [testing.md](testing.md) | Testing conventions: helpers, datasets, describe/it/group, TIA, probes |
+| [../modules/IAM/README.md](../modules/IAM/README.md) | IAM: authentication, RBAC, social login, devices (migrated from `docs/auth.md` + `docs/rbac.md`) |
+| [../modules/Media/README.md](../modules/Media/README.md) | Media: uploads, image variants, signed URLs |
 
 ## Relation Between Documents
 
