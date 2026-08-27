@@ -39,6 +39,20 @@ final readonly class UploadMediaAction
      */
     public function handle(MediaUploadPayload $payload, User $user): array
     {
+        $isAvatars = $payload->collectionName === MediaCollection::Avatars->value;
+
+        if ($isAvatars) {
+            if (! in_array((string) $payload->file->getMimeType(), self::PROCESSABLE_MIMES, true)) {
+                return $this->dispatchUploaded($this->storeRawAvatars($payload, $user));
+            }
+
+            try {
+                return $this->dispatchUploaded($this->storeProcessedAvatars($payload, $user));
+            } catch (ImageException) {
+                return $this->dispatchUploaded($this->storeRawAvatars($payload, $user));
+            }
+        }
+
         if (! in_array((string) $payload->file->getMimeType(), self::PROCESSABLE_MIMES, true)) {
             return $this->dispatchUploaded($this->storeRaw($payload, $user));
         }
@@ -124,6 +138,129 @@ final readonly class UploadMediaAction
         );
 
         return ['media' => $media, 'url' => Storage::disk($disk)->url($media->path)];
+    }
+
+    /**
+     * @return array{media: Media, url: string|null}
+     */
+    private function storeProcessedAvatars(MediaUploadPayload $payload, User $user): array
+    {
+        $disk = config()->string('media.disk', 'public');
+        $visibility = $this->resolveVisibility($payload->collectionName);
+        $image = Image::fromUpload($payload->file)->orient()->optimize();
+
+        $newPath = $image->store($payload->collectionName, $disk, ['visibility' => $visibility->value]);
+
+        if ($newPath === false) {
+            throw new ImageException('The processed image could not be stored.');
+        }
+
+        /** @var array<string, mixed> $meta */
+        $meta = array_filter([
+            'original_name' => $payload->file->getClientOriginalName(),
+            'width' => $image->width(),
+            'height' => $image->height(),
+        ]);
+
+        $media = $this->persistAvatarsRow(
+            payload: $payload,
+            user: $user,
+            disk: $disk,
+            newPath: $newPath,
+            mimeType: $image->mimeType(),
+            size: (int) Storage::disk($disk)->size($newPath),
+            meta: $meta,
+        );
+
+        return ['media' => $media, 'url' => Storage::disk($disk)->url($media->path)];
+    }
+
+    /**
+     * @return array{media: Media, url: string|null}
+     */
+    private function storeRawAvatars(MediaUploadPayload $payload, User $user): array
+    {
+        $disk = config()->string('media.disk', 'public');
+        $visibility = $this->resolveVisibility($payload->collectionName);
+        $file = $payload->file;
+        $filename = $file->hashName();
+        $newPath = $payload->collectionName.'/'.$filename;
+
+        Storage::disk($disk)->putFileAs($payload->collectionName, $file, $filename, ['visibility' => $visibility->value]);
+
+        $media = $this->persistAvatarsRow(
+            payload: $payload,
+            user: $user,
+            disk: $disk,
+            newPath: $newPath,
+            mimeType: (string) $file->getMimeType(),
+            size: (int) $file->getSize(),
+            meta: ['original_name' => $file->getClientOriginalName()],
+        );
+
+        return ['media' => $media, 'url' => Storage::disk($disk)->url($media->path)];
+    }
+
+    /**
+     * @param  array<string, mixed>  $meta
+     *
+     * @throws Throwable
+     */
+    private function persistAvatarsRow(MediaUploadPayload $payload, User $user, string $disk, string $newPath, string $mimeType, int $size, array $meta): Media
+    {
+        $oldPath = null;
+        $oldId = null;
+
+        try {
+            $media = DB::transaction(function () use ($payload, $user, $disk, $newPath, $mimeType, $size, $meta, &$oldPath, &$oldId): Media {
+                $existing = Media::query()
+                    ->where('uploaded_by', $user->id)
+                    ->where('collection_name', MediaCollection::Avatars->value)
+                    ->lockForUpdate()
+                    ->first();
+
+                $oldPath = $existing?->path;
+                $oldId = $existing?->id;
+
+                if ($existing !== null) {
+                    $existing->update([
+                        'disk' => $disk,
+                        'mime_type' => $mimeType,
+                        'size' => $size,
+                        'path' => $newPath,
+                        'visibility' => $this->resolveVisibility($payload->collectionName)->value,
+                        'meta' => $meta,
+                    ]);
+
+                    return $existing->refresh();
+                }
+
+                return Media::query()->create([
+                    'collection_name' => $payload->collectionName,
+                    'disk' => $disk,
+                    'mime_type' => $mimeType,
+                    'size' => $size,
+                    'path' => $newPath,
+                    'visibility' => $this->resolveVisibility($payload->collectionName)->value,
+                    'meta' => $meta,
+                    'uploaded_by' => $user->id,
+                ]);
+            });
+        } catch (Throwable $exception) {
+            Storage::disk($disk)->delete($newPath);
+
+            throw $exception;
+        }
+
+        if ($oldPath !== null && $oldPath !== $newPath) {
+            Storage::disk($disk)->delete($oldPath);
+        }
+
+        if ($oldId !== null) {
+            Storage::disk($disk)->deleteDirectory('variants/'.$oldId);
+        }
+
+        return $media;
     }
 
     private function resolveVisibility(string $collectionName): MediaVisibilityEnum
