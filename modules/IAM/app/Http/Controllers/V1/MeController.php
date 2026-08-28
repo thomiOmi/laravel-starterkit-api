@@ -21,7 +21,7 @@ final readonly class MeController extends Controller
      */
     public function __invoke(#[CurrentUser] User $currentUser): SuccessResponse
     {
-        $currentUser->load('roles', 'permissions');
+        $currentUser->load(['roles:id,name,guard_name', 'permissions:id,name']);
 
         return new SuccessResponse(
             data: new UserResource($currentUser),

@@ -33,7 +33,7 @@ final readonly class LoginController extends Controller
             ip: $request->ip(),
             userAgent: $request->userAgent(),
         );
-        $result['user']->load('roles', 'permissions');
+        $result['user']->load(['roles:id,name,guard_name', 'permissions:id,name']);
 
         return new SuccessResponse(
             data: [

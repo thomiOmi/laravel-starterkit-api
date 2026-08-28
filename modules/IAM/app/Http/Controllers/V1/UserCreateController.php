@@ -26,7 +26,7 @@ final readonly class UserCreateController extends Controller
     public function __invoke(UserRequest $request): SuccessResponse
     {
         $user = $this->createUser->handle($request->payload());
-        $user->load('roles', 'permissions');
+        $user->load(['roles:id,name,guard_name', 'permissions:id,name']);
 
         return new SuccessResponse(
             data: new UserResource($user),

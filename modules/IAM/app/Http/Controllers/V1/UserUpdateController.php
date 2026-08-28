@@ -25,7 +25,7 @@ final readonly class UserUpdateController extends Controller
     public function __invoke(UserRequest $request, User $user): SuccessResponse
     {
         $userModel = $this->updateUser->handle($user, $request->payload());
-        $userModel->load('roles', 'permissions');
+        $userModel->load(['roles:id,name,guard_name', 'permissions:id,name']);
 
         return new SuccessResponse(
             data: new UserResource($userModel),
