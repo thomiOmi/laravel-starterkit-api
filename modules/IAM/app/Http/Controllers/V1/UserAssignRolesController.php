@@ -26,7 +26,7 @@ final readonly class UserAssignRolesController extends Controller
         $roles = $request->validated('roles');
 
         $userModel = $this->assignRoles->handle($user, $roles);
-        $userModel->load('roles', 'permissions');
+        $userModel->load(['roles:id,name,guard_name', 'permissions:id,name']);
 
         return new SuccessResponse(
             data: new UserResource($userModel),

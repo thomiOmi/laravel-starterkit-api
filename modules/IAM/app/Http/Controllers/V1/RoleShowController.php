@@ -19,7 +19,7 @@ final readonly class RoleShowController extends Controller
      */
     public function __invoke(Request $request, Role $role): SuccessResponse
     {
-        $role->load('permissions');
+        $role->load(['permissions:id,name']);
 
         return new SuccessResponse(
             data: new RoleResource($role),

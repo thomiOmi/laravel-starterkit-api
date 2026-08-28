@@ -26,7 +26,7 @@ final readonly class RoleCreateController extends Controller
     public function __invoke(RoleRequest $request): SuccessResponse
     {
         $role = $this->createRole->handle($request->payload());
-        $role->load('permissions');
+        $role->load(['permissions:id,name']);
 
         return new SuccessResponse(
             data: new RoleResource($role),
