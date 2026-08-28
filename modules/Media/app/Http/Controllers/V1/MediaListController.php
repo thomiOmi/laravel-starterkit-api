@@ -23,6 +23,18 @@ final readonly class MediaListController extends Controller
     public function __invoke(MediaListRequest $request, #[CurrentUser] User $currentUser): SuccessResponse
     {
         $media = Media::query()
+            ->select([
+                'id',
+                'collection_name',
+                'mime_type',
+                'size',
+                'visibility',
+                'disk',
+                'path',
+                'meta',
+                'uploaded_by',
+                'created_at',
+            ])
             ->where('uploaded_by', $currentUser->id)
             ->allowedSearch()
             ->allowedFilters()
