@@ -16,32 +16,21 @@ use Modules\Media\Models\Media;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Throwable;
 
-/**
- * Store an uploaded file on the configured disk and persist a Media row.
- *
- * Decodable images are normalized through the first-party image pipeline:
- * EXIF orientation is applied and the file is re-encoded as WebP, so the
- * persisted mime_type and size always describe the processed file. Files
- * outside the processable set are stored untouched.
- */
 final readonly class UploadMediaAction
 {
-    /**
-     * MIME types the GD/Imagick pipeline is able to decode.
-     */
     private const array PROCESSABLE_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
 
     /**
      * @return array{media: Media, url: string|null}
      *
-     * @throws Throwable When the media row cannot be persisted; the stored
-     *                   file is removed again so no orphan is left behind.
+     * @throws Throwable
      */
     public function handle(MediaUploadPayload $payload, User $user): array
     {
-        $isAvatars = $payload->collectionName === MediaCollection::Avatars->value;
+        $collection = MediaCollection::tryFrom($payload->collectionName);
+        $isSingle = $collection?->isSingleFile() ?? false;
 
-        if ($isAvatars) {
+        if ($isSingle) {
             if (! in_array((string) $payload->file->getMimeType(), self::PROCESSABLE_MIMES, true)) {
                 return $this->dispatchUploaded($this->storeRawAvatars($payload, $user));
             }
@@ -60,21 +49,20 @@ final readonly class UploadMediaAction
         try {
             return $this->dispatchUploaded($this->storeProcessedImage($payload, $user));
         } catch (ImageException) {
-            // Undecodable bytes that still passed extension validation are
-            // stored untouched rather than failing the whole upload.
             return $this->dispatchUploaded($this->storeRaw($payload, $user));
         }
     }
 
     /**
-     * Announce a finished upload to listeners.
-     *
      * @param  array{media: Media, url: string|null}  $result
      * @return array{media: Media, url: string|null}
      */
     private function dispatchUploaded(array $result): array
     {
-        event(new MediaUploaded($result['media']));
+        /** @var Media $media */
+        $media = $result['media'];
+
+        event(new MediaUploaded($media));
 
         return $result;
     }
@@ -230,6 +218,9 @@ final readonly class UploadMediaAction
                         'path' => $newPath,
                         'visibility' => $this->resolveVisibility($payload->collectionName)->value,
                         'meta' => $meta,
+                        'model_type' => User::class,
+                        'model_id' => $user->id,
+                        'order_column' => 1,
                     ]);
 
                     return $existing->refresh();
@@ -244,6 +235,9 @@ final readonly class UploadMediaAction
                     'visibility' => $this->resolveVisibility($payload->collectionName)->value,
                     'meta' => $meta,
                     'uploaded_by' => $user->id,
+                    'model_type' => User::class,
+                    'model_id' => $user->id,
+                    'order_column' => 1,
                 ]);
             });
         } catch (Throwable $exception) {
@@ -265,9 +259,13 @@ final readonly class UploadMediaAction
 
     private function resolveVisibility(string $collectionName): MediaVisibilityEnum
     {
-        return $collectionName === MediaCollection::Avatars->value
-            ? MediaVisibilityEnum::Public
-            : MediaVisibilityEnum::Private;
+        $collection = MediaCollection::tryFrom($collectionName);
+
+        if ($collection !== null && $collection->isSingleFile()) {
+            return MediaVisibilityEnum::Public;
+        }
+
+        return MediaVisibilityEnum::Private;
     }
 
     /**
@@ -278,16 +276,29 @@ final readonly class UploadMediaAction
     private function persistRow(MediaUploadPayload $payload, User $user, string $disk, string $fullPath, string $mimeType, int $size, array $meta): Media
     {
         try {
-            return DB::transaction(fn (): Media => Media::query()->create([
-                'collection_name' => $payload->collectionName,
-                'disk' => $disk,
-                'mime_type' => $mimeType,
-                'size' => $size,
-                'path' => $fullPath,
-                'visibility' => $this->resolveVisibility($payload->collectionName)->value,
-                'meta' => $meta,
-                'uploaded_by' => $user->id,
-            ]));
+            return DB::transaction(function () use ($payload, $user, $disk, $fullPath, $mimeType, $size, $meta): Media {
+                $maxOrder = Media::query()
+                    ->where('model_type', User::class)
+                    ->where('model_id', $user->id)
+                    ->where('collection_name', $payload->collectionName)
+                    ->max('order_column');
+
+                $orderColumn = is_int($maxOrder) ? $maxOrder + 1 : 1;
+
+                return Media::query()->create([
+                    'collection_name' => $payload->collectionName,
+                    'disk' => $disk,
+                    'mime_type' => $mimeType,
+                    'size' => $size,
+                    'path' => $fullPath,
+                    'visibility' => $this->resolveVisibility($payload->collectionName)->value,
+                    'meta' => $meta,
+                    'uploaded_by' => $user->id,
+                    'model_type' => User::class,
+                    'model_id' => $user->id,
+                    'order_column' => $orderColumn,
+                ]);
+            });
         } catch (Throwable $exception) {
             Storage::disk($disk)->delete($fullPath);
 

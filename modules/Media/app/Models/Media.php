@@ -10,9 +10,11 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Modules\IAM\Models\User;
 use Modules\Media\Builders\MediaBuilder;
 use Modules\Media\Database\Factories\MediaFactory;
@@ -28,9 +30,13 @@ use Modules\Media\Policies\MediaPolicy;
  * @property MediaVisibilityEnum $visibility Who may access the media.
  * @property array<string, mixed>|null $meta Free-form metadata (original name, dimensions, etc.).
  * @property string|null $uploaded_by The ULID of the owning user.
+ * @property string|null $model_type The polymorphic model type.
+ * @property string|null $model_id The polymorphic model identifier.
+ * @property int|null $order_column The sort order within the collection.
  * @property-read User|null $uploadedBy The user who uploaded the media.
+ * @property-read Model|Model|null $model The owning model.
  */
-#[Fillable(['collection_name', 'disk', 'mime_type', 'size', 'path', 'visibility', 'meta', 'uploaded_by'])]
+#[Fillable(['collection_name', 'disk', 'mime_type', 'size', 'path', 'visibility', 'meta', 'uploaded_by', 'model_type', 'model_id', 'order_column'])]
 #[UseEloquentBuilder(MediaBuilder::class)]
 #[UseFactory(MediaFactory::class)]
 #[UsePolicy(MediaPolicy::class)]
@@ -47,6 +53,27 @@ class Media extends Model
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /**
+     * Get the owning model of the media.
+     *
+     * @return MorphTo<Model, $this>
+     */
+    public function model(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    /**
+     * Scope a query to order by the collection order.
+     *
+     * @param  Builder<Media>  $query
+     * @return Builder<Media>
+     */
+    protected function scopeOrdered(Builder $query): Builder
+    {
+        return $query->orderBy('order_column');
     }
 
     /**
@@ -68,6 +95,7 @@ class Media extends Model
             'size' => 'integer',
             'visibility' => MediaVisibilityEnum::class,
             'meta' => 'array',
+            'order_column' => 'integer',
         ];
     }
 }
