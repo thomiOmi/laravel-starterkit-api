@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Uri;
 use Modules\IAM\Models\User;
 use Modules\Media\Builders\MediaBuilder;
 use Modules\Media\Database\Factories\MediaFactory;
@@ -82,6 +84,62 @@ class Media extends Model
     public function isOwnedBy(string|int|null $userId): bool
     {
         return $userId !== null && $this->uploaded_by === (string) $userId;
+    }
+
+    /**
+     * Get the path to the media file, optionally for a conversion.
+     */
+    public function getPath(string $conversion = ''): string
+    {
+        if ($conversion === '') {
+            return $this->path;
+        }
+
+        return dirname($this->path).'/conversions/'.$conversion.'/'.basename($this->path);
+    }
+
+    /**
+     * Get the URL to the media file.
+     */
+    public function getUrl(string $conversion = ''): string
+    {
+        return Storage::disk($this->disk)->url($this->getPath($conversion));
+    }
+
+    /**
+     * Get the full URL to the media file.
+     */
+    public function getFullUrl(string $conversion = ''): string
+    {
+        return $this->getUrl($conversion);
+    }
+
+    /**
+     * Get a temporary signed URL for the media.
+     */
+    public function getTemporaryUrl(\DateTimeInterface $expires, string $conversion = ''): string
+    {
+        return (string) Uri::temporarySignedRoute(
+            'api.v1.media.file',
+            $expires,
+            ['media' => $this->id],
+        );
+    }
+
+    /**
+     * Get a custom property from the meta.
+     */
+    public function getCustomProperty(string $name, mixed $default = null): mixed
+    {
+        return data_get($this->meta, $name, $default);
+    }
+
+    /**
+     * Determine if a conversion has been generated.
+     */
+    public function hasGeneratedConversion(string $conversion): bool
+    {
+        return Storage::disk($this->disk)->exists($this->getPath($conversion));
     }
 
     /**

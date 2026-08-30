@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Media\Http\Controllers\V1;
 
-use App\Contracts\MediaUrlResolver;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -16,10 +15,6 @@ use Modules\Media\Models\Media;
 
 final readonly class MediaShowController extends Controller
 {
-    public function __construct(
-        private MediaUrlResolver $mediaUrls,
-    ) {}
-
     /**
      * Display the media item.
      *
@@ -35,7 +30,7 @@ final readonly class MediaShowController extends Controller
 
         $expires = $showRequest->expiresMinutes();
         $url = $expires !== null
-            ? $this->mediaUrls->signed($media->id, $expires)
+            ? $media->getTemporaryUrl(now()->addMinutes($expires))
             : null;
 
         return new SuccessResponse(

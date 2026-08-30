@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Contracts\MediaUrlResolver;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Uri;
@@ -20,7 +19,7 @@ describe('GET /api/v1/media/{media}/file', function () {
         $media = MediaFactory::new()->createOne(['mime_type' => 'image/png']);
         Storage::disk($media->disk)->put($media->path, (string) UploadedFile::fake()->image('private.png')->getContent());
 
-        $url = app(MediaUrlResolver::class)->signed($media->id, 15);
+        $url = $media->getTemporaryUrl(now()->addMinutes(15));
 
         $response = $this->get($url);
 
@@ -33,7 +32,7 @@ describe('GET /api/v1/media/{media}/file', function () {
         $media = MediaFactory::new()->createOne();
         Storage::disk($media->disk)->put($media->path, 'content');
 
-        $url = app(MediaUrlResolver::class)->signed($media->id, 15);
+        $url = $media->getTemporaryUrl(now()->addMinutes(15));
         $tampered = str_replace('signature=', 'signature=x', $url);
 
         $this->get($tampered)->assertForbidden();
@@ -61,7 +60,7 @@ describe('GET /api/v1/media/{media}/file', function () {
     it('returns 404 when the underlying file is missing', function () {
         $media = MediaFactory::new()->createOne();
 
-        $url = app(MediaUrlResolver::class)->signed($media->id, 15);
+        $url = $media->getTemporaryUrl(now()->addMinutes(15));
 
         assertProblemResponse($this->get($url), 404, 'resource-not-found');
     });

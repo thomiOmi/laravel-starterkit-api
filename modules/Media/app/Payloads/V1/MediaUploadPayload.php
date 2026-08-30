@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Media\Payloads\V1;
 
-use App\Enums\MediaCollection;
 use Illuminate\Http\UploadedFile;
 use Modules\Media\Http\Requests\V1\MediaUploadRequest;
 
@@ -24,7 +23,7 @@ final readonly class MediaUploadPayload
 
         return new self(
             file: $request->file('file'),
-            collectionName: $collection !== '' ? $collection : MediaCollection::Default->value,
+            collectionName: $collection !== '' ? $collection : 'default',
         );
     }
 }

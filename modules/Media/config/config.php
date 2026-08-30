@@ -1,9 +1,12 @@
 <?php
 
 declare(strict_types=1);
+use Modules\Media\Models\Media;
 
 return [
     'name' => 'Media',
+
+    'media_model' => Media::class,
 
     /*
     |--------------------------------------------------------------------------

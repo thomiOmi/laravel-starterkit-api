@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Media\Actions;
 
-use App\Enums\MediaCollection;
 use App\Enums\MediaVisibilityEnum;
 use Illuminate\Image\ImageException;
 use Illuminate\Support\Facades\DB;
@@ -27,8 +26,7 @@ final readonly class UploadMediaAction
      */
     public function handle(MediaUploadPayload $payload, User $user): array
     {
-        $collection = MediaCollection::tryFrom($payload->collectionName);
-        $isSingle = $collection?->isSingleFile() ?? false;
+        $isSingle = $payload->collectionName === 'avatars';
 
         if ($isSingle) {
             if (! in_array((string) $payload->file->getMimeType(), self::PROCESSABLE_MIMES, true)) {
@@ -203,7 +201,7 @@ final readonly class UploadMediaAction
             $media = DB::transaction(function () use ($payload, $user, $disk, $newPath, $mimeType, $size, $meta, &$oldPath, &$oldId): Media {
                 $existing = Media::query()
                     ->where('uploaded_by', $user->id)
-                    ->where('collection_name', MediaCollection::Avatars->value)
+                    ->where('collection_name', 'avatars')
                     ->lockForUpdate()
                     ->first();
 
@@ -259,9 +257,7 @@ final readonly class UploadMediaAction
 
     private function resolveVisibility(string $collectionName): MediaVisibilityEnum
     {
-        $collection = MediaCollection::tryFrom($collectionName);
-
-        if ($collection !== null && $collection->isSingleFile()) {
+        if ($collectionName === 'avatars') {
             return MediaVisibilityEnum::Public;
         }
 

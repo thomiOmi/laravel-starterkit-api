@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\IAM\Models;
 
 use App\Concerns\HasDefaultBehavior;
+use App\Concerns\InteractsWithMedia;
+use App\Contracts\HasMedia;
 use App\Contracts\Identity;
 use App\Enums\UserStatusEnum;
 use App\Notifications\ResetPassword;
@@ -54,10 +56,10 @@ use Spatie\Permission\Traits\HasRoles;
 #[UseEloquentBuilder(UserBuilder::class)]
 #[UsePolicy(UserPolicy::class)]
 #[ObservedBy([UserObserver::class])]
-class User extends Authenticatable implements Identity
+class User extends Authenticatable implements HasMedia, Identity
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable, SoftDeletes;
+    use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, InteractsWithMedia, Notifiable, SoftDeletes;
 
     /**
      * Get the social accounts linked to this user.
@@ -67,6 +69,16 @@ class User extends Authenticatable implements Identity
     public function socialAccounts(): HasMany
     {
         return $this->hasMany(SocialAccount::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatars');
+    }
+
+    public function registerMediaConversions(mixed $media = null): void
+    {
+        //
     }
 
     /**

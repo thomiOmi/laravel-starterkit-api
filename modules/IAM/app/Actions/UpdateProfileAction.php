@@ -4,24 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Contracts\MediaUrlResolver;
-use App\Enums\MediaCollection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UpdateProfilePayload;
 
 final readonly class UpdateProfileAction
 {
-    /**
-     * @param  MediaUrlResolver|null  $mediaUrls  The cross-module media URL
-     *                                            resolver, when the Media
-     *                                            module is present. Null
-     *                                            disables the avatar
-     *                                            feature.
-     */
-    public function __construct(
-        private ?MediaUrlResolver $mediaUrls = null,
-    ) {}
+    public function __construct() {}
 
     /**
      * @return array{user: User, verification_required: bool}
@@ -58,10 +49,21 @@ final readonly class UpdateProfileAction
 
     private function resolveAvatarUrl(string $mediaId, User $user): string
     {
-        if ($this->mediaUrls === null) {
+        $media = DB::table('media')->where('id', $mediaId)->first();
+
+        if (
+            $media === null
+            || ! is_string($media->uploaded_by)
+            || ! is_string($media->collection_name)
+            || ! is_string($media->disk)
+            || ! is_string($media->path)
+            || $media->uploaded_by !== $user->id
+            || $media->collection_name !== 'avatars'
+            || $media->disk !== config()->string('media.disk', 'public')
+        ) {
             throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
 
-        return $this->mediaUrls->forOwner($mediaId, $user, MediaCollection::Avatars->value);
+        return Storage::disk($media->disk)->url($media->path);
     }
 }

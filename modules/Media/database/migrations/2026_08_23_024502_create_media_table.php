@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('visibility')->default('private');
             $table->json('meta')->nullable();
             $table->foreignUlid('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->nullableUlidMorphs('model');
+            $table->smallInteger('order_column')->nullable()->index();
             $table->timestamps();
         });
     }
