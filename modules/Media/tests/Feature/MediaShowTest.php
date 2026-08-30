@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
-use Modules\IAM\Models\Permission;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Http\Controllers\V1\MediaShowController;
 
@@ -12,7 +13,7 @@ covers(MediaShowController::class);
 describe('GET /api/v1/media/{media}', function () {
     it('allows the owner to view without any permission', function () {
         $user = loginAsUser();
-        $media = MediaFactory::new()->forUser($user)->createOne();
+        $media = MediaFactory::new()->forModel($user)->createOne();
 
         $response = $this->getJson("/api/v1/media/{$media->id}");
 
@@ -21,7 +22,13 @@ describe('GET /api/v1/media/{media}', function () {
     });
 
     it('allows a viewer with the view permission', function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::MediaView->value, 'guard_name' => 'sanctum']);
+        DB::table('permissions')->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'name' => PermissionEnum::MediaView->value,
+            'guard_name' => 'sanctum',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
         $viewer = loginAsUser();
         $viewer->givePermissionTo(PermissionEnum::MediaView->value);
         $media = MediaFactory::new()->createOne();
@@ -50,7 +57,7 @@ describe('GET /api/v1/media/{media}', function () {
 
     it('swaps the url for a signed link when expires is passed', function () {
         $user = loginAsUser();
-        $media = MediaFactory::new()->forUser($user)->createOne();
+        $media = MediaFactory::new()->forModel($user)->createOne();
 
         $response = $this->getJson("/api/v1/media/{$media->id}?expires=30");
 
@@ -61,7 +68,7 @@ describe('GET /api/v1/media/{media}', function () {
 
     it('keeps the private url null without an expires parameter', function () {
         $user = loginAsUser();
-        $media = MediaFactory::new()->forUser($user)->createOne();
+        $media = MediaFactory::new()->forModel($user)->createOne();
 
         $response = $this->getJson("/api/v1/media/{$media->id}");
 
@@ -71,7 +78,7 @@ describe('GET /api/v1/media/{media}', function () {
 
     it('rejects out-of-bounds expiry values', function (int $expires) {
         $user = loginAsUser();
-        $media = MediaFactory::new()->forUser($user)->createOne();
+        $media = MediaFactory::new()->forModel($user)->createOne();
 
         $response = $this->getJson("/api/v1/media/{$media->id}?expires={$expires}");
 

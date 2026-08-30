@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Media\Providers;
 
-use App\Contracts\MediaUrlResolver;
 use Illuminate\Console\Command;
-use Modules\Media\Services\MediaUrlResolver as MediaUrlResolverService;
+use Modules\Media\Contracts\MediaUrlGenerator;
+use Modules\Media\Services\MediaUrlGeneratorService;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class MediaServiceProvider extends ModuleServiceProvider
@@ -46,6 +46,6 @@ class MediaServiceProvider extends ModuleServiceProvider
     {
         parent::register();
 
-        $this->app->singleton(MediaUrlResolver::class, MediaUrlResolverService::class);
+        $this->app->singleton(MediaUrlGenerator::class, MediaUrlGeneratorService::class);
     }
 }

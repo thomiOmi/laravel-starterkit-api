@@ -21,6 +21,7 @@ class MediaBuilder extends BaseQueryBuilder
     protected array $allowedSorts = [
         'created_at',
         'size',
+        'order_column',
     ];
 
     /** @var array<int, string> */
@@ -32,6 +33,7 @@ class MediaBuilder extends BaseQueryBuilder
         'size',
         'path',
         'visibility',
+        'order_column',
         'created_at',
     ];
 

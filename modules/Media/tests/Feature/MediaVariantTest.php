@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Modules\IAM\Models\Permission;
-use Modules\IAM\Models\User;
+use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Http\Controllers\V1\MediaVariantController;
 use Modules\Media\Models\Media;
@@ -16,16 +17,22 @@ covers(MediaVariantController::class);
 describe('GET /api/v1/media/{media}/variant', function () {
     beforeEach(function () {
         Storage::fake('public');
-        Permission::firstOrCreate(['name' => PermissionEnum::MediaView->value, 'guard_name' => 'sanctum']);
+        DB::table('permissions')->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'name' => PermissionEnum::MediaView->value,
+            'guard_name' => 'sanctum',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     });
 
     /**
      * Persist a media row plus real decodable bytes on the fake public disk.
      */
-    function seedImageMedia(User $owner, int $width = 200, int $height = 100): Media
+    function seedImageMedia(Model $owner, int $width = 200, int $height = 100): Media
     {
         /** @var Media $media */
-        $media = MediaFactory::new()->forUser($owner)->createOne(['mime_type' => 'image/jpeg']);
+        $media = MediaFactory::new()->forModel($owner)->createOne(['mime_type' => 'image/jpeg']);
 
         $file = UploadedFile::fake()->image('seed.jpg', $width, $height);
         Storage::disk('public')->put($media->path, (string) $file->getContent());
@@ -130,7 +137,7 @@ describe('GET /api/v1/media/{media}/variant', function () {
 
     it('rejects non-image media with a problem response', function () {
         $user = loginAsUser();
-        $media = MediaFactory::new()->forUser($user)->createOne(['mime_type' => 'application/pdf']);
+        $media = MediaFactory::new()->forModel($user)->createOne(['mime_type' => 'application/pdf']);
         Storage::disk('public')->put($media->path, "%PDF-1.4\n");
 
         $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=64");
@@ -144,7 +151,7 @@ describe('GET /api/v1/media/{media}/variant', function () {
         // Switch the acting user to someone unrelated to the media row.
         loginAsUser();
 
-        $media = Media::query()->where('uploaded_by', $owner->id)->sole();
+        $media = Media::query()->where('model_id', $owner->id)->sole();
         $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=64");
 
         assertProblemResponse($response, 403);

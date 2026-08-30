@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
-use Modules\IAM\Models\Permission;
+use Illuminate\Support\Str;
 use Modules\Media\Events\MediaUploaded;
 use Modules\Media\Http\Controllers\V1\MediaUploadController;
 use Modules\Media\Models\Media;
@@ -16,7 +17,13 @@ covers(MediaUploadController::class);
 describe('POST /api/v1/media', function () {
     beforeEach(function () {
         Storage::fake('public');
-        Permission::firstOrCreate(['name' => PermissionEnum::MediaCreate->value, 'guard_name' => 'sanctum']);
+        DB::table('permissions')->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'name' => PermissionEnum::MediaCreate->value,
+            'guard_name' => 'sanctum',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     });
 
     it('stores the upload and returns the created media', function () {
@@ -32,7 +39,8 @@ describe('POST /api/v1/media', function () {
         assertSuccessResponse($response, 201);
         expect($response->json('data.media.collection_name'))->toBe('avatars')
             ->and($response->json('data.media.original_name'))->toBe('photo.png')
-            ->and($response->json('data.media.uploaded_by'))->toBe($user->id)
+            ->and($response->json('data.media.uploaded_by_id'))->toBe($user->id)
+            ->and($response->json('data.media.model_id'))->toBe($user->id)
             ->and($response->json('data.url'))->toEndWith('.webp');
 
         $media = Media::query()->sole();
