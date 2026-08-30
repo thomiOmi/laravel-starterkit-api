@@ -17,7 +17,8 @@ final readonly class SocialUnlinkAction
             throw new InvalidArgumentException(__('validation.social_not_linked'));
         }
 
-        if (! $user->hasPassword() && $user->socialAccounts()->count() <= 1) {
+        // Check if user has other social accounts via EXISTS query instead of full count aggregation.
+        if (! $user->hasPassword() && ! $user->socialAccounts()->where('id', '!=', $account->id)->exists()) {
             throw new InvalidArgumentException(__('auth.social_unlink_blocked'));
         }
 
