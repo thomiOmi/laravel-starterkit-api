@@ -26,7 +26,7 @@ final readonly class UserShowController extends Controller
             );
         }
 
-        $user->load('roles', 'permissions');
+        $user->load(['roles:id,name,guard_name', 'permissions:id,name']);
 
         return new SuccessResponse(
             data: new UserResource($user),

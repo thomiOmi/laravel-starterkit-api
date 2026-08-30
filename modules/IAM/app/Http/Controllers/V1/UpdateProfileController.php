@@ -26,7 +26,7 @@ final readonly class UpdateProfileController extends Controller
     {
         $result = $this->updateProfile->handle($currentUser, UpdateProfilePayload::fromRequest($request));
 
-        $result['user']->load('roles', 'permissions');
+        $result['user']->load(['roles:id,name,guard_name', 'permissions:id,name']);
 
         return new SuccessResponse(
             data: [
