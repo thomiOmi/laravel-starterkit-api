@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Media\Http\Controllers\V1;
 
+use App\Contracts\Identity;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -11,7 +12,6 @@ use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
-use Modules\IAM\Models\User;
 use Modules\Media\Http\Requests\V1\MediaVariantRequest;
 use Modules\Media\Models\Media;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,7 +34,7 @@ final readonly class MediaVariantController extends Controller
      * old ones fall out of use. Later requests are served straight from
      * disk. Responses carry an ETag plus one-year public max-age.
      */
-    public function __invoke(MediaVariantRequest $variantRequest, #[CurrentUser] User $currentUser, Media $media): HttpResponse|StreamedResponse|ProblemResponse
+    public function __invoke(MediaVariantRequest $variantRequest, #[CurrentUser] Identity $currentUser, Media $media): HttpResponse|StreamedResponse|ProblemResponse
     {
         Gate::authorize('view', $media);
 

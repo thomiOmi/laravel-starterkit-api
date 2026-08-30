@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Media\Http\Controllers\V1;
 
+use App\Contracts\Identity;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
-use Modules\IAM\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Modules\Media\Actions\UploadMediaAction;
 use Modules\Media\Http\Requests\V1\MediaUploadRequest;
 use Modules\Media\Http\Resources\MediaResource;
@@ -24,9 +25,11 @@ final readonly class MediaUploadController extends Controller
      *
      * @return SuccessResponse<array{media: MediaResource, url: string|null}>
      */
-    public function __invoke(MediaUploadRequest $request, #[CurrentUser] User $currentUser): SuccessResponse
+    public function __invoke(MediaUploadRequest $request, #[CurrentUser] Identity $currentUser): SuccessResponse
     {
-        $result = $this->uploadMedia->handle($request->payload(), $currentUser);
+        abort_unless($currentUser instanceof Model, Response::HTTP_INTERNAL_SERVER_ERROR, 'Invalid user model');
+
+        $result = $this->uploadMedia->handle($request->payload(), $currentUser, $currentUser);
 
         return new SuccessResponse(
             data: [

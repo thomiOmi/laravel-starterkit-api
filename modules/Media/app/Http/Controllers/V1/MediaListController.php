@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Media\Http\Controllers\V1;
 
+use App\Contracts\Identity;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Modules\IAM\Models\User;
 use Modules\Media\Http\Requests\V1\MediaListRequest;
 use Modules\Media\Http\Resources\MediaResource;
 use Modules\Media\Models\Media;
@@ -20,10 +21,13 @@ final readonly class MediaListController extends Controller
      *
      * @return SuccessResponse<AnonymousResourceCollection>
      */
-    public function __invoke(MediaListRequest $request, #[CurrentUser] User $currentUser): SuccessResponse
+    public function __invoke(MediaListRequest $request, #[CurrentUser] Identity $currentUser): SuccessResponse
     {
+        abort_unless($currentUser instanceof Model, 500, 'Invalid user model');
+
         $media = Media::query()
-            ->where('uploaded_by', $currentUser->id)
+            ->where('model_type', $currentUser->getMorphClass())
+            ->where('model_id', $currentUser->getKey())
             ->allowedSearch()
             ->allowedFilters()
             ->allowedSorts()
