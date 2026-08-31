@@ -229,6 +229,18 @@ final readonly class UploadMediaAction
                     }
                 }
 
+                $nextOrder = 1;
+
+                if (! $isSingle) {
+                    $maxOrder = Media::query()
+                        ->where('model_type', $owner->getMorphClass())
+                        ->where('model_id', $owner->getKey())
+                        ->where('collection_name', $payload->collectionName)
+                        ->max('order_column');
+
+                    $nextOrder = is_numeric($maxOrder) ? ((int) $maxOrder + 1) : 1;
+                }
+
                 $media = Media::query()->create([
                     'collection_name' => $payload->collectionName,
                     'disk' => $disk,
@@ -241,7 +253,7 @@ final readonly class UploadMediaAction
                     'sha256' => hash_file('sha256', $file->getRealPath()),
                     'meta' => $meta,
                     'custom_properties' => null,
-                    'order_column' => 0,
+                    'order_column' => $nextOrder,
                 ]);
 
                 $media->model()->associate($owner);

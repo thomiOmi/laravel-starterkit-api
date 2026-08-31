@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\UploadedFile;
 use Modules\Media\Actions\DeleteMediaAction;
+use Modules\Media\Actions\ReorderMediaAction;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\PendingMedia;
 
@@ -96,5 +97,19 @@ trait InteractsWithMedia
         }
 
         return $count;
+    }
+
+    /**
+     * Reorder media within a collection.
+     *
+     * @param  array<int, string>  $orderedIds
+     */
+    public function reorderMedia(string $collection, array $orderedIds): void
+    {
+        if (! $this instanceof Model) {
+            throw new \LogicException('InteractsWithMedia can only be used on Eloquent models.');
+        }
+
+        app(ReorderMediaAction::class)->handle($this, $collection, $orderedIds);
     }
 }

@@ -1,6 +1,6 @@
-# Media Module — User-Uploaded Media Storage
+# Media Module — Polymorphic Media Library (Spatie-inspired)
 
-> Lightweight custom module inspired by Spatie Media Library (no heavy dependency chain). Handles file uploads, first-party image processing (Intervention Image v4), on-the-fly variants with derived-file caching, and signed streaming for private files. Requires `IAM` (`module.json: requires ["IAM"]`).
+> Lightweight custom module inspired by Spatie Media Library. Polymorphic `model_type/model_id` + `uploaded_by` morph, `order_column`, `sha256`, `custom_properties`, image conversions (`thumbnail`/`medium`/`large`) via `MediaConversionService` + `ProcessMediaJob` (queue/sync), `InteractsWithMedia` trait + `PendingMedia` fluent, single_file `avatars`, signed streaming. **Media is independent** (`requires []`), `IAM` `requires ["Media"]` (`User implements HasMedia`).
 
 ## Setup
 
@@ -12,13 +12,14 @@ php artisan module:disable Media
 php artisan module:list
 ```
 
-`IAM` must be enabled first (dependency).
+`IAM` now depends on `Media` (User trait). Enable `Media` first, then `IAM`.
 
 ### Migrate & Seed
 
 ```bash
+php artisan migrate:fresh
+# or
 php artisan module:migrate Media
-# IAMSeeder creates base roles/permissions including media.view/create for role 'user'
 php artisan db:seed --class="Modules\IAM\Database\Seeders\IAMSeeder"
 ```
 
@@ -26,18 +27,22 @@ php artisan db:seed --class="Modules\IAM\Database\Seeders\IAMSeeder"
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `media.disk` | `public` | Filesystem disk (`config/filesystems.php`). `public` uses `storage/app/public` + `url` `/storage`. Create symlink `php artisan storage:link`. |
+| `media.disk` | `public` | Filesystem disk (`config/filesystems.php`). `public` uses `storage/app/public` + `url` `/storage`. `php artisan storage:link`. |
 | `media.max_size` | `2048` | Max upload KB |
-| `media.mimes` | `['jpg','jpeg','png','webp','gif','bmp']` | Allowed extensions (validated via `mimes:` guessing from content) |
-| `images.default` | `env('IMAGE_DRIVER','gd')` | `config/images.php` — image driver `gd` or `imagick` (requires PHP extension) |
+| `media.mimes` | `['jpg','jpeg','png','webp','gif','bmp']` | Allowed extensions (validated via `mimes:`) |
+| `media.collections` | `default/avatars/documents` | Per-collection `visibility` + `single_file` (avatars `public` + `single_file:true`) |
+| `media.queue` | `false` | `env('MEDIA_QUEUE', false)` — true = dispatch `ProcessMediaJob` |
+| `media.conversions` | `thumbnail/medium/large` | Named conversions `{width,height,fit,format,quality}` |
+| `images.default` | `env('IMAGE_DRIVER','gd')` | `config/images.php` driver `gd`/`imagick` |
 
-Env for S3:
+Env for S3 + queue:
 ```env
 MEDIA_DISK=s3
+MEDIA_QUEUE=true
 IMAGE_DRIVER=imagick
 ```
 
-Visibility: `MediaVisibilityEnum` — `avatars` collection → `public`, others → `private`. Filesystem visibility set explicitly on `putFileAs`/`Image::store` so DB enum and filesystem stay consistent (see `UploadMediaAction`).
+Collections/conversions live in `modules/Media/config/config.php` (merged as `config('media.*')`).
 
 ## Architecture
 
@@ -45,216 +50,226 @@ Visibility: `MediaVisibilityEnum` — `avatars` collection → `public`, others 
 
 ```mermaid
 erDiagram
-    media ||--o{ users : uploaded_by
-    users ||--o{ media : owns
+    media ||--o{ media_conversions : hasMany
     media {
         ulid id PK
+        string model_type "nullable, morph"
+        ulid model_id "nullable"
         string collection_name
         string disk
         string mime_type
         int size
         string path UK
         enum visibility
-        json meta
-        ulid uploaded_by FK "nullable"
+        string original_name "nullable"
+        string original_extension "nullable"
+        string sha256 "nullable, indexed"
+        json meta "nullable"
+        json custom_properties "nullable"
+        int order_column
+        string uploaded_by_type "nullable, morph"
+        ulid uploaded_by_id "nullable"
         datetime created_at
         datetime updated_at
-        string meta_original_name
-        int meta_width
-        int meta_height
     }
-    variants {
-        string path PK
-        string etag
+    media_conversions {
+        ulid id PK
+        ulid media_id FK "cascade"
+        string name "thumbnail/medium/large"
+        string disk
+        string path
+        string mime_type
+        int size "nullable"
+        string etag "nullable"
+        datetime created_at
+        datetime updated_at
     }
+    users ||--o{ media : "morphMany via model"
+    media_conversions ||--o{ media : belongsTo
+}
 ```
 
-### Flowchart — Upload
+### Trait
+
+```php
+use Modules\Media\Traits\InteractsWithMedia;
+use Modules\Media\Contracts\HasMedia;
+
+class User extends Authenticatable implements HasMedia {
+    use InteractsWithMedia;
+}
+
+$user->addMedia($file)->usingName('cover')->withCustomProperties(['alt'=>'...'])->toMediaCollection('avatars');
+$user->getMedia('avatars'); // ordered by order_column
+$user->getFirstMedia('avatars');
+$user->getFirstMediaUrl('avatars'); // public url or null
+$user->getFirstMediaSignedUrl('avatars', 15);
+$user->reorderMedia('gallery', [$id3, $id1, $id2]);
+$user->clearMediaCollection('avatars');
+$media->url('thumbnail'); // conversion url or null
+$media->hasGeneratedConversion('thumbnail');
+```
+
+### Flowchart — Upload (polymorphic + single_file + conversions)
 
 ```mermaid
 flowchart TD
-    Req["POST /media + file + collection_name"] --> Val{"Validation: required file, mimes, max 2048, collection alpha_dash"}
-    Val -- "fail" --> N422["422 Problem validation"]
-    Val -- "pass" --> Mime{"mime in PROCESSABLE_MIMES?"}
-    Mime -- "No" --> Raw["Storage::putFileAs + visibility"]
-    Mime -- "Yes" --> Img["Image::fromUpload->orient->optimize WebP"]
-    Img -- "ImageException undecodable" --> Raw
-    Img --> Store["Image::store with visibility"]
-    Store -- "false" --> Err["ImageException"]
-    Raw --> Persist
-    Store --> Meta["meta width/height + original_name"]
-    Meta --> Persist["DB::transaction create Media row"]
-    Persist --> Event["Event MediaUploaded"]
-    Event --> Resp["201 SuccessResponse media+url"]
+    Req["POST /media + file + collection_name + Bearer"] --> Val{"Validation: file, mimes, max, collection alpha_dash"}
+    Val -- fail --> N422["422"]
+    Val -- pass --> Single{"isSingleFile(avatars)?"}
+    Single -- yes --> Find{"existing model+collection?"}
+    Find -- found --> Upd["fill existing + save (same id)"]
+    Upd --> CleanOld["delete old file + variants/{id}"]
+    CleanOld --> Conv
+    Find -- not found --> Create["create Media + associate model/uploader"]
+    Single -- no --> Create
+    Create --> Conv{"image? && conversions config?"}
+    Conv -- no --> Event["event MediaUploaded + MediaCreated -> 201"]
+    Conv -- yes --> Q{"media.queue?"}
+    Q -- true --> Job["dispatch ProcessMediaJob(id)"]
+    Q -- false --> Sync["MediaConversionService::generate -> conversions/thumbnail.webp"]
+    Job --> Event
+    Sync --> Event
 ```
 
-### Flowchart — Variant (resized)
+### Flowchart — Variant (resized, on-the-fly)
 
 ```mermaid
 flowchart TD
-    Req["GET /media/{id}/variant?w=320&format=webp + Bearer"] --> Auth{"Gate view?"}
-    Auth -- "No" --> N403["403"]
-    Auth -- "Yes" --> IsImg{"mime startsWith image/?"}
-    IsImg -- "No" --> N422["422 media_not_image"]
-    IsImg -- "Yes" --> ETag["Compute xxh128 version|id|w|fmt"]
+    Req["GET /media/{id}/variant?w=320&format=webp + Bearer"] --> Auth{"Gate view? (belongsToModel or can view)"}
+    Auth -- No --> N403["403"]
+    Auth -- Yes --> IsImg{"mime image/?"}
+    IsImg -- No --> N422["422 media_not_image"]
+    IsImg -- Yes --> ETag["xxh128 version|id|w|fmt"]
     ETag --> Match{"If-None-Match == ETag?"}
-    Match -- "Yes" --> N304["304 Not Modified"]
-    Match -- "No" --> Cache{"variants/{id}/{ts}-{w}-{fmt} exists?"}
-    Cache -- "Yes" --> StreamCache["Storage::response cached + ETag/max-age=31536000 public"]
-    Cache -- "No" --> Gen["Image::fromStorage->scale->toFormat->quality80"]
-    Gen --> Write["storeAs variants path + visibility"]
-    Write --> StreamGen["Image::toResponse + ETag/max-age public"]
+    Match -- Yes --> N304["304"]
+    Match -- No --> Cache{"variants/{id}/{ts}-{w}-{fmt} exists?"}
+    Cache -- Yes --> StreamCache["Storage::response + ETag/max-age=31536000 public"]
+    Cache -- No --> Gen["Image::fromStorage->scale->toFormat->quality80"]
+    Gen --> Write["storeAs variants + visibility"]
+    Write --> StreamGen["toResponse + ETag/max-age public"]
 ```
 
-### Flowchart — Signed Streaming (private)
+### Flowchart — Signed Streaming + Conversions
 
 ```mermaid
 sequenceDiagram
-    participant C as Client (owner)
+    participant C as Client
     participant API as GET /media/{id}?expires=15
-    participant Resolver as MediaUrlResolver::signed()
+    participant Job as ProcessMediaJob
     participant File as GET /media/{id}/file?expires=&signature=
 
     C->>API: GET /media/01H...?expires=30 + Bearer
-    API->>Resolver: signed(id, 30) -> Uri::temporarySignedRoute(api.v1.media.file)
-    API-->>C: 200 {data: {url: "https://.../file?expires=...&signature=..."}}
+    API-->>C: 200 {data: {url: "https://.../file?expires=...&signature=...", conversions: {thumbnail: ".../storage/conversions/01H.../thumbnail.webp"}}}
     C->>File: GET /file?expires=...&signature=... (no Bearer)
-    File->>File: middleware signed validates signature & expiry
-    alt valid & file exists
-        File-->>C: 200 Stream (Content-Type from mime)
-    else tampered/expired
-        File-->>C: 403 InvalidSignature
-    else file missing
-        File-->>C: 404 Problem not_found
-    end
+    File->>File: signed middleware
+    File-->>C: 200 Stream
 ```
 
-### Schema — Layer Map
+### Layer Map
 
 ```mermaid
 classDiagram
-    class Media {
-        +isOwnedBy(userId) bool
-    }
-    class MediaUploadPayload {
-        +UploadedFile file
-        +String collectionName
-    }
-    class UploadMediaAction {
-        +handle(Payload, User) map
-        +storeProcessedImage() map
-        +storeRaw() map
-        +resolveVisibility() String
-    }
-    class MediaUrlResolver {
-        +forOwner() String
-        +public() String
-        +signed() String
-    }
-    class MediaResource {
-        +toArray() map
-    }
-    class MediaVariantController {
-        +__invoke() Response
-    }
-    class MediaFileController {
-        +__invoke() Stream
-    }
-    MediaUploadPayload --> UploadMediaAction
+    class HasMedia { <<interface>> +media():MorphMany }
+    class InteractsWithMedia { <<trait>> +addMedia():PendingMedia +getMedia() +reorderMedia() }
+    class PendingMedia { +usingName() +withCustomProperties() +toMediaCollection() }
+    class Media { +model():MorphTo +uploadedBy():MorphTo +conversions():HasMany +url(?conversion) }
+    class MediaConversion { +media():BelongsTo }
+    class UploadMediaAction { +handle(Payload, Model $owner, ?Model $uploader) }
+    class MediaUrlGenerator { <<interface>> +getUrl() +getTemporaryUrl() }
+    class MediaStorageService { +store() +delete() }
+    class MediaConversionService { +generate() +generateOne() }
+    class ProcessMediaJob { <<ShouldQueue>> +handle() }
+    class MediaResource { +toArray() }
+    HasMedia <|.. User
+    InteractsWithMedia --* User
+    PendingMedia --> UploadMediaAction
     UploadMediaAction --> Media
-    Media --> MediaUrlResolver
+    Media --> MediaConversion
+    Media --> MediaUrlGenerator
     Media --> MediaResource
-    Media --> MediaFileController
-    Media --> MediaVariantController
 ```
 
 ## Endpoints
 
-Base `http://localhost:8000` — `api/v1/media` via `RouteServiceProvider` (`api.v1.media.*`). ULID constraint on `{media}`.
+Base `http://localhost:8000` — `api/v1/media` via `RouteServiceProvider` (`api.v1.media.*`). ULID constraint.
 
 | Method | Path | Name | Middleware | Description |
 |--------|------|------|------------|-------------|
-| POST | `/media` | `api.v1.media.upload` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.create` | Upload file (multipart `file` + optional `collection_name` alpha_dash max 50, default `default`) |
-| GET | `/media` | `api.v1.media.index` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.view` | List paginated, filterable via `MediaBuilder` |
-| GET | `/media/{media}` | `api.v1.media.show` | `auth:sanctum`, `active`, `throttle:api` | Show one; `?expires=1..1440` swaps `url` for signed streaming link |
-| GET | `/media/{media}/variant` | `api.v1.media.variant` | `auth:sanctum`, `active`, `throttle:api` | Resized variant: `?w=32..2000` required, `?format=webp|jpg` optional (default webp). Returns `image/webp`/`image/jpeg` with `ETag` + `max-age=31536000` public, `304` on `If-None-Match`, `422` if non-image |
-| GET | `/media/{media}/file` | `api.v1.media.file` | `signed`, `throttle:api` | **Public** streaming via signed URL (signature is credential). No Bearer needed. `403` if tampered/expired, `404` if bytes missing |
-| DELETE | `/media/{media}` | `api.v1.media.delete` | `auth:sanctum`, `active`, `throttle:api` | Delete (owner or `media.delete` permission); removes file + `variants/{id}/` dir, fires `MediaDeleted` |
-
-Envelope: `SuccessResponse` / `ProblemResponse` RFC 9457 — see `docs/api-standard.md`. Binary variant/file are **outside** envelope (direct `image/*` stream) — intentional.
+| POST | `/media` | `api.v1.media.upload` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.create` | Upload file (multipart `file` + `collection_name` default `default`). Avatars `single_file` upsert (same id). |
+| GET | `/media` | `api.v1.media.index` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.view` | List paginated, filtered to `model_type/model_id` of current user, `MediaBuilder` |
+| GET | `/media/{media}` | `api.v1.media.show` | `auth:sanctum`, `active`, `throttle:api` | Show one; `?expires=1..1440` swaps `url` for signed link, includes `conversions` map |
+| GET | `/media/{media}/variant` | `api.v1.media.variant` | `auth:sanctum`, `active`, `throttle:api` | Resized variant `?w=32..2000` + `?format=webp|jpg`, `ETag` + `max-age=31536000` |
+| GET | `/media/{media}/file` | `api.v1.media.file` | `signed`, `throttle:api` | **Public** signed streaming, no Bearer |
+| DELETE | `/media/{media}` | `api.v1.media.delete` | `auth:sanctum`, `active`, `throttle:api` | Delete (owner/uploader or `media.delete`), removes file + `variants/{id}` + `conversions/{id}` + `media_conversions` rows |
 
 ## cURL Examples
 
 ```bash
 TOKEN="1|..."
 
-# Upload to avatars (image -> auto WebP, public)
+# Upload avatar (public, single_file — second upload reuses same id)
 curl -X POST http://localhost:8000/api/v1/media \
   -H "Authorization: Bearer $TOKEN" \
-  -F "file=@photo.jpg" \
-  -F "collection_name=avatars"
-# => 201 {"status":201,"data":{"media":{"id":"01H...","collection_name":"avatars","mime_type":"image/webp","size":12345,"visibility":"public","url":"http://localhost:8000/storage/avatars/...webp","original_name":"photo.jpg"},"url":"http://..."}}
+  -F "file=@photo.jpg" -F "collection_name=avatars"
+# => 201 {"data":{"media":{"id":"01H...","model_type":"Modules\\IAM\\Models\\User","model_id":"01H...","collection_name":"avatars","mime_type":"image/webp","visibility":"public","url":"http://.../storage/avatars/...webp","conversions":{"thumbnail":"http://.../storage/conversions/01H.../thumbnail.webp"}},"url":"..."}}
 
-# Upload private document
-curl -X POST http://localhost:8000/api/v1/media \
-  -H "Authorization: Bearer $TOKEN" \
-  -F "file=@doc.pdf"
-# collection defaults to "default" -> visibility private, url null in JSON
+# Trait (in code)
+# $user->addMedia($file)->toMediaCollection('avatars');
+# $user->reorderMedia('gallery', [$id3,$id1,$id2]);
 
-# List (filterable)
-curl "http://localhost:8000/api/v1/media?filter[collection_name]=avatars&sort=-created_at" \
-  -H "Authorization: Bearer $TOKEN"
+# Private document (url null, use signed)
+curl -X POST http://localhost:8000/api/v1/media -H "Authorization: Bearer $TOKEN" -F "file=@doc.pdf"
+curl http://localhost:8000/api/v1/media/01H... -H "Authorization: Bearer $TOKEN" # url null
+curl "http://localhost:8000/api/v1/media/01H...?expires=30" -H "Authorization: Bearer $TOKEN" # signed url
 
-# Show — private without expires (url null)
-curl http://localhost:8000/api/v1/media/01H... -H "Authorization: Bearer $TOKEN"
+# Variant
+curl "http://localhost:8000/api/v1/media/01H.../variant?w=320" -H "Authorization: Bearer $TOKEN" --output thumb.webp
 
-# Show — with signed URL (owner)
-curl "http://localhost:8000/api/v1/media/01H...?expires=30" -H "Authorization: Bearer $TOKEN"
-# => {"data":{"url":"http://localhost:8000/api/v1/media/01H.../file?expires=...&signature=..."}}
-
-# Variant — webp 320px (auth, returns image bytes)
-curl "http://localhost:8000/api/v1/media/01H.../variant?w=320" \
-  -H "Authorization: Bearer $TOKEN" --output thumb.webp
-
-# Variant — jpg 640px with 304 cache
-curl "http://localhost:8000/api/v1/media/01H.../variant?w=640&format=jpg" \
-  -H "Authorization: Bearer $TOKEN" -D - --output thumb.jpg
-# Second request with ETag:
-curl "http://localhost:8000/api/v1/media/01H.../variant?w=640&format=jpg" \
-  -H "Authorization: Bearer $TOKEN" -H 'If-None-Match: "abc..."' -i
-# => 304 Not Modified
-
-# Signed streaming — use URL from ?expires= (no Bearer)
+# Signed file
 SIGNED="http://localhost:8000/api/v1/media/01H.../file?expires=...&signature=..."
 curl "$SIGNED" --output private.pdf
 
-# Delete (also cleans variants/ dir)
-curl -X DELETE http://localhost:8000/api/v1/media/01H... -H "Authorization: Bearer $TOKEN"
+# Reprocess conversions (sync or queued)
+php artisan media:reprocess --collection=avatars
+php artisan media:reprocess --id=01H... --queued
+
+# Cleanup orphans
+php artisan media:cleanup --dry-run
+php artisan media:cleanup
+```
+
+## Artisan
+
+```bash
+php artisan media:cleanup --dry-run # list orphan files vs DB
+php artisan media:reprocess --collection=avatars --queued # dispatch jobs
+php artisan media:reprocess --id=01H... # sync
 ```
 
 ## Customize
 
-- **New collection visibility:** Edit `UploadMediaAction::resolveVisibility()` — `avatars` → `Public`, rest `Private`. Add enum `MediaVisibilityEnum` handling if needed.
-- **Image pipeline:** `UploadMediaAction::storeProcessedImage()` — change `orient()->optimize()` to `cover(400,400)` or `quality(60)`, add `when()` conditional. Config driver via `config/images.php` (`IMAGE_DRIVER=imagick`).
-- **Add endpoint:** Controller `final readonly` invokable, `Action` `final readonly handle()`, `Payload::fromRequest()`, `Request` with `authorize()` + `rules()`, `Resource` with `FormatDate`, route in `routes/V1.php` under `api/v1` prefix.
-- **Events:** `MediaUploaded` / `MediaDeleted` in `app/Events` — attach listener in `EventServiceProvider` (already scaffolded).
-- **Policies:** `MediaPolicy::view/delete` via `#[UsePolicy]` on `Media` model — owner or `media.view/delete` permission.
+- **Collections/conversions:** `modules/Media/config/config.php` `collections` + `conversions` + `queue` (env `MEDIA_QUEUE`).
+- **Image pipeline:** `UploadMediaAction::storeProcessedImage` `orient()->optimize()` or `cover()`.
+- **Trait:** `InteractsWithMedia` `media()` + `getMedia`/`reorderMedia`/`clearMediaCollection`.
+- **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `app/Events`.
+- **Policy:** `MediaPolicy` `view/delete` via `#[UsePolicy]` — `isPublic` or `belongsToModel` or `is(uploadedBy)` or `can`.
 
 ## Testing
 
 ```bash
-# All Media tests (63 tests)
+# All Media tests (65 tests)
 php artisan test --filter="Media"
-# Helpers: Storage::fake('public'), UploadedFile::fake()->image(), MediaFactory::new()->forUser($user)
-# Assertions: Storage::assertExists($media->path), assertSuccessResponse(201), Event::fake([MediaUploaded::class])
+# Helpers: Storage::fake('public'), UploadedFile::fake()->image(), MediaFactory::new()->forModel($user), DB::table('permissions')->insertOrIgnore
+# Trait: InteractsWithMediaTest (addMedia, getMedia, reorder), MediaConversionTest (sync conversions)
 ```
 
-Coverage: `MediaUploadTest` (WebP normalization, bmp, pdf passthrough), `MediaVariantTest` (cache hit, 304, jpg format, bounds), `MediaFileTest` (signed, tampered, expired), `MediaShowTest` (`?expires=`), `MediaDeleteTest` (variants cleanup), `MediaUrlResolverTest` (forOwner/public/signed).
+Coverage: `MediaUploadTest` (WebP, single_file avatars upsert), `MediaConversionTest` (thumbnail via MediaConversionService), `InteractsWithMediaTest`, `MediaVariantTest`, `MediaFileTest`, `MediaShowTest`, `MediaListTest`, `MediaDeleteTest`, `MediaAvatarFlowTest`.
 
 ## Related Docs
 
-- [API Standard](../../docs/api-standard.md) — envelope shapes
-- [Architecture](../../docs/architecture.md) — module anatomy
-- [Rate Limiting](../../docs/rate-limiting.md) — global tiers (`api` 60/min for Media)
-- ADRs: [0015 Media Storage](../../docs/adr/0015-media-storage-module.md), [0030 Custom Media](../../docs/adr/0030-custom-media-module.md), [0031 Image Processing](../../docs/adr/0031-first-party-image-processing.md), [0032 Signed+Events+Cache](../../docs/adr/0032-signed-media-events-cached-variants.md)
-- Scramble OpenAPI: `http://localhost:8000/docs/api` (`config/scramble.php:23` `api_path='api'`)
+- [API Standard](../../docs/api-standard.md)
+- [Architecture](../../docs/architecture.md)
+- [Rate Limiting](../../docs/rate-limiting.md)
+- ADRs: [0015 Media Storage](../../docs/adr/0015-media-storage-module.md), [0030 Custom Media](../../docs/adr/0030-custom-media-module.md), [0031 Image Processing](../../docs/adr/0031-first-party-image-processing.md), [0032 Signed+Events+Cache](../../docs/adr/0032-signed-media-events-cached-variants.md), [0036 Media Polymorphic Squash](../../docs/adr/0036-media-polymorphic-squash.md)
+- Scramble OpenAPI: `http://localhost:8000/docs/api`
