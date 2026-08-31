@@ -12,7 +12,7 @@ use Modules\Media\Http\Controllers\V1\MediaUploadController;
 use Modules\Media\Http\Controllers\V1\MediaVariantController;
 
 // Public streaming endpoint: the signature is the credential. Signed URLs
-// are minted through MediaUrlResolver::signed() (also via show ?expires=).
+// are minted via Media::signedUrl() (also via show ?expires=).
 Route::prefix('media')->middleware(['signed', 'throttle:api'])->group(function (): void {
     Route::get('/{media}/file', MediaFileController::class)->name('file');
 })->whereUlid(['media']);
@@ -29,6 +29,6 @@ Route::prefix('media')->middleware(['auth:sanctum', 'active', 'throttle:api'])->
         ->name('index');
 
     Route::get('/{media}', MediaShowController::class)->name('show');
-    Route::get('/{media}/variant', MediaVariantController::class)->name('variant');
+    Route::get('/{media}/s/{modifiers}', MediaVariantController::class)->name('variant')->where('modifiers', '.*');
     Route::delete('/{media}', MediaDeleteController::class)->name('delete');
 })->whereUlid(['media']);
