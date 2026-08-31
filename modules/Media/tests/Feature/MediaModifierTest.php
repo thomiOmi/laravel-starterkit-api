@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
-use Modules\Media\Http\Controllers\V1\MediaVariantController;
+use Modules\Media\Http\Controllers\V1\MediaModifierController;
 use Modules\Media\Models\Media;
 
-covers(MediaVariantController::class);
+covers(MediaModifierController::class);
 
 describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
     beforeEach(function () {
