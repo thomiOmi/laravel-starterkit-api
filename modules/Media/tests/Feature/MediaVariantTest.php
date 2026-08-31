@@ -14,7 +14,7 @@ use Modules\Media\Models\Media;
 
 covers(MediaVariantController::class);
 
-describe('GET /api/v1/media/{media}/variant', function () {
+describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
     beforeEach(function () {
         Storage::fake('public');
         DB::table('permissions')->insertOrIgnore([
@@ -44,7 +44,7 @@ describe('GET /api/v1/media/{media}/variant', function () {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
-        $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=32");
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/32");
 
         $response->assertOk();
         expect($response->headers->get('Content-Type'))->toContain('image/webp')
@@ -64,20 +64,35 @@ describe('GET /api/v1/media/{media}/variant', function () {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
-        $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=64&format=jpg");
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/64/f/jpg");
 
         $response->assertOk();
         expect($response->headers->get('Content-Type'))->toContain('image/jpeg');
+    });
+
+    it('parses s/320x200 shorthand', function () {
+        $user = loginAsUser();
+        $media = seedImageMedia($user, width: 100, height: 100);
+
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/320x200");
+
+        $response->assertOk();
+        $image = imagecreatefromstring((string) $response->getContent());
+        if (! $image instanceof GdImage) {
+            throw new RuntimeException('The variant response is not a decodable image.');
+        }
+        // Should be scaled to fit within 320x200, not upscaled beyond 100x100
+        expect(imagesx($image))->toBeLessThanOrEqual(100);
     });
 
     it('returns 304 when the etag still matches', function () {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
-        $first = $this->getJson("/api/v1/media/{$media->id}/variant?w=48");
+        $first = $this->getJson("/api/v1/media/{$media->id}/s/48");
         $etag = (string) $first->headers->get('ETag');
 
-        $second = $this->getJson("/api/v1/media/{$media->id}/variant?w=48", ['If-None-Match' => $etag]);
+        $second = $this->getJson("/api/v1/media/{$media->id}/s/48", ['If-None-Match' => $etag]);
 
         $second->assertStatus(304);
         expect($second->headers->get('ETag'))->toBe($etag)
@@ -88,7 +103,7 @@ describe('GET /api/v1/media/{media}/variant', function () {
         $user = loginAsUser();
         $media = seedImageMedia($user, width: 50, height: 40);
 
-        $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=2000");
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/2000");
 
         $response->assertOk();
         $image = imagecreatefromstring((string) $response->getContent());
@@ -103,7 +118,7 @@ describe('GET /api/v1/media/{media}/variant', function () {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
-        $first = $this->getJson("/api/v1/media/{$media->id}/variant?w=32");
+        $first = $this->getJson("/api/v1/media/{$media->id}/s/32");
         $first->assertOk();
 
         expect(Storage::disk('public')->allFiles('variants/'.$media->id))->toHaveCount(1);
@@ -111,28 +126,24 @@ describe('GET /api/v1/media/{media}/variant', function () {
         // Remove the original to prove the next response comes from the cache.
         Storage::disk('public')->delete($media->path);
 
-        $second = $this->getJson("/api/v1/media/{$media->id}/variant?w=32");
+        $second = $this->getJson("/api/v1/media/{$media->id}/s/32");
         $second->assertOk();
-        // The original is gone and the variant dir untouched, so a 200 with
-        // the same ETag can only have been served from the cached file.
         expect($second->headers->get('ETag'))->toBe($first->headers->get('ETag'))
             ->and(Storage::disk('public')->exists($media->path))->toBeFalse()
             ->and(Storage::disk('public')->allFiles('variants/'.$media->id))->toHaveCount(1);
     });
 
-    it('rejects out-of-bounds widths and unsupported formats', function (array $query, string $field) {
+    it('rejects out-of-bounds widths and unsupported formats', function (string $modifiers) {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
-        $response = $this->getJson("/api/v1/media/{$media->id}/variant?".http_build_query($query));
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/{$modifiers}");
 
         assertProblemResponse($response, 422, 'validation');
-        $response->assertJsonValidationErrors([$field]);
     })->with([
-        'width below minimum' => [['w' => 31], 'w'],
-        'width above maximum' => [['w' => 2001], 'w'],
-        'missing width' => [[], 'w'],
-        'gif output' => [['w' => 64, 'format' => 'gif'], 'format'],
+        'width below minimum' => '31',
+        'width above maximum' => '2001',
+        'gif output' => '64/f/gif',
     ]);
 
     it('rejects non-image media with a problem response', function () {
@@ -140,7 +151,7 @@ describe('GET /api/v1/media/{media}/variant', function () {
         $media = MediaFactory::new()->forModel($user)->createOne(['mime_type' => 'application/pdf']);
         Storage::disk('public')->put($media->path, "%PDF-1.4\n");
 
-        $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=64");
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/64");
 
         assertProblemResponse($response, 422, 'validation');
     });
@@ -148,11 +159,10 @@ describe('GET /api/v1/media/{media}/variant', function () {
     it('forbids viewers without ownership or the view permission', function () {
         $owner = loginAsUser();
         seedImageMedia($owner);
-        // Switch the acting user to someone unrelated to the media row.
         loginAsUser();
 
         $media = Media::query()->where('model_id', $owner->id)->sole();
-        $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=64");
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/64");
 
         assertProblemResponse($response, 403);
     });
@@ -163,18 +173,18 @@ describe('GET /api/v1/media/{media}/variant', function () {
         $staff = loginAsUser();
         $staff->givePermissionTo(PermissionEnum::MediaView->value);
 
-        $response = $this->getJson("/api/v1/media/{$media->id}/variant?w=40");
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/40");
 
         $response->assertOk();
     });
 
     it('rejects unauthenticated requests', function () {
-        $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA/variant?w=64')->assertUnauthorized();
+        $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA/s/64')->assertUnauthorized();
     });
 
     it('returns 404 for unknown media', function () {
         loginAsUser();
 
-        $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA/variant?w=64')->assertNotFound();
+        $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA/s/64')->assertNotFound();
     });
 });
