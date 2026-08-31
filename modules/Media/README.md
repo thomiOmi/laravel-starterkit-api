@@ -132,21 +132,22 @@ flowchart TD
     Sync --> Event
 ```
 
-### Flowchart — Variant (resized, on-the-fly)
+### Flowchart — Modifier (resized, on-the-fly via MediaModifier)
 
 ```mermaid
 flowchart TD
-    Req["GET /media/{id}/variant?w=320&format=webp + Bearer"] --> Auth{"Gate view? (belongsToModel or can view)"}
+    Req["GET /media/{id}/s/320/f/webp/q/80 + Bearer"] --> Auth{"Gate view? (belongsToModel or can view)"}
     Auth -- No --> N403["403"]
     Auth -- Yes --> IsImg{"mime image/?"}
     IsImg -- No --> N422["422 media_not_image"]
-    IsImg -- Yes --> ETag["xxh128 version|id|w|fmt"]
+    IsImg -- Yes --> Parse["MediaModifier::parse(s/f/q) -> w/h/f/q"]
+    Parse --> ETag["xxh128 version|id|hash(modifiers)|f"]
     ETag --> Match{"If-None-Match == ETag?"}
     Match -- Yes --> N304["304"]
-    Match -- No --> Cache{"variants/{id}/{ts}-{w}-{fmt} exists?"}
+    Match -- No --> Cache{"variants/{id}/{hash}.ext exists?"}
     Cache -- Yes --> StreamCache["Storage::response + ETag/max-age=31536000 public"]
-    Cache -- No --> Gen["Image::fromStorage->scale->toFormat->quality80"]
-    Gen --> Write["storeAs variants + visibility"]
+    Cache -- No --> Gen["Image::fromStorage->scale/cover->toFormat->quality"]
+    Gen --> Write["storeAs variants/{hash} + visibility"]
     Write --> StreamGen["toResponse + ETag/max-age public"]
 ```
 
@@ -199,7 +200,7 @@ Base `http://localhost:8000` — `api/v1/media` via `RouteServiceProvider` (`api
 | POST | `/media` | `api.v1.media.upload` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.create` | Upload file (multipart `file` + `collection_name` default `default`). Avatars `single_file` upsert (same id). |
 | GET | `/media` | `api.v1.media.index` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.view` | List paginated, filtered to `model_type/model_id` of current user, `MediaBuilder` |
 | GET | `/media/{media}` | `api.v1.media.show` | `auth:sanctum`, `active`, `throttle:api` | Show one; `?expires=1..1440` swaps `url` for signed link, includes `conversions` map |
-| GET | `/media/{media}/variant` | `api.v1.media.variant` | `auth:sanctum`, `active`, `throttle:api` | Resized variant `?w=32..2000` + `?format=webp|jpg`, `ETag` + `max-age=31536000` |
+| GET | `/media/{media}/s/{modifiers}` | `api.v1.media.modifier` | `auth:sanctum`, `active`, `throttle:api` | On-the-fly modifier `s/320`, `s/320x200`, `s/320/f/webp/q/80`, `w/400/h/300/f/jpg` via `MediaModifier` (`w 32..2000`, `f webp/jpg`, `q 1..100`), `ETag` + `max-age=31536000` |
 | GET | `/media/{media}/file` | `api.v1.media.file` | `signed`, `throttle:api` | **Public** signed streaming, no Bearer |
 | DELETE | `/media/{media}` | `api.v1.media.delete` | `auth:sanctum`, `active`, `throttle:api` | Delete (owner/uploader or `media.delete`), removes file + `variants/{id}` + `conversions/{id}` + `media_conversions` rows |
 
@@ -223,8 +224,10 @@ curl -X POST http://localhost:8000/api/v1/media -H "Authorization: Bearer $TOKEN
 curl http://localhost:8000/api/v1/media/01H... -H "Authorization: Bearer $TOKEN" # url null
 curl "http://localhost:8000/api/v1/media/01H...?expires=30" -H "Authorization: Bearer $TOKEN" # signed url
 
-# Variant
-curl "http://localhost:8000/api/v1/media/01H.../variant?w=320" -H "Authorization: Bearer $TOKEN" --output thumb.webp
+# Modifier (on-the-fly)
+curl "http://localhost:8000/api/v1/media/01H.../s/320" -H "Authorization: Bearer $TOKEN" --output thumb.webp
+curl "http://localhost:8000/api/v1/media/01H.../s/320/f/webp/q/80" -H "Authorization: Bearer $TOKEN" --output thumb2.webp
+curl "http://localhost:8000/api/v1/media/01H.../s/320x200" -H "Authorization: Bearer $TOKEN" --output thumb3.webp
 
 # Signed file
 SIGNED="http://localhost:8000/api/v1/media/01H.../file?expires=...&signature=..."
@@ -264,7 +267,7 @@ php artisan test --filter="Media"
 # Trait: InteractsWithMediaTest (addMedia, getMedia, reorder), MediaConversionTest (sync conversions)
 ```
 
-Coverage: `MediaUploadTest` (WebP, single_file avatars upsert), `MediaConversionTest` (thumbnail via MediaConversionService), `InteractsWithMediaTest`, `MediaVariantTest`, `MediaFileTest`, `MediaShowTest`, `MediaListTest`, `MediaDeleteTest`, `MediaAvatarFlowTest`.
+Coverage: `MediaUploadTest` (WebP, single_file avatars upsert), `MediaConversionTest` (thumbnail via MediaConversionService), `InteractsWithMediaTest`, `MediaModifierTest` (s/320, s/320x200, cache, 304), `MediaFileTest`, `MediaShowTest`, `MediaListTest`, `MediaDeleteTest`, `MediaAvatarFlowTest`.
 
 ## Related Docs
 

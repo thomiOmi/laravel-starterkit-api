@@ -18,7 +18,7 @@ use Modules\Media\Support\MediaModifier;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-final readonly class MediaVariantController extends Controller
+final readonly class MediaModifierController extends Controller
 {
     private const int MAX_AGE = 31536000;
 
