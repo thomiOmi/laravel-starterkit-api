@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -114,6 +115,17 @@ class Media extends Model
         $uploadedById = $this->uploaded_by_id;
 
         return is_string($uploadedById) && $uploadedById === (string) $userId;
+    }
+
+    /**
+     * Scope a query to ordered media.
+     *
+     * @param  Builder<Media>  $query
+     * @return Builder<Media>
+     */
+    public function scopeOrdered($query): Builder
+    {
+        return $query->orderBy('order_column')->orderBy('created_at');
     }
 
     /**

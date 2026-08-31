@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\Media\Providers;
 
 use Illuminate\Console\Command;
+use Modules\Media\Console\Commands\MediaCleanupCommand;
+use Modules\Media\Console\Commands\MediaReprocessCommand;
 use Modules\Media\Contracts\MediaUrlGenerator;
 use Modules\Media\Services\MediaUrlGeneratorService;
 use Nwidart\Modules\Support\ModuleServiceProvider;
@@ -36,7 +38,10 @@ class MediaServiceProvider extends ModuleServiceProvider
      *
      * @var class-string<Command>[]
      */
-    protected array $commands = [];
+    protected array $commands = [
+        MediaCleanupCommand::class,
+        MediaReprocessCommand::class,
+    ];
 
     /**
      * Register any application services.
