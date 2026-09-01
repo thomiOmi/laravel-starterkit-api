@@ -25,6 +25,16 @@ final class PendingMedia
 
     private ?string $disk = null;
 
+    private ?string $fileName = null;
+
+    private bool $preservingOriginal = false;
+
+    /** @var array<string, mixed> */
+    private array $manipulations = [];
+
+    /** @var callable|null */
+    private $sanitizer = null;
+
     public function __construct(
         private readonly Model $model,
         private readonly UploadedFile $file,
@@ -33,6 +43,13 @@ final class PendingMedia
     public function usingName(string $name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function usingFileName(string $fileName): self
+    {
+        $this->fileName = $fileName;
 
         return $this;
     }
@@ -47,6 +64,30 @@ final class PendingMedia
         return $this;
     }
 
+    /**
+     * @param  array<string, mixed>  $manipulations
+     */
+    public function withManipulations(array $manipulations): self
+    {
+        $this->manipulations = $manipulations;
+
+        return $this;
+    }
+
+    public function preservingOriginal(): self
+    {
+        $this->preservingOriginal = true;
+
+        return $this;
+    }
+
+    public function sanitizingFileName(callable $callback): self
+    {
+        $this->sanitizer = $callback;
+
+        return $this;
+    }
+
     public function withDisk(string $disk): self
     {
         $this->disk = $disk;
@@ -56,9 +97,36 @@ final class PendingMedia
 
     public function toMediaCollection(string $collection = 'default', ?string $disk = null): Media
     {
+        $file = $this->file;
+
+        // Handle usingFileName
+        if ($this->fileName !== null) {
+            $path = $file->getRealPath();
+            $path = is_string($path) ? $path : $file->getPathname();
+            $file = new UploadedFile($path, $this->fileName, $file->getMimeType(), null, true);
+        }
+
+        // Handle sanitizingFileName
+        if ($this->sanitizer !== null) {
+            $rawSanitized = ($this->sanitizer)($file->getClientOriginalName());
+
+            if (is_string($rawSanitized)) {
+                $sanitized = $rawSanitized;
+            } elseif (is_int($rawSanitized) || is_float($rawSanitized)) {
+                $sanitized = (string) $rawSanitized;
+            } else {
+                $sanitized = 'file';
+            }
+
+            $path = $file->getRealPath();
+            $path = is_string($path) ? $path : $file->getPathname();
+            $file = new UploadedFile($path, $sanitized, $file->getMimeType(), null, true);
+        }
+
         $payload = new MediaUploadPayload(
-            file: $this->file,
+            file: $file,
             collectionName: $collection,
+            preservingOriginal: $this->preservingOriginal,
         );
 
         // Resolve the action via container to keep Media module self-contained.
@@ -86,13 +154,21 @@ final class PendingMedia
         /** @var Media $media */
         $media = $result['media'];
 
-        // Apply custom properties and name if provided.
-        if ($this->customProperties !== [] || $this->name !== null) {
-            if ($this->customProperties !== []) {
-                $media->custom_properties = array_merge(
+        // Apply custom properties, manipulations and name if provided.
+        $hasCustom = $this->customProperties !== [] || $this->manipulations !== [] || $this->name !== null;
+
+        if ($hasCustom) {
+            if ($this->customProperties !== [] || $this->manipulations !== []) {
+                $merged = array_merge(
                     is_array($media->custom_properties) ? $media->custom_properties : [],
                     $this->customProperties
                 );
+
+                if ($this->manipulations !== []) {
+                    $merged['manipulations'] = $this->manipulations;
+                }
+
+                $media->custom_properties = $merged;
             }
 
             if ($this->name !== null) {

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Modules\Media\Actions\DeleteMediaAction;
 use Modules\Media\Actions\ReorderMediaAction;
 use Modules\Media\Models\Media;
@@ -49,6 +50,79 @@ trait InteractsWithMedia
         }
 
         return new PendingMedia($this, $file);
+    }
+
+    public function addMediaFromRequest(string $key): PendingMedia
+    {
+        /** @var mixed $file */
+        $file = request()->file($key);
+
+        if (! $file instanceof UploadedFile) {
+            throw new \InvalidArgumentException("File not found for key {$key}.");
+        }
+
+        return $this->addMedia($file);
+    }
+
+    /**
+     * @param  array<int, string>  $keys
+     * @return array<int, PendingMedia>
+     */
+    public function addMultipleMediaFromRequest(array $keys): array
+    {
+        $result = [];
+
+        foreach ($keys as $key) {
+            /** @var mixed $files */
+            $files = request()->file($key);
+
+            if ($files instanceof UploadedFile) {
+                $result[] = $this->addMedia($files);
+            } elseif (is_array($files)) {
+                foreach ($files as $file) {
+                    /** @var mixed $file */
+                    if ($file instanceof UploadedFile) {
+                        $result[] = $this->addMedia($file);
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, string>  $headers
+     */
+    public function addMediaFromUrl(string $url, ?string $filename = null, array $headers = []): PendingMedia
+    {
+        $response = Http::withHeaders($headers)->get($url);
+
+        if (! $response->successful()) {
+            throw new \InvalidArgumentException("Failed to fetch URL: {$url}");
+        }
+
+        $content = $response->body();
+        $rawPath = parse_url($url, PHP_URL_PATH);
+        $path = is_string($rawPath) && $rawPath !== '' ? $rawPath : 'file';
+        $name = $filename ?? basename($path);
+
+        return $this->addMediaFromString($content, $name);
+    }
+
+    public function addMediaFromString(string $content, string $filename): PendingMedia
+    {
+        $tmpPath = tempnam(sys_get_temp_dir(), 'media_');
+
+        if ($tmpPath === false) {
+            throw new \RuntimeException('Failed to create temporary file.');
+        }
+
+        file_put_contents($tmpPath, $content);
+
+        $file = new UploadedFile($tmpPath, $filename, null, null, true);
+
+        return $this->addMedia($file);
     }
 
     /**

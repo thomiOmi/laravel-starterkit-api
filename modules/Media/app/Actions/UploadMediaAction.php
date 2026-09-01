@@ -42,6 +42,10 @@ final readonly class UploadMediaAction
      */
     public function handle(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
+        if ($payload->preservingOriginal) {
+            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader));
+        }
+
         if (! in_array((string) $payload->file->getMimeType(), self::PROCESSABLE_MIMES, true)) {
             return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader));
         }
