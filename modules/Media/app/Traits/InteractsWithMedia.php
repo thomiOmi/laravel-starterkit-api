@@ -112,15 +112,7 @@ trait InteractsWithMedia
 
     public function addMediaFromString(string $content, string $filename): PendingMedia
     {
-        $tmpPath = tempnam(sys_get_temp_dir(), 'media_');
-
-        if ($tmpPath === false) {
-            throw new \RuntimeException('Failed to create temporary file.');
-        }
-
-        file_put_contents($tmpPath, $content);
-
-        $file = new UploadedFile($tmpPath, $filename, null, null, true);
+        $file = UploadedFile::fake()->createWithContent($filename, $content);
 
         return $this->addMedia($file);
     }
