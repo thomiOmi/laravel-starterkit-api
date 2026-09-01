@@ -10,6 +10,7 @@ use Illuminate\Image\ImageException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Events\MediaCreated;
 use Modules\Media\Events\MediaUploaded;
@@ -81,6 +82,44 @@ final readonly class UploadMediaAction
             return;
         }
 
+        // Check model-driven conversions first
+        $modelConversions = null;
+
+        if ($media->model_type !== null && $media->model_id !== null) {
+            $modelClass = $media->model_type;
+
+            if ($modelClass !== '' && class_exists($modelClass) && is_a($modelClass, Model::class, true)) {
+                /** @var class-string<Model> $modelClass */
+                $model = $modelClass::query()->whereKey($media->model_id)->first();
+
+                if ($model instanceof HasMedia) {
+                    $conversions = $model->getMediaConversions($media);
+
+                    if ($conversions !== []) {
+                        $modelConversions = $conversions;
+                    }
+                }
+            }
+        }
+
+        if ($modelConversions !== null) {
+            // Model defines conversions, use service with model context
+            if (config()->boolean('media.queue', false)) {
+                ProcessMediaJob::dispatch($media->id);
+
+                return;
+            }
+
+            try {
+                // For model-driven, generate via service but respect performOnCollections
+                app(MediaConversionService::class)->generate($media);
+            } catch (Throwable) {
+                // Ignore
+            }
+
+            return;
+        }
+
         /** @var array<string, mixed> $conversions */
         $conversions = config()->array('media.conversions', []);
 
@@ -107,7 +146,7 @@ final readonly class UploadMediaAction
     private function storeProcessedImage(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
         $disk = config()->string('media.disk', 'public');
-        $visibility = $this->resolveVisibility($payload->collectionName);
+        $visibility = $this->resolveVisibility($payload->collectionName, $owner);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
 
         $fullPath = $image->store($payload->collectionName, $disk, ['visibility' => $visibility->value]);
@@ -143,7 +182,7 @@ final readonly class UploadMediaAction
     private function storeRaw(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
         $disk = config()->string('media.disk', 'public');
-        $visibility = $this->resolveVisibility($payload->collectionName);
+        $visibility = $this->resolveVisibility($payload->collectionName, $owner);
         $file = $payload->file;
         $filename = $file->hashName();
         $fullPath = $payload->collectionName.'/'.$filename;
@@ -164,8 +203,19 @@ final readonly class UploadMediaAction
         return ['media' => $media, 'url' => $media->url()];
     }
 
-    private function resolveVisibility(string $collectionName): MediaVisibilityEnum
+    private function resolveVisibility(string $collectionName, ?Model $owner = null): MediaVisibilityEnum
     {
+        // Check model-registered collection first
+        if ($owner instanceof HasMedia) {
+            $collection = $owner->getMediaCollection($collectionName);
+
+            if ($collection !== null && $collection->visibility !== null) {
+                return $collection->visibility === MediaVisibilityEnum::Public->value
+                    ? MediaVisibilityEnum::Public
+                    : MediaVisibilityEnum::Private;
+            }
+        }
+
         $visibility = config()->string('media.collections.'.$collectionName.'.visibility');
 
         if ($visibility === MediaVisibilityEnum::Public->value) {
@@ -182,8 +232,16 @@ final readonly class UploadMediaAction
             : MediaVisibilityEnum::Private;
     }
 
-    private function isSingleFileCollection(string $collectionName): bool
+    private function isSingleFileCollection(string $collectionName, ?Model $owner = null): bool
     {
+        if ($owner instanceof HasMedia) {
+            $collection = $owner->getMediaCollection($collectionName);
+
+            if ($collection !== null) {
+                return $collection->singleFile;
+            }
+        }
+
         return config()->boolean('media.collections.'.$collectionName.'.single_file', false);
     }
 
@@ -194,7 +252,7 @@ final readonly class UploadMediaAction
      */
     private function persistRow(MediaUploadPayload $payload, Model $owner, ?Model $uploader, string $disk, string $fullPath, string $mimeType, int $size, array $meta): Media
     {
-        $isSingle = $this->isSingleFileCollection($payload->collectionName);
+        $isSingle = $this->isSingleFileCollection($payload->collectionName, $owner);
 
         try {
             $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $fullPath, $mimeType, $size, $meta, $isSingle): Media {
@@ -214,7 +272,7 @@ final readonly class UploadMediaAction
                             'mime_type' => $mimeType,
                             'size' => $size,
                             'path' => $fullPath,
-                            'visibility' => $this->resolveVisibility($payload->collectionName)->value,
+                            'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
                             'original_name' => $file->getClientOriginalName(),
                             'original_extension' => $file->getClientOriginalExtension(),
                             'sha256' => hash_file('sha256', $file->getRealPath()),
@@ -251,7 +309,7 @@ final readonly class UploadMediaAction
                     'mime_type' => $mimeType,
                     'size' => $size,
                     'path' => $fullPath,
-                    'visibility' => $this->resolveVisibility($payload->collectionName)->value,
+                    'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
                     'original_name' => $file->getClientOriginalName(),
                     'original_extension' => $file->getClientOriginalExtension(),
                     'sha256' => hash_file('sha256', $file->getRealPath()),

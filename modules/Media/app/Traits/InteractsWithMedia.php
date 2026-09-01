@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Http;
 use Modules\Media\Actions\DeleteMediaAction;
 use Modules\Media\Actions\ReorderMediaAction;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\MediaCollection;
+use Modules\Media\Support\MediaConversion;
 use Modules\Media\Support\PendingMedia;
 
 /**
@@ -177,5 +179,77 @@ trait InteractsWithMedia
         }
 
         app(ReorderMediaAction::class)->handle($this, $collection, $orderedIds);
+    }
+
+    /**
+     * Register the media collections for the model.
+     * Override in the model to define collections.
+     */
+    public function registerMediaCollections(): void
+    {
+        //
+    }
+
+    /**
+     * Register the media conversions for the model.
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        //
+    }
+
+    /** @var array<string, MediaCollection> */
+    private array $mediaCollections = [];
+
+    /** @var array<string, MediaConversion> */
+    private array $mediaConversions = [];
+
+    public function addMediaCollection(string $name): MediaCollection
+    {
+        $collection = new MediaCollection($name);
+        $this->mediaCollections[$name] = $collection;
+
+        return $collection;
+    }
+
+    public function addMediaConversion(string $name): MediaConversion
+    {
+        $conversion = new MediaConversion($name);
+        $this->mediaConversions[$name] = $conversion;
+
+        return $conversion;
+    }
+
+    public function getMediaCollection(string $name): ?MediaCollection
+    {
+        if ($this->mediaCollections === []) {
+            $this->registerMediaCollections();
+        }
+
+        return $this->mediaCollections[$name] ?? null;
+    }
+
+    /**
+     * @return array<string, MediaCollection>
+     */
+    public function getMediaCollections(): array
+    {
+        if ($this->mediaCollections === []) {
+            $this->registerMediaCollections();
+        }
+
+        return $this->mediaCollections;
+    }
+
+    /**
+     * @return array<string, MediaConversion>
+     */
+    public function getMediaConversions(?Media $media = null): array
+    {
+        if ($this->mediaConversions === []) {
+            $this->registerMediaConversions($media);
+        }
+
+        return $this->mediaConversions;
     }
 }

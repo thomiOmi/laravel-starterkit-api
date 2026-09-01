@@ -7,6 +7,8 @@ namespace Modules\Media\Contracts;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\MediaCollection;
+use Modules\Media\Support\MediaConversion;
 
 /**
  * Contract for models that own media.
@@ -23,4 +25,31 @@ interface HasMedia
      * @return MorphMany<Media, Model>
      */
     public function media(): MorphMany;
+
+    /**
+     * Register the media collections for the model.
+     * Override in the model to define singleFile, accepts, etc.
+     */
+    public function registerMediaCollections(): void;
+
+    /**
+     * Register the media conversions for the model.
+     */
+    public function registerMediaConversions(?Media $media = null): void;
+
+    public function addMediaCollection(string $name): MediaCollection;
+
+    public function addMediaConversion(string $name): MediaConversion;
+
+    public function getMediaCollection(string $name): ?MediaCollection;
+
+    /**
+     * @return array<string, MediaCollection>
+     */
+    public function getMediaCollections(): array;
+
+    /**
+     * @return array<string, MediaConversion>
+     */
+    public function getMediaConversions(?Media $media = null): array;
 }
