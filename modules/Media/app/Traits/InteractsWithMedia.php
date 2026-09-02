@@ -218,6 +218,40 @@ trait InteractsWithMedia
         app(ReorderMediaAction::class)->handle($this, $collection, $orderedIds);
     }
 
+    public function getFallbackMediaUrl(string $collection, string $conversion = ''): ?string
+    {
+        $media = $this->getFirstMedia($collection);
+
+        if ($media !== null) {
+            return $conversion !== '' ? $media->url($conversion) : $media->url();
+        }
+
+        if (! $this instanceof Model) {
+            return null;
+        }
+
+        $collectionDef = $this->getMediaCollection($collection);
+
+        return $collectionDef?->fallbackUrl;
+    }
+
+    public function getFallbackMediaPath(string $collection, string $conversion = ''): ?string
+    {
+        $media = $this->getFirstMedia($collection);
+
+        if ($media !== null) {
+            return $conversion !== '' ? $media->getPath($conversion) : $media->getPath();
+        }
+
+        if (! $this instanceof Model) {
+            return null;
+        }
+
+        $collectionDef = $this->getMediaCollection($collection);
+
+        return $collectionDef?->fallbackPath;
+    }
+
     /**
      * Register the media collections for the model.
      * Override in the model to define collections.

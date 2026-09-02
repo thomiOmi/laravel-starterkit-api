@@ -61,4 +61,8 @@ interface HasMedia
     public function clearMediaCollectionExcept(string $collection, array $exceptIds): int;
 
     public function getFirstMediaUrl(string $collection = 'default', string $conversion = ''): ?string;
+
+    public function getFallbackMediaUrl(string $collection, string $conversion = ''): ?string;
+
+    public function getFallbackMediaPath(string $collection, string $conversion = ''): ?string;
 }
