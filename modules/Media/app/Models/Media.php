@@ -6,6 +6,7 @@ namespace Modules\Media\Models;
 
 use App\Concerns\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\URL;
 use Modules\Media\Builders\MediaBuilder;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Enums\MediaVisibilityEnum;
+use Modules\Media\Observers\MediaObserver;
 use Modules\Media\Policies\MediaPolicy;
 
 /**
@@ -44,6 +46,7 @@ use Modules\Media\Policies\MediaPolicy;
 #[UseEloquentBuilder(MediaBuilder::class)]
 #[UseFactory(MediaFactory::class)]
 #[UsePolicy(MediaPolicy::class)]
+#[ObservedBy([MediaObserver::class])]
 class Media extends Model
 {
     /** @use HasFactory<MediaFactory> */
@@ -192,13 +195,77 @@ class Media extends Model
         );
     }
 
-    public function getTemporaryUrl(\DateTimeInterface $expiration): string
+    public function getTemporaryUrl(\DateTimeInterface $expiration, ?string $conversion = null): string
     {
+        // For conversions, still use the same signed route - the file controller serves the original,
+        // but for conversion we could generate a separate signed conversion route in the future.
+        // For now, keep simple: signed url for the media itself.
         return (string) URL::temporarySignedRoute(
             'api.v1.media.file',
             $expiration,
             ['media' => $this->getKey()],
         );
+    }
+
+    public function getFullUrl(?string $conversion = null): ?string
+    {
+        return $this->url($conversion);
+    }
+
+    public function getPath(?string $conversion = null): ?string
+    {
+        if ($conversion !== null) {
+            $conv = $this->getConversion($conversion);
+
+            if ($conv === null) {
+                return null;
+            }
+
+            return $conv->path;
+        }
+
+        return $this->path;
+    }
+
+    public function getFullUrlOrFallback(?string $conversion = null, ?string $fallback = null): ?string
+    {
+        return $this->url($conversion) ?? $fallback;
+    }
+
+    public function getCustomProperty(string $name, mixed $default = null): mixed
+    {
+        $props = $this->custom_properties;
+
+        if (! is_array($props)) {
+            return $default;
+        }
+
+        return $props[$name] ?? $default;
+    }
+
+    public function setCustomProperty(string $name, mixed $value): self
+    {
+        $props = is_array($this->custom_properties) ? $this->custom_properties : [];
+        $props[$name] = $value;
+        $this->custom_properties = $props;
+
+        return $this;
+    }
+
+    public function forgetCustomProperty(string $name): self
+    {
+        $props = is_array($this->custom_properties) ? $this->custom_properties : [];
+        unset($props[$name]);
+        $this->custom_properties = $props;
+
+        return $this;
+    }
+
+    public function hasCustomProperty(string $name): bool
+    {
+        $props = $this->custom_properties;
+
+        return is_array($props) && array_key_exists($name, $props);
     }
 
     /**
