@@ -52,4 +52,13 @@ interface HasMedia
      * @return array<string, MediaConversion>
      */
     public function getMediaConversions(?Media $media = null): array;
+
+    public function hasMedia(string $collection = 'default'): bool;
+
+    /**
+     * @param  array<int, string>  $exceptIds
+     */
+    public function clearMediaCollectionExcept(string $collection, array $exceptIds): int;
+
+    public function getFirstMediaUrl(string $collection = 'default', string $conversion = ''): ?string;
 }

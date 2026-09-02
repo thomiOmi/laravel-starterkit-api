@@ -140,14 +140,51 @@ trait InteractsWithMedia
             ->first();
     }
 
-    public function getFirstMediaUrl(string $collection = 'default'): ?string
+    public function getFirstMediaUrl(string $collection = 'default', string $conversion = ''): ?string
     {
-        return $this->getFirstMedia($collection)?->url();
+        $media = $this->getFirstMedia($collection);
+
+        if ($media === null) {
+            return null;
+        }
+
+        if ($conversion !== '') {
+            return $media->url($conversion);
+        }
+
+        return $media->url();
     }
 
     public function getFirstMediaSignedUrl(string $collection = 'default', int $ttlMinutes = 10): ?string
     {
         return $this->getFirstMedia($collection)?->signedUrl($ttlMinutes);
+    }
+
+    public function hasMedia(string $collection = 'default'): bool
+    {
+        return $this->media()->where('collection_name', $collection)->exists();
+    }
+
+    /**
+     * @param  array<int, string>  $exceptIds
+     */
+    public function clearMediaCollectionExcept(string $collection, array $exceptIds): int
+    {
+        $query = $this->media()->where('collection_name', $collection);
+
+        if ($exceptIds !== []) {
+            $query->whereNotIn('id', $exceptIds);
+        }
+
+        $media = $query->get();
+        $count = 0;
+
+        foreach ($media as $item) {
+            app(DeleteMediaAction::class)->handle($item);
+            $count++;
+        }
+
+        return $count;
     }
 
     /**
