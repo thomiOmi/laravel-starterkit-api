@@ -89,7 +89,7 @@ erDiagram
 }
 ```
 
-### Trait
+### Trait — Spatie-like
 
 ```php
 use Modules\Media\Traits\InteractsWithMedia;
@@ -97,17 +97,40 @@ use Modules\Media\Contracts\HasMedia;
 
 class User extends Authenticatable implements HasMedia {
     use InteractsWithMedia;
+
+    public function registerMediaCollections(): void {
+        $this->addMediaCollection('avatars')->singleFile()->acceptsMimeTypes(['image/jpeg','image/png'])->useFallbackUrl('/images/avatar-fallback.webp');
+        $this->addMediaCollection('documents');
+    }
+    public function registerMediaConversions(?Media $media = null): void {
+        $this->addMediaConversion('thumbnail')->width(320)->height(320)->fit('cover')->format('webp')->quality(80)->performOnCollections('avatars');
+        $this->addMediaConversion('medium')->width(1024)->format('webp')->quality(85)->performOnCollections(['avatars','default']);
+    }
 }
 
+// Classic
 $user->addMedia($file)->usingName('cover')->withCustomProperties(['alt'=>'...'])->toMediaCollection('avatars');
-$user->getMedia('avatars'); // ordered by order_column
+$user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
+$user->addMediaFromUrl('https://example.com/image.jpg')->toMediaCollection('gallery');
+$user->addMediaFromString('hello', 'hello.txt')->toMediaCollection('documents');
+$user->addMedia($file)->usingFileName('custom.jpg')->sanitizingFileName(fn($n)=>Str::slug($n))->preservingOriginal()->withManipulations(['filter'=>'grayscale'])->toMediaCollection('gallery');
+
+// Query
+$user->getMedia('avatars'); // ordered
+$user->hasMedia('avatars'); // bool
 $user->getFirstMedia('avatars');
-$user->getFirstMediaUrl('avatars'); // public url or null
-$user->getFirstMediaSignedUrl('avatars', 15);
+$user->getFirstMediaUrl('avatars'); // or getFirstMediaUrl('avatars','thumbnail')
+$user->getFirstMediaUrl('avatars','thumbnail'); // conversion
+$user->getFallbackMediaUrl('avatars'); // fallbackUrl if no media
 $user->reorderMedia('gallery', [$id3, $id1, $id2]);
 $user->clearMediaCollection('avatars');
-$media->url('thumbnail'); // conversion url or null
-$media->hasGeneratedConversion('thumbnail');
+$user->clearMediaCollectionExcept('gallery', [$keepId]);
+
+// Model helpers
+$media->url('thumbnail'); $media->getFullUrl('thumbnail'); $media->getPath('thumbnail');
+$media->getTemporaryUrl(now()->addMinutes(15), 'thumbnail');
+$media->hasGeneratedConversion('thumbnail'); $media->getConversion('thumbnail');
+$media->getCustomProperty('alt'); $media->setCustomProperty('alt','x'); $media->hasCustomProperty('alt');
 ```
 
 ### Flowchart — Upload (polymorphic + single_file + conversions)
@@ -261,13 +284,13 @@ php artisan media:reprocess --id=01H... # sync
 ## Testing
 
 ```bash
-# All Media tests (65 tests)
+# All Media tests (72 tests)
 php artisan test --filter="Media"
 # Helpers: Storage::fake('public'), UploadedFile::fake()->image(), MediaFactory::new()->forModel($user), DB::table('permissions')->insertOrIgnore
-# Trait: InteractsWithMediaTest (addMedia, getMedia, reorder), MediaConversionTest (sync conversions)
+# Trait: InteractsWithMediaTest (addMedia, getMedia, reorder), MediaConversionTest (sync conversions), MediaModifierTest (s/320, s/320x200, cache, 304), MediaCollectionOpsTest (hasMedia, clearExcept, getFirstMediaUrl+conversion), MediaFromHelpersTest (fromRequest/Url/String, usingFileName, preservingOriginal)
 ```
 
-Coverage: `MediaUploadTest` (WebP, single_file avatars upsert), `MediaConversionTest` (thumbnail via MediaConversionService), `InteractsWithMediaTest`, `MediaModifierTest` (s/320, s/320x200, cache, 304), `MediaFileTest`, `MediaShowTest`, `MediaListTest`, `MediaDeleteTest`, `MediaAvatarFlowTest`.
+Coverage: `MediaUploadTest` (WebP, single_file avatars upsert), `MediaConversionTest` (thumbnail), `InteractsWithMediaTest`, `MediaModifierTest`, `MediaCollectionOpsTest`, `MediaFromHelpersTest`, `MediaFileTest`, `MediaShowTest`, `MediaListTest`, `MediaDeleteTest`, `MediaAvatarFlowTest`.
 
 ## Related Docs
 
