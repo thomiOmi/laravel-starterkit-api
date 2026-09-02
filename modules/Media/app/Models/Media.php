@@ -150,20 +150,22 @@ class Media extends Model
 
     /**
      * Get the public URL for the media, or null for private media.
-     * When a conversion name is provided, returns the conversion URL if it exists.
+     * When a conversion name is provided, returns the conversion URL if it exists, otherwise null.
      */
     public function url(?string $conversion = null): ?string
     {
         if ($conversion !== null) {
             $conv = $this->getConversion($conversion);
 
-            if ($conv !== null) {
-                if ($this->isPublic()) {
-                    return Storage::disk($conv->disk)->url($conv->path);
-                }
-
+            if ($conv === null) {
                 return null;
             }
+
+            if (! $this->isPublic()) {
+                return null;
+            }
+
+            return Storage::disk($conv->disk)->url($conv->path);
         }
 
         if (! $this->isPublic()) {
