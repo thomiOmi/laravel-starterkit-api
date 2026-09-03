@@ -17,7 +17,7 @@ use InvalidArgumentException;
 final readonly class MediaModifier
 {
     /**
-     * @return array{w?: int, h?: int, s?: string, f?: string, q?: int, format?: string, width?: int, height?: int}
+     * @return array{w?: int, h?: int, s?: string, f?: string, q?: int, fit?: string, kernel?: string, format?: string, width?: int, height?: int}
      */
     public static function parse(string $modifiers): array
     {
@@ -94,6 +94,12 @@ final readonly class MediaModifier
                             $result['q'] = $parsedQ;
                         }
                         break;
+                    case 'fit':
+                        $result['fit'] = strtolower($value);
+                        break;
+                    case 'kernel':
+                        $result['kernel'] = strtolower($value);
+                        break;
                 }
             }
         } else {
@@ -159,6 +165,12 @@ final readonly class MediaModifier
                     case 'quality':
                         $result['q'] = (int) $value;
                         break;
+                    case 'fit':
+                        $result['fit'] = strtolower($value);
+                        break;
+                    case 'kernel':
+                        $result['kernel'] = strtolower($value);
+                        break;
                 }
             }
         }
@@ -187,8 +199,8 @@ final readonly class MediaModifier
             throw new InvalidArgumentException('Height must be between 32 and 2000.');
         }
 
-        if (isset($result['f']) && ! in_array($result['f'], ['webp', 'jpg', 'jpeg'], true)) {
-            throw new InvalidArgumentException('Format must be one of: webp, jpg.');
+        if (isset($result['f']) && ! in_array($result['f'], ['webp', 'jpg', 'jpeg', 'png', 'avif'], true)) {
+            throw new InvalidArgumentException('Format must be one of: webp, jpg, png, avif.');
         }
 
         if (isset($result['q']) && ($result['q'] < 1 || $result['q'] > 100)) {
