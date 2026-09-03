@@ -10,14 +10,13 @@ use InvalidArgumentException;
  * Parses media modifiers from a path segment (variant on-the-fly).
  *
  * Distinct from MediaConversion (persisted, named conversions like thumbnail).
- * This handles arbitrary w/h/f/q for cached variants:
- * - "320"              => w=320
- * - "320x200"          => w=320 h=200
- * - "320/f/webp"       => w=320 f=webp
- * - "320/f/webp/q/80"  => w=320 f=webp q=80
- * - "w/400/h/300/f/jpg/q/85" => w=400 h=300 f=jpg q=85
- * - "s/320"            => s=320 (shorthand for w)
- * - "s/320x200"        => s=320x200
+ * Parsing style follows IPX (unjs/ipx) modifiers but without IPX branding:
+ * - "w_320"            => w=320
+ * - "w_320,h_200"      => w=320 h=200
+ * - "s_320"            => w=320 (s is alias for w)
+ * - "s_320x200"        => w=320 h=200 + s raw
+ * - "w_320,f_webp,q_80" => w=320 f=webp q=80
+ * - "s_320x200,f_webp"  => s=320x200 f=webp
  */
 final readonly class MediaModifier
 {
@@ -26,78 +25,77 @@ final readonly class MediaModifier
      */
     public static function parse(string $modifiers): array
     {
-        $modifiers = trim($modifiers, '/');
+        $modifiers = trim($modifiers);
 
         if ($modifiers === '') {
             throw new InvalidArgumentException('Modifiers cannot be empty.');
         }
 
-        $parts = explode('/', $modifiers);
         $result = [];
 
-        // Handle shorthand "320" or "320x200" as first segment without key
-        $first = $parts[0];
+        foreach (explode(',', $modifiers) as $part) {
+            $part = trim($part);
 
-        if (preg_match('/^\d+$/', $first) === 1) {
-            $result['w'] = (int) $first;
-            array_shift($parts);
-        } elseif (preg_match('/^\d+x\d+$/', $first) === 1) {
-            [$w, $h] = explode('x', $first, 2);
-            $result['w'] = (int) $w;
-            $result['h'] = (int) $h;
-            array_shift($parts);
-        } elseif ($first === 's' && isset($parts[1]) && preg_match('/^\d+$/', $parts[1]) === 1) {
-            $result['s'] = $parts[1];
-            $result['w'] = (int) $parts[1];
-            array_shift($parts);
-            array_shift($parts);
-        } elseif ($first === 's' && isset($parts[1]) && preg_match('/^\d+x\d+$/', $parts[1]) === 1) {
-            $result['s'] = $parts[1];
-            [$w, $h] = explode('x', $parts[1], 2);
-            $result['w'] = (int) $w;
-            $result['h'] = (int) $h;
-            array_shift($parts);
-            array_shift($parts);
-        }
+            if ($part === '') {
+                continue;
+            }
 
-        // Parse remaining key/value pairs
-        for ($i = 0; $i < count($parts); $i += 2) {
-            $key = $parts[$i];
-            $value = $parts[$i + 1] ?? null;
+            [$key, $value] = array_pad(explode('_', $part, 2), 2, null);
 
             if ($value === null) {
                 continue;
             }
 
-            $key = strtolower($key);
-            $value = strtolower($value);
+            $key = strtolower((string) $key);
+            $value = trim($value);
 
             switch ($key) {
-                case 'w':
-                    $result['w'] = (int) $value;
-                    break;
-                case 'h':
-                    $result['h'] = (int) $value;
-                    break;
                 case 's':
+                case 'resize':
                     $result['s'] = $value;
-                    // s can be "320" or "320x200"
+
                     if (str_contains($value, 'x')) {
                         [$w, $h] = explode('x', $value, 2);
-                        $result['w'] = (int) $w;
-                        $result['h'] = (int) $h;
+                        $parsedW = self::parseInt($w);
+                        $parsedH = self::parseInt($h);
+                        if ($parsedW !== null) {
+                            $result['w'] = $parsedW;
+                        }
+                        if ($parsedH !== null) {
+                            $result['h'] = $parsedH;
+                        }
                     } else {
-                        $result['w'] = (int) $value;
+                        $parsedW = self::parseInt($value);
+                        if ($parsedW !== null) {
+                            $result['w'] = $parsedW;
+                        }
+                    }
+                    break;
+                case 'w':
+                case 'width':
+                    $parsedW = self::parseInt($value);
+                    if ($parsedW !== null) {
+                        $result['w'] = $parsedW;
+                    }
+                    break;
+                case 'h':
+                case 'height':
+                    $parsedH = self::parseInt($value);
+                    if ($parsedH !== null) {
+                        $result['h'] = $parsedH;
                     }
                     break;
                 case 'f':
                 case 'format':
-                    $result['f'] = $value;
-                    $result['format'] = $value;
+                    $result['f'] = strtolower($value);
+                    $result['format'] = strtolower($value);
                     break;
                 case 'q':
                 case 'quality':
-                    $result['q'] = (int) $value;
+                    $parsedQ = self::parseInt($value);
+                    if ($parsedQ !== null) {
+                        $result['q'] = $parsedQ;
+                    }
                     break;
             }
         }
@@ -142,6 +140,13 @@ final readonly class MediaModifier
         }
 
         return $result;
+    }
+
+    private static function parseInt(string $value): ?int
+    {
+        $int = filter_var(trim($value), FILTER_VALIDATE_INT);
+
+        return $int === false ? null : (int) $int;
     }
 
     /**
