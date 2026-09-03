@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Modules\IAM\Models\Permission;
+use Illuminate\Support\Str;
 use Modules\Media\Http\Controllers\V1\MediaUploadController;
 
 covers(MediaUploadController::class);
@@ -13,7 +14,13 @@ covers(MediaUploadController::class);
 describe('avatar end-to-end flow', function () {
     it('uploads media then attaches it through the profile update endpoint', function () {
         Storage::fake('public');
-        Permission::firstOrCreate(['name' => PermissionEnum::MediaCreate->value, 'guard_name' => 'sanctum']);
+        DB::table('permissions')->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'name' => PermissionEnum::MediaCreate->value,
+            'guard_name' => 'sanctum',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);

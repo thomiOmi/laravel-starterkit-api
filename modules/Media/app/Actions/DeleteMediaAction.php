@@ -18,11 +18,21 @@ final readonly class DeleteMediaAction
 {
     public function handle(Media $media): bool
     {
+        $disk = $media->disk;
+        $path = $media->path;
+        $mediaId = $media->id;
+        $conversions = $media->conversions()->get();
+
         $deleted = (bool) $media->delete();
 
         if ($deleted) {
-            Storage::disk($media->disk)->delete($media->path);
-            Storage::disk($media->disk)->deleteDirectory('variants/'.$media->id);
+            Storage::disk($disk)->delete($path);
+            Storage::disk($disk)->deleteDirectory('variants/'.$mediaId);
+            Storage::disk($disk)->deleteDirectory('conversions/'.$mediaId);
+
+            foreach ($conversions as $conversion) {
+                Storage::disk($conversion->disk)->delete($conversion->path);
+            }
 
             event(new MediaDeleted($media));
         }

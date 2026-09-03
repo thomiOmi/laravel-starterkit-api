@@ -4,6 +4,7 @@
     "description": "Identity and access management: authentication, RBAC authorization, profiles, devices, and social login.",
     "keywords": [],
     "priority": 0,
+    "requires": ["Media"],
     "providers": [
         "Modules\\IAM\\Providers\\IAMServiceProvider"
     ],

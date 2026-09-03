@@ -34,6 +34,7 @@ parameters:
     configDirectories:
         - config
         - modules/IAM/config
+        - modules/Media/config
 
     # Translation files (Laravel 13 uses lang/, not resources/lang/)
     # Note: larastan does NOT glob-expand these paths; list module lang dirs literally

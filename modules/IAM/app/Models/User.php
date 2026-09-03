@@ -27,6 +27,9 @@ use Modules\IAM\Builders\UserBuilder;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Observers\UserObserver;
 use Modules\IAM\Policies\UserPolicy;
+use Modules\Media\Contracts\HasMedia;
+use Modules\Media\Models\Media;
+use Modules\Media\Traits\InteractsWithMedia;
 use SensitiveParameter;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -54,10 +57,10 @@ use Spatie\Permission\Traits\HasRoles;
 #[UseEloquentBuilder(UserBuilder::class)]
 #[UsePolicy(UserPolicy::class)]
 #[ObservedBy([UserObserver::class])]
-class User extends Authenticatable implements Identity
+class User extends Authenticatable implements HasMedia, Identity
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, Notifiable, SoftDeletes;
+    use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, InteractsWithMedia, Notifiable, SoftDeletes;
 
     /**
      * Get the social accounts linked to this user.
@@ -93,6 +96,32 @@ class User extends Authenticatable implements Identity
     public function sendPasswordResetNotification(#[SensitiveParameter] $token): void
     {
         $this->notify(new ResetPassword($token));
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatars')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp']);
+
+        $this->addMediaCollection('default');
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumbnail')
+            ->width(320)
+            ->height(320)
+            ->fit('cover')
+            ->format('webp')
+            ->quality(80)
+            ->performOnCollections('avatars');
+
+        $this->addMediaConversion('medium')
+            ->width(1024)
+            ->format('webp')
+            ->quality(85)
+            ->performOnCollections(['avatars', 'default']);
     }
 
     /**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Enums\MediaVisibilityEnum;
+use Modules\Media\Enums\MediaVisibilityEnum;
 
 covers(MediaVisibilityEnum::class);
 
