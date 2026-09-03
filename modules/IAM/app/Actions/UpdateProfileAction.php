@@ -58,7 +58,7 @@ final readonly class UpdateProfileAction
             || (! is_string($record->model_id) && ! is_int($record->model_id))
             || ! is_string($record->disk)
             || ! is_string($record->visibility)
-            || ! is_string($record->path)
+            || ! is_string($record->file_name)
         ) {
             throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
@@ -80,6 +80,8 @@ final readonly class UpdateProfileAction
             throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
 
-        return Storage::disk($record->disk)->url($record->path);
+        $path = $record->collection_name.'/'.$record->file_name;
+
+        return Storage::disk($record->disk)->url($path);
     }
 }
