@@ -214,17 +214,17 @@ class Media extends Model
 
     public function getPath(?string $conversion = null): ?string
     {
-        if ($conversion !== null) {
-            $conv = $this->getConversion($conversion);
+        $generator = app(PathGenerator::class);
 
-            if ($conv === null) {
-                return null;
-            }
-
-            return $conv->path;
+        if ($conversion === null || $conversion === '') {
+            return $generator->getPath($this);
         }
 
-        return $this->path;
+        if (! $this->hasGeneratedConversion($conversion)) {
+            return null;
+        }
+
+        return $generator->getPathForConversions($this, $conversion);
     }
 
     public function getFullUrlOrFallback(?string $conversion = null, ?string $fallback = null): ?string
