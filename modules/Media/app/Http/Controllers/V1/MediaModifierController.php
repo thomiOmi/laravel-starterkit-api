@@ -51,8 +51,16 @@ final readonly class MediaModifierController extends Controller
         $height = isset($parsed['h']) && is_int($parsed['h']) ? $parsed['h'] : null;
         /** @var string $format */
         $format = isset($parsed['f']) && is_string($parsed['f']) ? $parsed['f'] : 'webp';
+        /** @var string|null $fit */
+        $fit = isset($parsed['fit']) && is_string($parsed['fit']) ? $parsed['fit'] : null;
+        /** @var string|null $kernel */
+        $kernel = isset($parsed['kernel']) && is_string($parsed['kernel']) ? $parsed['kernel'] : null;
+        $defaultQuality = (int) config()->integer("media.collections.{$media->collection_name}.quality", 80);
+        if ($defaultQuality < 1 || $defaultQuality > 100) {
+            $defaultQuality = 80;
+        }
         /** @var int<1, 100> $quality */
-        $quality = isset($parsed['q']) && is_int($parsed['q']) ? $parsed['q'] : 80;
+        $quality = isset($parsed['q']) && is_int($parsed['q']) ? $parsed['q'] : $defaultQuality;
 
         if ($format === 'jpeg') {
             $format = 'jpg';
@@ -72,32 +80,77 @@ final readonly class MediaModifierController extends Controller
 
         $disk = Storage::disk($media->disk);
         $ext = $format === 'jpg' ? 'jpg' : $format;
-        $variantPath = 'variants/'.$media->id.'/'.$cacheKey.'.'.$ext;
+        $readableParts = [];
+        if ($width !== null) {
+            $readableParts[] = "w{$width}";
+        }
+        if ($height !== null) {
+            $readableParts[] = "h{$height}";
+        }
+        if ($format !== '') {
+            $readableParts[] = "f_{$format}";
+        }
+        if ($quality !== 80) {
+            $readableParts[] = "q{$quality}";
+        }
+        if ($fit !== null) {
+            $readableParts[] = "fit_{$fit}";
+        }
+        if ($kernel !== null) {
+            $readableParts[] = "kernel_{$kernel}";
+        }
+        $readable = implode('-', $readableParts);
+        if ($readable === '') {
+            $readable = 'original';
+        }
+        $variantPath = 'variants/'.$media->id.'/'.$readable.'-'.substr($cacheKey, 0, 8).'.'.$ext;
+
+        $isPublic = $media->isPublic();
 
         if ($disk->exists($variantPath)) {
             /** @var StreamedResponse $cached */
             $cached = $disk->response($variantPath);
+            $cached->setEtag($etag);
 
-            return $cached->setEtag($etag)->setMaxAge(self::MAX_AGE)->setPublic();
+            if ($isPublic) {
+                return $cached->setMaxAge(self::MAX_AGE)->setPublic();
+            }
+
+            $cached->setPrivate();
+            $cached->headers->set('Cache-Control', 'private, no-store');
+
+            return $cached;
         }
 
         $image = Image::fromStorage($media->path, $media->disk);
 
         if ($width !== null || $height !== null) {
-            // Use cover if both dimensions provided and s modifier, otherwise scale
-            if (isset($parsed['s']) && $width !== null && $height !== null) {
+            if ($fit === 'cover' && $width !== null && $height !== null) {
+                $image = $image->cover(width: $width, height: $height);
+            } elseif ($fit === 'contain' && $width !== null && $height !== null) {
+                $image = $image->contain(width: $width, height: $height);
+            } elseif ($fit === 'fill' && $width !== null && $height !== null) {
+                $image = $image->resize(width: $width, height: $height);
+            } elseif (isset($parsed['s']) && $width !== null && $height !== null) {
                 $image = $image->cover(width: $width, height: $height);
             } else {
                 $image = $image->scale(width: $width, height: $height);
             }
         }
 
+        // Kernel handling is driver-specific and not directly exposed via Image facade; reserved for custom driver via MediaProcessor
         $image = $image->toFormat($format)->quality($quality);
         $image->storeAs(dirname($variantPath), basename($variantPath), $media->disk, ['visibility' => $media->visibility->value]);
 
-        return $image->toResponse(request())
-            ->setEtag($etag)
-            ->setMaxAge(self::MAX_AGE)
-            ->setPublic();
+        $response = $image->toResponse(request())->setEtag($etag);
+
+        if ($isPublic) {
+            return $response->setMaxAge(self::MAX_AGE)->setPublic();
+        }
+
+        $response->setPrivate();
+        $response->headers->set('Cache-Control', 'private, no-store');
+
+        return $response;
     }
 }
