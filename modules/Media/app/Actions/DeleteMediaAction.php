@@ -19,13 +19,13 @@ final readonly class DeleteMediaAction
     public function handle(Media $media): bool
     {
         $disk = $media->disk;
-        $path = $media->path;
+        $path = $media->getPath();
         $mediaId = $media->id;
         $conversions = $media->conversions()->get();
 
         $deleted = (bool) $media->delete();
 
-        if ($deleted) {
+        if ($deleted && is_string($path)) {
             Storage::disk($disk)->delete($path);
             Storage::disk($disk)->deleteDirectory('variants/'.$mediaId);
             Storage::disk($disk)->deleteDirectory('conversions/'.$mediaId);

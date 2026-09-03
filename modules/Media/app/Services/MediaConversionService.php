@@ -77,7 +77,13 @@ final readonly class MediaConversionService
             $quality = 100;
         }
 
-        $image = Image::fromStorage($media->path, $disk);
+        $path = $media->getPath();
+
+        if (! is_string($path)) {
+            throw new \RuntimeException('Media path is missing.');
+        }
+
+        $image = Image::fromStorage($path, $disk);
 
         if ($width !== null || $height !== null) {
             if ($fit === 'cover' && $width !== null && $height !== null) {

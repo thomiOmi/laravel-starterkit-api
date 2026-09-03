@@ -35,7 +35,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         $media = MediaFactory::new()->forModel($owner)->createOne(['mime_type' => 'image/jpeg']);
 
         $file = UploadedFile::fake()->image('seed.jpg', $width, $height);
-        Storage::disk('public')->put($media->path, (string) $file->getContent());
+        Storage::disk('public')->put($media->getPath() ?? '', (string) $file->getContent());
 
         return $media;
     }
@@ -124,12 +124,12 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         expect(Storage::disk('public')->allFiles('variants/'.$media->id))->toHaveCount(1);
 
         // Remove the original to prove the next response comes from the cache.
-        Storage::disk('public')->delete($media->path);
+        Storage::disk('public')->delete($media->getPath() ?? '');
 
         $second = $this->getJson("/api/v1/media/{$media->id}/s/32");
         $second->assertOk();
         expect($second->headers->get('ETag'))->toBe($first->headers->get('ETag'))
-            ->and(Storage::disk('public')->exists($media->path))->toBeFalse()
+            ->and(Storage::disk('public')->exists($media->getPath() ?? ''))->toBeFalse()
             ->and(Storage::disk('public')->allFiles('variants/'.$media->id))->toHaveCount(1);
     });
 
@@ -149,7 +149,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
     it('rejects non-image media with a problem response', function () {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne(['mime_type' => 'application/pdf']);
-        Storage::disk('public')->put($media->path, "%PDF-1.4\n");
+        Storage::disk('public')->put($media->getPath() ?? '', "%PDF-1.4\n");
 
         $response = $this->getJson("/api/v1/media/{$media->id}/s/64");
 

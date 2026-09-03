@@ -11,16 +11,20 @@ final readonly class DefaultPathGenerator implements PathGenerator
 {
     public function getPath(Media $media): string
     {
-        return $media->path;
+        return $media->collection_name.'/'.$media->file_name;
     }
 
     public function getPathForConversions(Media $media, string $conversion): string
     {
-        return dirname($media->path).'/conversions/'.$conversion.'/'.basename($media->path);
+        $base = $this->getPath($media);
+
+        return dirname($base).'/conversions/'.$conversion.'/'.basename($base);
     }
 
     public function getPathForResponsiveImages(Media $media): string
     {
-        return dirname($media->path).'/responsive-images/'.basename($media->path);
+        $base = $this->getPath($media);
+
+        return dirname($base).'/responsive-images/'.basename($base);
     }
 }

@@ -25,11 +25,14 @@ final readonly class MediaUrlGeneratorService implements MediaUrlGenerator
     public function getTemporaryUrl(Media $media, DateTimeInterface $expiration): string
     {
         $disk = Storage::disk($media->disk);
+        $path = $media->getPath();
 
-        try {
-            return $disk->temporaryUrl($media->path, $expiration);
-        } catch (\Throwable) {
-            // Fall back to signed route for local disks.
+        if (is_string($path)) {
+            try {
+                return $disk->temporaryUrl($path, $expiration);
+            } catch (\Throwable) {
+                // Fall back to signed route for local disks.
+            }
         }
 
         return (string) URL::temporarySignedRoute(

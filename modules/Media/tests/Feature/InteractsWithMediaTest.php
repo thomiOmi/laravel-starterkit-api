@@ -94,7 +94,7 @@ describe('InteractsWithMedia', function () {
             ->and($media->original_name)->toBe('custom-name.jpg')
             ->and($media->custom_properties)->toMatchArray(['alt' => 'Test']);
 
-        Storage::disk('public')->assertExists($media->path);
+        Storage::disk('public')->assertExists($media->getPath() ?? '');
     });
 
     it('returns url helpers', function () {
@@ -115,12 +115,12 @@ describe('InteractsWithMedia', function () {
         $owner->exists = true;
 
         $public = MediaFactory::new()->forModel($owner, 'avatars')->public()->createOne();
-        Storage::disk('public')->put($public->path, 'content');
+        Storage::disk('public')->put($public->getPath() ?? '', 'content');
 
         $private = MediaFactory::new()->forModel($owner, 'documents')->createOne();
-        Storage::disk('public')->put($private->path, 'content');
+        Storage::disk('public')->put($private->getPath() ?? '', 'content');
 
-        expect($owner->getFirstMediaUrl('avatars'))->toBe(Storage::disk('public')->url($public->path))
+        expect($owner->getFirstMediaUrl('avatars'))->toBe(Storage::disk('public')->url($public->getPath() ?? ''))
             ->and($owner->getFirstMediaUrl('documents'))->toBeNull()
             ->and($owner->getFirstMediaSignedUrl('documents'))->toContain('/api/v1/media/')
             ->and($owner->getFirstMediaSignedUrl('missing'))->toBeNull();
