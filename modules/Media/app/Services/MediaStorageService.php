@@ -31,7 +31,11 @@ final readonly class MediaStorageService
      */
     public function delete(Media $media): void
     {
-        Storage::disk($media->disk)->delete($media->path);
+        $path = $media->getPath();
+
+        if (is_string($path)) {
+            Storage::disk($media->disk)->delete($path);
+        }
     }
 
     /**
@@ -47,7 +51,9 @@ final readonly class MediaStorageService
      */
     public function exists(Media $media): bool
     {
-        return Storage::disk($media->disk)->exists($media->path);
+        $path = $media->getPath();
+
+        return is_string($path) && Storage::disk($media->disk)->exists($path);
     }
 
     /**
@@ -56,9 +62,14 @@ final readonly class MediaStorageService
     public function path(Media $media): ?string
     {
         $disk = Storage::disk($media->disk);
+        $path = $media->getPath();
+
+        if (! is_string($path)) {
+            return null;
+        }
 
         try {
-            return $disk->path($media->path);
+            return $disk->path($path);
         } catch (\Throwable) {
             return null;
         }

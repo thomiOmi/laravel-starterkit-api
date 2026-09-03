@@ -24,8 +24,9 @@ final readonly class MediaFileController extends Controller
     public function __invoke(Media $media): Response|ProblemResponse
     {
         $disk = Storage::disk($media->disk);
+        $path = $media->getPath();
 
-        if (! $disk->exists($media->path)) {
+        if (! is_string($path) || ! $disk->exists($path)) {
             return new ProblemResponse(
                 typeKey: 'not_found',
                 status: Response::HTTP_NOT_FOUND,
@@ -33,6 +34,6 @@ final readonly class MediaFileController extends Controller
             );
         }
 
-        return $disk->response($media->path);
+        return $disk->response($path);
     }
 }

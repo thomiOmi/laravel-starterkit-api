@@ -17,7 +17,7 @@ describe('GET /api/v1/media/{media}/file', function () {
 
     it('streams the stored file for a valid signed url of private media', function () {
         $media = MediaFactory::new()->createOne(['mime_type' => 'image/png']);
-        Storage::disk($media->disk)->put($media->path, (string) UploadedFile::fake()->image('private.png')->getContent());
+        Storage::disk($media->disk)->put($media->getPath() ?? '', (string) UploadedFile::fake()->image('private.png')->getContent());
 
         $url = $media->signedUrl(15);
 
@@ -25,12 +25,12 @@ describe('GET /api/v1/media/{media}/file', function () {
 
         $response->assertOk();
         expect($response->headers->get('Content-Type'))->toContain('image/png');
-        Storage::disk($media->disk)->assertExists($media->path);
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
     it('rejects tampered signatures', function () {
         $media = MediaFactory::new()->createOne();
-        Storage::disk($media->disk)->put($media->path, 'content');
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
 
         $url = $media->signedUrl(15);
         $tampered = str_replace('signature=', 'signature=x', $url);
@@ -40,7 +40,7 @@ describe('GET /api/v1/media/{media}/file', function () {
 
     it('rejects expired signatures', function () {
         $media = MediaFactory::new()->createOne();
-        Storage::disk($media->disk)->put($media->path, 'content');
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
 
         $expired = (string) Uri::temporarySignedRoute(
             'api.v1.media.file',

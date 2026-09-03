@@ -122,7 +122,13 @@ final readonly class MediaModifierController extends Controller
             return $cached;
         }
 
-        $image = Image::fromStorage($media->path, $media->disk);
+        $path = $media->getPath();
+
+        if (! is_string($path)) {
+            abort(404);
+        }
+
+        $image = Image::fromStorage($path, $media->disk);
 
         if ($width !== null || $height !== null) {
             if ($fit === 'cover' && $width !== null && $height !== null) {

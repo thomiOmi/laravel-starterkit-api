@@ -163,16 +163,29 @@ final class FileAdder
             $meta['responsive'] = true;
         }
 
+        $name = pathinfo($fileName, PATHINFO_FILENAME);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+
         $media = Media::query()->create([
             'collection_name' => $this->collectionName,
+            'name' => $name,
+            'file_name' => $fileName,
             'disk' => $this->disk,
+            'conversions_disk' => $this->disk,
             'mime_type' => (string) $file->getMimeType(),
             'size' => (int) $file->getSize(),
-            'path' => $path,
             'visibility' => 'private',
+            'original_name' => $file->getClientOriginalName(),
+            'original_extension' => $extension !== '' ? $extension : null,
+            'sha256' => is_string($file->getRealPath()) ? hash_file('sha256', $file->getRealPath()) : null,
+            'manipulations' => $this->manipulations !== [] ? $this->manipulations : [],
+            'custom_properties' => $this->customProperties !== [] ? $this->customProperties : null,
+            'generated_conversions' => [],
+            'responsive_images' => [],
             'meta' => $meta,
-            'uploaded_by' => $stringKey,
-            'model_type' => $this->model::class,
+            'uploaded_by_type' => null,
+            'uploaded_by_id' => null,
+            'model_type' => $this->model->getMorphClass(),
             'model_id' => $stringKey,
             'order_column' => $this->nextOrderColumn(),
         ]);

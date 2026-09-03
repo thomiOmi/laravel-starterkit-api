@@ -23,7 +23,7 @@ final class MediaCleanupCommand extends Command
         $storage = Storage::disk($disk);
 
         /** @var array<int, string> $dbPaths */
-        $dbPaths = Media::query()->pluck('path')->all();
+        $dbPaths = Media::query()->get()->map(fn (Media $m): ?string => $m->getPath())->filter()->all();
         /** @var array<int, string> $dbConversionPaths */
         $dbConversionPaths = MediaConversion::query()->pluck('path')->all();
         /** @var array<int, string> $dbAllPaths */
@@ -72,9 +72,11 @@ final class MediaCleanupCommand extends Command
         $missing = 0;
 
         foreach (Media::query()->cursor() as $media) {
-            if (! $storage->exists($media->path)) {
+            $path = $media->getPath();
+
+            if (! is_string($path) || ! $storage->exists($path)) {
                 $missing++;
-                $this->warn(sprintf('Missing file for media %s: %s', $media->id, $media->path));
+                $this->warn(sprintf('Missing file for media %s: %s', $media->id, $path ?? 'null'));
 
                 if (! $dryRun) {
                     // Optionally delete the DB record? For now just warn.

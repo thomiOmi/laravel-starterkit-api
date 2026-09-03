@@ -267,11 +267,16 @@ final readonly class UploadMediaAction
                         ->first();
 
                     if ($existing !== null) {
+                        $fileName = basename($fullPath);
+                        $name = pathinfo($fileName, PATHINFO_FILENAME);
+
                         $existing->fill([
+                            'name' => $name,
+                            'file_name' => $fileName,
                             'disk' => $disk,
+                            'conversions_disk' => $disk,
                             'mime_type' => $mimeType,
                             'size' => $size,
-                            'path' => $fullPath,
                             'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
                             'original_name' => $file->getClientOriginalName(),
                             'original_extension' => $file->getClientOriginalExtension(),
@@ -303,16 +308,24 @@ final readonly class UploadMediaAction
                     $nextOrder = is_numeric($maxOrder) ? ((int) $maxOrder + 1) : 1;
                 }
 
+                $fileName = basename($fullPath);
+                $name = pathinfo($fileName, PATHINFO_FILENAME);
+
                 $media = Media::query()->create([
                     'collection_name' => $payload->collectionName,
+                    'name' => $name,
+                    'file_name' => $fileName,
                     'disk' => $disk,
+                    'conversions_disk' => $disk,
                     'mime_type' => $mimeType,
                     'size' => $size,
-                    'path' => $fullPath,
                     'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
                     'original_name' => $file->getClientOriginalName(),
                     'original_extension' => $file->getClientOriginalExtension(),
                     'sha256' => hash_file('sha256', $file->getRealPath()),
+                    'manipulations' => [],
+                    'generated_conversions' => [],
+                    'responsive_images' => [],
                     'meta' => $meta,
                     'custom_properties' => null,
                     'order_column' => $nextOrder,
@@ -330,11 +343,12 @@ final readonly class UploadMediaAction
             });
 
             // Clean up old file and its variants after successful single_file replacement.
-            if ($isSingle && $media->wasChanged('path')) {
-                $oldPath = $media->getOriginal('path');
+            if ($isSingle && $media->wasChanged('file_name')) {
+                $oldFileName = $media->getOriginal('file_name');
 
-                if (is_string($oldPath) && $oldPath !== $media->path) {
-                    Storage::disk($disk)->delete($oldPath);
+                if (is_string($oldFileName) && $oldFileName !== $media->file_name) {
+                    $oldFullPath = $media->collection_name.'/'.$oldFileName;
+                    Storage::disk($disk)->delete($oldFullPath);
                     Storage::disk($disk)->deleteDirectory('variants/'.$media->id);
                 }
             }

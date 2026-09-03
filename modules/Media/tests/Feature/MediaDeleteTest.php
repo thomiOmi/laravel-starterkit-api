@@ -23,7 +23,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         Event::fake([MediaDeleted::class]);
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
-        Storage::disk($media->disk)->put($media->path, 'content');
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
         Storage::disk($media->disk)->put('variants/'.$media->id.'/1-32-webp.webp', 'thumb');
 
         $response = $this->deleteJson("/api/v1/media/{$media->id}");
@@ -31,7 +31,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         assertSuccessResponse($response, 200);
         expect(Media::query()->whereKey($media->id)->exists())->toBeFalse();
 
-        Storage::disk($media->disk)->assertMissing($media->path);
+        Storage::disk($media->disk)->assertMissing($media->getPath() ?? '');
         Storage::disk($media->disk)->assertMissing('variants/'.$media->id.'/1-32-webp.webp');
         // Identity closure would restore the soft-deleted model through
         // SerializesModels, so only assert the event type here.
@@ -49,11 +49,11 @@ describe('DELETE /api/v1/media/{media}', function () {
         $staff = loginAsUser();
         $staff->givePermissionTo(PermissionEnum::MediaDelete->value);
         $media = MediaFactory::new()->createOne();
-        Storage::disk($media->disk)->put($media->path, 'content');
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
 
         assertSuccessResponse($this->deleteJson("/api/v1/media/{$media->id}"), 200);
 
-        Storage::disk($media->disk)->assertMissing($media->path);
+        Storage::disk($media->disk)->assertMissing($media->getPath() ?? '');
     });
 
     it('rejects strangers without permission', function () {

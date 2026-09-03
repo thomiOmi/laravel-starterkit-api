@@ -29,21 +29,26 @@ use Modules\Media\Policies\MediaPolicy;
  * @property string|null $model_type The owning model class.
  * @property string|null $model_id The owning model key.
  * @property string $collection_name The logical collection the media belongs to.
+ * @property string $name The file name without extension.
+ * @property string $file_name The file name with extension.
  * @property string $disk The storage disk the file is stored on.
+ * @property string|null $conversions_disk The disk for conversions.
  * @property string $mime_type The MIME type of the stored file.
  * @property int $size The file size in bytes.
- * @property string $path The unique storage path of the file.
  * @property MediaVisibilityEnum $visibility Who may access the media.
  * @property string|null $original_name The original client file name.
  * @property string|null $original_extension The original file extension.
  * @property string|null $sha256 The SHA-256 checksum of the stored file.
- * @property array<string, mixed>|null $meta Free-form metadata (dimensions, etc.).
+ * @property array<string, mixed>|null $manipulations JSON manipulations per conversion.
  * @property array<string, mixed>|null $custom_properties Application-level metadata.
+ * @property array<string, mixed>|null $generated_conversions JSON map of generated conversions.
+ * @property array<string, mixed>|null $responsive_images JSON responsive data.
+ * @property array<string, mixed>|null $meta Free-form metadata (dimensions, etc.).
  * @property int $order_column Ordering within the collection.
  * @property string|null $uploaded_by_type The uploader model class.
  * @property string|null $uploaded_by_id The uploader model key.
  */
-#[Fillable(['model_type', 'model_id', 'collection_name', 'disk', 'mime_type', 'size', 'path', 'visibility', 'original_name', 'original_extension', 'sha256', 'meta', 'custom_properties', 'order_column', 'uploaded_by_type', 'uploaded_by_id'])]
+#[Fillable(['model_type', 'model_id', 'collection_name', 'name', 'file_name', 'disk', 'conversions_disk', 'mime_type', 'size', 'visibility', 'original_name', 'original_extension', 'sha256', 'manipulations', 'custom_properties', 'generated_conversions', 'responsive_images', 'meta', 'order_column', 'uploaded_by_type', 'uploaded_by_id'])]
 #[UseEloquentBuilder(MediaBuilder::class)]
 #[UseFactory(MediaFactory::class)]
 #[UsePolicy(MediaPolicy::class)]
@@ -52,6 +57,19 @@ class Media extends Model
 {
     /** @use HasFactory<MediaFactory> */
     use HasDefaultBehavior, HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(static function (self $model): void {
+            if (empty($model->name) && ! empty($model->file_name)) {
+                $model->name = pathinfo($model->file_name, PATHINFO_FILENAME);
+            }
+            if (empty($model->file_name) && ! empty($model->name)) {
+                $ext = $model->original_extension ?? 'bin';
+                $model->file_name = $model->name.'.'.$ext;
+            }
+        });
+    }
 
     /**
      * Get the owning model of the media.
@@ -176,7 +194,13 @@ class Media extends Model
             return null;
         }
 
-        return Storage::disk($this->disk)->url($this->path);
+        $path = $this->getPath();
+
+        if ($path === null) {
+            return null;
+        }
+
+        return Storage::disk($this->disk)->url($path);
     }
 
     public function getUrl(?string $conversion = null): ?string
@@ -281,7 +305,10 @@ class Media extends Model
             'size' => 'integer',
             'visibility' => MediaVisibilityEnum::class,
             'meta' => 'array',
+            'manipulations' => 'array',
             'custom_properties' => 'array',
+            'generated_conversions' => 'array',
+            'responsive_images' => 'array',
             'order_column' => 'integer',
         ];
     }

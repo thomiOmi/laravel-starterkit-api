@@ -53,7 +53,7 @@ describe('POST /api/v1/media', function () {
             ->and($meta['height'] ?? null)->toBeInt()
             ->and($meta['height'] ?? 0)->toBeGreaterThan(0);
 
-        Storage::disk('public')->assertExists($media->path);
+        Storage::disk('public')->assertExists($media->getPath() ?? '');
         Event::assertDispatched(MediaUploaded::class, fn (MediaUploaded $event): bool => $event->media->is($media));
     });
 
@@ -68,8 +68,8 @@ describe('POST /api/v1/media', function () {
         assertSuccessResponse($response, 201);
         $media = Media::query()->sole();
         expect($media->mime_type)->toBe('image/webp')
-            ->and($media->path)->toEndWith('.webp');
-        Storage::disk('public')->assertExists($media->path);
+            ->and($media->getPath() ?? '')->toEndWith('.webp');
+        Storage::disk('public')->assertExists($media->getPath() ?? '');
     });
 
     it('stores non-image files untouched when their extension is allowed', function () {
@@ -84,10 +84,10 @@ describe('POST /api/v1/media', function () {
         assertSuccessResponse($response, 201);
         $media = Media::query()->sole();
         expect($media->mime_type)->toBe('application/pdf')
-            ->and($media->path)->toEndWith('.pdf')
+            ->and($media->getPath() ?? '')->toEndWith('.pdf')
             ->and($media->meta)->toHaveKey('original_name')
             ->and($media->meta)->not->toHaveKey('width');
-        Storage::disk('public')->assertExists($media->path);
+        Storage::disk('public')->assertExists($media->getPath() ?? '');
     });
 
     it('rejects invalid collection names', function (string $collection) {

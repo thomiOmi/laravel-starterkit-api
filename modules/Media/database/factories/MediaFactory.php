@@ -24,20 +24,28 @@ class MediaFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->unique()->word();
+        $ext = 'png';
+
         return [
             'model_type' => null,
             'model_id' => null,
             'collection_name' => 'default',
+            'name' => $name,
+            'file_name' => $name.'.'.$ext,
             'disk' => 'public',
+            'conversions_disk' => 'public',
             'mime_type' => 'image/png',
             'size' => fake()->numberBetween(1024, 512_000),
-            'path' => fake()->unique()->md5().'.png',
             'visibility' => MediaVisibilityEnum::Private,
-            'original_name' => fake()->word().'.png',
-            'original_extension' => 'png',
+            'original_name' => $name.'.'.$ext,
+            'original_extension' => $ext,
             'sha256' => hash('sha256', (string) fake()->unique()->md5()),
-            'meta' => ['original_name' => fake()->word().'.png'],
+            'manipulations' => [],
             'custom_properties' => null,
+            'generated_conversions' => [],
+            'responsive_images' => [],
+            'meta' => ['original_name' => $name.'.'.$ext],
             'order_column' => 0,
             'uploaded_by_type' => null,
             'uploaded_by_id' => null,
