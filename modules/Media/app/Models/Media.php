@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Modules\Media\Builders\MediaBuilder;
+use Modules\Media\Contracts\PathGenerator;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Observers\MediaObserver;
@@ -214,6 +215,7 @@ class Media extends Model
 
     public function getPath(?string $conversion = null): ?string
     {
+        /** @var PathGenerator $generator */
         $generator = app(PathGenerator::class);
 
         if ($conversion === null || $conversion === '') {
