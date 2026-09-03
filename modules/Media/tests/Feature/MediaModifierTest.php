@@ -48,8 +48,8 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
 
         $response->assertOk();
         expect($response->headers->get('Content-Type'))->toContain('image/webp')
-            ->and($response->headers->get('Cache-Control'))->toContain('max-age=31536000')
-            ->and($response->headers->get('Cache-Control'))->toContain('public')
+            ->and($response->headers->get('Cache-Control'))->toContain('private')
+            ->and($response->headers->get('Cache-Control'))->toContain('no-store')
             ->and($response->headers->get('ETag'))->toBeString();
 
         $image = imagecreatefromstring((string) $response->getContent());
