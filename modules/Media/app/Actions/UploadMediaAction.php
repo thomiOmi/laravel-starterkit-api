@@ -216,13 +216,14 @@ final readonly class UploadMediaAction
             }
         }
 
-        $visibility = config()->string('media.collections.'.$collectionName.'.visibility');
+        /** @var mixed $visibility */
+        $visibility = config('media.collections.'.$collectionName.'.visibility');
 
-        if ($visibility === MediaVisibilityEnum::Public->value) {
+        if (is_string($visibility) && $visibility === MediaVisibilityEnum::Public->value) {
             return MediaVisibilityEnum::Public;
         }
 
-        if ($visibility === MediaVisibilityEnum::Private->value) {
+        if (is_string($visibility) && $visibility === MediaVisibilityEnum::Private->value) {
             return MediaVisibilityEnum::Private;
         }
 
