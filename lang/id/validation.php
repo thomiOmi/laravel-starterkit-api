@@ -10,6 +10,8 @@ return [
     'avatar_unavailable' => 'Layanan avatar tidak tersedia.',
     'media_unavailable' => 'Layanan media tidak tersedia.',
     'media_not_image' => 'Media yang diminta bukan gambar.',
+    'media_disallowed_extension' => 'Nama berkas mengandung ekstensi yang tidak diizinkan.',
+    'media_not_accepted' => 'Berkas tidak diterima oleh koleksi media.',
 
     /*
     |--------------------------------------------------------------------------
