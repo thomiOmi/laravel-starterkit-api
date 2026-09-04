@@ -120,24 +120,7 @@ final readonly class UploadMediaAction
             return;
         }
 
-        /** @var array<string, mixed> $conversions */
-        $conversions = config()->array('media.conversions', []);
-
-        if ($conversions === []) {
-            return;
-        }
-
-        if (config()->boolean('media.queue', false)) {
-            ProcessMediaJob::dispatch($media->id);
-
-            return;
-        }
-
-        try {
-            app(MediaConversionService::class)->generate($media);
-        } catch (Throwable) {
-            // Ignore conversion failures during upload.
-        }
+        // No model-driven conversions and no config conversions (config removed) — nothing to generate.
     }
 
     /**
@@ -216,17 +199,6 @@ final readonly class UploadMediaAction
             }
         }
 
-        /** @var mixed $visibility */
-        $visibility = config('media.collections.'.$collectionName.'.visibility');
-
-        if (is_string($visibility) && $visibility === MediaVisibilityEnum::Public->value) {
-            return MediaVisibilityEnum::Public;
-        }
-
-        if (is_string($visibility) && $visibility === MediaVisibilityEnum::Private->value) {
-            return MediaVisibilityEnum::Private;
-        }
-
         // Fallback to legacy hard-coded rule for avatars.
         return $collectionName === MediaCollection::Avatars->value
             ? MediaVisibilityEnum::Public
@@ -243,7 +215,7 @@ final readonly class UploadMediaAction
             }
         }
 
-        return config()->boolean('media.collections.'.$collectionName.'.single_file', false);
+        return false;
     }
 
     /**

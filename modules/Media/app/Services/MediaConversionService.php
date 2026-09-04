@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Media\Services;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
 use Throwable;
@@ -26,8 +28,7 @@ final readonly class MediaConversionService
             return [];
         }
 
-        /** @var array<string, array{width?: int, height?: int, fit?: string, format?: string, quality?: int}> $conversions */
-        $conversions = config()->array('media.conversions', []);
+        $conversions = $this->resolveConversions($media);
 
         if ($conversions === []) {
             return [];
@@ -36,8 +37,10 @@ final readonly class MediaConversionService
         $results = [];
 
         foreach ($conversions as $name => $cfg) {
+            $stringName = (string) $name;
+
             try {
-                $results[$name] = $this->generateOne($media, $name, $cfg);
+                $results[$stringName] = $this->generateOne($media, $stringName, $cfg);
             } catch (Throwable) {
                 // Skip failed conversions, continue with others.
                 continue;
@@ -45,6 +48,53 @@ final readonly class MediaConversionService
         }
 
         return $results;
+    }
+
+    /**
+     * @return array<string, array{width?: int, height?: int, fit?: string, format?: string, quality?: int}>
+     */
+    private function resolveConversions(Media $media): array
+    {
+        if ($media->model_type !== null && $media->model_id !== null) {
+            $modelClass = $media->model_type;
+
+            if ($modelClass !== '' && class_exists($modelClass) && is_a($modelClass, Model::class, true)) {
+                /** @var class-string<Model> $modelClass */
+                $model = $modelClass::query()->whereKey($media->model_id)->first();
+
+                if ($model instanceof HasMedia) {
+                    $definitions = $model->getMediaConversions($media);
+
+                    if ($definitions !== []) {
+                        $result = [];
+
+                        foreach ($definitions as $name => $definition) {
+                            $stringName = (string) $name;
+
+                            if ($definition instanceof \Modules\Media\Support\MediaConversion) {
+                                if ($definition->performOnCollections !== [] && ! in_array($media->collection_name, $definition->performOnCollections, true)) {
+                                    continue;
+                                }
+
+                                $result[$stringName] = [
+                                    'width' => $definition->width,
+                                    'height' => $definition->height,
+                                    'fit' => $definition->fit,
+                                    'format' => $definition->format,
+                                    'quality' => $definition->quality,
+                                ];
+                            } elseif (is_array($definition)) {
+                                $result[$stringName] = $definition;
+                            }
+                        }
+
+                        return $result;
+                    }
+                }
+            }
+        }
+
+        return [];
     }
 
     /**

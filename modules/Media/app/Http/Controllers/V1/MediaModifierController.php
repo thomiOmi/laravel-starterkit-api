@@ -55,12 +55,8 @@ final readonly class MediaModifierController extends Controller
         $fit = isset($parsed['fit']) && is_string($parsed['fit']) ? $parsed['fit'] : null;
         /** @var string|null $kernel */
         $kernel = isset($parsed['kernel']) && is_string($parsed['kernel']) ? $parsed['kernel'] : null;
-        $defaultQuality = (int) config()->integer("media.collections.{$media->collection_name}.quality", 80);
-        if ($defaultQuality < 1 || $defaultQuality > 100) {
-            $defaultQuality = 80;
-        }
         /** @var int<1, 100> $quality */
-        $quality = isset($parsed['q']) && is_int($parsed['q']) ? $parsed['q'] : $defaultQuality;
+        $quality = isset($parsed['q']) && is_int($parsed['q']) ? $parsed['q'] : 80;
 
         if ($format === 'jpeg') {
             $format = 'jpg';
