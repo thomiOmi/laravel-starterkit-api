@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
-use App\Support\Media\MediaPrefix;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 
 covers(MediaPrefix::class);

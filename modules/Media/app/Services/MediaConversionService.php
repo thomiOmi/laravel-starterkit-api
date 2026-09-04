@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Media\Services;
 
-use App\Support\Media\MediaPrefix;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +11,7 @@ use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 use Throwable;
 

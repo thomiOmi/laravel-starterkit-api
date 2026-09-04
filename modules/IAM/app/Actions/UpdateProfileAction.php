@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use App\Support\Media\MediaPrefix;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UpdateProfilePayload;
+use Modules\Media\Models\Media;
 
 final readonly class UpdateProfileAction
 {
@@ -48,41 +47,29 @@ final readonly class UpdateProfileAction
 
     private function resolveAvatarUrl(string $mediaId, User $user): string
     {
-        $record = DB::table('media')->where('id', $mediaId)->first();
+        // Models are the public seam between modules: avatar resolution
+        // consumes Media::getPath() instead of rebuilding the storage
+        // path manually, so prefixes and custom generators apply here too.
+        $media = Media::query()->whereKey($mediaId)->first();
 
-        if ($record === null) {
-            throw new InvalidArgumentException(__('validation.avatar_unavailable'));
-        }
-
-        if (! is_string($record->collection_name)
-            || ! is_string($record->model_type)
-            || (! is_string($record->model_id) && ! is_int($record->model_id))
-            || ! is_string($record->disk)
-            || ! is_string($record->visibility)
-            || ! is_string($record->file_name)
-        ) {
-            throw new InvalidArgumentException(__('validation.avatar_unavailable'));
-        }
-
-        $modelId = (string) $record->model_id;
-        $key = $user->getKey();
-
-        if (! is_string($key) && ! is_int($key)) {
+        if ($media === null || ! $media->belongsToModel($user)) {
             throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
 
         if (
-            $record->collection_name !== 'avatars'
-            || $record->model_type !== $user->getMorphClass()
-            || $modelId !== (string) $key
-            || $record->disk !== config()->string('media.disk', 'public')
-            || $record->visibility !== 'public'
+            $media->collection_name !== 'avatars'
+            || ! $media->isPublic()
+            || $media->disk !== config()->string('media.disk', 'public')
         ) {
             throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
 
-        $path = MediaPrefix::basePath($record->collection_name, $record->file_name);
+        $path = $media->getPath();
 
-        return Storage::disk($record->disk)->url($path);
+        if (! is_string($path)) {
+            throw new InvalidArgumentException(__('validation.avatar_unavailable'));
+        }
+
+        return Storage::disk($media->disk)->url($path);
     }
 }

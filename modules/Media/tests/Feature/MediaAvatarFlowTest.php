@@ -41,4 +41,31 @@ describe('avatar end-to-end flow', function () {
         expect($update->json('data.user.avatar'))->toBe($expectedUrl)
             ->and($user->fresh()?->avatar)->toBe($expectedUrl);
     });
+
+    it('resolves the avatar url through the media model when a prefix is set', function () {
+        config(['media.prefix' => 'tenant-a']);
+        Storage::fake('public');
+        DB::table('permissions')->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'name' => PermissionEnum::MediaCreate->value,
+            'guard_name' => 'sanctum',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $upload = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->image('me.png', 32, 32),
+            'collection_name' => 'avatars',
+        ]);
+
+        assertSuccessResponse($upload, 201);
+
+        $update = $this->putJson('/api/v1/auth/me', ['avatar' => $upload->json('data.media.id')]);
+
+        assertSuccessResponse($update, 200);
+        expect($update->json('data.user.avatar'))->toContain('tenant-a/avatars/');
+    });
 });
