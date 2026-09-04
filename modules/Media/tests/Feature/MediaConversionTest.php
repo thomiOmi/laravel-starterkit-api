@@ -24,9 +24,6 @@ describe('Media conversions', function () {
 
     it('generates conversions synchronously on upload when queue is false', function () {
         config(['media.queue' => false]);
-        config(['media.conversions' => [
-            'thumbnail' => ['width' => 32, 'height' => 32, 'fit' => 'cover', 'format' => 'webp', 'quality' => 80],
-        ]]);
 
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -39,9 +36,9 @@ describe('Media conversions', function () {
         assertSuccessResponse($response, 201);
 
         $media = Media::query()->firstOrFail();
-        expect($media->conversions()->count())->toBe(1);
+        expect($media->conversions()->count())->toBe(2);
 
-        $conversion = $media->conversions()->firstOrFail();
+        $conversion = $media->conversions()->where('name', 'thumbnail')->firstOrFail();
         expect($conversion->name)->toBe('thumbnail')
             ->and(Storage::disk('public')->exists($conversion->path))->toBeTrue()
             ->and($media->url('thumbnail'))->toBe(Storage::disk('public')->url($conversion->path));

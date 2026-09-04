@@ -22,7 +22,7 @@ final readonly class GenerateConversionAction
      */
     public function handle(Media $media, string $conversion, ?array $config = null): MediaConversion
     {
-        $cfg = $config ?? config()->array('media.conversions.'.$conversion, []);
+        $cfg = $config ?? [];
 
         /** @var array{width?: int, height?: int, fit?: string, format?: string, quality?: int} $cfg */
         return $this->conversionService->generateOne($media, $conversion, $cfg);
