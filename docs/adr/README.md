@@ -39,6 +39,8 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0031](0031-first-party-image-processing.md) | First-Party Image Processing and On-The-Fly Variants | Accepted | 2026-08-26 |
 | [0032](0032-signed-media-events-cached-variants.md) | Signed Media URLs, Media Events, and Cached Variants | Accepted | 2026-08-26 |
 | [0035](0035-variant-query-removed.md) | Remove Variant Query Endpoint in Favor of Path Modifiers | Accepted | 2026-09-03 |
+| [0036](0036-media-polymorphic-squash.md) | Media Polymorphic Squash, Trait, Conversions and Single-File Avatars | Accepted | 2026-08-30 |
+| [0037](0037-media-opsi-b-collection-filename-structure.md) | Media Opsi B Full Replacement ULID collection/file_name + Structure Cleanup | Accepted | 2026-09-03 |
 
 ## Process
 
