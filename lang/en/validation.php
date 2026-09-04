@@ -10,6 +10,8 @@ return [
     'avatar_unavailable' => 'The avatar service is unavailable.',
     'media_unavailable' => 'The media service is unavailable.',
     'media_not_image' => 'The requested media is not an image.',
+    'media_disallowed_extension' => 'The file name contains a disallowed extension.',
+    'media_not_accepted' => 'The file is not accepted by the media collection.',
 
     /*
     |--------------------------------------------------------------------------

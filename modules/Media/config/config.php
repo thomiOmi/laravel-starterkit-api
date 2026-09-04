@@ -31,6 +31,22 @@ return [
     'max_size' => 2048,
     'mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Disallowed extensions
+    |--------------------------------------------------------------------------
+    |
+    | Every extension segment of a file name is checked against this list,
+    | so shell.php.jpg is rejected even though its final extension is
+    | allowed. Matching is case-insensitive.
+    |
+    */
+    'disallowed_extensions' => [
+        'php', 'php3', 'php4', 'php5', 'phtml', 'phar',
+        'exe', 'msi', 'com', 'bat', 'cmd', 'sh',
+        'js', 'html', 'htm', 'xhtml', 'svg', 'htaccess',
+    ],
+
     'queue' => env('MEDIA_QUEUE', false),
 
     /*

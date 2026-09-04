@@ -10,6 +10,7 @@ use Illuminate\Image\ImageException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Events\MediaCreated;
@@ -18,6 +19,7 @@ use Modules\Media\Jobs\ProcessMediaJob;
 use Modules\Media\Models\Media;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Modules\Media\Services\MediaConversionService;
+use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Throwable;
 
@@ -44,6 +46,9 @@ final readonly class UploadMediaAction
      */
     public function handle(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
+        $this->guardFileName($payload->file->getClientOriginalName());
+        $this->guardCollectionAcceptance($payload, $owner);
+
         if ($payload->preservingOriginal) {
             return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader));
         }
@@ -211,6 +216,44 @@ final readonly class UploadMediaAction
         return $target;
     }
 
+    /**
+     * Reject executable file names and files the target collection refuses.
+     *
+     * Runs for every entry point (HTTP and programmatic), unlike the
+     * FormRequest rules which only cover HTTP uploads.
+     */
+    private function guardFileName(string $filename): void
+    {
+        if (DisallowedExtensions::contains($filename)) {
+            throw new InvalidArgumentException(__('validation.media_disallowed_extension'));
+        }
+    }
+
+    private function guardCollectionAcceptance(MediaUploadPayload $payload, Model $owner): void
+    {
+        if (! $owner instanceof HasMedia) {
+            return;
+        }
+
+        $collection = $owner->getMediaCollection($payload->collectionName);
+
+        if ($collection === null) {
+            return;
+        }
+
+        $mimeType = (string) $payload->file->getMimeType();
+
+        if ($collection->acceptsMimeTypes !== [] && ! in_array($mimeType, $collection->acceptsMimeTypes, true)) {
+            throw new InvalidArgumentException(__('validation.media_not_accepted'));
+        }
+
+        $acceptsFile = $collection->acceptsFile;
+
+        if ($acceptsFile !== null && $acceptsFile($payload->file) !== true) {
+            throw new InvalidArgumentException(__('validation.media_not_accepted'));
+        }
+    }
+
     private function resolveVisibility(string $collectionName, ?Model $owner = null): MediaVisibilityEnum
     {
         // Check model-registered collection first
@@ -253,6 +296,10 @@ final readonly class UploadMediaAction
         $isSingle = $this->isSingleFileCollection($payload->collectionName, $owner);
 
         try {
+            // A custom file namer runs after the client-name guard, so the
+            // final stored basename is checked again; the catch below
+            // removes the stored file when it is rejected here.
+            $this->guardFileName(basename($fullPath));
             $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $fullPath, $mimeType, $size, $meta, $isSingle): Media {
                 $file = $payload->file;
 
