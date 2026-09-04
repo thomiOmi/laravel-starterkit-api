@@ -110,25 +110,36 @@ final readonly class UploadMediaAction
             }
         }
 
-        if ($modelConversions !== null) {
-            // Model defines conversions, use service with model context
+        $wantsResponsive = GenerateResponsiveImagesAction::wantsResponsive($media);
+
+        if ($modelConversions !== null || $wantsResponsive) {
             if (config()->boolean('media.queue', false)) {
                 ProcessMediaJob::dispatch($media->id);
 
                 return;
             }
 
-            try {
-                // For model-driven, generate via service but respect performOnCollections
-                app(MediaConversionService::class)->generate($media);
-            } catch (Throwable) {
-                // Ignore
+            if ($modelConversions !== null) {
+                try {
+                    // For model-driven, generate via service but respect performOnCollections
+                    app(MediaConversionService::class)->generate($media);
+                } catch (Throwable) {
+                    // Ignore
+                }
+            }
+
+            if ($wantsResponsive) {
+                try {
+                    app(GenerateResponsiveImagesAction::class)->handle($media);
+                } catch (Throwable) {
+                    // Ignore
+                }
             }
 
             return;
         }
 
-        // No model-driven conversions and no config conversions (config removed) — nothing to generate.
+        // No model-driven conversions and no responsive flag — nothing to generate.
     }
 
     /**

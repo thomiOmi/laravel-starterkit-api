@@ -38,7 +38,7 @@ class MediaResource extends JsonResource
      * yields null until a caller explicitly passes a pre-resolved url such
      * as a temporary signed link.
      *
-     * @return array{id: string, name: string, file_name: string, collection_name: string, mime_type: string, size: int, visibility: string, url: string|null, original_name: string|null, original_extension: string|null, sha256: string|null, custom_properties: array<string, mixed>|null, order_column: int, uploaded_by_type: string|null, uploaded_by_id: string|null, model_type: string|null, model_id: string|null, conversions: array<string, string|null>, fallback_url: string|null, fallback_path: string|null, created_at: ?string}
+     * @return array{id: string, name: string, file_name: string, collection_name: string, mime_type: string, size: int, visibility: string, url: string|null, original_name: string|null, original_extension: string|null, sha256: string|null, custom_properties: array<string, mixed>|null, order_column: int, uploaded_by_type: string|null, uploaded_by_id: string|null, model_type: string|null, model_id: string|null, conversions: array<string, string|null>, srcset: string|null, fallback_url: string|null, fallback_path: string|null, created_at: ?string}
      */
     #[\Override]
     public function toArray(Request $request): array
@@ -92,6 +92,7 @@ class MediaResource extends JsonResource
             'model_type' => $media->model_type,
             'model_id' => $media->model_id,
             'conversions' => $conversions,
+            'srcset' => $media->getSrcset(),
             'fallback_url' => $fallbackUrl,
             'fallback_path' => $fallbackPath,
             'created_at' => $this->formatDate($media->created_at),
