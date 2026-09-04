@@ -7,6 +7,7 @@ namespace Modules\Media\Http\Controllers\V1;
 use App\Contracts\Identity;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ProblemResponse;
+use App\Support\Media\MediaPrefix;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\MediaConversion;
+use Modules\Media\Support\StorageOptions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -99,7 +101,7 @@ final readonly class MediaModifierController extends Controller
         if ($readable === '') {
             $readable = 'original';
         }
-        $variantPath = 'variants/'.$media->id.'/'.$readable.'-'.substr($cacheKey, 0, 8).'.'.$ext;
+        $variantPath = MediaPrefix::join('variants', (string) $media->id, $readable.'-'.substr($cacheKey, 0, 8).'.'.$ext);
 
         $isPublic = $media->isPublic();
 
@@ -142,7 +144,7 @@ final readonly class MediaModifierController extends Controller
 
         // Kernel handling is driver-specific and not directly exposed via Image facade; reserved for custom driver via MediaProcessor
         $image = $image->toFormat($format)->quality($quality);
-        $image->storeAs(dirname($variantPath), basename($variantPath), $media->disk, ['visibility' => $media->visibility->value]);
+        $image->storeAs(dirname($variantPath), basename($variantPath), $media->disk, StorageOptions::forVisibility($media->visibility->value));
 
         $response = $image->toResponse(request())->setEtag($etag);
 

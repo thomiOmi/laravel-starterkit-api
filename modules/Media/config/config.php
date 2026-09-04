@@ -119,6 +119,44 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Storage prefix
+    |--------------------------------------------------------------------------
+    |
+    | Prefix prepended to every stored media path (originals, conversions,
+    | variants). Empty by default, which keeps existing paths unchanged.
+    |
+    */
+    'prefix' => env('MEDIA_PREFIX', ''),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Conversions disk
+    |--------------------------------------------------------------------------
+    |
+    | Disk for generated conversions. Null keeps conversions on the same
+    | disk as the original file.
+    |
+    */
+    'conversions_disk_name' => env('MEDIA_CONVERSIONS_DISK', null),
+
+    'remote' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Extra headers
+        |--------------------------------------------------------------------------
+        |
+        | Any extra headers included when uploading media to a remote disk.
+        | Supported by S3: CacheControl, Expires, StorageClass,
+        | ServerSideEncryption, Metadata, ACL, ContentEncoding.
+        |
+        */
+        'extra_headers' => [
+            // 'CacheControl' => 'max-age=604800',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Media downloader
     |--------------------------------------------------------------------------
     |

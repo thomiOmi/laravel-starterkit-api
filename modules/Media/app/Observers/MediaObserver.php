@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Media\Observers;
 
+use App\Support\Media\MediaPrefix;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
 
@@ -17,8 +18,8 @@ final class MediaObserver
         }
 
         // Delete variants and conversions directories
-        Storage::disk($media->disk)->deleteDirectory('variants/'.$media->id);
-        Storage::disk($media->disk)->deleteDirectory('conversions/'.$media->id);
+        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
+        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
     }
 
     public function deleted(Media $media): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use App\Support\Media\MediaPrefix;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
@@ -80,7 +81,7 @@ final readonly class UpdateProfileAction
             throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
 
-        $path = $record->collection_name.'/'.$record->file_name;
+        $path = MediaPrefix::basePath($record->collection_name, $record->file_name);
 
         return Storage::disk($record->disk)->url($path);
     }

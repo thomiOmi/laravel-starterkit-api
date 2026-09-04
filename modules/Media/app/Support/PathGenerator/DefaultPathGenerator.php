@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support\PathGenerator;
 
+use App\Support\Media\MediaPrefix;
 use Modules\Media\Models\Media;
 
 final readonly class DefaultPathGenerator implements MediaPathGenerator
 {
     public function getPath(Media $media): string
     {
-        return $media->collection_name.'/'.$media->file_name;
+        return MediaPrefix::basePath($media->collection_name, $media->file_name);
     }
 
     public function getPathForConversions(Media $media, string $conversion): string

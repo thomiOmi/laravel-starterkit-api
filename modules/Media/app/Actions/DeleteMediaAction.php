@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Media\Actions;
 
+use App\Support\Media\MediaPrefix;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Events\MediaDeleted;
 use Modules\Media\Models\Media;
@@ -27,8 +28,8 @@ final readonly class DeleteMediaAction
 
         if ($deleted && is_string($path)) {
             Storage::disk($disk)->delete($path);
-            Storage::disk($disk)->deleteDirectory('variants/'.$mediaId);
-            Storage::disk($disk)->deleteDirectory('conversions/'.$mediaId);
+            Storage::disk($disk)->deleteDirectory(MediaPrefix::join('variants', (string) $mediaId));
+            Storage::disk($disk)->deleteDirectory(MediaPrefix::join('conversions', (string) $mediaId));
 
             foreach ($conversions as $conversion) {
                 Storage::disk($conversion->disk)->delete($conversion->path);
