@@ -18,6 +18,7 @@ use Modules\Media\Jobs\ProcessMediaJob;
 use Modules\Media\Models\Media;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Modules\Media\Services\MediaConversionService;
+use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Throwable;
 
 /**
@@ -132,11 +133,13 @@ final readonly class UploadMediaAction
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
 
-        $fullPath = $image->store($payload->collectionName, $disk, ['visibility' => $visibility->value]);
+        $storedPath = $image->store($payload->collectionName, $disk, ['visibility' => $visibility->value]);
 
-        if ($fullPath === false) {
+        if ($storedPath === false) {
             throw new ImageException('The processed image could not be stored.');
         }
+
+        $fullPath = $this->applyFileNamer($storedPath, $payload->collectionName, $disk);
 
         /** @var array<string, mixed> $meta */
         $meta = array_filter([
@@ -167,7 +170,7 @@ final readonly class UploadMediaAction
         $disk = config()->string('media.disk', 'public');
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
         $file = $payload->file;
-        $filename = $file->hashName();
+        $filename = app(MediaFileNamer::class)->originalFileName($file->hashName());
         $fullPath = $payload->collectionName.'/'.$filename;
 
         Storage::disk($disk)->putFileAs($payload->collectionName, $file, $filename, ['visibility' => $visibility->value]);
@@ -184,6 +187,28 @@ final readonly class UploadMediaAction
         );
 
         return ['media' => $media, 'url' => $media->url()];
+    }
+
+    /**
+     * Rename a just-stored file through the configured file namer.
+     *
+     * Explicit per-call names (PendingMedia::usingFileName/sanitizer) already
+     * rebuilt the UploadedFile before this action runs, so the namer only sees
+     * the final candidate name. The default namer is identity: no move happens.
+     */
+    private function applyFileNamer(string $storedPath, string $collectionName, string $disk): string
+    {
+        $candidate = app(MediaFileNamer::class)->originalFileName(basename($storedPath));
+
+        if ($candidate === '' || $candidate === basename($storedPath)) {
+            return $storedPath;
+        }
+
+        $target = $collectionName.'/'.$candidate;
+
+        Storage::disk($disk)->move($storedPath, $target);
+
+        return $target;
     }
 
     private function resolveVisibility(string $collectionName, ?Model $owner = null): MediaVisibilityEnum

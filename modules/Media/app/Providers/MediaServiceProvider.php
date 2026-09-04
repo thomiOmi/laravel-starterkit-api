@@ -7,6 +7,8 @@ namespace Modules\Media\Providers;
 use Illuminate\Console\Command;
 use Modules\Media\Console\Commands\MediaCleanupCommand;
 use Modules\Media\Console\Commands\MediaReprocessCommand;
+use Modules\Media\Support\FileNamer\DefaultFileNamer;
+use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
 use Modules\Media\Support\PathGenerator\MediaPathGenerator;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
@@ -55,5 +57,14 @@ class MediaServiceProvider extends ModuleServiceProvider
 
         $this->app->singleton(MediaUrlGenerator::class, DefaultUrlGenerator::class);
         $this->app->singleton(MediaPathGenerator::class, DefaultPathGenerator::class);
+        $this->app->singleton(MediaFileNamer::class, function (): MediaFileNamer {
+            $class = config()->string('media.file_namer', DefaultFileNamer::class);
+
+            if (! is_a($class, MediaFileNamer::class, true)) {
+                $class = DefaultFileNamer::class;
+            }
+
+            return new $class;
+        });
     }
 }

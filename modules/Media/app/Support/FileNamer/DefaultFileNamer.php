@@ -11,7 +11,17 @@ final readonly class DefaultFileNamer implements MediaFileNamer
         return $fileName;
     }
 
-    public function fileName(string $fileName): string
+    public function conversionFileName(string $fileName, string $conversion): string
+    {
+        $name = pathinfo($fileName, PATHINFO_FILENAME);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+
+        $converted = $name.'-'.$conversion;
+
+        return $extension !== '' ? $converted.'.'.$extension : $converted;
+    }
+
+    public function responsiveFileName(string $fileName): string
     {
         return $fileName;
     }

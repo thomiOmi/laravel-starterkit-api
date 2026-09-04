@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
+use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Throwable;
 
 /**
@@ -142,7 +143,13 @@ final readonly class MediaConversionService
         $image->toFormat($format)->quality($quality);
 
         $ext = $format === 'jpg' ? 'jpg' : $format;
-        $conversionPath = 'conversions/'.$media->id.'/'.$name.'.'.$ext;
+        $baseName = app(MediaFileNamer::class)->conversionFileName($media->file_name, $name);
+
+        if (pathinfo($baseName, PATHINFO_EXTENSION) === '') {
+            $baseName .= '.'.$ext;
+        }
+
+        $conversionPath = 'conversions/'.$media->id.'/'.$baseName;
 
         // Store conversion file.
         $image->storeAs(dirname($conversionPath), basename($conversionPath), $disk, ['visibility' => $media->visibility->value]);

@@ -8,5 +8,7 @@ interface MediaFileNamer
 {
     public function originalFileName(string $fileName): string;
 
-    public function fileName(string $fileName): string;
+    public function conversionFileName(string $fileName, string $conversion): string;
+
+    public function responsiveFileName(string $fileName): string;
 }
