@@ -107,7 +107,11 @@ final class MediaConversion
         }
 
         if (isset($parsed['f']) || isset($parsed['format'])) {
-            $instance->format(strtolower((string) ($parsed['f'] ?? $parsed['format'])));
+            $format = $parsed['f'] ?? $parsed['format'] ?? null;
+
+            if (is_string($format)) {
+                $instance->format(strtolower($format));
+            }
         }
 
         if (isset($parsed['q'])) {

@@ -9,9 +9,6 @@ use Modules\Media\Models\Media;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
 use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
 
-/**
- * @deprecated Use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator instead.
- */
 final readonly class MediaUrlGeneratorService implements MediaUrlGenerator
 {
     private readonly DefaultUrlGenerator $inner;

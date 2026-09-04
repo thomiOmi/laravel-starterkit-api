@@ -18,11 +18,11 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Modules\Media\Builders\MediaBuilder;
-use Modules\Media\Contracts\PathGenerator;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Observers\MediaObserver;
 use Modules\Media\Policies\MediaPolicy;
+use Modules\Media\Support\PathGenerator\MediaPathGenerator;
 
 /**
  * @property string $id The unique identifier for the media item.
@@ -239,8 +239,8 @@ class Media extends Model
 
     public function getPath(?string $conversion = null): ?string
     {
-        /** @var PathGenerator $generator */
-        $generator = app(PathGenerator::class);
+        /** @var MediaPathGenerator $generator */
+        $generator = app(MediaPathGenerator::class);
 
         if ($conversion === null || $conversion === '') {
             return $generator->getPath($this);
