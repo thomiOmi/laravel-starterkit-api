@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Modules\Media\Support\FileNamer\DefaultFileNamer;
 
 return [
     'name' => 'Media',
@@ -28,4 +29,16 @@ return [
     'mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'],
 
     'queue' => env('MEDIA_QUEUE', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | File namer
+    |--------------------------------------------------------------------------
+    |
+    | The class responsible for naming original, conversion, and responsive
+    | image files. Swap it for a custom MediaFileNamer implementation to
+    | control naming globally without touching upload code.
+    |
+    */
+    'file_namer' => env('MEDIA_FILE_NAMER', DefaultFileNamer::class),
 ];
