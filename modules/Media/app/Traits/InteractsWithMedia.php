@@ -155,7 +155,7 @@ trait InteractsWithMedia
         return $media->url();
     }
 
-    public function getFirstMediaSignedUrl(string $collection = 'default', int $ttlMinutes = 10): ?string
+    public function getFirstMediaSignedUrl(string $collection = 'default', ?int $ttlMinutes = null): ?string
     {
         return $this->getFirstMedia($collection)?->signedUrl($ttlMinutes);
     }

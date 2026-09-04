@@ -187,7 +187,7 @@ class Media extends Model
                 return null;
             }
 
-            return Storage::disk($conv->disk)->url($conv->path);
+            return $this->versionedUrl(Storage::disk($conv->disk)->url($conv->path));
         }
 
         if (! $this->isPublic()) {
@@ -200,7 +200,7 @@ class Media extends Model
             return null;
         }
 
-        return Storage::disk($this->disk)->url($path);
+        return $this->versionedUrl(Storage::disk($this->disk)->url($path));
     }
 
     public function getUrl(?string $conversion = null): ?string
@@ -210,9 +210,13 @@ class Media extends Model
 
     /**
      * Get a temporary signed URL for streaming the media.
+     *
+     * A null TTL falls back to the media.temporary_url_default_lifetime config.
      */
-    public function signedUrl(int $ttlMinutes = 10): string
+    public function signedUrl(?int $ttlMinutes = null): string
     {
+        $ttlMinutes ??= config()->integer('media.temporary_url_default_lifetime', 10);
+
         return (string) URL::temporarySignedRoute(
             'api.v1.media.file',
             now()->addMinutes($ttlMinutes),
@@ -239,8 +243,7 @@ class Media extends Model
 
     public function getPath(?string $conversion = null): ?string
     {
-        /** @var MediaPathGenerator $generator */
-        $generator = app(MediaPathGenerator::class);
+        $generator = $this->resolvePathGenerator();
 
         if ($conversion === null || $conversion === '') {
             return $generator->getPath($this);
@@ -251,6 +254,51 @@ class Media extends Model
         }
 
         return $generator->getPathForConversions($this, $conversion);
+    }
+
+    /**
+     * Resolve the path generator, honoring per-model overrides from
+     * the media.custom_path_generators config (keyed by model class
+     * or morph alias as stored in media.model_type).
+     */
+    private function resolvePathGenerator(): MediaPathGenerator
+    {
+        /** @var array<array-key, mixed> $overrides */
+        $overrides = config()->array('media.custom_path_generators', []);
+
+        $modelType = $this->model_type;
+
+        if (is_string($modelType) && $modelType !== '' && array_key_exists($modelType, $overrides)) {
+            $class = $overrides[$modelType];
+
+            if (is_string($class) && is_a($class, MediaPathGenerator::class, true)) {
+                $custom = app($class);
+
+                if ($custom instanceof MediaPathGenerator) {
+                    return $custom;
+                }
+            }
+        }
+
+        /** @var MediaPathGenerator $generator */
+        $generator = app(MediaPathGenerator::class);
+
+        return $generator;
+    }
+
+    /**
+     * Attach a ?v=xx cache-busting query string when version_urls is enabled.
+     */
+    private function versionedUrl(string $url): string
+    {
+        if (! config()->boolean('media.version_urls', false)) {
+            return $url;
+        }
+
+        $version = $this->updated_at === null ? time() : $this->updated_at->timestamp;
+        $separator = str_contains($url, '?') ? '&' : '?';
+
+        return $url.$separator.'v='.$version;
     }
 
     public function getFullUrlOrFallback(?string $conversion = null, ?string $fallback = null): ?string

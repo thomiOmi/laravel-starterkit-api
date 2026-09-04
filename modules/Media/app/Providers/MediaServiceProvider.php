@@ -55,8 +55,24 @@ class MediaServiceProvider extends ModuleServiceProvider
     {
         parent::register();
 
-        $this->app->singleton(MediaUrlGenerator::class, DefaultUrlGenerator::class);
-        $this->app->singleton(MediaPathGenerator::class, DefaultPathGenerator::class);
+        $this->app->singleton(MediaUrlGenerator::class, function (): MediaUrlGenerator {
+            $class = config()->string('media.url_generator', DefaultUrlGenerator::class);
+
+            if (! is_a($class, MediaUrlGenerator::class, true)) {
+                $class = DefaultUrlGenerator::class;
+            }
+
+            return new $class;
+        });
+        $this->app->singleton(MediaPathGenerator::class, function (): MediaPathGenerator {
+            $class = config()->string('media.path_generator', DefaultPathGenerator::class);
+
+            if (! is_a($class, MediaPathGenerator::class, true)) {
+                $class = DefaultPathGenerator::class;
+            }
+
+            return new $class;
+        });
         $this->app->singleton(MediaFileNamer::class, function (): MediaFileNamer {
             $class = config()->string('media.file_namer', DefaultFileNamer::class);
 
