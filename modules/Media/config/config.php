@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\Downloaders\DefaultDownloader;
 use Modules\Media\Support\FileNamer\DefaultFileNamer;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
@@ -38,14 +39,12 @@ return [
     |
     | Every extension segment of a file name is checked against this list,
     | so shell.php.jpg is rejected even though its final extension is
-    | allowed. Matching is case-insensitive.
+    | allowed. Matching is case-insensitive. Referenced from the static
+    | default so config and code cannot drift; override to extend or
+    | shrink it.
     |
     */
-    'disallowed_extensions' => [
-        'php', 'php3', 'php4', 'php5', 'phtml', 'phar',
-        'exe', 'msi', 'com', 'bat', 'cmd', 'sh',
-        'js', 'html', 'htm', 'xhtml', 'svg', 'htaccess',
-    ],
+    'disallowed_extensions' => DisallowedExtensions::$defaultDisallowedExtensions,
 
     'queue' => env('MEDIA_QUEUE', false),
 

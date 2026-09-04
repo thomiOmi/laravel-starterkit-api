@@ -32,7 +32,16 @@ describe('Media extension guard', function () {
             ->and(DisallowedExtensions::contains('photo.JPG'))->toBeFalse()
             ->and(DisallowedExtensions::contains('archive.SVG'))->toBeTrue()
             ->and(DisallowedExtensions::contains('.htaccess'))->toBeTrue()
+            ->and(DisallowedExtensions::contains('app.jsp'))->toBeTrue()
+            ->and(DisallowedExtensions::contains('run.cgi'))->toBeTrue()
             ->and(DisallowedExtensions::contains('noextension'))->toBeFalse()
+            ->and(DisallowedExtensions::contains('photo.webp'))->toBeFalse();
+    });
+
+    it('falls back to the static default when the config key is missing', function () {
+        config()->offsetUnset('media.disallowed_extensions');
+
+        expect(DisallowedExtensions::contains('shell.php.jpg'))->toBeTrue()
             ->and(DisallowedExtensions::contains('photo.webp'))->toBeFalse();
     });
 
