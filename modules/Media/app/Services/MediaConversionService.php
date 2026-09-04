@@ -51,7 +51,7 @@ final readonly class MediaConversionService
     }
 
     /**
-     * @return array<string, array{width?: int, height?: int, fit?: string, format?: string, quality?: int}>
+     * @return array<string, array{width?: int|null, height?: int|null, fit?: string, format?: string, quality?: int}>
      */
     private function resolveConversions(Media $media): array
     {
@@ -71,21 +71,17 @@ final readonly class MediaConversionService
                         foreach ($definitions as $name => $definition) {
                             $stringName = (string) $name;
 
-                            if ($definition instanceof \Modules\Media\Support\MediaConversion) {
-                                if ($definition->performOnCollections !== [] && ! in_array($media->collection_name, $definition->performOnCollections, true)) {
-                                    continue;
-                                }
-
-                                $result[$stringName] = [
-                                    'width' => $definition->width,
-                                    'height' => $definition->height,
-                                    'fit' => $definition->fit,
-                                    'format' => $definition->format,
-                                    'quality' => $definition->quality,
-                                ];
-                            } elseif (is_array($definition)) {
-                                $result[$stringName] = $definition;
+                            if ($definition->performOnCollections !== [] && ! in_array($media->collection_name, $definition->performOnCollections, true)) {
+                                continue;
                             }
+
+                            $result[$stringName] = [
+                                'width' => $definition->width,
+                                'height' => $definition->height,
+                                'fit' => $definition->fit,
+                                'format' => $definition->format,
+                                'quality' => $definition->quality,
+                            ];
                         }
 
                         return $result;
@@ -100,7 +96,7 @@ final readonly class MediaConversionService
     /**
      * Generate a single conversion.
      *
-     * @param  array{width?: int, height?: int, fit?: string, format?: string, quality?: int}  $cfg
+     * @param  array{width?: int|null, height?: int|null, fit?: string, format?: string, quality?: int}  $cfg
      */
     public function generateOne(Media $media, string $name, array $cfg): MediaConversion
     {

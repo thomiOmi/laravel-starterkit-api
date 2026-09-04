@@ -7,10 +7,10 @@ namespace Modules\Media\Providers;
 use Illuminate\Console\Command;
 use Modules\Media\Console\Commands\MediaCleanupCommand;
 use Modules\Media\Console\Commands\MediaReprocessCommand;
-use Modules\Media\Contracts\MediaUrlGenerator;
-use Modules\Media\Contracts\PathGenerator;
-use Modules\Media\Services\MediaUrlGeneratorService;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
+use Modules\Media\Support\PathGenerator\MediaPathGenerator;
+use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
+use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class MediaServiceProvider extends ModuleServiceProvider
@@ -53,9 +53,7 @@ class MediaServiceProvider extends ModuleServiceProvider
     {
         parent::register();
 
-        $this->app->singleton(MediaUrlGenerator::class, MediaUrlGeneratorService::class);
-        $this->app->singleton(SupportMediaUrlGenerator::class, SupportDefaultUrlGenerator::class);
-        $this->app->singleton(PathGenerator::class, DefaultPathGenerator::class);
+        $this->app->singleton(MediaUrlGenerator::class, DefaultUrlGenerator::class);
         $this->app->singleton(MediaPathGenerator::class, DefaultPathGenerator::class);
     }
 }
