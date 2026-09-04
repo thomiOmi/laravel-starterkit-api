@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Media\Actions;
 
 use App\Enums\MediaCollection;
+use App\Support\Media\MediaPrefix;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Image\ImageException;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Modules\Media\Services\MediaConversionService;
 use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Support\StorageOptions;
 use Throwable;
 
 /**
@@ -138,13 +140,13 @@ final readonly class UploadMediaAction
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
 
-        $storedPath = $image->store($payload->collectionName, $disk, ['visibility' => $visibility->value]);
+        $storedPath = $image->store(MediaPrefix::directory($payload->collectionName), $disk, StorageOptions::forVisibility($visibility->value));
 
         if ($storedPath === false) {
             throw new ImageException('The processed image could not be stored.');
         }
 
-        $fullPath = $this->applyFileNamer($storedPath, $payload->collectionName, $disk);
+        $fullPath = $this->applyFileNamer($storedPath, $disk);
 
         /** @var array<string, mixed> $meta */
         $meta = array_filter([
@@ -176,9 +178,9 @@ final readonly class UploadMediaAction
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
         $file = $payload->file;
         $filename = app(MediaFileNamer::class)->originalFileName($file->hashName());
-        $fullPath = $payload->collectionName.'/'.$filename;
+        $fullPath = MediaPrefix::basePath($payload->collectionName, $filename);
 
-        Storage::disk($disk)->putFileAs($payload->collectionName, $file, $filename, ['visibility' => $visibility->value]);
+        Storage::disk($disk)->putFileAs(MediaPrefix::directory($payload->collectionName), $file, $filename, StorageOptions::forVisibility($visibility->value));
 
         $media = $this->persistRow(
             payload: $payload,
@@ -201,7 +203,7 @@ final readonly class UploadMediaAction
      * rebuilt the UploadedFile before this action runs, so the namer only sees
      * the final candidate name. The default namer is identity: no move happens.
      */
-    private function applyFileNamer(string $storedPath, string $collectionName, string $disk): string
+    private function applyFileNamer(string $storedPath, string $disk): string
     {
         $candidate = app(MediaFileNamer::class)->originalFileName(basename($storedPath));
 
@@ -209,7 +211,7 @@ final readonly class UploadMediaAction
             return $storedPath;
         }
 
-        $target = $collectionName.'/'.$candidate;
+        $target = dirname($storedPath).'/'.$candidate;
 
         Storage::disk($disk)->move($storedPath, $target);
 
@@ -294,13 +296,15 @@ final readonly class UploadMediaAction
     private function persistRow(MediaUploadPayload $payload, Model $owner, ?Model $uploader, string $disk, string $fullPath, string $mimeType, int $size, array $meta): Media
     {
         $isSingle = $this->isSingleFileCollection($payload->collectionName, $owner);
+        $conversionsDisk = config('media.conversions_disk_name');
+        $conversionsDisk = is_string($conversionsDisk) && $conversionsDisk !== '' ? $conversionsDisk : $disk;
 
         try {
             // A custom file namer runs after the client-name guard, so the
             // final stored basename is checked again; the catch below
             // removes the stored file when it is rejected here.
             $this->guardFileName(basename($fullPath));
-            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $fullPath, $mimeType, $size, $meta, $isSingle): Media {
+            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle): Media {
                 $file = $payload->file;
 
                 if ($isSingle) {
@@ -319,7 +323,7 @@ final readonly class UploadMediaAction
                             'name' => $name,
                             'file_name' => $fileName,
                             'disk' => $disk,
-                            'conversions_disk' => $disk,
+                            'conversions_disk' => $conversionsDisk,
                             'mime_type' => $mimeType,
                             'size' => $size,
                             'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
@@ -361,7 +365,7 @@ final readonly class UploadMediaAction
                     'name' => $name,
                     'file_name' => $fileName,
                     'disk' => $disk,
-                    'conversions_disk' => $disk,
+                    'conversions_disk' => $conversionsDisk,
                     'mime_type' => $mimeType,
                     'size' => $size,
                     'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
@@ -392,9 +396,8 @@ final readonly class UploadMediaAction
                 $oldFileName = $media->getOriginal('file_name');
 
                 if (is_string($oldFileName) && $oldFileName !== $media->file_name) {
-                    $oldFullPath = $media->collection_name.'/'.$oldFileName;
-                    Storage::disk($disk)->delete($oldFullPath);
-                    Storage::disk($disk)->deleteDirectory('variants/'.$media->id);
+                    Storage::disk($disk)->delete(MediaPrefix::basePath($media->collection_name, $oldFileName));
+                    Storage::disk($disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
                 }
             }
 

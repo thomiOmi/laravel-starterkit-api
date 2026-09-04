@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Media\Services;
 
+use App\Support\Media\MediaPrefix;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
@@ -11,6 +12,7 @@ use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Support\StorageOptions;
 use Throwable;
 
 /**
@@ -101,7 +103,7 @@ final readonly class MediaConversionService
      */
     public function generateOne(Media $media, string $name, array $cfg): MediaConversion
     {
-        $disk = $media->disk;
+        $disk = $media->conversions_disk ?? $media->disk;
         $width = array_key_exists('width', $cfg) ? $cfg['width'] : null;
         $height = array_key_exists('height', $cfg) ? $cfg['height'] : null;
         $format = $cfg['format'] ?? 'webp';
@@ -149,10 +151,10 @@ final readonly class MediaConversionService
             $baseName .= '.'.$ext;
         }
 
-        $conversionPath = 'conversions/'.$media->id.'/'.$baseName;
+        $conversionPath = MediaPrefix::join('conversions', (string) $media->id, $baseName);
 
         // Store conversion file.
-        $image->storeAs(dirname($conversionPath), basename($conversionPath), $disk, ['visibility' => $media->visibility->value]);
+        $image->storeAs(dirname($conversionPath), basename($conversionPath), $disk, StorageOptions::forVisibility($media->visibility->value));
 
         $mime = $image->mimeType();
         $size = null;
@@ -187,6 +189,7 @@ final readonly class MediaConversionService
             $conv->delete();
         }
 
-        Storage::disk($media->disk)->deleteDirectory('conversions/'.$media->id);
+        $conversionsDisk = $media->conversions_disk ?? $media->disk;
+        Storage::disk($conversionsDisk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
     }
 }
