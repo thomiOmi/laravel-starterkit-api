@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
 use Modules\Media\Actions\DeleteMediaAction;
 use Modules\Media\Actions\ReorderMediaAction;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\Downloaders\MediaDownloader;
 use Modules\Media\Support\MediaCollection;
 use Modules\Media\Support\MediaConversion;
 use Modules\Media\Support\PendingMedia;
@@ -94,22 +94,15 @@ trait InteractsWithMedia
     }
 
     /**
+     * Download a remote file through the configured media downloader.
+     *
      * @param  array<string, string>  $headers
      */
     public function addMediaFromUrl(string $url, ?string $filename = null, array $headers = []): PendingMedia
     {
-        $response = Http::withHeaders($headers)->get($url);
+        $downloaded = app(MediaDownloader::class)->download($url, $headers);
 
-        if (! $response->successful()) {
-            throw new \InvalidArgumentException("Failed to fetch URL: {$url}");
-        }
-
-        $content = $response->body();
-        $rawPath = parse_url($url, PHP_URL_PATH);
-        $path = is_string($rawPath) && $rawPath !== '' ? $rawPath : 'file';
-        $name = $filename ?? basename($path);
-
-        return $this->addMediaFromString($content, $name);
+        return $this->addMediaFromString($downloaded['content'], $filename ?? $downloaded['filename']);
     }
 
     public function addMediaFromString(string $content, string $filename): PendingMedia

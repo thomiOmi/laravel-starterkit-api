@@ -7,6 +7,8 @@ namespace Modules\Media\Providers;
 use Illuminate\Console\Command;
 use Modules\Media\Console\Commands\MediaCleanupCommand;
 use Modules\Media\Console\Commands\MediaReprocessCommand;
+use Modules\Media\Support\Downloaders\DefaultDownloader;
+use Modules\Media\Support\Downloaders\MediaDownloader;
 use Modules\Media\Support\FileNamer\DefaultFileNamer;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
@@ -78,6 +80,15 @@ class MediaServiceProvider extends ModuleServiceProvider
 
             if (! is_a($class, MediaFileNamer::class, true)) {
                 $class = DefaultFileNamer::class;
+            }
+
+            return new $class;
+        });
+        $this->app->singleton(MediaDownloader::class, function (): MediaDownloader {
+            $class = config()->string('media.media_downloader', DefaultDownloader::class);
+
+            if (! is_a($class, MediaDownloader::class, true)) {
+                $class = DefaultDownloader::class;
             }
 
             return new $class;
