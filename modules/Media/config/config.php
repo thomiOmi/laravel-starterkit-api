@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use Modules\Media\Support\Downloaders\DefaultDownloader;
 use Modules\Media\Support\FileNamer\DefaultFileNamer;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
@@ -100,4 +101,37 @@ return [
     |
     */
     'temporary_url_default_lifetime' => env('MEDIA_TEMPORARY_URL_DEFAULT_LIFETIME', 10),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Media downloader
+    |--------------------------------------------------------------------------
+    |
+    | When using addMediaFromUrl this class will fetch the remote file.
+    | Swap it for a custom MediaDownloader implementation, e.g. when the
+    | URL sits behind a firewall and needs extra client flags.
+    |
+    */
+    'media_downloader' => env('MEDIA_DOWNLOADER', DefaultDownloader::class),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Media downloader SSL
+    |--------------------------------------------------------------------------
+    |
+    | SSL certificates are verified by default when downloading remote
+    | media. Disable only in a local environment: it is a security risk.
+    |
+    */
+    'media_downloader_ssl' => env('MEDIA_DOWNLOADER_SSL', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Downloader timeout
+    |--------------------------------------------------------------------------
+    |
+    | Timeout in seconds for remote media downloads.
+    |
+    */
+    'downloader_timeout' => env('MEDIA_DOWNLOADER_TIMEOUT', 10),
 ];
