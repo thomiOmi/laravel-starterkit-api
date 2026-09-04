@@ -132,7 +132,7 @@ describe('Media responsive images', function () {
         $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne(['mime_type' => 'image/jpeg']);
         Storage::disk('public')->put($media->getPath() ?? '', (string) UploadedFile::fake()->image('seed.jpg', 100, 80)->getContent());
 
-        (new ProcessMediaJob((string) $media->id))->handle(app(MediaConversionService::class), app(GenerateResponsiveImagesAction::class));
+        new ProcessMediaJob((string) $media->id)->handle(app(MediaConversionService::class), app(GenerateResponsiveImagesAction::class));
 
         expect($media->fresh()?->responsive_images)->not->toBe([]);
     });
