@@ -7,6 +7,8 @@ namespace Modules\Media\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\MediaPrefix;
+use Modules\Media\Support\StorageOptions;
 
 /**
  * Handles physical file storage for media.
@@ -19,9 +21,9 @@ final readonly class MediaStorageService
     public function store(UploadedFile $file, string $disk, string $directory, string $visibility): string
     {
         $filename = $file->hashName();
-        $path = $directory.'/'.$filename;
+        $path = MediaPrefix::join($directory, $filename);
 
-        Storage::disk($disk)->putFileAs($directory, $file, $filename, ['visibility' => $visibility]);
+        Storage::disk($disk)->putFileAs(MediaPrefix::join($directory), $file, $filename, StorageOptions::forVisibility($visibility));
 
         return $path;
     }
@@ -43,7 +45,7 @@ final readonly class MediaStorageService
      */
     public function deleteVariants(Media $media): void
     {
-        Storage::disk($media->disk)->deleteDirectory('variants/'.$media->id);
+        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
     }
 
     /**
