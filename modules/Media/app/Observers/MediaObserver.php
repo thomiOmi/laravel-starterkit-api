@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Media\Observers;
 
-use App\Support\Media\MediaPrefix;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\MediaPrefix;
 
 final class MediaObserver
 {

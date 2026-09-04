@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Media\Actions;
 
-use App\Support\Media\MediaPrefix;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Events\MediaDeleted;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\MediaPrefix;
 
 /**
  * Remove the stored file, its derived variants, and its Media row.

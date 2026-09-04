@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Media\Actions;
 
 use App\Enums\MediaCollection;
-use App\Support\Media\MediaPrefix;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Image\ImageException;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +21,7 @@ use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Modules\Media\Services\MediaConversionService;
 use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 use Throwable;
 

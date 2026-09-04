@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support\PathGenerator;
 
-use App\Support\Media\MediaPrefix;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\MediaPrefix;
 
 final readonly class DefaultPathGenerator implements MediaPathGenerator
 {

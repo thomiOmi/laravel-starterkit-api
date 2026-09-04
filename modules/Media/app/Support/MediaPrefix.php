@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Support\Media;
+namespace Modules\Media\Support;
 
 /**
  * Single source for storage paths under the optional media prefix.
  *
- * Lives in app/ (shared vocabulary) so both the Media module and its
- * consumers (e.g. IAM avatar resolution) build identical paths without
- * crossing the module internal-layer seam. Reads and writes must agree:
- * DefaultPathGenerator, UploadMediaAction, conversions, variants,
- * cleanup, and avatar resolution all build paths through here, so
- * setting media.prefix moves everything at once.
+ * Reads and writes must agree: DefaultPathGenerator, UploadMediaAction,
+ * conversions, variants, and cleanup all build paths through here, so
+ * setting media.prefix moves everything at once. External consumers
+ * resolve paths through the Media model (the public seam), never by
+ * importing this internal helper.
  */
 final class MediaPrefix
 {
