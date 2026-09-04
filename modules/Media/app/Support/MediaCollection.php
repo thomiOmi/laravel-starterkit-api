@@ -26,6 +26,8 @@ final class MediaCollection
 
     public ?string $visibility = null;
 
+    public bool $generateResponsiveImages = false;
+
     public function __construct(string $name)
     {
         $this->name = $name;
@@ -58,6 +60,13 @@ final class MediaCollection
     public function acceptsFile(callable $callback): self
     {
         $this->acceptsFile = $callback;
+
+        return $this;
+    }
+
+    public function withResponsiveImages(bool $generate = true): self
+    {
+        $this->generateResponsiveImages = $generate;
 
         return $this;
     }

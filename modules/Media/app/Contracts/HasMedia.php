@@ -6,9 +6,11 @@ namespace Modules\Media\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Http\UploadedFile;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\MediaCollection;
 use Modules\Media\Support\MediaConversion;
+use Modules\Media\Support\PendingMedia;
 
 /**
  * Contract for models that own media.
@@ -54,6 +56,11 @@ interface HasMedia
     public function getMediaConversions(?Media $media = null): array;
 
     public function hasMedia(string $collection = 'default'): bool;
+
+    /**
+     * Start a fluent media attachment for the model.
+     */
+    public function addMedia(UploadedFile $file): PendingMedia;
 
     /**
      * @param  array<int, string>  $exceptIds

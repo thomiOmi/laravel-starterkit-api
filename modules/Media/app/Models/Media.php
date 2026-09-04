@@ -42,7 +42,7 @@ use Modules\Media\Support\PathGenerator\MediaPathGenerator;
  * @property array<string, mixed>|null $manipulations JSON manipulations per conversion.
  * @property array<string, mixed>|null $custom_properties Application-level metadata.
  * @property array<string, mixed>|null $generated_conversions JSON map of generated conversions.
- * @property array<string, mixed>|null $responsive_images JSON responsive data.
+ * @property array<int, array{path: string, size: int|null}>|null $responsive_images JSON responsive data keyed by width.
  * @property array<string, mixed>|null $meta Free-form metadata (dimensions, etc.).
  * @property int $order_column Ordering within the collection.
  * @property string|null $uploaded_by_type The uploader model class.
@@ -304,6 +304,42 @@ class Media extends Model
     public function getFullUrlOrFallback(?string $conversion = null, ?string $fallback = null): ?string
     {
         return $this->url($conversion) ?? $fallback;
+    }
+
+    /**
+     * Build a srcset attribute value from generated responsive images.
+     *
+     * Returns null for private media or when no responsive images exist.
+     */
+    public function getSrcset(): ?string
+    {
+        if (! $this->isPublic()) {
+            return null;
+        }
+
+        $responsive = $this->responsive_images;
+
+        if (! is_array($responsive) || $responsive === []) {
+            return null;
+        }
+
+        $entries = [];
+
+        foreach ($responsive as $width => $info) {
+            if ($info['path'] === '') {
+                continue;
+            }
+
+            $entries[(int) $width] = Storage::disk($this->disk)->url($info['path']).' '.((int) $width).'w';
+        }
+
+        if ($entries === []) {
+            return null;
+        }
+
+        ksort($entries);
+
+        return implode(', ', $entries);
     }
 
     public function getCustomProperty(string $name, mixed $default = null): mixed

@@ -1,6 +1,6 @@
 # ADR-0038: Responsive Images Generation Design
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-09-04
 
 ## Context
@@ -17,4 +17,8 @@ The `media.responsive_images` JSON column exists (migration `2026_08_23_024502`,
 
 - API clients get ready `srcset` data without new dependencies (GD pipeline already present); no placeholder/JS surface to maintain.
 - Widths config keeps per-project tuning without code changes; capping avoids upscaling artifacts.
-- Follow-up PR after acceptance: action + collection flag + resource field + tests (generation, cap, srcset format, queue dispatch).
+- Implemented as designed, with one deviation: the JSON stores `{width: {path, size}}` instead of `{width: {url, size}}` — URLs are built on read via `Media::getSrcset()` so disk/URL changes do not stale stored rows.
+
+## Implementation (PR feat/media-responsive)
+
+- `GenerateResponsiveImagesAction` (+ static `wantsResponsive()` gate shared by upload and job paths), `MediaCollection::withResponsiveImages()` opt-in flag, `media.responsive.widths` config, `Media::getSrcset()`, `srcset` resource field, `ProcessMediaJob` runs responsive after conversions, `UploadMediaAction` dispatches job-or-inline honoring `media.queue`.

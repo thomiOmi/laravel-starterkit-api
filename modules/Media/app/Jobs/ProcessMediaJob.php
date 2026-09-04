@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Modules\Media\Actions\GenerateResponsiveImagesAction;
 use Modules\Media\Events\MediaProcessed;
 use Modules\Media\Events\MediaProcessingFailed;
 use Modules\Media\Models\Media;
@@ -26,7 +27,7 @@ final class ProcessMediaJob implements ShouldQueue
         public readonly string $mediaId,
     ) {}
 
-    public function handle(MediaConversionService $service): void
+    public function handle(MediaConversionService $service, GenerateResponsiveImagesAction $responsive): void
     {
         $media = Media::query()->find($this->mediaId);
 
@@ -36,6 +37,10 @@ final class ProcessMediaJob implements ShouldQueue
 
         try {
             $service->generate($media);
+
+            if (GenerateResponsiveImagesAction::wantsResponsive($media)) {
+                $responsive->handle($media);
+            }
 
             event(new MediaProcessed($media));
         } catch (Throwable $e) {

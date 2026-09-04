@@ -187,4 +187,18 @@ return [
     |
     */
     'downloader_timeout' => env('MEDIA_DOWNLOADER_TIMEOUT', 10),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Responsive images
+    |--------------------------------------------------------------------------
+    |
+    | Target widths generated for collections opted in via
+    | MediaCollection::withResponsiveImages(). Widths larger than the
+    | original file are skipped: images are never upscaled.
+    |
+    */
+    'responsive' => [
+        'widths' => [320, 640, 1024, 1600],
+    ],
 ];
