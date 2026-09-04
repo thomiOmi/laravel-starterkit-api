@@ -7,7 +7,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Models\Media;
+use Modules\Media\Services\MediaStorageService;
 use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 
@@ -82,6 +84,24 @@ describe('Media storage prefix', function () {
         expect($conversion->path)->toStartWith('tenant-a/conversions/')
             ->and($media->conversions_disk)->toBe($media->disk);
         Storage::disk('public')->assertExists($conversion->path);
+    });
+
+    it('keeps the storage service consistent with prefix and headers', function () {
+        config(['media.prefix' => 'tenant-a']);
+        config(['media.remote.extra_headers' => ['CacheControl' => 'max-age=60']]);
+
+        $service = app(MediaStorageService::class);
+        $path = $service->store(UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'), 'public', 'documents', 'private');
+
+        expect($path)->toStartWith('tenant-a/documents/');
+        Storage::disk('public')->assertExists($path);
+
+        $media = MediaFactory::new()->createOne();
+        Storage::disk('public')->put('tenant-a/variants/'.$media->id.'/thumb.webp', 'thumb');
+
+        $service->deleteVariants($media);
+
+        Storage::disk('public')->assertMissing('tenant-a/variants/'.$media->id.'/thumb.webp');
     });
 
     it('uses the configured conversions disk when set', function () {
