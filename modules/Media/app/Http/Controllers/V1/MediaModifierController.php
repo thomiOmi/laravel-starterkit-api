@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Modules\Media\Models\Media;
-use Modules\Media\Support\MediaModifier;
+use Modules\Media\Support\MediaConversion;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -36,7 +36,7 @@ final readonly class MediaModifierController extends Controller
 
         try {
             /** @var array<string, mixed> $parsed */
-            $parsed = MediaModifier::parse($modifiers);
+            $parsed = MediaConversion::parse($modifiers);
         } catch (InvalidArgumentException $e) {
             return new ProblemResponse(
                 typeKey: 'validation',
@@ -68,7 +68,7 @@ final readonly class MediaModifierController extends Controller
 
         $updatedAt = $media->updated_at;
         $version = $updatedAt !== null ? (string) $updatedAt->timestamp : '0';
-        $cacheKey = MediaModifier::toCacheKey($parsed, $version);
+        $cacheKey = MediaConversion::toCacheKey($parsed, $version);
         $etag = '"'.hash('xxh128', $version.'|'.$media->id.'|'.$cacheKey.'|'.$format).'"';
 
         if (request()->headers->get('If-None-Match') === $etag) {
