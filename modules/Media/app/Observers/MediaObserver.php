@@ -4,27 +4,21 @@ declare(strict_types=1);
 
 namespace Modules\Media\Observers;
 
-use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
-use Modules\Media\Support\MediaPrefix;
+use Modules\Media\Support\FileRemover\MediaFileRemover;
 
 final class MediaObserver
 {
     public function deleting(Media $media): void
     {
-        // Delete conversion files
-        foreach ($media->conversions()->get() as $conversion) {
-            Storage::disk($conversion->disk)->delete($conversion->path);
-        }
-
-        // Delete variants and conversions directories
-        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
-        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
+        // Fallback cleanup when rows are removed outside DeleteMediaAction.
+        // Storage deletes are idempotent, so double runs stay harmless.
+        app(MediaFileRemover::class)->removeAllFiles($media);
     }
 
     public function deleted(Media $media): void
     {
-        // Also ensure the original file is deleted if not already (DeleteMediaAction already does, but observer is fallback)
-        // No-op if already deleted
+        // No-op: DeleteMediaAction already removed files; the deleting
+        // hook above covers rows removed by any other path.
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Media\Contracts;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\UploadedFile;
@@ -51,6 +52,11 @@ interface HasMedia
     public function getMediaCollections(): array;
 
     /**
+     * @return array<string, MediaCollection>
+     */
+    public function getRegisteredMediaCollections(): array;
+
+    /**
      * @return array<string, MediaConversion>
      */
     public function getMediaConversions(?Media $media = null): array;
@@ -72,4 +78,43 @@ interface HasMedia
     public function getFallbackMediaUrl(string $collection, string $conversion = ''): ?string;
 
     public function getFallbackMediaPath(string $collection, string $conversion = ''): ?string;
+
+    public function addMediaFromRequest(string $key): PendingMedia;
+
+    /**
+     * @param  array<int, string>  $keys
+     * @return array<int, PendingMedia>
+     */
+    public function addMultipleMediaFromRequest(array $keys): array;
+
+    /**
+     * @param  array<int, string>|null  $keys
+     * @return array<int, PendingMedia>
+     */
+    public function addAllMediaFromRequest(?array $keys = null): array;
+
+    /**
+     * @param  array<string, string>  $headers
+     */
+    public function addMediaFromUrl(string $url, ?string $filename = null, array $headers = []): PendingMedia;
+
+    public function addMediaFromString(string $content, string $filename): PendingMedia;
+
+    /**
+     * @return Collection<int, Media>
+     */
+    public function getMedia(string $collection = 'default'): Collection;
+
+    public function getFirstMedia(string $collection = 'default'): ?Media;
+
+    public function getFirstMediaPath(string $collection = 'default', string $conversion = ''): ?string;
+
+    public function getFirstMediaSignedUrl(string $collection = 'default', ?int $ttlMinutes = null): ?string;
+
+    public function clearMediaCollection(string $collection): int;
+
+    /**
+     * @param  array<int, string>  $orderedIds
+     */
+    public function reorderMedia(string $collection, array $orderedIds): void;
 }

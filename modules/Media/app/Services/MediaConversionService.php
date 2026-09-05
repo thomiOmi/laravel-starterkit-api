@@ -103,6 +103,7 @@ final readonly class MediaConversionService
      */
     public function generateOne(Media $media, string $name, array $cfg): MediaConversion
     {
+        $sourceDisk = $media->disk;
         $disk = $media->conversions_disk ?? $media->disk;
         $width = array_key_exists('width', $cfg) ? $cfg['width'] : null;
         $height = array_key_exists('height', $cfg) ? $cfg['height'] : null;
@@ -132,7 +133,7 @@ final readonly class MediaConversionService
             throw new \RuntimeException('Media path is missing.');
         }
 
-        $image = Image::fromStorage($path, $disk);
+        $image = Image::fromStorage($path, $sourceDisk);
 
         if ($width !== null || $height !== null) {
             if ($fit === 'cover' && $width !== null && $height !== null) {

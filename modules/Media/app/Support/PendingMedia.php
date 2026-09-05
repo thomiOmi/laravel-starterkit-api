@@ -6,6 +6,7 @@ namespace Modules\Media\Support;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Modules\Media\Actions\GenerateResponsiveImagesAction;
 use Modules\Media\Actions\UploadMediaAction;
 use Modules\Media\Models\Media;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
@@ -28,6 +29,12 @@ final class PendingMedia
     private ?string $fileName = null;
 
     private bool $preservingOriginal = false;
+
+    private ?string $conversionsDisk = null;
+
+    private bool $generateResponsiveImages = false;
+
+    private ?int $order = null;
 
     /** @var array<string, mixed> */
     private array $manipulations = [];
@@ -95,6 +102,27 @@ final class PendingMedia
         return $this;
     }
 
+    public function storingConversionsOnDisk(string $disk): self
+    {
+        $this->conversionsDisk = $disk;
+
+        return $this;
+    }
+
+    public function withResponsiveImages(bool $generate = true): self
+    {
+        $this->generateResponsiveImages = $generate;
+
+        return $this;
+    }
+
+    public function setOrder(?int $order): self
+    {
+        $this->order = $order;
+
+        return $this;
+    }
+
     public function toMediaCollection(string $collection = 'default', ?string $disk = null): Media
     {
         $file = $this->file;
@@ -127,6 +155,7 @@ final class PendingMedia
             file: $file,
             collectionName: $collection,
             preservingOriginal: $this->preservingOriginal,
+            conversionsDisk: $this->conversionsDisk,
         );
 
         // Resolve the action via container to keep Media module self-contained.
@@ -154,8 +183,8 @@ final class PendingMedia
         /** @var Media $media */
         $media = $result['media'];
 
-        // Apply custom properties, manipulations and name if provided.
-        $hasCustom = $this->customProperties !== [] || $this->manipulations !== [] || $this->name !== null;
+        // Apply custom properties, manipulations, name and order if provided.
+        $hasCustom = $this->customProperties !== [] || $this->manipulations !== [] || $this->name !== null || $this->order !== null;
 
         if ($hasCustom) {
             if ($this->customProperties !== [] || $this->manipulations !== []) {
@@ -175,9 +204,21 @@ final class PendingMedia
                 $media->original_name = $this->name;
             }
 
+            if ($this->order !== null) {
+                $media->order_column = $this->order;
+            }
+
             $media->save();
         }
 
-        return $media->fresh() ?? $media;
+        $fresh = $media->fresh();
+
+        if ($this->generateResponsiveImages && $fresh instanceof Media && $fresh->responsive_images === []) {
+            app(GenerateResponsiveImagesAction::class)->handle($fresh);
+
+            return $fresh->fresh() ?? $fresh;
+        }
+
+        return $fresh ?? $media;
     }
 }

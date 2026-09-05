@@ -102,6 +102,7 @@ class User extends Authenticatable implements HasMedia, Identity
     {
         $this->addMediaCollection('avatars')
             ->singleFile()
+            ->visibility('public')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp']);
 
         $this->addMediaCollection('default');
