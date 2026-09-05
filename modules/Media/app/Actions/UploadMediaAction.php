@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Media\Actions;
 
-use App\Enums\MediaCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Image\ImageException;
 use Illuminate\Support\Facades\DB;
@@ -280,10 +279,8 @@ final readonly class UploadMediaAction
             }
         }
 
-        // Fallback to legacy hard-coded rule for avatars.
-        return $collectionName === MediaCollection::Avatars->value
-            ? MediaVisibilityEnum::Public
-            : MediaVisibilityEnum::Private;
+        // Collections without a model definition default to private.
+        return MediaVisibilityEnum::Private;
     }
 
     private function isSingleFileCollection(string $collectionName, ?Model $owner = null): bool
@@ -307,8 +304,11 @@ final readonly class UploadMediaAction
     private function persistRow(MediaUploadPayload $payload, Model $owner, ?Model $uploader, string $disk, string $fullPath, string $mimeType, int $size, array $meta): Media
     {
         $isSingle = $this->isSingleFileCollection($payload->collectionName, $owner);
-        $conversionsDisk = config('media.conversions_disk_name');
-        $conversionsDisk = is_string($conversionsDisk) && $conversionsDisk !== '' ? $conversionsDisk : $disk;
+        $configuredDisk = config('media.conversions_disk_name');
+        $perCallDisk = $payload->conversionsDisk;
+        $conversionsDisk = is_string($perCallDisk) && $perCallDisk !== ''
+            ? $perCallDisk
+            : (is_string($configuredDisk) && $configuredDisk !== '' ? $configuredDisk : $disk);
 
         try {
             // A custom file namer runs after the client-name guard, so the

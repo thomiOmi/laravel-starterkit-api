@@ -201,4 +201,14 @@ return [
     'responsive' => [
         'widths' => [320, 640, 1024, 1600],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | File remover
+    |--------------------------------------------------------------------------
+    |
+    | The class that contains the strategy for removing media files.
+    |
+    */
+    'file_remover' => env('MEDIA_FILE_REMOVER', DefaultFileRemover::class),
 ];

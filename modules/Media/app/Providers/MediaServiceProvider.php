@@ -11,6 +11,8 @@ use Modules\Media\Support\Downloaders\DefaultDownloader;
 use Modules\Media\Support\Downloaders\MediaDownloader;
 use Modules\Media\Support\FileNamer\DefaultFileNamer;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Support\FileRemover\DefaultFileRemover;
+use Modules\Media\Support\FileRemover\MediaFileRemover;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
 use Modules\Media\Support\PathGenerator\MediaPathGenerator;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
@@ -89,6 +91,15 @@ class MediaServiceProvider extends ModuleServiceProvider
 
             if (! is_a($class, MediaDownloader::class, true)) {
                 $class = DefaultDownloader::class;
+            }
+
+            return new $class;
+        });
+        $this->app->singleton(MediaFileRemover::class, function (): MediaFileRemover {
+            $class = config()->string('media.file_remover', DefaultFileRemover::class);
+
+            if (! is_a($class, MediaFileRemover::class, true)) {
+                $class = DefaultFileRemover::class;
             }
 
             return new $class;

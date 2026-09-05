@@ -153,6 +153,49 @@ trait InteractsWithMedia
         return $this->getFirstMedia($collection)?->signedUrl($ttlMinutes);
     }
 
+    public function getFirstMediaPath(string $collection = 'default', string $conversion = ''): ?string
+    {
+        $media = $this->getFirstMedia($collection);
+
+        if ($media === null) {
+            return null;
+        }
+
+        return $conversion !== '' ? $media->getPath($conversion) : $media->getPath();
+    }
+
+    /**
+     * @param  array<int, string>|null  $keys  Null attaches every uploaded file key.
+     * @return array<int, PendingMedia>
+     */
+    public function addAllMediaFromRequest(?array $keys = null): array
+    {
+        if ($keys !== null) {
+            return $this->addMultipleMediaFromRequest($keys);
+        }
+
+        /** @var mixed $files */
+        $files = request()->file();
+
+        if (! is_array($files)) {
+            return [];
+        }
+
+        $resolved = [];
+
+        foreach ($files as $key => $value) {
+            if (! is_string($key)) {
+                continue;
+            }
+
+            if ($value instanceof UploadedFile || (is_array($value) && $value !== [])) {
+                $resolved[] = $key;
+            }
+        }
+
+        return $this->addMultipleMediaFromRequest($resolved);
+    }
+
     public function hasMedia(string $collection = 'default'): bool
     {
         return $this->media()->where('collection_name', $collection)->exists();
@@ -303,6 +346,14 @@ trait InteractsWithMedia
         }
 
         return $this->mediaCollections;
+    }
+
+    /**
+     * @return array<string, MediaCollection>
+     */
+    public function getRegisteredMediaCollections(): array
+    {
+        return $this->getMediaCollections();
     }
 
     /**

@@ -45,11 +45,6 @@ return [
         'media_delete' => 'Delete media',
     ],
 
-    'MediaCollection' => [
-        'default' => 'Default',
-        'avatars' => 'Avatars',
-    ],
-
     'MediaVisibilityEnum' => [
         'public' => 'Public',
         'private' => 'Private',
