@@ -315,7 +315,10 @@ final readonly class UploadMediaAction
             // final stored basename is checked again; the catch below
             // removes the stored file when it is rejected here.
             $this->guardFileName(basename($fullPath));
-            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle): Media {
+            // Capture the replaced file name before save: getOriginal() is
+            // synced on save, so it cannot be trusted for cleanup afterwards.
+            $replacedFileName = null;
+            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle, &$replacedFileName): Media {
                 $file = $payload->file;
 
                 if ($isSingle) {
@@ -327,6 +330,7 @@ final readonly class UploadMediaAction
                         ->first();
 
                     if ($existing !== null) {
+                        $replacedFileName = $existing->file_name;
                         $fileName = basename($fullPath);
                         $name = pathinfo($fileName, PATHINFO_FILENAME);
 
@@ -403,13 +407,9 @@ final readonly class UploadMediaAction
             });
 
             // Clean up old file and its variants after successful single_file replacement.
-            if ($isSingle && $media->wasChanged('file_name')) {
-                $oldFileName = $media->getOriginal('file_name');
-
-                if (is_string($oldFileName) && $oldFileName !== $media->file_name) {
-                    Storage::disk($disk)->delete(MediaPrefix::basePath($media->collection_name, $oldFileName));
-                    Storage::disk($disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
-                }
+            if ($isSingle && $media->wasChanged('file_name') && is_string($replacedFileName) && $replacedFileName !== $media->file_name) {
+                Storage::disk($disk)->delete(MediaPrefix::basePath($media->collection_name, $replacedFileName));
+                Storage::disk($disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
             }
 
             return $media;

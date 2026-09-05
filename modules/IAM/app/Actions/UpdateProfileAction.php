@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
-use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UpdateProfilePayload;
-use Modules\Media\Models\Media;
 
 final readonly class UpdateProfileAction
 {
@@ -29,8 +27,14 @@ final readonly class UpdateProfileAction
             $verificationRequired = true;
         }
 
-        if ($payload->avatarMediaId !== null) {
-            $user->avatar = $this->resolveAvatarUrl($payload->avatarMediaId, $user);
+        if ($payload->avatarFile !== null) {
+            // Profile avatars deliberately bypass the media.create permission:
+            // owner-only, locked to the avatars collection, guarded by the
+            // collection mime rules in UploadMediaAction. Single-file
+            // replacement removes the previous avatar file.
+            $media = $user->addMedia($payload->avatarFile)->toMediaCollection('avatars');
+
+            $user->avatar = $media->url() ?? throw new InvalidArgumentException(__('validation.avatar_unavailable'));
         }
 
         $user->save();
@@ -43,33 +47,5 @@ final readonly class UpdateProfileAction
             'user' => $user,
             'verification_required' => $verificationRequired,
         ];
-    }
-
-    private function resolveAvatarUrl(string $mediaId, User $user): string
-    {
-        // Models are the public seam between modules: avatar resolution
-        // consumes Media::getPath() instead of rebuilding the storage
-        // path manually, so prefixes and custom generators apply here too.
-        $media = Media::query()->whereKey($mediaId)->first();
-
-        if ($media === null || ! $media->belongsToModel($user)) {
-            throw new InvalidArgumentException(__('validation.avatar_unavailable'));
-        }
-
-        if (
-            $media->collection_name !== 'avatars'
-            || ! $media->isPublic()
-            || $media->disk !== config()->string('media.disk', 'public')
-        ) {
-            throw new InvalidArgumentException(__('validation.avatar_unavailable'));
-        }
-
-        $path = $media->getPath();
-
-        if (! is_string($path)) {
-            throw new InvalidArgumentException(__('validation.avatar_unavailable'));
-        }
-
-        return Storage::disk($media->disk)->url($path);
     }
 }

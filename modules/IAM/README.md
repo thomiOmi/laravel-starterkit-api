@@ -148,8 +148,7 @@ classDiagram
         +hasPassword() bool
     }
     class UpdateProfilePayload {
-        +String avatarMediaId
-        +fromRequest() Payload
+        +UploadedFile avatarFile
     }
     class UpdateProfileAction {
         +handle(Payload, User) User
@@ -190,7 +189,7 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 | POST | `/auth/logout` | `api.v1.iam.auth.logout` | `auth:sanctum`, `active`, `ability:auth:manage` | Revoke current token |
 | DELETE | `/auth/account` | `api.v1.iam.auth.account.delete` | `auth:sanctum`, `active` | Delete own account |
 | GET | `/auth/me` | `api.v1.iam.auth.me` | `auth:sanctum`, `active`, `ability:users:read` | Get authenticated user |
-| PUT | `/auth/me` | `api.v1.iam.auth.me.update` | `auth:sanctum`, `active`, `verified` | Update profile (name, email, avatar) |
+| PUT | `/auth/me` | `api.v1.iam.auth.me.update` | `auth:sanctum`, `active`, `verified` | Update profile (name, email, avatar file upload to avatars collection) |
 | GET | `/auth/social/{provider}/redirect` | `api.v1.iam.auth.social.redirect` | `throttle:api` | Get OAuth provider URL |
 | GET | `/auth/social/{provider}/callback` | `api.v1.iam.auth.social.callback` | `throttle:api` | Handle OAuth callback |
 | GET | `/auth/social/{provider}/link` | `api.v1.iam.auth.social.link` | `auth:sanctum`, `active`, `verified` | Link provider to current user |
@@ -256,10 +255,10 @@ TOKEN="1|..."
 curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer $TOKEN" -H "Accept: application/json"
 
-# Update profile (change name + avatar via Media ID)
-curl -X PUT http://localhost:8000/api/v1/auth/me \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"name":"Alice Updated","avatar":"01H...ULID..."}'
+# Update profile (change name + upload avatar file directly; replaces previous avatar)
+  curl -X PUT http://localhost:8000/api/v1/auth/me \
+    -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" \
+    -F "name=Alice Updated" -F "avatar=@me.png"
 
 # List users (paginated, filterable via UserBuilder)
 curl "http://localhost:8000/api/v1/users?filter[name]=Alice&sort=-created_at" \
