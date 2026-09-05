@@ -4,6 +4,7 @@ declare(strict_types=1);
 use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\Downloaders\DefaultDownloader;
 use Modules\Media\Support\FileNamer\DefaultFileNamer;
+use Modules\Media\Support\FileRemover\DefaultFileRemover;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
 
