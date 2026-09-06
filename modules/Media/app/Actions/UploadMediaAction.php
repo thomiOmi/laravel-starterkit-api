@@ -149,7 +149,7 @@ final readonly class UploadMediaAction
      */
     private function storeProcessedImage(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
-        $disk = config()->string('media.disk', 'public');
+        $disk = $this->resolveDisk($payload);
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
 
@@ -187,7 +187,7 @@ final readonly class UploadMediaAction
      */
     private function storeRaw(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
-        $disk = config()->string('media.disk', 'public');
+        $disk = $this->resolveDisk($payload);
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
         $file = $payload->file;
         $filename = app(MediaFileNamer::class)->originalFileName($file->hashName());
@@ -304,6 +304,15 @@ final readonly class UploadMediaAction
         }
     }
 
+    private function resolveDisk(MediaUploadPayload $payload): string
+    {
+        if (is_string($payload->disk) && $payload->disk !== '') {
+            return $payload->disk;
+        }
+
+        return config()->string('media.disk', 'public');
+    }
+
     private function resolveVisibility(string $collectionName, ?Model $owner = null): MediaVisibilityEnum
     {
         // Check model-registered collection first
@@ -389,10 +398,14 @@ final readonly class UploadMediaAction
             // final stored basename is checked again; the catch below
             // removes the stored file when it is rejected here.
             $this->guardFileName(basename($fullPath));
-            // Capture the replaced file name before save: getOriginal() is
+            // Capture the replaced state before save: getOriginal() is
             // synced on save, so it cannot be trusted for cleanup afterwards.
             $replacedFileName = null;
-            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle, &$replacedFileName): Media {
+            $replacedDisk = null;
+            $replacedConversionsDisk = null;
+            $replacedConversions = [];
+            $replacedResponsive = null;
+            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle, &$replacedFileName, &$replacedDisk, &$replacedConversionsDisk, &$replacedConversions, &$replacedResponsive): Media {
                 $file = $payload->file;
 
                 if ($isSingle) {
@@ -405,6 +418,10 @@ final readonly class UploadMediaAction
 
                     if ($existing !== null) {
                         $replacedFileName = $existing->file_name;
+                        $replacedDisk = $existing->disk;
+                        $replacedConversionsDisk = $existing->conversions_disk ?? $existing->disk;
+                        $replacedConversions = $existing->conversions()->get(['id', 'disk', 'path'])->all();
+                        $replacedResponsive = $existing->responsive_images;
                         $fileName = basename($fullPath);
                         $name = pathinfo($fileName, PATHINFO_FILENAME);
 
@@ -421,6 +438,8 @@ final readonly class UploadMediaAction
                             'sha256' => hash_file('sha256', $file->getRealPath()),
                             'meta' => $meta,
                             'custom_properties' => $existing->custom_properties,
+                            'generated_conversions' => [],
+                            'responsive_images' => [],
                             'order_column' => $existing->order_column,
                         ]);
 
@@ -480,10 +499,30 @@ final readonly class UploadMediaAction
                 return $media;
             });
 
-            // Clean up old file and its variants after successful single_file replacement.
+            // Clean up replaced files after successful single_file replacement,
+            // using the pre-save snapshot (disks may have changed too).
             if ($isSingle && $media->wasChanged('file_name') && is_string($replacedFileName) && $replacedFileName !== $media->file_name) {
-                Storage::disk($disk)->delete(MediaPrefix::basePath($media->collection_name, $replacedFileName));
-                Storage::disk($disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
+                $oldDisk = is_string($replacedDisk) ? $replacedDisk : $disk;
+                $oldConversionsDisk = is_string($replacedConversionsDisk) ? $replacedConversionsDisk : $disk;
+
+                Storage::disk($oldDisk)->delete(MediaPrefix::basePath($media->collection_name, $replacedFileName));
+                Storage::disk($oldDisk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
+                Storage::disk($oldConversionsDisk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
+
+                foreach ($replacedConversions as $oldConversion) {
+                    Storage::disk($oldConversion->disk)->delete($oldConversion->path);
+                    $oldConversion->delete();
+                }
+
+                if (is_array($replacedResponsive)) {
+                    foreach ($replacedResponsive as $info) {
+                        if ($info['path'] === '') {
+                            continue;
+                        }
+
+                        Storage::disk($oldConversionsDisk)->delete($info['path']);
+                    }
+                }
             }
 
             try {

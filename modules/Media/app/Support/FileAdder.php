@@ -195,17 +195,11 @@ final class FileAdder
             conversionsDisk: $this->conversionsDisk,
             onQueue: $this->onQueue,
             customHeaders: $this->customHeaders,
+            disk: $disk ?? $this->disk,
         );
 
         // Resolve the action via container to keep Media module self-contained.
         $action = app(UploadMediaAction::class);
-
-        // If custom disk is provided, temporarily override config for this call.
-        $effectiveDisk = $disk ?? $this->disk;
-
-        if ($effectiveDisk !== null) {
-            config(['media.disk' => $effectiveDisk]);
-        }
 
         // Determine uploader from auth context if available.
         $uploader = null;

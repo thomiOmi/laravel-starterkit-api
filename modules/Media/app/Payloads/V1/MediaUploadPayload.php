@@ -22,6 +22,7 @@ final readonly class MediaUploadPayload
         public ?string $conversionsDisk = null,
         public ?string $onQueue = null,
         public array $customHeaders = [],
+        public ?string $disk = null,
     ) {}
 
     public static function fromRequest(MediaUploadRequest $request): self

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -162,11 +163,29 @@ class Media extends Model
 
     public function hasGeneratedConversion(string $name): bool
     {
+        if ($this->relationLoaded('conversions')) {
+            $conversions = $this->getRelation('conversions');
+
+            return $conversions instanceof Collection && $conversions->contains('name', $name);
+        }
+
         return $this->conversions()->where('name', $name)->exists();
     }
 
     public function getConversion(string $name): ?MediaConversion
     {
+        if ($this->relationLoaded('conversions')) {
+            $conversions = $this->getRelation('conversions');
+
+            if (! $conversions instanceof Collection) {
+                return $this->conversions()->where('name', $name)->first();
+            }
+
+            $conversion = $conversions->firstWhere('name', $name);
+
+            return $conversion instanceof MediaConversion ? $conversion : null;
+        }
+
         return $this->conversions()->where('name', $name)->first();
     }
 
@@ -177,13 +196,13 @@ class Media extends Model
     public function url(?string $conversion = null): ?string
     {
         if ($conversion !== null) {
-            $conv = $this->getConversion($conversion);
-
-            if ($conv === null) {
+            if (! $this->isPublic()) {
                 return null;
             }
 
-            if (! $this->isPublic()) {
+            $conv = $this->getConversion($conversion);
+
+            if ($conv === null) {
                 return null;
             }
 
@@ -243,17 +262,14 @@ class Media extends Model
 
     public function getPath(?string $conversion = null): ?string
     {
-        $generator = $this->resolvePathGenerator();
-
         if ($conversion === null || $conversion === '') {
-            return $generator->getPath($this);
+            return $this->resolvePathGenerator()->getPath($this);
         }
 
-        if (! $this->hasGeneratedConversion($conversion)) {
-            return null;
-        }
-
-        return $generator->getPathForConversions($this, $conversion);
+        // Conversion files live where the conversion row says, not where
+        // the path generator would synthesize: the database is the source
+        // of truth for generated derivatives.
+        return $this->getConversion($conversion)?->path;
     }
 
     /**
