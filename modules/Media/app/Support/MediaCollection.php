@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support;
 
+use InvalidArgumentException;
+
 /**
  * Builder for a single media collection definition.
  * Mimics Spatie's MediaCollection API but lightweight.
@@ -13,6 +15,8 @@ final class MediaCollection
     public string $name;
 
     public bool $singleFile = false;
+
+    public ?int $collectionSizeLimit = null;
 
     /** @var array<int, string> */
     public array $acceptsMimeTypes = [];
@@ -39,6 +43,17 @@ final class MediaCollection
     public function singleFile(): self
     {
         $this->singleFile = true;
+
+        return $this;
+    }
+
+    public function onlyKeepLatest(int $limit): self
+    {
+        if ($limit < 1) {
+            throw new InvalidArgumentException('Collection size limit must be at least 1.');
+        }
+
+        $this->collectionSizeLimit = $limit;
 
         return $this;
     }
