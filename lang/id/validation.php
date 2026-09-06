@@ -12,6 +12,7 @@ return [
     'media_not_image' => 'Media yang diminta bukan gambar.',
     'media_disallowed_extension' => 'Nama berkas mengandung ekstensi yang tidak diizinkan.',
     'media_not_accepted' => 'Berkas tidak diterima oleh koleksi media.',
+    'media_extension_not_allowed' => 'Ekstensi berkas tidak diizinkan.',
 
     /*
     |--------------------------------------------------------------------------

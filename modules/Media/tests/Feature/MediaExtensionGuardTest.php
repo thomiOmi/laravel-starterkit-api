@@ -58,7 +58,7 @@ describe('Media extension guard', function () {
     });
 
     it('rejects files the target collection does not accept', function () {
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -103,9 +103,37 @@ describe('Media extension guard', function () {
             ->toThrow(InvalidArgumentException::class);
     });
 
+    it('honours a collection acceptsExtensions list', function () {
+        $owner = new class extends Model implements HasMedia
+        {
+            use InteractsWithMedia;
+
+            protected $table = 'users';
+
+            public $incrementing = false;
+
+            protected $keyType = 'string';
+
+            protected $primaryKey = 'id';
+
+            public function registerMediaCollections(): void
+            {
+                $this->addMediaCollection('docs')->acceptsExtensions(['PDF']);
+            }
+        };
+
+        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->exists = true;
+
+        $media = $owner->addMedia(UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'))->toMediaCollection('docs');
+
+        expect($media->file_name)->toEndWith('.pdf')
+            ->and(fn(): mixed => $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))->toMediaCollection('docs'))->toThrow(InvalidArgumentException::class);
+    });
+
     it('rejects a custom namer that produces an executable name and removes the file', function () {
         config(['media.file_namer' => EvilPhpFileNamer::class]);
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 

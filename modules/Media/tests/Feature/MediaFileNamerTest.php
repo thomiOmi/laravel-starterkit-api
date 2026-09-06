@@ -34,7 +34,7 @@ describe('Media file namer', function () {
     });
 
     it('keeps hash-based paths by default on upload', function () {
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -78,7 +78,6 @@ describe('Media file namer', function () {
 
     it('lets an explicit usingFileName win over the namer for the original name', function () {
         config(['media.file_namer' => CustomPrefixFileNamer::class]);
-        config(['media.mimes' => ['pdf']]);
 
         $user = loginAsUser();
 

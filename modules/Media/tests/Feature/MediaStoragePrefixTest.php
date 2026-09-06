@@ -49,7 +49,7 @@ describe('Media storage prefix', function () {
 
     it('stores and resolves uploads under the configured prefix', function () {
         config(['media.prefix' => 'tenant-a']);
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -106,7 +106,7 @@ describe('Media storage prefix', function () {
 
     it('uses the configured conversions disk when set', function () {
         config(['media.conversions_disk_name' => 'public']);
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 

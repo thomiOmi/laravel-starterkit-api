@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Media\Http\Requests\V1;
 
-use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\UploadedFile;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
-use Modules\Media\Support\DisallowedExtensions;
+use Modules\Media\Rules\AllowedFileName;
 
 class MediaUploadRequest extends FormRequest
 {
@@ -21,25 +19,37 @@ class MediaUploadRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<int, string|ValidationRule|Closure>>
+     * @return array<string, array<int, string|ValidationRule>>
      */
     public function rules(): array
     {
+        $allowed = [];
+        $configured = config('media.allowed_extensions');
+
+        if (is_array($configured)) {
+            foreach ($configured as $extension) {
+                if (is_string($extension) && $extension !== '') {
+                    $allowed[] = ltrim(strtolower($extension), '.');
+                }
+            }
+        }
+
+        $fileRules = [
+            'required',
+            'file',
+            'max:'.config()->integer('media.max_size'),
+            new AllowedFileName,
+        ];
+
+        if ($allowed !== []) {
+            $fileRules[] = 'extensions:'.implode(',', $allowed);
+        }
+
         return [
             /**
              * The uploaded file.
              */
-            'file' => [
-                'required',
-                'file',
-                'mimes:'.implode(',', array_values(array_filter(config()->array('media.mimes', []), is_string(...)))),
-                'max:'.config()->integer('media.max_size'),
-                function (string $attribute, mixed $value, Closure $fail): void {
-                    if ($value instanceof UploadedFile && DisallowedExtensions::contains($value->getClientOriginalName())) {
-                        $fail(__('validation.media_disallowed_extension'));
-                    }
-                },
-            ],
+            'file' => $fileRules,
             /**
              * The logical collection to place the media in.
              *
