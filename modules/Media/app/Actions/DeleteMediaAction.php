@@ -6,14 +6,10 @@ namespace Modules\Media\Actions;
 
 use Modules\Media\Events\MediaDeleted;
 use Modules\Media\Models\Media;
-use Modules\Media\Support\FileRemover\MediaFileRemover;
 
 /**
- * Remove the stored file, its derived variants, and its Media row.
- *
- * The row is removed first so a failed storage delete leaves an orphan
- * file (harmless, sweepable) instead of a dangling database reference.
- * Physical removal goes through the configured file remover.
+ * Remove the Media row; storage cleanup runs once in the observer
+ * deleting hook while conversion rows are still readable.
  */
 final readonly class DeleteMediaAction
 {
@@ -22,8 +18,6 @@ final readonly class DeleteMediaAction
         $deleted = (bool) $media->delete();
 
         if ($deleted) {
-            app(MediaFileRemover::class)->removeAllFiles($media);
-
             event(new MediaDeleted($media));
         }
 

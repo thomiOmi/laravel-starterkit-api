@@ -11,14 +11,8 @@ final class MediaObserver
 {
     public function deleting(Media $media): void
     {
-        // Fallback cleanup when rows are removed outside DeleteMediaAction.
-        // Storage deletes are idempotent, so double runs stay harmless.
+        // Single storage cleanup site: runs while conversion rows are
+        // still readable. Storage deletes are idempotent.
         app(MediaFileRemover::class)->removeAllFiles($media);
-    }
-
-    public function deleted(Media $media): void
-    {
-        // No-op: DeleteMediaAction already removed files; the deleting
-        // hook above covers rows removed by any other path.
     }
 }
