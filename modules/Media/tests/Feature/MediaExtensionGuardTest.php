@@ -128,7 +128,7 @@ describe('Media extension guard', function () {
         $media = $owner->addMedia(UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'))->toMediaCollection('docs');
 
         expect($media->file_name)->toEndWith('.pdf')
-            ->and(fn(): mixed => $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))->toMediaCollection('docs'))->toThrow(InvalidArgumentException::class);
+            ->and(fn (): mixed => $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))->toMediaCollection('docs'))->toThrow(InvalidArgumentException::class);
     });
 
     it('rejects a custom namer that produces an executable name and removes the file', function () {
