@@ -12,11 +12,16 @@ use Modules\Media\Http\Requests\V1\MediaUploadRequest;
  */
 final readonly class MediaUploadPayload
 {
+    /**
+     * @param  array<string, string>  $customHeaders
+     */
     public function __construct(
         public UploadedFile $file,
         public string $collectionName,
         public bool $preservingOriginal = false,
         public ?string $conversionsDisk = null,
+        public ?string $onQueue = null,
+        public array $customHeaders = [],
     ) {}
 
     public static function fromRequest(MediaUploadRequest $request): self

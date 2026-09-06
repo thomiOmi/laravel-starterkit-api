@@ -12,12 +12,12 @@ use Modules\Media\Models\Media;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
 
 /**
- * Fluent builder for attaching media to a model.
+ * Fluent builder for attaching media to a model (Spatie FileAdder equivalent).
  *
  * Usage:
  * $post->addMedia($file)->usingName('cover')->withCustomProperties(['alt' => '...'])->toMediaCollection('images');
  */
-final class PendingMedia
+final class FileAdder
 {
     private ?string $name = null;
 
@@ -35,6 +35,11 @@ final class PendingMedia
     private bool $generateResponsiveImages = false;
 
     private ?int $order = null;
+
+    private ?string $onQueue = null;
+
+    /** @var array<string, string> */
+    private array $customHeaders = [];
 
     /** @var array<string, mixed> */
     private array $manipulations = [];
@@ -123,6 +128,38 @@ final class PendingMedia
         return $this;
     }
 
+    public function onQueue(?string $queue = null): self
+    {
+        $this->onQueue = $queue ?? 'default';
+
+        return $this;
+    }
+
+    public function withResponsiveImagesIf(bool|callable $condition): self
+    {
+        $generate = is_callable($condition) ? $condition() : $condition;
+
+        return $this->withResponsiveImages((bool) $generate);
+    }
+
+    /**
+     * @param  array<mixed>  $headers
+     */
+    public function addCustomHeaders(array $headers): self
+    {
+        $filtered = [];
+
+        foreach ($headers as $key => $value) {
+            if (is_string($key) && $key !== '' && is_string($value)) {
+                $filtered[$key] = $value;
+            }
+        }
+
+        $this->customHeaders = $filtered;
+
+        return $this;
+    }
+
     public function toMediaCollection(string $collection = 'default', ?string $disk = null): Media
     {
         $file = $this->file;
@@ -156,6 +193,8 @@ final class PendingMedia
             collectionName: $collection,
             preservingOriginal: $this->preservingOriginal,
             conversionsDisk: $this->conversionsDisk,
+            onQueue: $this->onQueue,
+            customHeaders: $this->customHeaders,
         );
 
         // Resolve the action via container to keep Media module self-contained.

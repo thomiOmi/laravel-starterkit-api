@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\UploadedFile;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\FileAdder;
 use Modules\Media\Support\MediaCollection;
 use Modules\Media\Support\MediaConversion;
-use Modules\Media\Support\PendingMedia;
 
 /**
  * Contract for models that own media.
@@ -66,7 +66,7 @@ interface HasMedia
     /**
      * Start a fluent media attachment for the model.
      */
-    public function addMedia(UploadedFile $file): PendingMedia;
+    public function addMedia(UploadedFile $file): FileAdder;
 
     /**
      * @param  array<int, string>  $exceptIds
@@ -79,26 +79,26 @@ interface HasMedia
 
     public function getFallbackMediaPath(string $collection, string $conversion = ''): ?string;
 
-    public function addMediaFromRequest(string $key): PendingMedia;
+    public function addMediaFromRequest(string $key): FileAdder;
 
     /**
      * @param  array<int, string>  $keys
-     * @return array<int, PendingMedia>
+     * @return array<int, FileAdder>
      */
     public function addMultipleMediaFromRequest(array $keys): array;
 
     /**
      * @param  array<int, string>|null  $keys
-     * @return array<int, PendingMedia>
+     * @return array<int, FileAdder>
      */
     public function addAllMediaFromRequest(?array $keys = null): array;
 
     /**
      * @param  array<string, string>  $headers
      */
-    public function addMediaFromUrl(string $url, ?string $filename = null, array $headers = []): PendingMedia;
+    public function addMediaFromUrl(string $url, ?string $filename = null, array $headers = []): FileAdder;
 
-    public function addMediaFromString(string $content, string $filename): PendingMedia;
+    public function addMediaFromString(string $content, string $filename): FileAdder;
 
     /**
      * @return Collection<int, Media>
