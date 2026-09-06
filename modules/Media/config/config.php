@@ -27,11 +27,13 @@ return [
     | Upload constraints
     |--------------------------------------------------------------------------
     |
-    | Maximum upload size in kilobytes and the allowed file extensions.
+    | Maximum upload size in kilobytes. Allowed extensions restrict the
+    | final file extension globally; null disables the allowlist and
+    | defers to collection rules plus the disallowed list below.
     |
     */
     'max_size' => 2048,
-    'mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'],
+    'allowed_extensions' => null,
 
     /*
     |--------------------------------------------------------------------------

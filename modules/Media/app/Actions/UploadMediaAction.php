@@ -48,6 +48,7 @@ final readonly class UploadMediaAction
     public function handle(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
         $this->guardFileName($payload->file->getClientOriginalName());
+        $this->guardAllowedExtension($payload->file->getClientOriginalName());
         $this->guardCollectionAcceptance($payload, $owner);
 
         if ($payload->preservingOriginal) {
@@ -241,6 +242,33 @@ final readonly class UploadMediaAction
         }
     }
 
+    /**
+     * Enforce the global extension allowlist. Null disables it; an
+     * explicit list (even empty) is enforced.
+     */
+    private function guardAllowedExtension(string $filename): void
+    {
+        $configured = config('media.allowed_extensions');
+
+        if (! is_array($configured)) {
+            return;
+        }
+
+        $allowed = [];
+
+        foreach ($configured as $extension) {
+            if (is_string($extension) && $extension !== '') {
+                $allowed[] = ltrim(strtolower($extension), '.');
+            }
+        }
+
+        $final = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (! in_array($final, $allowed, true)) {
+            throw new InvalidArgumentException(__('validation.media_extension_not_allowed'));
+        }
+    }
+
     private function guardCollectionAcceptance(MediaUploadPayload $payload, Model $owner): void
     {
         if (! $owner instanceof HasMedia) {
@@ -257,6 +285,14 @@ final readonly class UploadMediaAction
 
         if ($collection->acceptsMimeTypes !== [] && ! in_array($mimeType, $collection->acceptsMimeTypes, true)) {
             throw new InvalidArgumentException(__('validation.media_not_accepted'));
+        }
+
+        if ($collection->acceptsExtensions !== []) {
+            $finalExtension = strtolower(pathinfo($payload->file->getClientOriginalName(), PATHINFO_EXTENSION));
+
+            if (! in_array($finalExtension, $collection->acceptsExtensions, true)) {
+                throw new InvalidArgumentException(__('validation.media_not_accepted'));
+            }
         }
 
         $acceptsFile = $collection->acceptsFile;

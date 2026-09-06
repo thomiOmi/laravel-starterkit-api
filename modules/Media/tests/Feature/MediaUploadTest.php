@@ -73,7 +73,7 @@ describe('POST /api/v1/media', function () {
     });
 
     it('stores non-image files untouched when their extension is allowed', function () {
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -118,7 +118,7 @@ describe('POST /api/v1/media', function () {
         expect($response->json('data.media.collection_name'))->toBe('default');
     });
 
-    it('rejects disallowed extensions', function (string $filename) {
+    it('rejects executable extensions', function (string $filename) {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -130,8 +130,32 @@ describe('POST /api/v1/media', function () {
         $response->assertJsonValidationErrors(['file']);
     })->with([
         'script' => 'malware.exe',
-        'text' => 'notes.txt',
+        'double' => 'shell.php.txt',
     ]);
+
+    it('accepts non-image files by default when no allowlist is configured', function () {
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $response = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
+        ]);
+
+        assertSuccessResponse($response, 201);
+    });
+
+    it('rejects extensions outside the global allowlist', function () {
+        config(['media.allowed_extensions' => ['png', 'jpg']]);
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $response = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['file']);
+    });
 
     it('rejects files above the size limit', function () {
         $user = loginAsUser();

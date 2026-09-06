@@ -99,6 +99,18 @@ describe('avatar end-to-end flow', function () {
         $response->assertJsonValidationErrors(['avatar']);
     });
 
+    it('rejects non-square avatars with a validation error', function () {
+        Storage::fake('public');
+        loginAsUser();
+
+        $response = $this->put('/api/v1/auth/me', [
+            'avatar' => UploadedFile::fake()->image('wide.png', 64, 32),
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['avatar']);
+    });
+
     it('rejects the legacy media id payload', function () {
         Storage::fake('public');
         loginAsUser();

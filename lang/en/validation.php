@@ -12,6 +12,7 @@ return [
     'media_not_image' => 'The requested media is not an image.',
     'media_disallowed_extension' => 'The file name contains a disallowed extension.',
     'media_not_accepted' => 'The file is not accepted by the media collection.',
+    'media_extension_not_allowed' => 'The file extension is not allowed.',
 
     /*
     |--------------------------------------------------------------------------

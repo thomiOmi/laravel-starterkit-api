@@ -17,6 +17,9 @@ final class MediaCollection
     /** @var array<int, string> */
     public array $acceptsMimeTypes = [];
 
+    /** @var array<int, string> */
+    public array $acceptsExtensions = [];
+
     /** @var callable|null */
     public $acceptsFile = null;
 
@@ -53,6 +56,24 @@ final class MediaCollection
     public function acceptsMimeTypes(array $mimeTypes): self
     {
         $this->acceptsMimeTypes = $mimeTypes;
+
+        return $this;
+    }
+
+    /**
+     * @param  array<int, mixed>  $extensions
+     */
+    public function acceptsExtensions(array $extensions): self
+    {
+        $normalized = [];
+
+        foreach ($extensions as $extension) {
+            if (is_string($extension) && $extension !== '') {
+                $normalized[] = ltrim(strtolower($extension), '.');
+            }
+        }
+
+        $this->acceptsExtensions = array_values(array_unique($normalized));
 
         return $this;
     }
