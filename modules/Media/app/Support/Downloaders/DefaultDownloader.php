@@ -97,10 +97,6 @@ final readonly class DefaultDownloader implements MediaDownloader
         }
 
         foreach ($records as $record) {
-            if (! is_array($record)) {
-                continue;
-            }
-
             $ip = $record['ip'] ?? $record['ipv6'] ?? null;
 
             if (! is_string($ip) || filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
