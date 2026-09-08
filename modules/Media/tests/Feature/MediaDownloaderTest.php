@@ -13,6 +13,7 @@ covers(DefaultDownloader::class);
 describe('Media downloader', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     it('downloads a remote file and attaches it with the url basename', function () {
@@ -25,7 +26,7 @@ describe('Media downloader', function () {
         $media = $owner->addMediaFromUrl('https://example.com/image.jpg')->toMediaCollection('default');
 
         expect($media->original_name)->toBe('image.jpg');
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
     it('forwards custom headers to the remote request', function () {
@@ -48,7 +49,7 @@ describe('Media downloader', function () {
         $owner = loginAsUser();
 
         expect(fn (): mixed => $owner->addMediaFromUrl('https://example.com/missing.jpg')->toMediaCollection('default'))
-            ->toThrow(InvalidArgumentException::class, 'Failed to fetch URL');
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
     it('throws for connection failures', function () {
@@ -59,7 +60,7 @@ describe('Media downloader', function () {
         $owner = loginAsUser();
 
         expect(fn (): mixed => $owner->addMediaFromUrl('https://example.com/down.jpg')->toMediaCollection('default'))
-            ->toThrow(InvalidArgumentException::class, 'Failed to fetch URL');
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
     it('throws for empty bodies', function () {
@@ -70,7 +71,28 @@ describe('Media downloader', function () {
         $owner = loginAsUser();
 
         expect(fn (): mixed => $owner->addMediaFromUrl('https://example.com/empty.jpg')->toMediaCollection('default'))
-            ->toThrow(InvalidArgumentException::class, 'empty body');
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
+    });
+
+    it('rejects plain http urls by default', function () {
+        $owner = loginAsUser();
+
+        expect(fn (): mixed => $owner->addMediaFromUrl('http://example.com/image.jpg')->toMediaCollection('default'))
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
+    });
+
+    it('rejects private IP literals without network access', function () {
+        $owner = loginAsUser();
+
+        expect(fn (): mixed => $owner->addMediaFromUrl('https://127.0.0.1/image.jpg')->toMediaCollection('default'))
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
+    });
+
+    it('rejects localhost hostnames', function () {
+        $owner = loginAsUser();
+
+        expect(fn (): mixed => $owner->addMediaFromUrl('https://localhost/image.jpg')->toMediaCollection('default'))
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
     it('uses a custom downloader from config', function () {

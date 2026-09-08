@@ -16,6 +16,7 @@ covers(InteractsWithMedia::class);
 describe('InteractsWithMedia', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     it('provides media relationship and collection helpers', function () {
@@ -53,6 +54,7 @@ describe('InteractsWithMedia', function () {
 
     it('adds media via pending builder', function () {
         Storage::fake('public');
+        Storage::fake('local');
 
         $owner = new class extends Model
         {
@@ -94,7 +96,7 @@ describe('InteractsWithMedia', function () {
             ->and($media->original_name)->toBe('custom-name.jpg')
             ->and($media->custom_properties)->toMatchArray(['alt' => 'Test']);
 
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
     it('returns url helpers', function () {

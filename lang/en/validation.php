@@ -13,6 +13,8 @@ return [
     'media_disallowed_extension' => 'The file name contains a disallowed extension.',
     'media_not_accepted' => 'The file is not accepted by the media collection.',
     'media_extension_not_allowed' => 'The file extension is not allowed.',
+    'media_name_collision' => 'The generated file name is already taken.',
+    'media_store_failed' => 'The file could not be stored.',
 
     /*
     |--------------------------------------------------------------------------

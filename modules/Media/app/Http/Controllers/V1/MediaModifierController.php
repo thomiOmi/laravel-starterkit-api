@@ -122,8 +122,12 @@ final readonly class MediaModifierController extends Controller
 
         $path = $media->getPath();
 
-        if (! is_string($path)) {
-            abort(404);
+        if (! is_string($path) || ! Storage::disk($media->disk)->exists($path)) {
+            return new ProblemResponse(
+                typeKey: 'not_found',
+                status: Response::HTTP_NOT_FOUND,
+                detail: __('general.resource_not_found', ['resource' => 'File']),
+            );
         }
 
         $image = Image::fromStorage($path, $media->disk);

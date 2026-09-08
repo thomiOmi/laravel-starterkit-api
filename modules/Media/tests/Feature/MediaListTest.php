@@ -53,10 +53,15 @@ describe('GET /api/v1/media', function () {
         $this->getJson('/api/v1/media')->assertUnauthorized();
     });
 
-    it('rejects users without the view permission', function () {
-        loginAsUser();
+    it('allows owners to list their own media without the view permission', function () {
+        $user = loginAsUser();
 
-        assertProblemResponse($this->getJson('/api/v1/media'), 403);
+        MediaFactory::new()->forModel($user)->createOne();
+
+        $response = $this->getJson('/api/v1/media');
+
+        assertSuccessResponse($response, 200);
+        expect($response->json('data'))->toHaveCount(1);
     });
 });
 

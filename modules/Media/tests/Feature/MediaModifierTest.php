@@ -17,6 +17,7 @@ covers(MediaModifierController::class);
 describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaView->value,
@@ -186,5 +187,14 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         loginAsUser();
 
         $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA/s/64')->assertNotFound();
+    });
+
+    it('returns a problem response when the underlying file is missing', function () {
+        $user = loginAsUser();
+        $media = MediaFactory::new()->forModel($user)->createOne(['mime_type' => 'image/jpeg']);
+
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/64");
+
+        assertProblemResponse($response, 404, 'resource-not-found');
     });
 });

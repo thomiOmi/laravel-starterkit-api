@@ -24,6 +24,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Private disk
+    |--------------------------------------------------------------------------
+    |
+    | Disk for non-public media. Keeping private files off the public
+    | disk means they cannot be fetched by direct URL.
+    |
+    */
+    'private_disk' => 'local',
+
+    /*
+    |--------------------------------------------------------------------------
     | Upload constraints
     |--------------------------------------------------------------------------
     |
@@ -190,6 +201,17 @@ return [
     |
     */
     'downloader_timeout' => 10,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Downloader plain HTTP
+    |--------------------------------------------------------------------------
+    |
+    | Only https URLs are fetched by default. Enable to allow plain http
+    | downloads, e.g. for local development.
+    |
+    */
+    'downloader_allow_http' => false,
 
     /*
     |--------------------------------------------------------------------------

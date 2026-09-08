@@ -19,6 +19,7 @@ covers(StorageOptions::class);
 describe('Media storage prefix', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaCreate->value,
@@ -62,7 +63,7 @@ describe('Media storage prefix', function () {
         $media = Media::query()->sole();
 
         expect($media->getPath())->toStartWith('tenant-a/default/');
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
     it('stores conversions under the prefix with the conversions disk', function () {

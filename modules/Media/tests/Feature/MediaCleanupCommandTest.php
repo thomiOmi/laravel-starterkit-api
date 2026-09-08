@@ -11,6 +11,7 @@ covers(MediaCleanupCommand::class);
 describe('media:cleanup', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     it('keeps responsive images, conversions, and the variant cache', function () {

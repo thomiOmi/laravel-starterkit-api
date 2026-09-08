@@ -16,6 +16,7 @@ covers(DefaultUrlGenerator::class);
 describe('Media generators config', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     it('uses a custom path generator from config', function () {

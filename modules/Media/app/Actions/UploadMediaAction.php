@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Image\ImageException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Image;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Events\MediaCreated;
+use Modules\Media\Events\MediaProcessingFailed;
 use Modules\Media\Events\MediaUploaded;
 use Modules\Media\Jobs\ProcessMediaJob;
 use Modules\Media\Models\Media;
@@ -125,16 +127,18 @@ final readonly class UploadMediaAction
                 try {
                     // For model-driven, generate via service but respect performOnCollections
                     app(MediaConversionService::class)->generate($media);
-                } catch (Throwable) {
-                    // Ignore
+                } catch (Throwable $exception) {
+                    Log::warning('Media conversions failed.', ['media_id' => $media->id, 'error' => $exception->getMessage()]);
+                    event(new MediaProcessingFailed($media, $exception->getMessage()));
                 }
             }
 
             if ($wantsResponsive) {
                 try {
                     app(GenerateResponsiveImagesAction::class)->handle($media);
-                } catch (Throwable) {
-                    // Ignore
+                } catch (Throwable $exception) {
+                    Log::warning('Media responsive images failed.', ['media_id' => $media->id, 'error' => $exception->getMessage()]);
+                    event(new MediaProcessingFailed($media, $exception->getMessage()));
                 }
             }
 
@@ -149,8 +153,8 @@ final readonly class UploadMediaAction
      */
     private function storeProcessedImage(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
-        $disk = $this->resolveDisk($payload);
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
+        $disk = $this->resolveDisk($payload, $visibility);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
 
         $storedPath = $image->store(MediaPrefix::directory($payload->collectionName), $disk, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
@@ -187,11 +191,15 @@ final readonly class UploadMediaAction
      */
     private function storeRaw(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
-        $disk = $this->resolveDisk($payload);
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
+        $disk = $this->resolveDisk($payload, $visibility);
         $file = $payload->file;
         $filename = app(MediaFileNamer::class)->originalFileName($file->hashName());
         $fullPath = MediaPrefix::basePath($payload->collectionName, $filename);
+
+        if (Storage::disk($disk)->exists($fullPath)) {
+            throw new InvalidArgumentException(__('validation.media_name_collision'));
+        }
 
         Storage::disk($disk)->putFileAs(MediaPrefix::directory($payload->collectionName), $file, $filename, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
 
@@ -226,7 +234,13 @@ final readonly class UploadMediaAction
 
         $target = dirname($storedPath).'/'.$candidate;
 
-        Storage::disk($disk)->move($storedPath, $target);
+        if (Storage::disk($disk)->exists($target)) {
+            throw new InvalidArgumentException(__('validation.media_name_collision'));
+        }
+
+        if (! Storage::disk($disk)->move($storedPath, $target)) {
+            throw new RuntimeException(__('validation.media_store_failed'));
+        }
 
         return $target;
     }
@@ -237,6 +251,32 @@ final readonly class UploadMediaAction
      * Runs for every entry point (HTTP and programmatic), unlike the
      * FormRequest rules which only cover HTTP uploads.
      */
+    /**
+     * Checksum the stored file (not the upload bytes, which may differ
+     * after image normalization). Null when the file cannot be read.
+     */
+    private function hashStoredFile(string $disk, string $fullPath): ?string
+    {
+        try {
+            $stream = Storage::disk($disk)->readStream($fullPath);
+
+            if (! is_resource($stream)) {
+                return null;
+            }
+
+            try {
+                $context = hash_init('sha256');
+                hash_update_stream($context, $stream);
+
+                return hash_final($context);
+            } finally {
+                fclose($stream);
+            }
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
     private function guardFileName(string $filename): void
     {
         if (DisallowedExtensions::contains($filename)) {
@@ -304,10 +344,14 @@ final readonly class UploadMediaAction
         }
     }
 
-    private function resolveDisk(MediaUploadPayload $payload): string
+    private function resolveDisk(MediaUploadPayload $payload, MediaVisibilityEnum $visibility): string
     {
         if (is_string($payload->disk) && $payload->disk !== '') {
             return $payload->disk;
+        }
+
+        if ($visibility !== MediaVisibilityEnum::Public) {
+            return config()->string('media.private_disk', 'local');
         }
 
         return config()->string('media.disk', 'public');
@@ -435,7 +479,7 @@ final readonly class UploadMediaAction
                             'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
                             'original_name' => $file->getClientOriginalName(),
                             'original_extension' => $file->getClientOriginalExtension(),
-                            'sha256' => hash_file('sha256', $file->getRealPath()),
+                            'sha256' => $this->hashStoredFile($disk, $fullPath),
                             'meta' => $meta,
                             'custom_properties' => $existing->custom_properties,
                             'generated_conversions' => [],
@@ -479,7 +523,7 @@ final readonly class UploadMediaAction
                     'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
                     'original_name' => $file->getClientOriginalName(),
                     'original_extension' => $file->getClientOriginalExtension(),
-                    'sha256' => hash_file('sha256', $file->getRealPath()),
+                    'sha256' => $this->hashStoredFile($disk, $fullPath),
                     'manipulations' => [],
                     'generated_conversions' => [],
                     'responsive_images' => [],

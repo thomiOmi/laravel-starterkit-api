@@ -13,6 +13,7 @@ covers(UpdateProfileController::class);
 describe('avatar end-to-end flow', function () {
     it('uploads an avatar file directly through the profile update endpoint', function () {
         Storage::fake('public');
+        Storage::fake('local');
 
         $user = loginAsUser();
 
@@ -32,6 +33,7 @@ describe('avatar end-to-end flow', function () {
     it('resolves the avatar url with the configured prefix', function () {
         config(['media.prefix' => 'tenant-a']);
         Storage::fake('public');
+        Storage::fake('local');
 
         $user = loginAsUser();
 
@@ -45,6 +47,7 @@ describe('avatar end-to-end flow', function () {
 
     it('replaces the previous avatar file on re-upload', function () {
         Storage::fake('public');
+        Storage::fake('local');
 
         $user = loginAsUser();
 
@@ -77,6 +80,7 @@ describe('avatar end-to-end flow', function () {
 
     it('rejects non-image avatars with a validation error', function () {
         Storage::fake('public');
+        Storage::fake('local');
         loginAsUser();
 
         $response = $this->put('/api/v1/auth/me', [
@@ -89,6 +93,7 @@ describe('avatar end-to-end flow', function () {
 
     it('rejects double extensions with a validation error', function () {
         Storage::fake('public');
+        Storage::fake('local');
         loginAsUser();
 
         $response = $this->put('/api/v1/auth/me', [
@@ -101,6 +106,7 @@ describe('avatar end-to-end flow', function () {
 
     it('rejects non-square avatars with a validation error', function () {
         Storage::fake('public');
+        Storage::fake('local');
         loginAsUser();
 
         $response = $this->put('/api/v1/auth/me', [
@@ -113,6 +119,7 @@ describe('avatar end-to-end flow', function () {
 
     it('rejects the legacy media id payload', function () {
         Storage::fake('public');
+        Storage::fake('local');
         loginAsUser();
 
         $response = $this->putJson('/api/v1/auth/me', ['avatar' => (string) Str::ulid()]);
