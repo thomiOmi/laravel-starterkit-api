@@ -22,7 +22,7 @@ describe('media:reprocess', function () {
         $conversion = $media->conversions()->where('name', 'thumbnail')->firstOrFail();
         Storage::disk($conversion->disk)->delete($conversion->path);
 
-        $this->artisan('media:reprocess', ['--conversion' => 'thumbnail'])->assertSuccessful();
+        artisanCommand($this, 'media:reprocess', ['--conversion' => 'thumbnail'])->assertSuccessful();
 
         Storage::disk($conversion->disk)->assertExists($conversion->path);
     });
@@ -32,6 +32,6 @@ describe('media:reprocess', function () {
 
         $user->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 100))->toMediaCollection('avatars');
 
-        $this->artisan('media:reprocess', ['--conversion' => 'missing'])->assertFailed();
+        artisanCommand($this, 'media:reprocess', ['--conversion' => 'missing'])->assertFailed();
     });
 });
