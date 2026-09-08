@@ -561,9 +561,9 @@ final readonly class UploadMediaAction
 
                 if ($replacedResponsive !== null) {
                     foreach ($replacedResponsive as $info) {
-                        $path = $info['path'] ?? null;
+                        $path = $info['path'];
 
-                        if (! is_string($path) || $path === '') {
+                        if ($path === '') {
                             continue;
                         }
 
