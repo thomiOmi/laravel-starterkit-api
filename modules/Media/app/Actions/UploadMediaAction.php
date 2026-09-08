@@ -24,6 +24,7 @@ use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -558,13 +559,15 @@ final readonly class UploadMediaAction
                     $oldConversion->delete();
                 }
 
-                if (is_array($replacedResponsive)) {
+                if ($replacedResponsive !== null) {
                     foreach ($replacedResponsive as $info) {
-                        if ($info['path'] === '') {
+                        $path = $info['path'] ?? null;
+
+                        if (! is_string($path) || $path === '') {
                             continue;
                         }
 
-                        Storage::disk($oldConversionsDisk)->delete($info['path']);
+                        Storage::disk($oldConversionsDisk)->delete($path);
                     }
                 }
             }
