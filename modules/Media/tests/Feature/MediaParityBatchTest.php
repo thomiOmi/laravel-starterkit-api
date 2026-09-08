@@ -16,6 +16,7 @@ covers(DefaultFileRemover::class);
 describe('Media parity batch', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     it('removes every related file through the file remover', function () {

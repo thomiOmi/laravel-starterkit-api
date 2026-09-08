@@ -18,6 +18,7 @@ covers(DisallowedExtensions::class);
 describe('Media extension guard', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaCreate->value,

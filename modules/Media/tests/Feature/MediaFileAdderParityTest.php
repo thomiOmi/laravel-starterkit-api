@@ -17,6 +17,7 @@ covers(FileAdder::class);
 describe('Media file adder parity', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     function limitedOwner(): Model&HasMedia
@@ -101,6 +102,6 @@ describe('Media file adder parity', function () {
             ->toMediaCollection('gallery');
 
         expect($media->exists)->toBeTrue();
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 });

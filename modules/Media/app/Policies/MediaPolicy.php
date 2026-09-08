@@ -56,4 +56,19 @@ final class MediaPolicy
 
         return $user->can(PermissionEnum::MediaDelete->value);
     }
+
+    /**
+     * Determine whether the user can reassign the media item.
+     *
+     * No media.update permission exists, so only owners and uploaders
+     * qualify. Enforced in AttachMediaAction for future callers.
+     */
+    public function update(Identity $user, Media $media): bool
+    {
+        if ($user instanceof Model && $media->belongsToModel($user)) {
+            return true;
+        }
+
+        return $user instanceof Model && $user->is($media->uploadedBy);
+    }
 }

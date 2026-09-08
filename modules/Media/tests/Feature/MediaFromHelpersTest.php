@@ -13,6 +13,7 @@ use Modules\Media\Traits\InteractsWithMedia;
 describe('Media from helpers', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     it('adds media from string', function () {
@@ -42,7 +43,7 @@ describe('Media from helpers', function () {
         $media = $owner->addMediaFromString('hello world', 'hello.txt')->toMediaCollection('documents');
 
         expect($media->original_name)->toBe('hello.txt')
-            ->and(Storage::disk('public')->exists($media->getPath() ?? ''))->toBeTrue();
+            ->and(Storage::disk($media->disk)->exists($media->getPath() ?? ''))->toBeTrue();
     });
 
     it('uses usingFileName and sanitizingFileName', function () {
@@ -80,7 +81,7 @@ describe('Media from helpers', function () {
         expect($media->custom_properties)->toBeArray()
             ->and($media->custom_properties['alt'] ?? null)->toBe('test')
             ->and(is_array($media->custom_properties['manipulations'] ?? null) ? $media->custom_properties['manipulations']['filter'] : null)->toBe('grayscale')
-            ->and(Storage::disk('public')->exists($media->getPath() ?? ''))->toBeTrue();
+            ->and(Storage::disk($media->disk)->exists($media->getPath() ?? ''))->toBeTrue();
     });
 
     it('preservingOriginal skips image processing', function () {

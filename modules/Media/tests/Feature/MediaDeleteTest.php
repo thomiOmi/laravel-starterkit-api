@@ -17,6 +17,7 @@ covers(MediaDeleteController::class);
 describe('DELETE /api/v1/media/{media}', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     it('allows the owner to delete without any permission and removes the file', function () {

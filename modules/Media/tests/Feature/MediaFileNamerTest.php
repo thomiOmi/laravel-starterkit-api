@@ -16,6 +16,7 @@ covers(DefaultFileNamer::class);
 describe('Media file namer', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaCreate->value,
@@ -47,7 +48,7 @@ describe('Media file namer', function () {
         $media = Media::query()->sole();
 
         expect($media->file_name)->toEndWith('.pdf');
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
     it('uses a custom namer from config for originals and conversions', function () {

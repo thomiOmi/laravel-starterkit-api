@@ -21,6 +21,7 @@ covers(GenerateResponsiveImagesAction::class);
 describe('Media responsive images', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         config(['media.responsive.widths' => [32, 64, 2000]]);
     });
 
@@ -77,7 +78,7 @@ describe('Media responsive images', function () {
             $path = is_array($responsive) ? ($responsive[$width]['path'] ?? null) : null;
 
             expect($path)->toBeString();
-            Storage::disk('public')->assertExists(is_string($path) ? $path : '');
+            Storage::disk($media->disk)->assertExists(is_string($path) ? $path : '');
         }
     });
 

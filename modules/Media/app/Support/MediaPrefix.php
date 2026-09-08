@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support;
 
+use InvalidArgumentException;
+
 /**
  * Single source for storage paths under the optional media prefix.
  *
@@ -25,11 +27,17 @@ final class MediaPrefix
         $parts = [];
 
         foreach ($segments as $segment) {
-            $trimmed = trim($segment, '/');
+            $trimmed = trim(str_replace('\\', '/', $segment), '/');
 
-            if ($trimmed !== '') {
-                $parts[] = $trimmed;
+            if ($trimmed === '') {
+                continue;
             }
+
+            if ($trimmed === '.' || $trimmed === '..' || str_contains($trimmed, '../')) {
+                throw new InvalidArgumentException('Invalid storage path segment.');
+            }
+
+            $parts[] = $trimmed;
         }
 
         $prefix = self::prefix();

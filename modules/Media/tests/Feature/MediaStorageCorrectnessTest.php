@@ -14,6 +14,7 @@ use Modules\Media\Traits\InteractsWithMedia;
 describe('Media storage correctness', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         config(['media.queue' => false]);
     });
 
@@ -78,8 +79,8 @@ describe('Media storage correctness', function () {
             ->and($second->responsive_images)->toBe([])
             ->and($second->generated_conversions)->toBe([]);
 
-        Storage::disk('public')->assertMissing($oldConversion->path);
-        Storage::disk('public')->assertMissing(is_string($oldOriginal) ? $oldOriginal : '');
+        Storage::disk($oldConversion->disk)->assertMissing($oldConversion->path);
+        Storage::disk($second->disk)->assertMissing(is_string($oldOriginal) ? $oldOriginal : '');
         expect(Media::query()->whereKey($oldConversion->id)->exists())->toBeFalse();
     });
 
@@ -106,8 +107,8 @@ describe('Media storage correctness', function () {
         $second = $owner->addMedia(UploadedFile::fake()->image('second.jpg', 20, 20))
             ->toMediaCollection('documents');
 
-        expect($second->disk)->toBe('public');
-        Storage::disk('public')->assertExists($second->getPath() ?? '');
+        expect($second->disk)->toBe('local');
+        Storage::disk('local')->assertExists($second->getPath() ?? '');
         Storage::disk('s3')->assertMissing($second->getPath() ?? '');
     });
 });
