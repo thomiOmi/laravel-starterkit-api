@@ -14,9 +14,9 @@
     "skills": [
         "infer-conventions",
         "laravel-best-practices",
+        "testing-best-practices",
         "pennant-development",
         "socialite-development",
-        "pest-testing",
         "laravel-permission-development",
         "pest-plugin-agent",
         "create-adr",
