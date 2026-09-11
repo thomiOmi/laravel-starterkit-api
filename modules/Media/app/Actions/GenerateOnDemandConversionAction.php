@@ -11,21 +11,21 @@ use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 
 /**
- * Generate an on-demand image variant for the given media.
+ * Generate an on-demand image conversion for the given media (Spatie pattern).
  *
  * The controller remains responsible for HTTP concerns (ETag,
- * If-None-Match, cache headers, variant-path derivation), while this
+ * If-None-Match, cache headers, derived-path derivation), while this
  * action owns the image pipeline: loading the source, applying
- * scale/cover/contain, format conversion and persisting the variant.
+ * scale/cover/contain, format conversion and persisting the derived conversion.
  */
-final readonly class GenerateMediaVariantAction
+final readonly class GenerateOnDemandConversionAction
 {
     /**
-     * Build the readable variant path for the given parsed modifiers.
+     * Build the readable derived conversion path for the given parsed modifiers.
      *
      * @param  array<string, mixed>  $parsed
      */
-    public function buildVariantPath(Media $media, array $parsed, string $cacheKey, string $format): string
+    public function buildConversionPath(Media $media, array $parsed, string $cacheKey, string $format): string
     {
         /** @var int<1, 2000>|null $width */
         $width = isset($parsed['w']) && is_int($parsed['w']) ? $parsed['w'] : null;
@@ -71,15 +71,15 @@ final readonly class GenerateMediaVariantAction
             $readable = 'original';
         }
 
-        return MediaPrefix::join('variants', (string) $media->id, $readable.'-'.substr($cacheKey, 0, 8).'.'.$ext);
+        return MediaPrefix::join('conversions/derived', (string) $media->id, $readable.'-'.substr($cacheKey, 0, 8).'.'.$ext);
     }
 
     /**
-     * Generate and persist the variant file.
+     * Generate and persist the derived conversion file.
      *
      * @param  array<string, mixed>  $parsed
      */
-    public function handle(Media $media, array $parsed, string $variantPath): void
+    public function handle(Media $media, array $parsed, string $conversionPath): void
     {
         $path = $media->getPath();
 
@@ -117,6 +117,6 @@ final readonly class GenerateMediaVariantAction
         }
 
         $image = $image->toFormat($format)->quality($quality);
-        $image->storeAs(dirname($variantPath), basename($variantPath), $media->disk, StorageOptions::forVisibility($media->visibility->value));
+        $image->storeAs(dirname($conversionPath), basename($conversionPath), $media->disk, StorageOptions::forVisibility($media->visibility->value));
     }
 }

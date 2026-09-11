@@ -41,7 +41,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         return $media;
     }
 
-    it('serves a resized webp variant with long-lived cache headers', function () {
+    it('serves a resized webp conversion with long-lived cache headers', function () {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
@@ -55,7 +55,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
 
         $image = imagecreatefromstring((string) $response->getContent());
         if (! $image instanceof GdImage) {
-            throw new RuntimeException('The variant response is not a decodable image.');
+            throw new RuntimeException('The conversion response is not a decodable image.');
         }
         expect(imagesx($image))->toBe(32)
             ->and(imagesy($image))->toBeLessThanOrEqual(100);
@@ -80,7 +80,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         $response->assertOk();
         $image = imagecreatefromstring((string) $response->getContent());
         if (! $image instanceof GdImage) {
-            throw new RuntimeException('The variant response is not a decodable image.');
+            throw new RuntimeException('The conversion response is not a decodable image.');
         }
         // Should be scaled to fit within 320x200, not upscaled beyond 100x100
         expect(imagesx($image))->toBeLessThanOrEqual(100);
@@ -109,20 +109,20 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         $response->assertOk();
         $image = imagecreatefromstring((string) $response->getContent());
         if (! $image instanceof GdImage) {
-            throw new RuntimeException('The variant response is not a decodable image.');
+            throw new RuntimeException('The conversion response is not a decodable image.');
         }
         expect(imagesx($image))->toBe(50)
             ->and(imagesy($image))->toBe(40);
     });
 
-    it('caches the generated variant on disk and serves later requests from it', function () {
+    it('caches the generated derived conversion on disk and serves later requests from it', function () {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
         $first = $this->getJson("/api/v1/media/{$media->id}/s/32");
         $first->assertOk();
 
-        expect(Storage::disk('public')->allFiles('variants/'.$media->id))->toHaveCount(1);
+        expect(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toHaveCount(1);
 
         // Remove the original to prove the next response comes from the cache.
         Storage::disk('public')->delete($media->getPath() ?? '');
@@ -131,7 +131,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         $second->assertOk();
         expect($second->headers->get('ETag'))->toBe($first->headers->get('ETag'))
             ->and(Storage::disk('public')->exists($media->getPath() ?? ''))->toBeFalse()
-            ->and(Storage::disk('public')->allFiles('variants/'.$media->id))->toHaveCount(1);
+            ->and(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toHaveCount(1);
     });
 
     it('rejects out-of-bounds widths and unsupported formats', function (string $modifiers) {

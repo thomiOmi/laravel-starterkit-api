@@ -41,11 +41,11 @@ final readonly class MediaStorageService
     }
 
     /**
-     * Delete all variant files for the media.
+     * Delete all derived conversion files for the media (on-demand cache).
      */
     public function deleteVariants(Media $media): void
     {
-        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
+        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('conversions/derived', (string) $media->id));
     }
 
     /**

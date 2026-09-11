@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
-use Modules\Media\Actions\GenerateMediaVariantAction;
+use Modules\Media\Actions\GenerateOnDemandConversionAction;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\MediaConversion;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +24,7 @@ final readonly class MediaModifierController extends Controller
     private const int MAX_AGE = 31536000;
 
     public function __construct(
-        private GenerateMediaVariantAction $variantAction,
+        private GenerateOnDemandConversionAction $conversionAction,
     ) {}
 
     public function __invoke(#[CurrentUser] Identity $currentUser, Media $media, string $modifiers): HttpResponse|StreamedResponse
@@ -61,13 +61,13 @@ final readonly class MediaModifierController extends Controller
             return $notModified;
         }
 
-        $variantPath = $this->variantAction->buildVariantPath($media, $parsed, $cacheKey, $format);
+        $conversionPath = $this->conversionAction->buildConversionPath($media, $parsed, $cacheKey, $format);
         $disk = Storage::disk($media->disk);
         $isPublic = $media->isPublic();
 
-        if ($disk->exists($variantPath)) {
+        if ($disk->exists($conversionPath)) {
             /** @var StreamedResponse $cached */
-            $cached = $disk->response($variantPath);
+            $cached = $disk->response($conversionPath);
             $cached->setEtag($etag);
 
             if ($isPublic) {
@@ -80,9 +80,9 @@ final readonly class MediaModifierController extends Controller
             return $cached;
         }
 
-        $this->variantAction->handle($media, $parsed, $variantPath);
+        $this->conversionAction->handle($media, $parsed, $conversionPath);
 
-        $response = Image::fromStorage($variantPath, $media->disk)->toResponse(request())->setEtag($etag);
+        $response = Image::fromStorage($conversionPath, $media->disk)->toResponse(request())->setEtag($etag);
 
         if ($isPublic) {
             return $response->setMaxAge(self::MAX_AGE)->setPublic();

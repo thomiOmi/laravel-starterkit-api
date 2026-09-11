@@ -136,8 +136,9 @@ return [
     | Storage prefix
     |--------------------------------------------------------------------------
     |
-    | Prefix prepended to every stored media path (originals, conversions,
-    | variants). Empty by default, which keeps existing paths unchanged.
+    | Prefix prepended to every stored media path (originals, eager
+    | conversions and derived on-demand conversions). Empty by default,
+    | which keeps existing paths unchanged.
     |
     */
     'prefix' => env('MEDIA_PREFIX', ''),
