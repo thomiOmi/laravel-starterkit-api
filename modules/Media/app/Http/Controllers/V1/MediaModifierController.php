@@ -13,16 +13,19 @@ use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use Modules\Media\Actions\GenerateMediaVariantAction;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\MediaConversion;
-use Modules\Media\Support\MediaPrefix;
-use Modules\Media\Support\StorageOptions;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final readonly class MediaModifierController extends Controller
 {
     private const int MAX_AGE = 31536000;
+
+    public function __construct(
+        private GenerateMediaVariantAction $variantAction,
+    ) {}
 
     public function __invoke(#[CurrentUser] Identity $currentUser, Media $media, string $modifiers): HttpResponse|StreamedResponse
     {
@@ -39,18 +42,8 @@ final readonly class MediaModifierController extends Controller
             throw ValidationException::withMessages(['modifiers' => $e->getMessage()]);
         }
 
-        /** @var int<1, 2000>|null $width */
-        $width = isset($parsed['w']) && is_int($parsed['w']) ? $parsed['w'] : null;
-        /** @var int<1, 2000>|null $height */
-        $height = isset($parsed['h']) && is_int($parsed['h']) ? $parsed['h'] : null;
         /** @var string $format */
         $format = isset($parsed['f']) && is_string($parsed['f']) ? $parsed['f'] : 'webp';
-        /** @var string|null $fit */
-        $fit = isset($parsed['fit']) && is_string($parsed['fit']) ? $parsed['fit'] : null;
-        /** @var string|null $kernel */
-        $kernel = isset($parsed['kernel']) && is_string($parsed['kernel']) ? $parsed['kernel'] : null;
-        /** @var int<1, 100> $quality */
-        $quality = isset($parsed['q']) && is_int($parsed['q']) ? $parsed['q'] : 80;
 
         if ($format === 'jpeg') {
             $format = 'jpg';
@@ -68,33 +61,8 @@ final readonly class MediaModifierController extends Controller
             return $notModified;
         }
 
+        $variantPath = $this->variantAction->buildVariantPath($media, $parsed, $cacheKey, $format);
         $disk = Storage::disk($media->disk);
-        $ext = $format === 'jpg' ? 'jpg' : $format;
-        $readableParts = [];
-        if ($width !== null) {
-            $readableParts[] = "w{$width}";
-        }
-        if ($height !== null) {
-            $readableParts[] = "h{$height}";
-        }
-        if ($format !== '') {
-            $readableParts[] = "f_{$format}";
-        }
-        if ($quality !== 80) {
-            $readableParts[] = "q{$quality}";
-        }
-        if ($fit !== null) {
-            $readableParts[] = "fit_{$fit}";
-        }
-        if ($kernel !== null) {
-            $readableParts[] = "kernel_{$kernel}";
-        }
-        $readable = implode('-', $readableParts);
-        if ($readable === '') {
-            $readable = 'original';
-        }
-        $variantPath = MediaPrefix::join('variants', (string) $media->id, $readable.'-'.substr($cacheKey, 0, 8).'.'.$ext);
-
         $isPublic = $media->isPublic();
 
         if ($disk->exists($variantPath)) {
@@ -112,33 +80,9 @@ final readonly class MediaModifierController extends Controller
             return $cached;
         }
 
-        $path = $media->getPath();
+        $this->variantAction->handle($media, $parsed, $variantPath);
 
-        if (! is_string($path) || ! Storage::disk($media->disk)->exists($path)) {
-            abort(404, __('general.resource_not_found', ['resource' => 'File']));
-        }
-
-        $image = Image::fromStorage($path, $media->disk);
-
-        if ($width !== null || $height !== null) {
-            if ($fit === 'cover' && $width !== null && $height !== null) {
-                $image = $image->cover(width: $width, height: $height);
-            } elseif ($fit === 'contain' && $width !== null && $height !== null) {
-                $image = $image->contain(width: $width, height: $height);
-            } elseif ($fit === 'fill' && $width !== null && $height !== null) {
-                $image = $image->resize(width: $width, height: $height);
-            } elseif (isset($parsed['s']) && $width !== null && $height !== null) {
-                $image = $image->cover(width: $width, height: $height);
-            } else {
-                $image = $image->scale(width: $width, height: $height);
-            }
-        }
-
-        // Kernel handling is driver-specific and not directly exposed via Image facade; reserved for custom driver via MediaProcessor
-        $image = $image->toFormat($format)->quality($quality);
-        $image->storeAs(dirname($variantPath), basename($variantPath), $media->disk, StorageOptions::forVisibility($media->visibility->value));
-
-        $response = $image->toResponse(request())->setEtag($etag);
+        $response = Image::fromStorage($variantPath, $media->disk)->toResponse(request())->setEtag($etag);
 
         if ($isPublic) {
             return $response->setMaxAge(self::MAX_AGE)->setPublic();

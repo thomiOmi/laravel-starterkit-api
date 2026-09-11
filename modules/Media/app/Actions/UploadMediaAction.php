@@ -21,6 +21,7 @@ use Modules\Media\Models\Media;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Modules\Media\Services\MediaConversionService;
 use Modules\Media\Support\DisallowedExtensions;
+use Modules\Media\Support\FileHash;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
@@ -247,35 +248,15 @@ final readonly class UploadMediaAction
     }
 
     /**
-     * Reject executable file names and files the target collection refuses.
-     *
-     * Runs for every entry point (HTTP and programmatic), unlike the
-     * FormRequest rules which only cover HTTP uploads.
-     */
-    /**
      * Checksum the stored file (not the upload bytes, which may differ
      * after image normalization). Null when the file cannot be read.
+     *
+     * Delegates to {@see FileHash} so the streaming hash logic is
+     * reusable outside the upload flow.
      */
     private function hashStoredFile(string $disk, string $fullPath): ?string
     {
-        try {
-            $stream = Storage::disk($disk)->readStream($fullPath);
-
-            if (! is_resource($stream)) {
-                return null;
-            }
-
-            try {
-                $context = hash_init('sha256');
-                hash_update_stream($context, $stream);
-
-                return hash_final($context);
-            } finally {
-                fclose($stream);
-            }
-        } catch (Throwable) {
-            return null;
-        }
+        return FileHash::hash($disk, $fullPath);
     }
 
     private function guardFileName(string $filename): void
