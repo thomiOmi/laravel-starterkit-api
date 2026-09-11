@@ -10,14 +10,14 @@ use InvalidArgumentException;
 use Modules\Media\Models\Media;
 
 /**
- * Reorder media within a collection for a given owner.
+ * Reorder media within a collection for a given model.
  */
 final readonly class ReorderMediaAction
 {
     /**
      * @param  array<int, string>  $orderedIds  Ordered list of media ULIDs.
      */
-    public function handle(Model $owner, string $collection, array $orderedIds): void
+    public function handle(Model $model, string $collection, array $orderedIds): void
     {
         if ($orderedIds === []) {
             return;
@@ -25,8 +25,8 @@ final readonly class ReorderMediaAction
 
         /** @var array<int, string> $existingIds */
         $existingIds = Media::query()
-            ->where('model_type', $owner->getMorphClass())
-            ->where('model_id', $owner->getKey())
+            ->where('model_type', $model->getMorphClass())
+            ->where('model_id', $model->getKey())
             ->where('collection_name', $collection)
             ->pluck('id')
             ->all();
@@ -40,11 +40,11 @@ final readonly class ReorderMediaAction
             }
         }
 
-        DB::transaction(function () use ($owner, $collection, $orderedIds): void {
+        DB::transaction(function () use ($model, $collection, $orderedIds): void {
             foreach ($orderedIds as $index => $id) {
                 Media::query()
-                    ->where('model_type', $owner->getMorphClass())
-                    ->where('model_id', $owner->getKey())
+                    ->where('model_type', $model->getMorphClass())
+                    ->where('model_id', $model->getKey())
                     ->where('collection_name', $collection)
                     ->where('id', $id)
                     ->update(['order_column' => $index + 1]);
