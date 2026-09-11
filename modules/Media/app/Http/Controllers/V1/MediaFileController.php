@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Media\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Responses\ProblemResponse;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,18 +20,12 @@ final readonly class MediaFileController extends Controller
     /**
      * Stream the stored media file.
      */
-    public function __invoke(Media $media): Response|ProblemResponse
+    public function __invoke(Media $media): Response
     {
         $disk = Storage::disk($media->disk);
         $path = $media->getPath();
 
-        if (! is_string($path) || ! $disk->exists($path)) {
-            return new ProblemResponse(
-                typeKey: 'not_found',
-                status: Response::HTTP_NOT_FOUND,
-                detail: __('general.resource_not_found', ['resource' => 'File']),
-            );
-        }
+        abort_unless(is_string($path) && $disk->exists($path), 404, __('general.resource_not_found', ['resource' => 'File']));
 
         return $disk->response($path);
     }

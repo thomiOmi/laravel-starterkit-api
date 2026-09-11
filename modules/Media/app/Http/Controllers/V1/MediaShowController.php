@@ -28,6 +28,8 @@ final readonly class MediaShowController extends Controller
     {
         Gate::authorize('view', $media);
 
+        $media->loadMissing(['conversions', 'model']);
+
         $expires = $showRequest->expiresMinutes();
         $url = $expires !== null
             ? $media->signedUrl($expires)

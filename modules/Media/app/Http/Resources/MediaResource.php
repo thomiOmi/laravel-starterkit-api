@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Modules\Media\Http\Resources;
 
 use App\Concerns\FormatDate;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
+use Modules\Media\Models\MediaConversion;
 
 /**
  * @property Media $resource
@@ -46,17 +48,27 @@ class MediaResource extends JsonResource
         /** @var Media $media */
         $media = $this->resource;
 
+        /** @var array<string, string|null> $conversions */
         $conversions = [];
 
-        foreach ($media->conversions()->get() as $conv) {
-            $conversions[$conv->name] = $media->url($conv->name);
+        /** @var Collection<int, MediaConversion> $loadedConversions */
+        $loadedConversions = $media->relationLoaded('conversions')
+            ? $media->getRelation('conversions')
+            : $media->conversions()->get();
+
+        foreach ($loadedConversions as $conv) {
+            $conversions[(string) $conv->name] = $media->url((string) $conv->name);
         }
 
-        // Fallback handling: if model is available via morph, try to get fallback
+        // Fallback handling: prefer eager-loaded morph `model` to avoid N+1, fallback to query only for single-show.
         $fallbackUrl = null;
         $fallbackPath = null;
 
-        if ($media->model_type !== null && $media->model_id !== null) {
+        $owner = null;
+
+        if ($media->relationLoaded('model') && $media->getAttribute('model') instanceof HasMedia) {
+            $owner = $media->getAttribute('model');
+        } elseif ($media->model_type !== null && $media->model_id !== null) {
             $modelClass = $media->model_type;
 
             if ($modelClass !== '' && class_exists($modelClass) && is_a($modelClass, Model::class, true)) {
@@ -64,11 +76,15 @@ class MediaResource extends JsonResource
                 $model = $modelClass::query()->whereKey($media->model_id)->first();
 
                 if ($model instanceof HasMedia) {
-                    $collection = $model->getMediaCollection($media->collection_name);
-                    $fallbackUrl = $collection?->fallbackUrl;
-                    $fallbackPath = $collection?->fallbackPath;
+                    $owner = $model;
                 }
             }
+        }
+
+        if ($owner instanceof HasMedia) {
+            $collection = $owner->getMediaCollection($media->collection_name);
+            $fallbackUrl = $collection?->fallbackUrl;
+            $fallbackPath = $collection?->fallbackPath;
         }
 
         return [

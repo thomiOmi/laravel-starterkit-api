@@ -6,12 +6,12 @@ namespace Modules\Media\Http\Controllers\V1;
 
 use App\Contracts\Identity;
 use App\Http\Controllers\Controller;
-use App\Http\Responses\ProblemResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\MediaConversion;
@@ -24,27 +24,19 @@ final readonly class MediaModifierController extends Controller
 {
     private const int MAX_AGE = 31536000;
 
-    public function __invoke(#[CurrentUser] Identity $currentUser, Media $media, string $modifiers): HttpResponse|StreamedResponse|ProblemResponse
+    public function __invoke(#[CurrentUser] Identity $currentUser, Media $media, string $modifiers): HttpResponse|StreamedResponse
     {
         Gate::authorize('view', $media);
 
         if (! str_starts_with($media->mime_type, 'image/')) {
-            return new ProblemResponse(
-                typeKey: 'validation',
-                status: Response::HTTP_UNPROCESSABLE_ENTITY,
-                detail: __('validation.media_not_image'),
-            );
+            throw ValidationException::withMessages(['media' => __('validation.media_not_image')]);
         }
 
         try {
             /** @var array<string, mixed> $parsed */
             $parsed = MediaConversion::parse($modifiers);
         } catch (InvalidArgumentException $e) {
-            return new ProblemResponse(
-                typeKey: 'validation',
-                status: Response::HTTP_UNPROCESSABLE_ENTITY,
-                detail: $e->getMessage(),
-            );
+            throw ValidationException::withMessages(['modifiers' => $e->getMessage()]);
         }
 
         /** @var int<1, 2000>|null $width */
@@ -123,11 +115,7 @@ final readonly class MediaModifierController extends Controller
         $path = $media->getPath();
 
         if (! is_string($path) || ! Storage::disk($media->disk)->exists($path)) {
-            return new ProblemResponse(
-                typeKey: 'not_found',
-                status: Response::HTTP_NOT_FOUND,
-                detail: __('general.resource_not_found', ['resource' => 'File']),
-            );
+            abort(404, __('general.resource_not_found', ['resource' => 'File']));
         }
 
         $image = Image::fromStorage($path, $media->disk);

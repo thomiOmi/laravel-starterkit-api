@@ -28,6 +28,7 @@ final readonly class MediaListController extends Controller
         $media = Media::query()
             ->where('model_type', $currentUser->getMorphClass())
             ->where('model_id', $currentUser->getKey())
+            ->with(['conversions', 'model'])
             ->allowedSearch()
             ->allowedFilters()
             ->allowedSorts()
