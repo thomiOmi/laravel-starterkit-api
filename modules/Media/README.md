@@ -1,6 +1,6 @@
 # Media Module — Polymorphic Media Library (Spatie-inspired)
 
-> Lightweight custom module inspired by Spatie Media Library. Polymorphic `model_type/model_id` + `uploaded_by` morph, `order_column`, `sha256`, `custom_properties`, image conversions (`thumbnail`/`medium`/`large` via `MediaConversionService` + `ProcessMediaJob` (queue/sync)), `InteractsWithMedia` trait + `FileAdder` fluent, single_file `avatars`, responsive `srcset`, signed streaming. **Media is independent** (`requires []`), `IAM` `requires ["Media"]` (`User implements HasMedia`).
+> Lightweight custom module inspired by Spatie Media Library. Generic polymorphic file storage with image-specific processing: `model_type/model_id` + `uploaded_by` morph, `order_column`, `sha256`, `custom_properties`, image conversions (`thumbnail`/`medium`/`large` via `MediaConversionService` + `ProcessMediaJob` (queue/sync)), `InteractsWithMedia` trait + `FileAdder` fluent, single_file `avatars`, responsive `srcset`, signed streaming. **Media is independent** (`requires []`), `IAM` `requires ["Media"]` (`User implements HasMedia`).
 
 ## Setup
 
@@ -51,6 +51,24 @@ php artisan db:seed --class="Modules\IAM\Database\Seeders\IAMSeeder"
 | `images.default` | `env('IMAGE_DRIVER','gd')` | `config/images.php` driver `gd`/`imagick` |
 
 Collections/conversions are **model-driven** (`registerMediaCollections` / `registerMediaConversions` on `HasMedia` models), not config. `queue` alone is config.
+
+### Supported File Scope
+
+The storage layer accepts generic files, including PDFs, videos, text files, and office documents, subject to the configured size and extension rules. Non-image files are stored unchanged and retain their original MIME type, checksum, visibility, and signed download behavior.
+
+Image processing is intentionally separate from generic storage. Only supported image MIME types are normalized and passed through the image pipeline. Image conversions, responsive images, and on-demand modifiers do not apply to PDFs, videos, audio, or office documents.
+
+| Capability | Generic files | Images |
+|------------|---------------|--------|
+| Upload and persist original bytes | Yes | Yes |
+| MIME, size, checksum, visibility | Yes | Yes |
+| Collections, ownership, ordering | Yes | Yes |
+| Signed download and cleanup | Yes | Yes |
+| Resize, format conversion, quality | No | Yes |
+| Responsive images and `srcset` | No | Yes |
+| Preview, thumbnail, or metadata extraction | Not implemented | Image metadata supported |
+
+Future processors for PDF, video, audio, or office documents should be added as explicit capabilities when a concrete product requirement exists. They should not be represented by placeholder conversions in the image pipeline.
 
 ## Architecture
 

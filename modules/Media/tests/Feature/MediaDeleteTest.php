@@ -39,6 +39,19 @@ describe('DELETE /api/v1/media/{media}', function () {
         Event::assertDispatched(MediaDeleted::class);
     });
 
+    it('removes non-image files when their media record is deleted', function () {
+        $user = loginAsUser();
+        $media = MediaFactory::new()->forModel($user)->createOne([
+            'file_name' => 'document.pdf',
+            'mime_type' => 'application/pdf',
+        ]);
+        Storage::disk($media->disk)->put($media->getPath() ?? '', '%PDF-1.4');
+
+        assertSuccessResponse($this->deleteJson("/api/v1/media/{$media->id}"), 200);
+
+        Storage::disk($media->disk)->assertMissing('default/document.pdf');
+    });
+
     it('allows a user with the delete permission to remove other media', function () {
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
