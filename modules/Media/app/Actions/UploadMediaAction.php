@@ -49,26 +49,26 @@ final readonly class UploadMediaAction
      * @throws Throwable When the media row cannot be persisted; the stored
      *                   file is removed again so no orphan is left behind.
      */
-    public function handle(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
+    public function handle(MediaUploadPayload $payload, Model $model, ?Model $uploader = null): array
     {
         $this->guardFileName($payload->file->getClientOriginalName());
         $this->guardAllowedExtension($payload->file->getClientOriginalName());
-        $this->guardCollectionAcceptance($payload, $owner);
+        $this->guardCollectionAcceptance($payload, $model);
 
         if ($payload->preservingOriginal) {
-            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader), $payload);
+            return $this->dispatchUploaded($this->storeRaw($payload, $model, $uploader), $payload);
         }
 
         if (! in_array((string) $payload->file->getMimeType(), self::PROCESSABLE_MIMES, true)) {
-            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader), $payload);
+            return $this->dispatchUploaded($this->storeRaw($payload, $model, $uploader), $payload);
         }
 
         try {
-            return $this->dispatchUploaded($this->storeProcessedImage($payload, $owner, $uploader), $payload);
+            return $this->dispatchUploaded($this->storeProcessedImage($payload, $model, $uploader), $payload);
         } catch (ImageException) {
             // Undecodable bytes that still passed extension validation are
             // stored untouched rather than failing the whole upload.
-            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader), $payload);
+            return $this->dispatchUploaded($this->storeRaw($payload, $model, $uploader), $payload);
         }
     }
 
@@ -153,9 +153,9 @@ final readonly class UploadMediaAction
     /**
      * @return array{media: Media, url: string|null}
      */
-    private function storeProcessedImage(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
+    private function storeProcessedImage(MediaUploadPayload $payload, Model $model, ?Model $uploader = null): array
     {
-        $visibility = $this->resolveVisibility($payload->collectionName, $owner);
+        $visibility = $this->resolveVisibility($payload->collectionName, $model);
         $disk = $this->resolveDisk($payload, $visibility);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
 
@@ -176,7 +176,7 @@ final readonly class UploadMediaAction
 
         $media = $this->persistRow(
             payload: $payload,
-            owner: $owner,
+            model: $model,
             uploader: $uploader,
             disk: $disk,
             fullPath: $fullPath,
@@ -191,9 +191,9 @@ final readonly class UploadMediaAction
     /**
      * @return array{media: Media, url: string|null}
      */
-    private function storeRaw(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
+    private function storeRaw(MediaUploadPayload $payload, Model $model, ?Model $uploader = null): array
     {
-        $visibility = $this->resolveVisibility($payload->collectionName, $owner);
+        $visibility = $this->resolveVisibility($payload->collectionName, $model);
         $disk = $this->resolveDisk($payload, $visibility);
         $file = $payload->file;
         $filename = app(MediaFileNamer::class)->originalFileName($file->hashName());
@@ -207,7 +207,7 @@ final readonly class UploadMediaAction
 
         $media = $this->persistRow(
             payload: $payload,
-            owner: $owner,
+            model: $model,
             uploader: $uploader,
             disk: $disk,
             fullPath: $fullPath,
@@ -293,13 +293,13 @@ final readonly class UploadMediaAction
         }
     }
 
-    private function guardCollectionAcceptance(MediaUploadPayload $payload, Model $owner): void
+    private function guardCollectionAcceptance(MediaUploadPayload $payload, Model $model): void
     {
-        if (! $owner instanceof HasMedia) {
+        if (! $model instanceof HasMedia) {
             return;
         }
 
-        $collection = $owner->getMediaCollection($payload->collectionName);
+        $collection = $model->getMediaCollection($payload->collectionName);
 
         if ($collection === null) {
             return;
@@ -339,11 +339,11 @@ final readonly class UploadMediaAction
         return config()->string('media.disk', 'public');
     }
 
-    private function resolveVisibility(string $collectionName, ?Model $owner = null): MediaVisibilityEnum
+    private function resolveVisibility(string $collectionName, ?Model $model = null): MediaVisibilityEnum
     {
         // Check model-registered collection first
-        if ($owner instanceof HasMedia) {
-            $collection = $owner->getMediaCollection($collectionName);
+        if ($model instanceof HasMedia) {
+            $collection = $model->getMediaCollection($collectionName);
 
             if ($collection !== null && $collection->visibility !== null) {
                 return $collection->visibility === MediaVisibilityEnum::Public->value
@@ -359,21 +359,21 @@ final readonly class UploadMediaAction
     /**
      * Delete the oldest items beyond the collection size limit, if any.
      */
-    private function enforceCollectionLimit(Model $owner, string $collectionName): void
+    private function enforceCollectionLimit(Model $model, string $collectionName): void
     {
-        if (! $owner instanceof HasMedia) {
+        if (! $model instanceof HasMedia) {
             return;
         }
 
-        $limit = $owner->getMediaCollection($collectionName)?->collectionSizeLimit;
+        $limit = $model->getMediaCollection($collectionName)?->collectionSizeLimit;
 
         if ($limit === null) {
             return;
         }
 
         $keepIds = Media::query()
-            ->where('model_type', $owner->getMorphClass())
-            ->where('model_id', $owner->getKey())
+            ->where('model_type', $model->getMorphClass())
+            ->where('model_id', $model->getKey())
             ->where('collection_name', $collectionName)
             ->orderByDesc('id')
             ->limit($limit)
@@ -381,8 +381,8 @@ final readonly class UploadMediaAction
             ->all();
 
         $excess = Media::query()
-            ->where('model_type', $owner->getMorphClass())
-            ->where('model_id', $owner->getKey())
+            ->where('model_type', $model->getMorphClass())
+            ->where('model_id', $model->getKey())
             ->where('collection_name', $collectionName)
             ->whereNotIn('id', $keepIds)
             ->get();
@@ -392,10 +392,10 @@ final readonly class UploadMediaAction
         }
     }
 
-    private function isSingleFileCollection(string $collectionName, ?Model $owner = null): bool
+    private function isSingleFileCollection(string $collectionName, ?Model $model = null): bool
     {
-        if ($owner instanceof HasMedia) {
-            $collection = $owner->getMediaCollection($collectionName);
+        if ($model instanceof HasMedia) {
+            $collection = $model->getMediaCollection($collectionName);
 
             if ($collection !== null) {
                 return $collection->singleFile;
@@ -410,9 +410,9 @@ final readonly class UploadMediaAction
      *
      * @throws Throwable When the media row cannot be persisted.
      */
-    private function persistRow(MediaUploadPayload $payload, Model $owner, ?Model $uploader, string $disk, string $fullPath, string $mimeType, int $size, array $meta): Media
+    private function persistRow(MediaUploadPayload $payload, Model $model, ?Model $uploader, string $disk, string $fullPath, string $mimeType, int $size, array $meta): Media
     {
-        $isSingle = $this->isSingleFileCollection($payload->collectionName, $owner);
+        $isSingle = $this->isSingleFileCollection($payload->collectionName, $model);
         $configuredDisk = config('media.conversions_disk_name');
         $perCallDisk = $payload->conversionsDisk;
         $conversionsDisk = is_string($perCallDisk) && $perCallDisk !== ''
@@ -431,13 +431,13 @@ final readonly class UploadMediaAction
             $replacedConversionsDisk = null;
             $replacedConversions = [];
             $replacedResponsive = null;
-            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle, &$replacedFileName, &$replacedDisk, &$replacedConversionsDisk, &$replacedConversions, &$replacedResponsive): Media {
+            $media = DB::transaction(function () use ($payload, $model, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle, &$replacedFileName, &$replacedDisk, &$replacedConversionsDisk, &$replacedConversions, &$replacedResponsive): Media {
                 $file = $payload->file;
 
                 if ($isSingle) {
                     $existing = Media::query()
-                        ->where('model_type', $owner->getMorphClass())
-                        ->where('model_id', $owner->getKey())
+                        ->where('model_type', $model->getMorphClass())
+                        ->where('model_id', $model->getKey())
                         ->where('collection_name', $payload->collectionName)
                         ->lockForUpdate()
                         ->first();
@@ -458,7 +458,7 @@ final readonly class UploadMediaAction
                             'conversions_disk' => $conversionsDisk,
                             'mime_type' => $mimeType,
                             'size' => $size,
-                            'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
+                            'visibility' => $this->resolveVisibility($payload->collectionName, $model)->value,
                             'original_name' => $file->getClientOriginalName(),
                             'original_extension' => $file->getClientOriginalExtension(),
                             'sha256' => $this->hashStoredFile($disk, $fullPath),
@@ -483,8 +483,8 @@ final readonly class UploadMediaAction
 
                 if (! $isSingle) {
                     $maxOrder = Media::query()
-                        ->where('model_type', $owner->getMorphClass())
-                        ->where('model_id', $owner->getKey())
+                        ->where('model_type', $model->getMorphClass())
+                        ->where('model_id', $model->getKey())
                         ->where('collection_name', $payload->collectionName)
                         ->max('order_column');
 
@@ -502,7 +502,7 @@ final readonly class UploadMediaAction
                     'conversions_disk' => $conversionsDisk,
                     'mime_type' => $mimeType,
                     'size' => $size,
-                    'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
+                    'visibility' => $this->resolveVisibility($payload->collectionName, $model)->value,
                     'original_name' => $file->getClientOriginalName(),
                     'original_extension' => $file->getClientOriginalExtension(),
                     'sha256' => $this->hashStoredFile($disk, $fullPath),
@@ -514,7 +514,7 @@ final readonly class UploadMediaAction
                     'order_column' => $nextOrder,
                 ]);
 
-                $media->model()->associate($owner);
+                $media->model()->associate($model);
 
                 if ($uploader !== null) {
                     $media->uploadedBy()->associate($uploader);
@@ -554,7 +554,7 @@ final readonly class UploadMediaAction
             }
 
             try {
-                $this->enforceCollectionLimit($owner, $payload->collectionName);
+                $this->enforceCollectionLimit($model, $payload->collectionName);
             } catch (Throwable) {
                 // Limit enforcement is best-effort cleanup; the upload itself succeeded.
             }

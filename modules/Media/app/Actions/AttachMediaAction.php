@@ -15,9 +15,9 @@ use Modules\Media\Models\Media;
  */
 final readonly class AttachMediaAction
 {
-    public function handle(Media $media, Model $newOwner): Media
+    public function handle(Media $media, Model $newModel): Media
     {
-        $media->model()->associate($newOwner);
+        $media->model()->associate($newModel);
         $media->save();
 
         return $media;

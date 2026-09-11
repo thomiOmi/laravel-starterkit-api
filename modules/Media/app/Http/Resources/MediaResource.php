@@ -64,25 +64,25 @@ class MediaResource extends JsonResource
         $fallbackUrl = null;
         $fallbackPath = null;
 
-        $owner = null;
+        $resourceModel = null;
 
         if ($media->relationLoaded('model') && $media->getAttribute('model') instanceof HasMedia) {
-            $owner = $media->getAttribute('model');
+            $resourceModel = $media->getAttribute('model');
         } elseif ($media->model_type !== null && $media->model_id !== null) {
             $modelClass = $media->model_type;
 
             if ($modelClass !== '' && class_exists($modelClass) && is_a($modelClass, Model::class, true)) {
                 /** @var class-string<Model> $modelClass */
-                $model = $modelClass::query()->whereKey($media->model_id)->first();
+                $found = $modelClass::query()->whereKey($media->model_id)->first();
 
-                if ($model instanceof HasMedia) {
-                    $owner = $model;
+                if ($found instanceof HasMedia) {
+                    $resourceModel = $found;
                 }
             }
         }
 
-        if ($owner instanceof HasMedia) {
-            $collection = $owner->getMediaCollection($media->collection_name);
+        if ($resourceModel instanceof HasMedia) {
+            $collection = $resourceModel->getMediaCollection($media->collection_name);
             $fallbackUrl = $collection?->fallbackUrl;
             $fallbackPath = $collection?->fallbackPath;
         }
