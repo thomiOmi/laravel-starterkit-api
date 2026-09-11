@@ -105,6 +105,16 @@ describe('Media storage prefix', function () {
         Storage::disk('public')->assertMissing('tenant-a/conversions/derived/'.$media->id.'/thumb.webp');
     });
 
+    it('deletes derived conversions from the configured conversion disk', function () {
+        Storage::fake('attachments');
+        $media = MediaFactory::new()->createOne(['conversions_disk' => 'attachments']);
+        Storage::disk('attachments')->put('conversions/derived/'.$media->id.'/thumb.webp', 'thumb');
+
+        app(MediaStorageService::class)->deleteVariants($media);
+
+        Storage::disk('attachments')->assertMissing('conversions/derived/'.$media->id.'/thumb.webp');
+    });
+
     it('uses the configured conversions disk when set', function () {
         config(['media.conversions_disk_name' => 'public']);
         config(['media.allowed_extensions' => ['pdf']]);

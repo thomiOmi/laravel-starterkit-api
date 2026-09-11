@@ -69,10 +69,11 @@ final readonly class GenerateResponsiveImagesAction
             return [];
         }
 
-        $disk = $media->conversions_disk ?? $media->disk;
+        $sourceDisk = $media->disk;
+        $conversionDisk = $media->conversions_disk ?? $media->disk;
 
         try {
-            $sourceWidth = Image::fromStorage($path, $disk)->width();
+            $sourceWidth = Image::fromStorage($path, $sourceDisk)->width();
         } catch (Throwable) {
             return [];
         }
@@ -87,7 +88,7 @@ final readonly class GenerateResponsiveImagesAction
 
         foreach ($widths as $width) {
             try {
-                $results[$width] = $this->generateOne($media, $disk, $path, $width);
+                $results[$width] = $this->generateOne($media, $sourceDisk, $conversionDisk, $path, $width);
             } catch (Throwable) {
                 continue;
             }
@@ -123,22 +124,22 @@ final readonly class GenerateResponsiveImagesAction
     /**
      * @return array{path: string, size: int|null}
      */
-    private function generateOne(Media $media, string $disk, string $path, int $width): array
+    private function generateOne(Media $media, string $sourceDisk, string $conversionDisk, string $path, int $width): array
     {
         $width = max(1, $width);
         $format = $this->responsiveFormat($media);
 
-        $image = Image::fromStorage($path, $disk)->scale(width: $width)->toFormat($format)->quality(80);
+        $image = Image::fromStorage($path, $sourceDisk)->scale(width: $width)->toFormat($format)->quality(80);
 
         $fileName = $width.'-'.app(MediaFileNamer::class)->responsiveFileName($media->file_name);
         $directory = dirname($path).'/responsive-images';
 
-        $image->storeAs($directory, $fileName, $disk, StorageOptions::forVisibility($media->visibility->value));
+        $image->storeAs($directory, $fileName, $conversionDisk, StorageOptions::forVisibility($media->visibility->value));
 
         $responsivePath = $directory.'/'.$fileName;
 
         try {
-            $size = (int) Storage::disk($disk)->size($responsivePath);
+            $size = (int) Storage::disk($conversionDisk)->size($responsivePath);
         } catch (Throwable) {
             $size = null;
         }
