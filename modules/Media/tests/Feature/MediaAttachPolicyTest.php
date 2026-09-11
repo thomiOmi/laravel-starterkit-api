@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Actions\AttachMediaAction;
@@ -48,6 +49,9 @@ describe('Media attach authorization', function () {
 
         $this->actingAs($owner);
 
+        // Caller (Request/Controller) authorizes before invoking the pure Action.
+        Gate::authorize('update', $media);
+
         $moved = app(AttachMediaAction::class)->handle($media, $other);
 
         expect($moved->model_id)->toBe($other->getKey());
@@ -60,7 +64,10 @@ describe('Media attach authorization', function () {
 
         loginAsUser();
 
-        expect(fn (): mixed => app(AttachMediaAction::class)->handle($media, attachOwner()))
+        expect(fn (): mixed => Gate::authorize('update', $media))
             ->toThrow(AuthorizationException::class);
+
+        // Pure Action no longer authorizes itself; policy is the source of truth.
+        expect(Gate::allows('update', $media))->toBeFalse();
     });
 });

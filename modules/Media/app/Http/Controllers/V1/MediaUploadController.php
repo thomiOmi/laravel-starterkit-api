@@ -30,6 +30,7 @@ final readonly class MediaUploadController extends Controller
         abort_unless($currentUser instanceof Model, Response::HTTP_INTERNAL_SERVER_ERROR, 'Invalid user model');
 
         $result = $this->uploadMedia->handle($request->payload(), $currentUser, $currentUser);
+        $result['media']->loadMissing(['conversions', 'model']);
 
         return new SuccessResponse(
             data: [
