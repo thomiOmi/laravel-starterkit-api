@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
  * - Remaining headers are set unconditionally.
  * - The no-store Cache-Control is skipped for responses that declare their
  *   own freshness validators (ETag or Last-Modified), so cacheable assets
- *   such as generated image variants keep their explicit policy.
+ *   such as generated derived conversions keep their explicit policy.
  */
 final readonly class AddSecurityHeaders
 {

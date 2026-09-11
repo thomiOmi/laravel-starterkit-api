@@ -39,6 +39,13 @@ final class MediaCleanupCommand extends Command
                 continue;
             }
 
+            // Derived on-demand conversions are regenerable cache — exclude from orphan detection (Spatie pattern).
+            $derivedPrefix = MediaPrefix::join('conversions/derived');
+
+            if (str_starts_with($file, $derivedPrefix.'/')) {
+                continue;
+            }
+
             if ($this->isUnderScannedDirectories($file, $scanDirectories)) {
                 $orphans[] = $file;
             } else {
@@ -92,9 +99,10 @@ final class MediaCleanupCommand extends Command
     /**
      * Directories this command is allowed to scan: known collection
      * directories plus the conversions root, all under the optional
-     * prefix. Anything else on the disk is ignored. The variants/
-     * cache is deliberately excluded: variant files are regenerable
-     * and their names cannot be enumerated from the database.
+     * prefix. Anything else on the disk is ignored. The derived
+     * conversions cache (conversions/derived/) is deliberately
+     * excluded: derived files are regenerable and their names cannot
+     * be enumerated from the database.
      *
      * @return array<int, string>
      */

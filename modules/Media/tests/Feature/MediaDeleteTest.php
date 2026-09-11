@@ -25,7 +25,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
         Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
-        Storage::disk($media->disk)->put('variants/'.$media->id.'/1-32-webp.webp', 'thumb');
+        Storage::disk($media->disk)->put('conversions/derived/'.$media->id.'/1-32-webp.webp', 'thumb');
 
         $response = $this->deleteJson("/api/v1/media/{$media->id}");
 
@@ -33,7 +33,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         expect(Media::query()->whereKey($media->id)->exists())->toBeFalse();
 
         Storage::disk($media->disk)->assertMissing($media->getPath() ?? '');
-        Storage::disk($media->disk)->assertMissing('variants/'.$media->id.'/1-32-webp.webp');
+        Storage::disk($media->disk)->assertMissing('conversions/derived/'.$media->id.'/1-32-webp.webp');
         // Identity closure would restore the soft-deleted model through
         // SerializesModels, so only assert the event type here.
         Event::assertDispatched(MediaDeleted::class);

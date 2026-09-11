@@ -25,7 +25,7 @@ final readonly class DefaultFileRemover implements MediaFileRemover
 
         $this->removeResponsiveImages($media);
 
-        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
+        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('conversions/derived', (string) $media->id));
         Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
     }
 

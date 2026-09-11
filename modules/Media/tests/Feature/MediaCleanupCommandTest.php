@@ -14,7 +14,7 @@ describe('media:cleanup', function () {
         Storage::fake('local');
     });
 
-    it('keeps responsive images, conversions, and the variant cache', function () {
+    it('keeps responsive images, conversions, and the derived conversion cache', function () {
         $media = MediaFactory::new()->public()->createOne([
             'responsive_images' => [320 => ['path' => 'default/responsive-images/320-photo.webp', 'size' => 10]],
         ]);
@@ -29,7 +29,7 @@ describe('media:cleanup', function () {
             'etag' => 'test',
         ]);
         Storage::disk('public')->put('conversions/'.$media->id.'/thumbnail.webp', 'conversion');
-        Storage::disk('public')->put('variants/'.$media->id.'/w32-abcdef12.webp', 'variant');
+        Storage::disk('public')->put('conversions/derived/'.$media->id.'/w32-abcdef12.webp', 'variant');
 
         artisanCommand($this, 'media:cleanup')
             ->expectsOutputToContain('No orphan files found.')
@@ -38,7 +38,7 @@ describe('media:cleanup', function () {
         Storage::disk('public')->assertExists($media->getPath() ?? '');
         Storage::disk('public')->assertExists('default/responsive-images/320-photo.webp');
         Storage::disk('public')->assertExists('conversions/'.$media->id.'/thumbnail.webp');
-        Storage::disk('public')->assertExists('variants/'.$media->id.'/w32-abcdef12.webp');
+        Storage::disk('public')->assertExists('conversions/derived/'.$media->id.'/w32-abcdef12.webp');
     });
 
     it('ignores foreign directories and deletes nothing by default', function () {

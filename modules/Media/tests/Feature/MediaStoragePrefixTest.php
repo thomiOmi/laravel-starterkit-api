@@ -32,7 +32,7 @@ describe('Media storage prefix', function () {
     it('builds paths without a prefix by default', function () {
         expect(MediaPrefix::basePath('avatars', 'photo.webp'))->toBe('avatars/photo.webp')
             ->and(MediaPrefix::directory('avatars'))->toBe('avatars')
-            ->and(MediaPrefix::join('variants', 'abc', 'w32-hash.webp'))->toBe('variants/abc/w32-hash.webp');
+            ->and(MediaPrefix::join('conversions/derived', 'abc', 'w32-hash.webp'))->toBe('conversions/derived/abc/w32-hash.webp');
     });
 
     it('merges only visibility by default for storage options', function () {
@@ -98,11 +98,11 @@ describe('Media storage prefix', function () {
         Storage::disk('public')->assertExists($path);
 
         $media = MediaFactory::new()->createOne();
-        Storage::disk('public')->put('tenant-a/variants/'.$media->id.'/thumb.webp', 'thumb');
+        Storage::disk('public')->put('tenant-a/conversions/derived/'.$media->id.'/thumb.webp', 'thumb');
 
         $service->deleteVariants($media);
 
-        Storage::disk('public')->assertMissing('tenant-a/variants/'.$media->id.'/thumb.webp');
+        Storage::disk('public')->assertMissing('tenant-a/conversions/derived/'.$media->id.'/thumb.webp');
     });
 
     it('uses the configured conversions disk when set', function () {

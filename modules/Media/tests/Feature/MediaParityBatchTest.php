@@ -22,12 +22,12 @@ describe('Media parity batch', function () {
     it('removes every related file through the file remover', function () {
         $media = MediaFactory::new()->public()->createOne();
         Storage::disk('public')->put($media->getPath() ?? '', 'original');
-        Storage::disk('public')->put('variants/'.$media->id.'/thumb.webp', 'variant');
+        Storage::disk('public')->put('conversions/derived/'.$media->id.'/thumb.webp', 'variant');
 
         app(MediaFileRemover::class)->removeAllFiles($media);
 
         Storage::disk('public')->assertMissing($media->getPath() ?? '');
-        Storage::disk('public')->assertMissing('variants/'.$media->id.'/thumb.webp');
+        Storage::disk('public')->assertMissing('conversions/derived/'.$media->id.'/thumb.webp');
     });
 
     it('uses a custom file remover from config on delete', function () {

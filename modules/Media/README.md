@@ -159,7 +159,7 @@ flowchart TD
     Guard -- pass --> Single{"isSingleFile(avatars)?"}
     Single -- yes --> Find{"existing model+collection?"}
     Find -- found --> Upd["fill existing + save (same id, reset responsive/generated)"]
-    Upd --> CleanOld["delete old file + variants/{id} + conversions/{id} (old disks)"]
+    Upd --> CleanOld["delete old file + conversions/derived/{id} + conversions/{id} (old disks)"]
     CleanOld --> Conv
     Find -- not found --> Create["create Media + associate model/uploader"]
     Single -- no --> Create
@@ -184,15 +184,15 @@ flowchart TD
     Parse --> ETag["xxh128 version|id|hash(modifiers)|f"]
     ETag --> Match{"If-None-Match == ETag?"}
     Match -- Yes --> N304["304"]
-    Match -- No --> Cache{"variants/{id}/{readable}-{hash8}.ext exists? (conversions_disk)"}
+    Match -- No --> Cache{"conversions/derived/{id}/{readable}-{hash8}.ext exists? (conversions_disk)"}
     Cache -- Yes --> StreamCache["Storage::response + ETag/max-age or private no-store"]
     Cache -- No --> Lock{"Cache::lock 10s"}
     Lock -- contended --> N429["429 rate_limited"]
     Lock -- acquired --> ExistsOrig{"original file exists?"}
     ExistsOrig -- No --> N404["404 not_found"]
     ExistsOrig -- Yes --> Gen["Image::fromStorage->scale/cover->toFormat->quality"]
-    Gen --> Write["storeAs variants/{hash} + conversions_disk + visibility"]
-    Write --> StreamGen["serve stored variant + ETag (single encode)"]
+    Gen --> Write["storeAs conversions/derived/{hash} + conversions_disk + visibility"]
+    Write --> StreamGen["serve stored derived conversion + ETag (single encode)"]
 ```
 
 ### Flowchart — Signed Streaming + Conversions
@@ -249,7 +249,7 @@ Base `http://localhost:8000` — `api/v1/media` via `RouteServiceProvider` (`api
 | GET | `/media/{media}` | `api.v1.media.show` | `auth:sanctum`, `active`, `throttle:api` | Show one; `?expires=1..1440` swaps `url` for signed link, includes `conversions` map + `srcset` |
 | GET | `/media/{media}/s/{modifiers}` | `api.v1.media.modifier` | `auth:sanctum`, `active`, `throttle:api` | On-the-fly modifier `s/320`, `s/320x200`, `s/320/f/webp/q/80`, `w/400/h/300/f/jpg` via `MediaConversion` (`w 32..2000`, `f webp/jpg`, `q 1..100`), `ETag` + `Cache::lock` |
 | GET | `/media/{media}/file` | `api.v1.media.file` | `signed`, `throttle:api` | **Public** signed streaming, no Bearer |
-| DELETE | `/media/{media}` | `api.v1.media.delete` | `auth:sanctum`, `active`, `throttle:api` | Delete (owner/uploader or `media.delete`), removes file + `variants/{id}` + `conversions/{id}` via `MediaFileRemover` + `media_conversions` rows |
+| DELETE | `/media/{media}` | `api.v1.media.delete` | `auth:sanctum`, `active`, `throttle:api` | Delete (owner/uploader or `media.delete`), removes file + `conversions/derived/{id}` + `conversions/{id}` via `MediaFileRemover` + `media_conversions` rows |
 
 ## cURL Examples
 
@@ -295,7 +295,7 @@ php artisan media:cleanup --force
 ## Artisan
 
 ```bash
-php artisan media:cleanup --dry-run # list orphan files vs DB (variants cache excluded)
+php artisan media:cleanup --dry-run # list orphan files vs DB (derived conversion cache excluded)
 php artisan media:reprocess --collection=avatars --queued # dispatch jobs
 php artisan media:reprocess --id=01H... # sync
 php artisan media:reprocess --conversion=thumbnail # single named conversion
@@ -319,7 +319,7 @@ php artisan test --filter="Media"
 # Suites: MediaUploadTest (WebP, single_file, prefix, headers, disallowed, allowlist, namer collision, sha256), MediaConversionTest (thumbnail), InteractsWithMediaTest, MediaModifierTest (s/320, s/320x200, cache, 304, 404, rate_limited), MediaParityBatchTest, MediaFileNamerTest, MediaDownloaderTest, MediaExtensionGuardTest, MediaStoragePrefixTest, MediaCleanupCommandTest, MediaStorageCorrectnessTest, MediaReprocessCommandTest, MediaFileAdderParityTest, MediaResponsiveTest, MediaAttachPolicyTest
 ```
 
-Coverage: `MediaUploadTest` (WebP, single_file avatars upsert, prefix, headers, disallowed, `allowed_extensions`, namer, collision, sha256 stream), `MediaConversionTest` (thumbnail), `InteractsWithMediaTest`, `MediaModifierTest` (lock, conversions_disk, 404, 429), `MediaParityBatchTest` (remover, helpers), `MediaFileNamerTest`, `MediaDownloaderTest` (SSRF strict, headers, empty body), `MediaExtensionGuardTest`, `MediaStoragePrefixTest`, `MediaCleanupCommandTest` (scoped, force, variant cache), `MediaStorageCorrectnessTest` (single-file reset, `getPath` DB truth, disk isolation), `MediaReprocessCommandTest`, `MediaFileAdderParityTest`, `MediaResponsiveTest`.
+Coverage: `MediaUploadTest` (WebP, single_file avatars upsert, prefix, headers, disallowed, `allowed_extensions`, namer, collision, sha256 stream), `MediaConversionTest` (thumbnail), `InteractsWithMediaTest`, `MediaModifierTest` (lock, conversions_disk, 404, 429), `MediaParityBatchTest` (remover, helpers), `MediaFileNamerTest`, `MediaDownloaderTest` (SSRF strict, headers, empty body), `MediaExtensionGuardTest`, `MediaStoragePrefixTest`, `MediaCleanupCommandTest` (scoped, force, derived conversion cache), `MediaStorageCorrectnessTest` (single-file reset, `getPath` DB truth, disk isolation), `MediaReprocessCommandTest`, `MediaFileAdderParityTest`, `MediaResponsiveTest`.
 
 ## Related Docs
 
@@ -328,3 +328,4 @@ Coverage: `MediaUploadTest` (WebP, single_file avatars upsert, prefix, headers, 
 - [Rate Limiting](../../docs/rate-limiting.md)
 - ADRs: [0015 Media Storage](../../docs/adr/0015-media-storage-module.md), [0030 Custom Media](../../docs/adr/0030-custom-media-module.md), [0031 Image Processing](../../docs/adr/0031-first-party-image-processing.md), [0032 Signed+Events+Cache](../../docs/adr/0032-signed-media-events-cached-variants.md), [0036 Media Polymorphic Squash](../../docs/adr/0036-media-polymorphic-squash.md), [0037 Opsi B](../../docs/adr/0037-media-opsi-b-collection-filename-structure.md), [0038 Responsive](../../docs/adr/0038-responsive-images.md)
 - Scramble OpenAPI: `http://localhost:8000/docs/api`
+
