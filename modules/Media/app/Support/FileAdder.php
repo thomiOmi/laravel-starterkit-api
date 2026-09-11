@@ -196,6 +196,7 @@ final class FileAdder
             onQueue: $this->onQueue,
             customHeaders: $this->customHeaders,
             disk: $disk ?? $this->disk,
+            manipulations: $this->manipulations,
         );
 
         // Resolve the action via container to keep Media module self-contained.

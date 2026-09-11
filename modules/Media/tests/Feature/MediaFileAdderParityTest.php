@@ -107,12 +107,40 @@ describe('Media file adder parity', function () {
 
     it('stores manipulations in the media manipulation metadata', function () {
         $owner = limitedOwner();
+        $source = imagecreatetruecolor(20, 20);
+        if (! $source instanceof GdImage) {
+            throw new RuntimeException('Unable to create the test image.');
+        }
 
-        $media = $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))
-            ->withManipulations(['orientation' => 'preserve'])
+        $red = imagecolorallocate($source, 255, 0, 0);
+        if (! is_int($red)) {
+            throw new RuntimeException('Unable to allocate the test color.');
+        }
+
+        imagefill($source, 0, 0, $red);
+        ob_start();
+        imagejpeg($source);
+        $contents = ob_get_clean();
+        imagedestroy($source);
+
+        $media = $owner->addMedia(UploadedFile::fake()->createWithContent('photo.jpg', (string) $contents))
+            ->withManipulations(['filter' => 'grayscale'])
             ->toMediaCollection('gallery');
+        $processed = imagecreatefromstring((string) Storage::disk($media->disk)->get($media->getPath() ?? ''));
+        if (! $processed instanceof GdImage) {
+            throw new RuntimeException('Unable to decode the processed test image.');
+        }
 
-        expect($media->manipulations)->toBe(['orientation' => 'preserve'])
-            ->and($media->custom_properties)->toHaveKey('manipulations', ['orientation' => 'preserve']);
+        $pixel = imagecolorat($processed, 10, 10);
+        imagedestroy($processed);
+
+        $redChannel = ($pixel >> 16) & 0xFF;
+        $greenChannel = ($pixel >> 8) & 0xFF;
+        $blueChannel = $pixel & 0xFF;
+
+        expect(abs($redChannel - $greenChannel))->toBeLessThanOrEqual(3)
+            ->and(abs($greenChannel - $blueChannel))->toBeLessThanOrEqual(3)
+            ->and($media->manipulations)->toBe(['filter' => 'grayscale'])
+            ->and($media->custom_properties)->toHaveKey('manipulations', ['filter' => 'grayscale']);
     });
 });

@@ -14,6 +14,7 @@ final readonly class MediaUploadPayload
 {
     /**
      * @param  array<string, string>  $customHeaders
+     * @param  array<string, mixed>  $manipulations
      */
     public function __construct(
         public UploadedFile $file,
@@ -23,6 +24,7 @@ final readonly class MediaUploadPayload
         public ?string $onQueue = null,
         public array $customHeaders = [],
         public ?string $disk = null,
+        public array $manipulations = [],
     ) {}
 
     public static function fromRequest(MediaUploadRequest $request): self

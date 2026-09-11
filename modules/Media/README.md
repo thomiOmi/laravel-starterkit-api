@@ -56,7 +56,7 @@ Collections/conversions are **model-driven** (`registerMediaCollections` / `regi
 
 The storage layer accepts generic files, including PDFs, videos, text files, and office documents, subject to the configured size and extension rules. Non-image files are stored unchanged and retain their original MIME type, checksum, visibility, and signed download behavior.
 
-Image processing is intentionally separate from generic storage. Only supported image MIME types are normalized and passed through the image pipeline. Image conversions, responsive images, and on-demand modifiers do not apply to PDFs, videos, audio, or office documents.
+Image processing is intentionally separate from generic storage. Only supported image MIME types are normalized and passed through the image pipeline. `withManipulations()` currently supports `filter: grayscale`, `grayscale`, `blur`, `sharpen`, and `rotate`; these are applied before the stored source is encoded. Image conversions, responsive images, and on-demand modifiers do not apply to PDFs, videos, audio, or office documents.
 
 | Capability | Generic files | Images |
 |------------|---------------|--------|
@@ -322,7 +322,7 @@ php artisan media:reprocess --conversion=thumbnail # single named conversion
 
 - **Collections/conversions:** `User::registerMediaCollections()` → `addMediaCollection()->singleFile()->visibility()->acceptsMimeTypes()->acceptsExtensions()->acceptsFile()->useFallbackUrl()->withResponsiveImages()`; `registerMediaConversions()` → `addMediaConversion()->width()->height()->fit()->format()->quality()->performOnCollections()` + `onQueue()`. `FileAdder` per-call `withResponsiveImagesIf()`, `storingConversionsOnDisk()`, `onQueue()`, `addCustomHeaders()`, `setOrder()`. `queue` global in config.
 - **File naming / paths / URLs / downloader / remover:** Swap via `media.file_namer` / `path_generator` / `custom_path_generators` / `url_generator` / `media_downloader` / `file_remover` (no `.env` override — config file = code review). Prefix via `media.prefix`, conversions disk `media.conversions_disk_name`, remote headers `media.remote.extra_headers`.
-- **Image pipeline:** `UploadMediaAction::storeProcessedImage` `orient()->optimize()` or `cover()`, `hashStoredFile()` stream.
+- **Image pipeline:** `UploadMediaAction::storeProcessedImage` applies orientation, optimization, and supported `withManipulations()` before encoding; named conversions and on-demand modifiers apply their own resize/format/quality transforms; `hashStoredFile()` uses streaming I/O.
 - **Trait:** `InteractsWithMedia` 26 methods: `media()` + `addMedia*` + `getMedia`/`getFirstMedia*` + `hasMedia` + `clear*` + `reorderMedia` + `register*` + `get*Collections`.
 - **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `Modules\Media\Events`.
 - **Policy:** `MediaPolicy` `view/delete/update` via `#[UsePolicy]` — `isPublic` or `belongsToModel` or `is(uploadedBy)` or `can`.
