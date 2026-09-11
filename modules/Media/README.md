@@ -1,6 +1,6 @@
 # Media Module — Polymorphic Media Library (Spatie-inspired)
 
-> Lightweight custom module inspired by Spatie Media Library. Polymorphic `model_type/model_id` + `uploaded_by` morph, `order_column`, `sha256`, `custom_properties`, image conversions (`thumbnail`/`medium`/`large`) via `MediaConversionService` + `ProcessMediaJob` (queue/sync), `InteractsWithMedia` trait + `PendingMedia` fluent, single_file `avatars`, signed streaming. **Media is independent** (`requires []`), `IAM` `requires ["Media"]` (`User implements HasMedia`).
+> Lightweight custom module inspired by Spatie Media Library. Polymorphic `model_type/model_id` + `uploaded_by` morph, `order_column`, `sha256`, `custom_properties`, image conversions (`thumbnail`/`medium`/`large` via `MediaConversionService` + `ProcessMediaJob` (queue/sync)), `InteractsWithMedia` trait + `FileAdder` fluent, single_file `avatars`, responsive `srcset`, signed streaming. **Media is independent** (`requires []`), `IAM` `requires ["Media"]` (`User implements HasMedia`).
 
 ## Setup
 
@@ -27,22 +27,30 @@ php artisan db:seed --class="Modules\IAM\Database\Seeders\IAMSeeder"
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `media.disk` | `public` | Filesystem disk (`config/filesystems.php`). `public` uses `storage/app/public` + `url` `/storage`. `php artisan storage:link`. |
-| `media.max_size` | `2048` | Max upload KB |
-| `media.mimes` | `['jpg','jpeg','png','webp','gif','bmp']` | Allowed extensions (validated via `mimes:`) |
-| `media.collections` | `default/avatars/documents` | Per-collection `visibility` + `single_file` (avatars `public` + `single_file:true`) |
+| `media.disk` | `public` | Filesystem disk for public media. `php artisan storage:link`. |
+| `media.private_disk` | `local` | Disk for private collections (non-public visibility routes here). |
+| `media.max_size` | `2048` | Max upload KB (also used for downloader size cap `max_size * 1024`) |
+| `media.allowed_extensions` | `null` | Global extension allowlist (`null` = disabled, defer to disallowed + collection rules). |
+| `media.disallowed_extensions` | `DisallowedExtensions::$default` | Executable/script extensions blocked on every dot segment |
+| `media.file_namer` | `DefaultFileNamer` | Strategy for original/conversion/responsive names (`conversionFileName` = `{name}-{conversion}.{ext}`) |
+| `media.path_generator` | `DefaultPathGenerator` | Strategy for `getPath()` (`collection/file_name` + prefix) |
+| `media.custom_path_generators` | `[]` | Per-model overrides keyed by `model_type` |
+| `media.url_generator` | `DefaultUrlGenerator` | Strategy for `url()` / `temporaryUrl()` |
+| `media.version_urls` | `false` | Append `?v=updated_at` cache-busting to public URLs |
+| `media.temporary_url_default_lifetime` | `10` | Default minutes for `signedUrl(null)` |
+| `media.prefix` | `''` | Prepended to every stored path via `App\Support\Media\MediaPrefix` |
+| `media.conversions_disk_name` | `null` | Disk for conversions (null = same as original) |
+| `media.remote.extra_headers` | `[]` | Headers merged into every storage write (S3 `CacheControl` etc.) |
+| `media.media_downloader` | `DefaultDownloader` | Class for `addMediaFromUrl` fetching |
+| `media.media_downloader_ssl` | `true` | Verify SSL on download |
+| `media.downloader_timeout` | `10` | Timeout seconds for downloader |
+| `media.downloader_allow_http` | `false` | Allow plain `http` URLs |
+| `media.responsive.widths` | `[320,640,1024,1600]` | Target widths for responsive (capped, never upscale) |
+| `media.file_remover` | `DefaultFileRemover` | Strategy for `removeAllFiles` |
 | `media.queue` | `false` | `env('MEDIA_QUEUE', false)` — true = dispatch `ProcessMediaJob` |
-| `media.conversions` | `thumbnail/medium/large` | Named conversions `{width,height,fit,format,quality}` |
 | `images.default` | `env('IMAGE_DRIVER','gd')` | `config/images.php` driver `gd`/`imagick` |
 
-Env for S3 + queue:
-```env
-MEDIA_DISK=s3
-MEDIA_QUEUE=true
-IMAGE_DRIVER=imagick
-```
-
-Collections/conversions live in `modules/Media/config/config.php` (merged as `config('media.*')`).
+Collections/conversions are **model-driven** (`registerMediaCollections` / `registerMediaConversions` on `HasMedia` models), not config. `queue` alone is config.
 
 ## Architecture
 
@@ -55,18 +63,23 @@ erDiagram
         ulid id PK
         string model_type "nullable, morph"
         ulid model_id "nullable"
-        string collection_name
+        string collection_name "default default"
+        string name
+        string file_name
         string disk
+        string conversions_disk "nullable"
         string mime_type
-        int size
-        string path UK
-        enum visibility
+        unsignedBigInteger size
+        string visibility "default private"
         string original_name "nullable"
-        string original_extension "nullable"
-        string sha256 "nullable, indexed"
-        json meta "nullable"
+        string original_extension "nullable, 20"
+        string sha256 "nullable, indexed, 64"
+        json manipulations "nullable"
         json custom_properties "nullable"
-        int order_column
+        json generated_conversions "nullable"
+        json responsive_images "nullable"
+        json meta "nullable (width,height,original_name)"
+        unsignedInteger order_column "default 0"
         string uploaded_by_type "nullable, morph"
         ulid uploaded_by_id "nullable"
         datetime created_at
@@ -99,7 +112,7 @@ class User extends Authenticatable implements HasMedia {
     use InteractsWithMedia;
 
     public function registerMediaCollections(): void {
-        $this->addMediaCollection('avatars')->singleFile()->acceptsMimeTypes(['image/jpeg','image/png'])->useFallbackUrl('/images/avatar-fallback.webp');
+        $this->addMediaCollection('avatars')->singleFile()->visibility('public')->acceptsMimeTypes(['image/jpeg','image/png'])->useFallbackUrl('/images/avatar-fallback.webp');
         $this->addMediaCollection('documents');
     }
     public function registerMediaConversions(?Media $media = null): void {
@@ -108,27 +121,29 @@ class User extends Authenticatable implements HasMedia {
     }
 }
 
-// Classic
+// Classic — FileAdder fluent (Spatie FileAdder equivalent)
 $user->addMedia($file)->usingName('cover')->withCustomProperties(['alt'=>'...'])->toMediaCollection('avatars');
 $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
 $user->addMediaFromUrl('https://example.com/image.jpg')->toMediaCollection('gallery');
 $user->addMediaFromString('hello', 'hello.txt')->toMediaCollection('documents');
 $user->addMedia($file)->usingFileName('custom.jpg')->sanitizingFileName(fn($n)=>Str::slug($n))->preservingOriginal()->withManipulations(['filter'=>'grayscale'])->toMediaCollection('gallery');
+$user->addMedia($file)->withResponsiveImages()->storingConversionsOnDisk('s3')->setOrder(5)->onQueue('media')->addCustomHeaders(['CacheControl'=>'max-age=60'])->toMediaCollection('gallery');
 
 // Query
-$user->getMedia('avatars'); // ordered
+$user->getMedia('avatars'); // ordered Collection
 $user->hasMedia('avatars'); // bool
 $user->getFirstMedia('avatars');
 $user->getFirstMediaUrl('avatars'); // or getFirstMediaUrl('avatars','thumbnail')
-$user->getFirstMediaUrl('avatars','thumbnail'); // conversion
+$user->getFirstMediaPath('avatars','thumbnail');
 $user->getFallbackMediaUrl('avatars'); // fallbackUrl if no media
 $user->reorderMedia('gallery', [$id3, $id1, $id2]);
 $user->clearMediaCollection('avatars');
 $user->clearMediaCollectionExcept('gallery', [$keepId]);
 
 // Model helpers
-$media->url('thumbnail'); $media->getFullUrl('thumbnail'); $media->getPath('thumbnail');
+$media->url('thumbnail'); $media->getFullUrl('thumbnail'); $media->getPath('thumbnail'); // conversion path from DB
 $media->getTemporaryUrl(now()->addMinutes(15), 'thumbnail');
+$media->getSrcset(); // responsive srcset string or null
 $media->hasGeneratedConversion('thumbnail'); $media->getConversion('thumbnail');
 $media->getCustomProperty('alt'); $media->setCustomProperty('alt','x'); $media->hasCustomProperty('alt');
 ```
@@ -137,25 +152,27 @@ $media->getCustomProperty('alt'); $media->setCustomProperty('alt','x'); $media->
 
 ```mermaid
 flowchart TD
-    Req["POST /media + file + collection_name + Bearer"] --> Val{"Validation: file, mimes, max, collection alpha_dash"}
+    Req["POST /media + file + collection_name + Bearer"] --> Val{"Validation: file, extensions (if allowlist), max, AllowedFileName, collection alpha_dash"}
     Val -- fail --> N422["422"]
-    Val -- pass --> Single{"isSingleFile(avatars)?"}
+    Val -- pass --> Guard{"DisallowedExtensions + collection acceptsExtensions/Mime/File"}
+    Guard -- fail --> N400["400 media_not_accepted"]
+    Guard -- pass --> Single{"isSingleFile(avatars)?"}
     Single -- yes --> Find{"existing model+collection?"}
-    Find -- found --> Upd["fill existing + save (same id)"]
-    Upd --> CleanOld["delete old file + variants/{id}"]
+    Find -- found --> Upd["fill existing + save (same id, reset responsive/generated)"]
+    Upd --> CleanOld["delete old file + variants/{id} + conversions/{id} (old disks)"]
     CleanOld --> Conv
     Find -- not found --> Create["create Media + associate model/uploader"]
     Single -- no --> Create
-    Create --> Conv{"image? && conversions config?"}
+    Create --> Conv{"image? && (model conversions || responsive)?"}
     Conv -- no --> Event["event MediaUploaded + MediaCreated -> 201"]
-    Conv -- yes --> Q{"media.queue?"}
-    Q -- true --> Job["dispatch ProcessMediaJob(id)"]
-    Q -- false --> Sync["MediaConversionService::generate -> conversions/thumbnail.webp"]
+    Conv -- yes --> Q{"queue? (payload onQueue or media.queue)"}
+    Q -- true --> Job["dispatch ProcessMediaJob(id).onQueue()"]
+    Q -- false --> Sync["MediaConversionService::generate + GenerateResponsiveImagesAction"]
     Job --> Event
     Sync --> Event
 ```
 
-### Flowchart — Modifier (resized, on-the-fly via MediaModifier)
+### Flowchart — Modifier (resized, on-the-fly via MediaConversion)
 
 ```mermaid
 flowchart TD
@@ -163,15 +180,19 @@ flowchart TD
     Auth -- No --> N403["403"]
     Auth -- Yes --> IsImg{"mime image/?"}
     IsImg -- No --> N422["422 media_not_image"]
-    IsImg -- Yes --> Parse["MediaModifier::parse(s/f/q) -> w/h/f/q"]
+    IsImg -- Yes --> Parse["MediaConversion::parse(s/f/q) -> w/h/f/q"]
     Parse --> ETag["xxh128 version|id|hash(modifiers)|f"]
     ETag --> Match{"If-None-Match == ETag?"}
     Match -- Yes --> N304["304"]
-    Match -- No --> Cache{"variants/{id}/{hash}.ext exists?"}
-    Cache -- Yes --> StreamCache["Storage::response + ETag/max-age=31536000 public"]
-    Cache -- No --> Gen["Image::fromStorage->scale/cover->toFormat->quality"]
-    Gen --> Write["storeAs variants/{hash} + visibility"]
-    Write --> StreamGen["toResponse + ETag/max-age public"]
+    Match -- No --> Cache{"variants/{id}/{readable}-{hash8}.ext exists? (conversions_disk)"}
+    Cache -- Yes --> StreamCache["Storage::response + ETag/max-age or private no-store"]
+    Cache -- No --> Lock{"Cache::lock 10s"}
+    Lock -- contended --> N429["429 rate_limited"]
+    Lock -- acquired --> ExistsOrig{"original file exists?"}
+    ExistsOrig -- No --> N404["404 not_found"]
+    ExistsOrig -- Yes --> Gen["Image::fromStorage->scale/cover->toFormat->quality"]
+    Gen --> Write["storeAs variants/{hash} + conversions_disk + visibility"]
+    Write --> StreamGen["serve stored variant + ETag (single encode)"]
 ```
 
 ### Flowchart — Signed Streaming + Conversions
@@ -184,7 +205,7 @@ sequenceDiagram
     participant File as GET /media/{id}/file?expires=&signature=
 
     C->>API: GET /media/01H...?expires=30 + Bearer
-    API-->>C: 200 {data: {url: "https://.../file?expires=...&signature=...", conversions: {thumbnail: ".../storage/conversions/01H.../thumbnail.webp"}}}
+    API-->>C: 200 {data: {url: "https://.../file?expires=...&signature=...", conversions: {thumbnail: ".../storage/conversions/01H.../thumbnail.webp"}, srcset: "url 320w, ..."}}
     C->>File: GET /file?expires=...&signature=... (no Bearer)
     File->>File: signed middleware
     File-->>C: 200 Stream
@@ -194,22 +215,25 @@ sequenceDiagram
 
 ```mermaid
 classDiagram
-    class HasMedia { <<interface>> +media():MorphMany }
-    class InteractsWithMedia { <<trait>> +addMedia():PendingMedia +getMedia() +reorderMedia() }
-    class PendingMedia { +usingName() +withCustomProperties() +toMediaCollection() }
-    class Media { +model():MorphTo +uploadedBy():MorphTo +conversions():HasMany +url(?conversion) }
-    class MediaConversion { +media():BelongsTo }
+    class HasMedia { <<interface>> +media():MorphMany +addMedia():FileAdder +getMedia() +getFirstMedia() +reorderMedia() }
+    class InteractsWithMedia { <<trait>> +addMedia():FileAdder +getMedia() +reorderMedia() +getRegisteredMediaCollections() }
+    class FileAdder { +usingName() +usingFileName() +withCustomProperties() +toMediaCollection() +withResponsiveImages() +storingConversionsOnDisk() +onQueue() }
+    class Media { +model():MorphTo +uploadedBy():MorphTo +conversions():HasMany +url(?conversion) +getPath(?conversion) +getSrcset() }
+    class MediaConversionModel { <<Eloquent>> +media():BelongsTo }
+    class MediaConversionBuilder { <<value object>> +width() +fit() +performOnCollections() +fromModifiers() }
     class UploadMediaAction { +handle(Payload, Model $owner, ?Model $uploader) }
     class MediaUrlGenerator { <<interface>> +getUrl() +getTemporaryUrl() }
     class MediaStorageService { +store() +delete() }
-    class MediaConversionService { +generate() +generateOne() }
+    class MediaConversionService { +generate() +generateOne() +generateNamed() }
+    class GenerateResponsiveImagesAction { +wantsResponsive() +handle() }
+    class MediaFileRemover { <<interface>> +removeAllFiles() }
     class ProcessMediaJob { <<ShouldQueue>> +handle() }
     class MediaResource { +toArray() }
     HasMedia <|.. User
     InteractsWithMedia --* User
-    PendingMedia --> UploadMediaAction
+    FileAdder --> UploadMediaAction
     UploadMediaAction --> Media
-    Media --> MediaConversion
+    Media --> MediaConversionModel
     Media --> MediaUrlGenerator
     Media --> MediaResource
 ```
@@ -220,26 +244,28 @@ Base `http://localhost:8000` — `api/v1/media` via `RouteServiceProvider` (`api
 
 | Method | Path | Name | Middleware | Description |
 |--------|------|------|------------|-------------|
-| POST | `/media` | `api.v1.media.upload` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.create` | Upload file (multipart `file` + `collection_name` default `default`). Avatars `single_file` upsert (same id). |
-| GET | `/media` | `api.v1.media.index` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.view` | List paginated, filtered to `model_type/model_id` of current user, `MediaBuilder` |
-| GET | `/media/{media}` | `api.v1.media.show` | `auth:sanctum`, `active`, `throttle:api` | Show one; `?expires=1..1440` swaps `url` for signed link, includes `conversions` map |
-| GET | `/media/{media}/s/{modifiers}` | `api.v1.media.modifier` | `auth:sanctum`, `active`, `throttle:api` | On-the-fly modifier `s/320`, `s/320x200`, `s/320/f/webp/q/80`, `w/400/h/300/f/jpg` via `MediaModifier` (`w 32..2000`, `f webp/jpg`, `q 1..100`), `ETag` + `max-age=31536000` |
+| POST | `/media` | `api.v1.media.upload` | `auth:sanctum`, `active`, `throttle:api`, `permission:media.create` | Upload file (multipart `file` + `collection_name` default `default`). Avatars `singleFile` upsert (same id). Global `allowed_extensions` if set, plus `DisallowedExtensions` and collection `accepts*` guards (400). |
+| GET | `/media` | `api.v1.media.index` | `auth:sanctum`, `active`, `throttle:api` | List paginated, filtered to `model_type/model_id` of current user, `MediaBuilder` |
+| GET | `/media/{media}` | `api.v1.media.show` | `auth:sanctum`, `active`, `throttle:api` | Show one; `?expires=1..1440` swaps `url` for signed link, includes `conversions` map + `srcset` |
+| GET | `/media/{media}/s/{modifiers}` | `api.v1.media.modifier` | `auth:sanctum`, `active`, `throttle:api` | On-the-fly modifier `s/320`, `s/320x200`, `s/320/f/webp/q/80`, `w/400/h/300/f/jpg` via `MediaConversion` (`w 32..2000`, `f webp/jpg`, `q 1..100`), `ETag` + `Cache::lock` |
 | GET | `/media/{media}/file` | `api.v1.media.file` | `signed`, `throttle:api` | **Public** signed streaming, no Bearer |
-| DELETE | `/media/{media}` | `api.v1.media.delete` | `auth:sanctum`, `active`, `throttle:api` | Delete (owner/uploader or `media.delete`), removes file + `variants/{id}` + `conversions/{id}` + `media_conversions` rows |
+| DELETE | `/media/{media}` | `api.v1.media.delete` | `auth:sanctum`, `active`, `throttle:api` | Delete (owner/uploader or `media.delete`), removes file + `variants/{id}` + `conversions/{id}` via `MediaFileRemover` + `media_conversions` rows |
 
 ## cURL Examples
 
 ```bash
 TOKEN="1|..."
 
-# Upload avatar (public, single_file — second upload reuses same id)
+# Upload avatar (public, singleFile — second upload reuses same id, old file removed)
 curl -X POST http://localhost:8000/api/v1/media \
   -H "Authorization: Bearer $TOKEN" \
   -F "file=@photo.jpg" -F "collection_name=avatars"
-# => 201 {"data":{"media":{"id":"01H...","model_type":"Modules\\IAM\\Models\\User","model_id":"01H...","collection_name":"avatars","mime_type":"image/webp","visibility":"public","url":"http://.../storage/avatars/...webp","conversions":{"thumbnail":"http://.../storage/conversions/01H.../thumbnail.webp"}},"url":"..."}}
+# => 201 {"data":{"media":{"id":"01H...","model_type":"Modules\\IAM\\Models\\User","model_id":"01H...","collection_name":"avatars","mime_type":"image/webp","visibility":"public","url":"http://.../storage/avatars/...webp","conversions":{"thumbnail":"http://.../storage/conversions/01H.../thumbnail.webp"},"srcset":"http://.../storage/avatars/responsive-images/320-...webp 320w, ..."}},"url":"..."}}
 
 # Trait (in code)
 # $user->addMedia($file)->toMediaCollection('avatars');
+# $user->addMediaFromRequest('avatar')->toMediaCollection('avatars');
+# $user->addAllMediaFromRequest()->each->toMediaCollection('gallery');
 # $user->reorderMedia('gallery', [$id3,$id1,$id2]);
 
 # Private document (url null, use signed)
@@ -259,43 +285,46 @@ curl "$SIGNED" --output private.pdf
 # Reprocess conversions (sync or queued)
 php artisan media:reprocess --collection=avatars
 php artisan media:reprocess --id=01H... --queued
+php artisan media:reprocess --conversion=thumbnail
 
 # Cleanup orphans
 php artisan media:cleanup --dry-run
-php artisan media:cleanup
+php artisan media:cleanup --force
 ```
 
 ## Artisan
 
 ```bash
-php artisan media:cleanup --dry-run # list orphan files vs DB
+php artisan media:cleanup --dry-run # list orphan files vs DB (variants cache excluded)
 php artisan media:reprocess --collection=avatars --queued # dispatch jobs
 php artisan media:reprocess --id=01H... # sync
+php artisan media:reprocess --conversion=thumbnail # single named conversion
 ```
 
 ## Customize
 
-- **Collections/conversions:** `modules/Media/config/config.php` `collections` + `conversions` + `queue` (env `MEDIA_QUEUE`).
-- **Image pipeline:** `UploadMediaAction::storeProcessedImage` `orient()->optimize()` or `cover()`.
-- **Trait:** `InteractsWithMedia` `media()` + `getMedia`/`reorderMedia`/`clearMediaCollection`.
-- **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `app/Events`.
-- **Policy:** `MediaPolicy` `view/delete` via `#[UsePolicy]` — `isPublic` or `belongsToModel` or `is(uploadedBy)` or `can`.
+- **Collections/conversions:** `User::registerMediaCollections()` → `addMediaCollection()->singleFile()->visibility()->acceptsMimeTypes()->acceptsExtensions()->acceptsFile()->useFallbackUrl()->withResponsiveImages()`; `registerMediaConversions()` → `addMediaConversion()->width()->height()->fit()->format()->quality()->performOnCollections()` + `onQueue()`. `FileAdder` per-call `withResponsiveImagesIf()`, `storingConversionsOnDisk()`, `onQueue()`, `addCustomHeaders()`, `setOrder()`. `queue` global in config.
+- **File naming / paths / URLs / downloader / remover:** Swap via `media.file_namer` / `path_generator` / `custom_path_generators` / `url_generator` / `media_downloader` / `file_remover` (no `.env` override — config file = code review). Prefix via `media.prefix`, conversions disk `media.conversions_disk_name`, remote headers `media.remote.extra_headers`.
+- **Image pipeline:** `UploadMediaAction::storeProcessedImage` `orient()->optimize()` or `cover()`, `hashStoredFile()` stream.
+- **Trait:** `InteractsWithMedia` 26 methods: `media()` + `addMedia*` + `getMedia`/`getFirstMedia*` + `hasMedia` + `clear*` + `reorderMedia` + `register*` + `get*Collections`.
+- **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `Modules\Media\Events`.
+- **Policy:** `MediaPolicy` `view/delete/update` via `#[UsePolicy]` — `isPublic` or `belongsToModel` or `is(uploadedBy)` or `can`.
 
 ## Testing
 
 ```bash
-# All Media tests (72 tests)
+# All Media tests
 php artisan test --filter="Media"
-# Helpers: Storage::fake('public'), UploadedFile::fake()->image(), MediaFactory::new()->forModel($user), DB::table('permissions')->insertOrIgnore
-# Trait: InteractsWithMediaTest (addMedia, getMedia, reorder), MediaConversionTest (sync conversions), MediaModifierTest (s/320, s/320x200, cache, 304), MediaCollectionOpsTest (hasMedia, clearExcept, getFirstMediaUrl+conversion), MediaFromHelpersTest (fromRequest/Url/String, usingFileName, preservingOriginal)
+# Helpers: Storage::fake('public')+fake('local'), UploadedFile::fake()->image(), MediaFactory::new()->forModel($user), DB::table('permissions')->insertOrIgnore
+# Suites: MediaUploadTest (WebP, single_file, prefix, headers, disallowed, allowlist, namer collision, sha256), MediaConversionTest (thumbnail), InteractsWithMediaTest, MediaModifierTest (s/320, s/320x200, cache, 304, 404, rate_limited), MediaParityBatchTest, MediaFileNamerTest, MediaDownloaderTest, MediaExtensionGuardTest, MediaStoragePrefixTest, MediaCleanupCommandTest, MediaStorageCorrectnessTest, MediaReprocessCommandTest, MediaFileAdderParityTest, MediaResponsiveTest, MediaAttachPolicyTest
 ```
 
-Coverage: `MediaUploadTest` (WebP, single_file avatars upsert), `MediaConversionTest` (thumbnail), `InteractsWithMediaTest`, `MediaModifierTest`, `MediaCollectionOpsTest`, `MediaFromHelpersTest`, `MediaFileTest`, `MediaShowTest`, `MediaListTest`, `MediaDeleteTest`, `MediaAvatarFlowTest`.
+Coverage: `MediaUploadTest` (WebP, single_file avatars upsert, prefix, headers, disallowed, `allowed_extensions`, namer, collision, sha256 stream), `MediaConversionTest` (thumbnail), `InteractsWithMediaTest`, `MediaModifierTest` (lock, conversions_disk, 404, 429), `MediaParityBatchTest` (remover, helpers), `MediaFileNamerTest`, `MediaDownloaderTest` (SSRF strict, headers, empty body), `MediaExtensionGuardTest`, `MediaStoragePrefixTest`, `MediaCleanupCommandTest` (scoped, force, variant cache), `MediaStorageCorrectnessTest` (single-file reset, `getPath` DB truth, disk isolation), `MediaReprocessCommandTest`, `MediaFileAdderParityTest`, `MediaResponsiveTest`.
 
 ## Related Docs
 
 - [API Standard](../../docs/api-standard.md)
 - [Architecture](../../docs/architecture.md)
 - [Rate Limiting](../../docs/rate-limiting.md)
-- ADRs: [0015 Media Storage](../../docs/adr/0015-media-storage-module.md), [0030 Custom Media](../../docs/adr/0030-custom-media-module.md), [0031 Image Processing](../../docs/adr/0031-first-party-image-processing.md), [0032 Signed+Events+Cache](../../docs/adr/0032-signed-media-events-cached-variants.md), [0036 Media Polymorphic Squash](../../docs/adr/0036-media-polymorphic-squash.md)
+- ADRs: [0015 Media Storage](../../docs/adr/0015-media-storage-module.md), [0030 Custom Media](../../docs/adr/0030-custom-media-module.md), [0031 Image Processing](../../docs/adr/0031-first-party-image-processing.md), [0032 Signed+Events+Cache](../../docs/adr/0032-signed-media-events-cached-variants.md), [0036 Media Polymorphic Squash](../../docs/adr/0036-media-polymorphic-squash.md), [0037 Opsi B](../../docs/adr/0037-media-opsi-b-collection-filename-structure.md), [0038 Responsive](../../docs/adr/0038-responsive-images.md)
 - Scramble OpenAPI: `http://localhost:8000/docs/api`
