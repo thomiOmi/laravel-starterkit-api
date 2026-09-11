@@ -233,6 +233,13 @@ final class FileAdder
                 $media->custom_properties = $merged;
             }
 
+            if ($this->manipulations !== []) {
+                $media->manipulations = array_merge(
+                    is_array($media->manipulations) ? $media->manipulations : [],
+                    $this->manipulations
+                );
+            }
+
             if ($this->name !== null) {
                 $media->original_name = $this->name;
             }

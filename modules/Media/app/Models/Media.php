@@ -24,6 +24,7 @@ use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Observers\MediaObserver;
 use Modules\Media\Policies\MediaPolicy;
 use Modules\Media\Support\PathGenerator\MediaPathGenerator;
+use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
 
 /**
  * @property string $id The unique identifier for the media item.
@@ -213,13 +214,13 @@ class Media extends Model
             return null;
         }
 
-        $path = $this->getPath();
+        $url = app(MediaUrlGenerator::class)->getUrl($this);
 
-        if ($path === null) {
+        if ($url === null) {
             return null;
         }
 
-        return $this->versionedUrl(Storage::disk($this->disk)->url($path));
+        return $this->versionedUrl($url);
     }
 
     public function getUrl(?string $conversion = null): ?string
@@ -245,14 +246,16 @@ class Media extends Model
 
     public function getTemporaryUrl(\DateTimeInterface $expiration, ?string $conversion = null): string
     {
-        // For conversions, still use the same signed route - the file controller serves the original,
-        // but for conversion we could generate a separate signed conversion route in the future.
-        // For now, keep simple: signed url for the media itself.
-        return (string) URL::temporarySignedRoute(
-            'api.v1.media.file',
-            $expiration,
-            ['media' => $this->getKey()],
-        );
+        if ($conversion !== null && $conversion !== '') {
+            // The signed file route currently serves the original media only.
+            return (string) URL::temporarySignedRoute(
+                'api.v1.media.file',
+                $expiration,
+                ['media' => $this->getKey()],
+            );
+        }
+
+        return app(MediaUrlGenerator::class)->getTemporaryUrl($this, $expiration);
     }
 
     public function getFullUrl(?string $conversion = null): ?string

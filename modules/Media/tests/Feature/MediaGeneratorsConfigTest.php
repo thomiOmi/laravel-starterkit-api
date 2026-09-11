@@ -52,8 +52,11 @@ describe('Media generators config', function () {
         config(['media.url_generator' => FixedUrlGenerator::class]);
 
         $media = MediaFactory::new()->public()->createOne();
+        $expiration = now()->addMinutes(15);
 
-        expect(app(MediaUrlGenerator::class)->getUrl($media))->toBe('https://cdn.example.test/'.$media->file_name);
+        expect($media->url())->toBe('https://cdn.example.test/'.$media->file_name)
+            ->and($media->getTemporaryUrl($expiration))->toBe('https://cdn.example.test/'.$media->file_name.'?expires='.$expiration->timestamp)
+            ->and(app(MediaUrlGenerator::class)->getUrl($media))->toBe('https://cdn.example.test/'.$media->file_name);
     });
 
     it('appends a version query string when version_urls is enabled', function () {

@@ -203,18 +203,4 @@ final readonly class MediaConversionService
             ]
         );
     }
-
-    /**
-     * Delete all conversions for the media.
-     */
-    public function deleteConversions(Media $media): void
-    {
-        foreach ($media->conversions()->get() as $conv) {
-            Storage::disk($conv->disk)->delete($conv->path);
-            $conv->delete();
-        }
-
-        $conversionsDisk = $media->conversions_disk ?? $media->disk;
-        Storage::disk($conversionsDisk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
-    }
 }
