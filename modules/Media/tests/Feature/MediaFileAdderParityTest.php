@@ -104,4 +104,15 @@ describe('Media file adder parity', function () {
         expect($media->exists)->toBeTrue();
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
+
+    it('stores manipulations in the media manipulation metadata', function () {
+        $owner = limitedOwner();
+
+        $media = $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))
+            ->withManipulations(['orientation' => 'preserve'])
+            ->toMediaCollection('gallery');
+
+        expect($media->manipulations)->toBe(['orientation' => 'preserve'])
+            ->and($media->custom_properties)->toHaveKey('manipulations', ['orientation' => 'preserve']);
+    });
 });

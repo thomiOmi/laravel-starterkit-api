@@ -241,7 +241,6 @@ classDiagram
     class MediaConversionBuilder { <<value object>> +width() +fit() +performOnCollections() +fromModifiers() }
     class UploadMediaAction { +handle(Payload, Model $owner, ?Model $uploader) }
     class MediaUrlGenerator { <<interface>> +getUrl() +getTemporaryUrl() }
-    class MediaStorageService { +store() +delete() }
     class MediaConversionService { +generate() +generateOne() +generateNamed() }
     class GenerateResponsiveImagesAction { +wantsResponsive() +handle() }
     class MediaFileRemover { <<interface>> +removeAllFiles() }
