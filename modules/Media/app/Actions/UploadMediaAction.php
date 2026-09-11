@@ -23,6 +23,7 @@ use Modules\Media\Services\MediaConversionService;
 use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\FileHash;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Support\ImageManipulations;
 use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 use RuntimeException;
@@ -158,6 +159,7 @@ final readonly class UploadMediaAction
         $visibility = $this->resolveVisibility($payload->collectionName, $model);
         $disk = $this->resolveDisk($payload, $visibility);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
+        $image = ImageManipulations::apply($image, $payload->manipulations);
 
         $storedPath = $image->store(MediaPrefix::directory($payload->collectionName), $disk, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
 
@@ -463,6 +465,7 @@ final readonly class UploadMediaAction
                             'original_extension' => $file->getClientOriginalExtension(),
                             'sha256' => $this->hashStoredFile($disk, $fullPath),
                             'meta' => $meta,
+                            'manipulations' => $payload->manipulations,
                             'custom_properties' => $existing->custom_properties,
                             'generated_conversions' => [],
                             'responsive_images' => [],
@@ -506,7 +509,7 @@ final readonly class UploadMediaAction
                     'original_name' => $file->getClientOriginalName(),
                     'original_extension' => $file->getClientOriginalExtension(),
                     'sha256' => $this->hashStoredFile($disk, $fullPath),
-                    'manipulations' => [],
+                    'manipulations' => $payload->manipulations,
                     'generated_conversions' => [],
                     'responsive_images' => [],
                     'meta' => $meta,

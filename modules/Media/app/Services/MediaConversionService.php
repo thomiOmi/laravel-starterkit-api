@@ -161,13 +161,13 @@ final readonly class MediaConversionService
 
         if ($width !== null || $height !== null) {
             if ($fit === 'cover' && $width !== null && $height !== null) {
-                $image->cover(width: $width, height: $height);
+                $image = $image->cover(width: $width, height: $height);
             } else {
-                $image->scale(width: $width, height: $height);
+                $image = $image->scale(width: $width, height: $height);
             }
         }
 
-        $image->toFormat($format)->quality($quality);
+        $image = $image->toFormat($format)->quality($quality);
 
         $ext = $format === 'jpg' ? 'jpg' : $format;
         $baseName = app(MediaFileNamer::class)->conversionFileName($media->file_name, $name);
