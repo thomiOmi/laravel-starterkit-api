@@ -45,7 +45,7 @@ final readonly class MediaStorageService
      */
     public function deleteVariants(Media $media): void
     {
-        Storage::disk($media->disk)->deleteDirectory(MediaPrefix::join('conversions/derived', (string) $media->id));
+        Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory(MediaPrefix::join('conversions/derived', (string) $media->id));
     }
 
     /**

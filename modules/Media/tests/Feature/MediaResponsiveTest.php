@@ -82,6 +82,25 @@ describe('Media responsive images', function () {
         }
     });
 
+    it('reads originals from the source disk and writes responsive files to the conversion disk', function () {
+        Storage::fake('attachments');
+        $owner = responsiveOwner();
+        $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne([
+            'mime_type' => 'image/jpeg',
+            'conversions_disk' => 'attachments',
+        ]);
+        Storage::disk('public')->put($media->getPath() ?? '', (string) UploadedFile::fake()->image('source.jpg', 100, 80)->getContent());
+
+        app(GenerateResponsiveImagesAction::class)->handle($media);
+
+        $responsive = $media->fresh()?->responsive_images;
+        $path = is_array($responsive) ? ($responsive[32]['path'] ?? null) : null;
+
+        expect($path)->toBeString()
+            ->and(Storage::disk('attachments')->exists(is_string($path) ? $path : ''))->toBeTrue()
+            ->and(Storage::disk('public')->exists(is_string($path) ? $path : ''))->toBeFalse();
+    });
+
     it('stays empty when the collection did not opt in', function () {
         $user = loginAsUser();
 

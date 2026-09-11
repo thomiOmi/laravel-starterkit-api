@@ -346,7 +346,7 @@ class Media extends Model
                 continue;
             }
 
-            $entries[(int) $width] = Storage::disk($this->disk)->url($info['path']).' '.((int) $width).'w';
+            $entries[(int) $width] = Storage::disk($this->conversions_disk ?? $this->disk)->url($info['path']).' '.((int) $width).'w';
         }
 
         if ($entries === []) {

@@ -8,6 +8,7 @@ use App\Contracts\Identity;
 use App\Http\Controllers\Controller;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
@@ -49,8 +50,7 @@ final readonly class MediaModifierController extends Controller
             $format = 'jpg';
         }
 
-        $updatedAt = $media->updated_at;
-        $version = $updatedAt !== null ? (string) $updatedAt->timestamp : '0';
+        $version = $media->sha256 ?? (string) ($media->updated_at?->format('U.u') ?? '0');
         $cacheKey = MediaConversion::toCacheKey($parsed, $version);
         $etag = '"'.hash('xxh128', $version.'|'.$media->id.'|'.$cacheKey.'|'.$format).'"';
 
@@ -61,11 +61,11 @@ final readonly class MediaModifierController extends Controller
             return $notModified;
         }
 
-        $conversionPath = $this->conversionAction->buildConversionPath($media, $parsed, $cacheKey, $format);
-        $disk = Storage::disk($media->disk);
+        $conversionPath = MediaConversion::derivedPath((string) $media->id, $parsed, $cacheKey, $format);
+        $disk = Storage::disk($media->conversions_disk ?? $media->disk);
         $isPublic = $media->isPublic();
 
-        if ($disk->exists($conversionPath)) {
+        if ($this->conversionExists($media, $conversionPath)) {
             /** @var StreamedResponse $cached */
             $cached = $disk->response($conversionPath);
             $cached->setEtag($etag);
@@ -80,9 +80,18 @@ final readonly class MediaModifierController extends Controller
             return $cached;
         }
 
-        $this->conversionAction->handle($media, $parsed, $conversionPath);
+        $lock = Cache::lock('media:derived:'.$media->id.':'.$cacheKey, 60);
+        $lock->block(10);
 
-        $response = Image::fromStorage($conversionPath, $media->disk)->toResponse(request())->setEtag($etag);
+        try {
+            if (! $this->conversionExists($media, $conversionPath)) {
+                $this->conversionAction->handle($media, $parsed, $conversionPath);
+            }
+        } finally {
+            $lock->release();
+        }
+
+        $response = Image::fromStorage($conversionPath, $media->conversions_disk ?? $media->disk)->toResponse(request())->setEtag($etag);
 
         if ($isPublic) {
             return $response->setMaxAge(self::MAX_AGE)->setPublic();
@@ -92,5 +101,11 @@ final readonly class MediaModifierController extends Controller
         $response->headers->set('Cache-Control', 'private, no-store');
 
         return $response;
+    }
+
+    /** @phpstan-impure */
+    private function conversionExists(Media $media, string $path): bool
+    {
+        return Storage::disk($media->conversions_disk ?? $media->disk)->exists($path);
     }
 }
