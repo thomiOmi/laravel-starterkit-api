@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support;
 
+use InvalidArgumentException;
+
 /**
  * Builder for a single media collection definition.
  * Mimics Spatie's MediaCollection API but lightweight.
@@ -14,8 +16,13 @@ final class MediaCollection
 
     public bool $singleFile = false;
 
+    public ?int $collectionSizeLimit = null;
+
     /** @var array<int, string> */
     public array $acceptsMimeTypes = [];
+
+    /** @var array<int, string> */
+    public array $acceptsExtensions = [];
 
     /** @var callable|null */
     public $acceptsFile = null;
@@ -40,6 +47,17 @@ final class MediaCollection
         return $this;
     }
 
+    public function onlyKeepLatest(int $limit): self
+    {
+        if ($limit < 1) {
+            throw new InvalidArgumentException('Collection size limit must be at least 1.');
+        }
+
+        $this->collectionSizeLimit = $limit;
+
+        return $this;
+    }
+
     public function visibility(string $visibility): self
     {
         $this->visibility = $visibility;
@@ -53,6 +71,24 @@ final class MediaCollection
     public function acceptsMimeTypes(array $mimeTypes): self
     {
         $this->acceptsMimeTypes = $mimeTypes;
+
+        return $this;
+    }
+
+    /**
+     * @param  array<int, mixed>  $extensions
+     */
+    public function acceptsExtensions(array $extensions): self
+    {
+        $normalized = [];
+
+        foreach ($extensions as $extension) {
+            if (is_string($extension) && $extension !== '') {
+                $normalized[] = ltrim(strtolower($extension), '.');
+            }
+        }
+
+        $this->acceptsExtensions = array_values(array_unique($normalized));
 
         return $this;
     }

@@ -13,6 +13,7 @@ covers(MediaFileController::class);
 describe('GET /api/v1/media/{media}/file', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
     });
 
     it('streams the stored file for a valid signed url of private media', function () {

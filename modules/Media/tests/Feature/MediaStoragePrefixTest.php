@@ -19,6 +19,7 @@ covers(StorageOptions::class);
 describe('Media storage prefix', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaCreate->value,
@@ -49,7 +50,7 @@ describe('Media storage prefix', function () {
 
     it('stores and resolves uploads under the configured prefix', function () {
         config(['media.prefix' => 'tenant-a']);
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -62,7 +63,7 @@ describe('Media storage prefix', function () {
         $media = Media::query()->sole();
 
         expect($media->getPath())->toStartWith('tenant-a/default/');
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
     it('stores conversions under the prefix with the conversions disk', function () {
@@ -106,7 +107,7 @@ describe('Media storage prefix', function () {
 
     it('uses the configured conversions disk when set', function () {
         config(['media.conversions_disk_name' => 'public']);
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 

@@ -13,6 +13,7 @@ use Modules\Media\Models\Media;
 describe('Media conversions', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaCreate->value,

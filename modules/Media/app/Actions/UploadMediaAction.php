@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Image\ImageException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Image;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Events\MediaCreated;
+use Modules\Media\Events\MediaProcessingFailed;
 use Modules\Media\Events\MediaUploaded;
 use Modules\Media\Jobs\ProcessMediaJob;
 use Modules\Media\Models\Media;
@@ -22,6 +24,7 @@ use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -48,22 +51,23 @@ final readonly class UploadMediaAction
     public function handle(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
         $this->guardFileName($payload->file->getClientOriginalName());
+        $this->guardAllowedExtension($payload->file->getClientOriginalName());
         $this->guardCollectionAcceptance($payload, $owner);
 
         if ($payload->preservingOriginal) {
-            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader));
+            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader), $payload);
         }
 
         if (! in_array((string) $payload->file->getMimeType(), self::PROCESSABLE_MIMES, true)) {
-            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader));
+            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader), $payload);
         }
 
         try {
-            return $this->dispatchUploaded($this->storeProcessedImage($payload, $owner, $uploader));
+            return $this->dispatchUploaded($this->storeProcessedImage($payload, $owner, $uploader), $payload);
         } catch (ImageException) {
             // Undecodable bytes that still passed extension validation are
             // stored untouched rather than failing the whole upload.
-            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader));
+            return $this->dispatchUploaded($this->storeRaw($payload, $owner, $uploader), $payload);
         }
     }
 
@@ -73,17 +77,17 @@ final readonly class UploadMediaAction
      * @param  array{media: Media, url: string|null}  $result
      * @return array{media: Media, url: string|null}
      */
-    private function dispatchUploaded(array $result): array
+    private function dispatchUploaded(array $result, MediaUploadPayload $payload): array
     {
         event(new MediaUploaded($result['media']));
         event(new MediaCreated($result['media']));
 
-        $this->dispatchConversions($result['media']);
+        $this->dispatchConversions($result['media'], $payload->onQueue);
 
         return $result;
     }
 
-    private function dispatchConversions(Media $media): void
+    private function dispatchConversions(Media $media, ?string $queue = null): void
     {
         if (! str_starts_with($media->mime_type, 'image/')) {
             return;
@@ -111,9 +115,11 @@ final readonly class UploadMediaAction
 
         $wantsResponsive = GenerateResponsiveImagesAction::wantsResponsive($media);
 
-        if ($modelConversions !== null || $wantsResponsive) {
-            if (config()->boolean('media.queue', false)) {
-                ProcessMediaJob::dispatch($media->id);
+        if ($modelConversions !== null || $wantsResponsive || $queue !== null) {
+            $queueName = $queue ?? (config()->boolean('media.queue', false) ? 'default' : null);
+
+            if ($queueName !== null) {
+                ProcessMediaJob::dispatch($media->id)->onQueue($queueName);
 
                 return;
             }
@@ -122,16 +128,18 @@ final readonly class UploadMediaAction
                 try {
                     // For model-driven, generate via service but respect performOnCollections
                     app(MediaConversionService::class)->generate($media);
-                } catch (Throwable) {
-                    // Ignore
+                } catch (Throwable $exception) {
+                    Log::warning('Media conversions failed.', ['media_id' => $media->id, 'error' => $exception->getMessage()]);
+                    event(new MediaProcessingFailed($media, $exception->getMessage()));
                 }
             }
 
             if ($wantsResponsive) {
                 try {
                     app(GenerateResponsiveImagesAction::class)->handle($media);
-                } catch (Throwable) {
-                    // Ignore
+                } catch (Throwable $exception) {
+                    Log::warning('Media responsive images failed.', ['media_id' => $media->id, 'error' => $exception->getMessage()]);
+                    event(new MediaProcessingFailed($media, $exception->getMessage()));
                 }
             }
 
@@ -146,11 +154,11 @@ final readonly class UploadMediaAction
      */
     private function storeProcessedImage(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
-        $disk = config()->string('media.disk', 'public');
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
+        $disk = $this->resolveDisk($payload, $visibility);
         $image = Image::fromUpload($payload->file)->orient()->optimize();
 
-        $storedPath = $image->store(MediaPrefix::directory($payload->collectionName), $disk, StorageOptions::forVisibility($visibility->value));
+        $storedPath = $image->store(MediaPrefix::directory($payload->collectionName), $disk, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
 
         if ($storedPath === false) {
             throw new ImageException('The processed image could not be stored.');
@@ -184,13 +192,17 @@ final readonly class UploadMediaAction
      */
     private function storeRaw(MediaUploadPayload $payload, Model $owner, ?Model $uploader = null): array
     {
-        $disk = config()->string('media.disk', 'public');
         $visibility = $this->resolveVisibility($payload->collectionName, $owner);
+        $disk = $this->resolveDisk($payload, $visibility);
         $file = $payload->file;
         $filename = app(MediaFileNamer::class)->originalFileName($file->hashName());
         $fullPath = MediaPrefix::basePath($payload->collectionName, $filename);
 
-        Storage::disk($disk)->putFileAs(MediaPrefix::directory($payload->collectionName), $file, $filename, StorageOptions::forVisibility($visibility->value));
+        if (Storage::disk($disk)->exists($fullPath)) {
+            throw new InvalidArgumentException(__('validation.media_name_collision'));
+        }
+
+        Storage::disk($disk)->putFileAs(MediaPrefix::directory($payload->collectionName), $file, $filename, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
 
         $media = $this->persistRow(
             payload: $payload,
@@ -209,7 +221,7 @@ final readonly class UploadMediaAction
     /**
      * Rename a just-stored file through the configured file namer.
      *
-     * Explicit per-call names (PendingMedia::usingFileName/sanitizer) already
+     * Explicit per-call names (FileAdder::usingFileName/sanitizer) already
      * rebuilt the UploadedFile before this action runs, so the namer only sees
      * the final candidate name. The default namer is identity: no move happens.
      */
@@ -223,7 +235,13 @@ final readonly class UploadMediaAction
 
         $target = dirname($storedPath).'/'.$candidate;
 
-        Storage::disk($disk)->move($storedPath, $target);
+        if (Storage::disk($disk)->exists($target)) {
+            throw new InvalidArgumentException(__('validation.media_name_collision'));
+        }
+
+        if (! Storage::disk($disk)->move($storedPath, $target)) {
+            throw new RuntimeException(__('validation.media_store_failed'));
+        }
 
         return $target;
     }
@@ -234,10 +252,63 @@ final readonly class UploadMediaAction
      * Runs for every entry point (HTTP and programmatic), unlike the
      * FormRequest rules which only cover HTTP uploads.
      */
+    /**
+     * Checksum the stored file (not the upload bytes, which may differ
+     * after image normalization). Null when the file cannot be read.
+     */
+    private function hashStoredFile(string $disk, string $fullPath): ?string
+    {
+        try {
+            $stream = Storage::disk($disk)->readStream($fullPath);
+
+            if (! is_resource($stream)) {
+                return null;
+            }
+
+            try {
+                $context = hash_init('sha256');
+                hash_update_stream($context, $stream);
+
+                return hash_final($context);
+            } finally {
+                fclose($stream);
+            }
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
     private function guardFileName(string $filename): void
     {
         if (DisallowedExtensions::contains($filename)) {
             throw new InvalidArgumentException(__('validation.media_disallowed_extension'));
+        }
+    }
+
+    /**
+     * Enforce the global extension allowlist. Null disables it; an
+     * explicit list (even empty) is enforced.
+     */
+    private function guardAllowedExtension(string $filename): void
+    {
+        $configured = config('media.allowed_extensions');
+
+        if (! is_array($configured)) {
+            return;
+        }
+
+        $allowed = [];
+
+        foreach ($configured as $extension) {
+            if (is_string($extension) && $extension !== '') {
+                $allowed[] = ltrim(strtolower($extension), '.');
+            }
+        }
+
+        $final = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (! in_array($final, $allowed, true)) {
+            throw new InvalidArgumentException(__('validation.media_extension_not_allowed'));
         }
     }
 
@@ -259,11 +330,32 @@ final readonly class UploadMediaAction
             throw new InvalidArgumentException(__('validation.media_not_accepted'));
         }
 
+        if ($collection->acceptsExtensions !== []) {
+            $finalExtension = strtolower(pathinfo($payload->file->getClientOriginalName(), PATHINFO_EXTENSION));
+
+            if (! in_array($finalExtension, $collection->acceptsExtensions, true)) {
+                throw new InvalidArgumentException(__('validation.media_not_accepted'));
+            }
+        }
+
         $acceptsFile = $collection->acceptsFile;
 
         if ($acceptsFile !== null && $acceptsFile($payload->file) !== true) {
             throw new InvalidArgumentException(__('validation.media_not_accepted'));
         }
+    }
+
+    private function resolveDisk(MediaUploadPayload $payload, MediaVisibilityEnum $visibility): string
+    {
+        if (is_string($payload->disk) && $payload->disk !== '') {
+            return $payload->disk;
+        }
+
+        if ($visibility !== MediaVisibilityEnum::Public) {
+            return config()->string('media.private_disk', 'local');
+        }
+
+        return config()->string('media.disk', 'public');
     }
 
     private function resolveVisibility(string $collectionName, ?Model $owner = null): MediaVisibilityEnum
@@ -281,6 +373,42 @@ final readonly class UploadMediaAction
 
         // Collections without a model definition default to private.
         return MediaVisibilityEnum::Private;
+    }
+
+    /**
+     * Delete the oldest items beyond the collection size limit, if any.
+     */
+    private function enforceCollectionLimit(Model $owner, string $collectionName): void
+    {
+        if (! $owner instanceof HasMedia) {
+            return;
+        }
+
+        $limit = $owner->getMediaCollection($collectionName)?->collectionSizeLimit;
+
+        if ($limit === null) {
+            return;
+        }
+
+        $keepIds = Media::query()
+            ->where('model_type', $owner->getMorphClass())
+            ->where('model_id', $owner->getKey())
+            ->where('collection_name', $collectionName)
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->pluck('id')
+            ->all();
+
+        $excess = Media::query()
+            ->where('model_type', $owner->getMorphClass())
+            ->where('model_id', $owner->getKey())
+            ->where('collection_name', $collectionName)
+            ->whereNotIn('id', $keepIds)
+            ->get();
+
+        foreach ($excess as $item) {
+            app(DeleteMediaAction::class)->handle($item);
+        }
     }
 
     private function isSingleFileCollection(string $collectionName, ?Model $owner = null): bool
@@ -315,10 +443,14 @@ final readonly class UploadMediaAction
             // final stored basename is checked again; the catch below
             // removes the stored file when it is rejected here.
             $this->guardFileName(basename($fullPath));
-            // Capture the replaced file name before save: getOriginal() is
+            // Capture the replaced state before save: getOriginal() is
             // synced on save, so it cannot be trusted for cleanup afterwards.
             $replacedFileName = null;
-            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle, &$replacedFileName): Media {
+            $replacedDisk = null;
+            $replacedConversionsDisk = null;
+            $replacedConversions = [];
+            $replacedResponsive = null;
+            $media = DB::transaction(function () use ($payload, $owner, $uploader, $disk, $conversionsDisk, $fullPath, $mimeType, $size, $meta, $isSingle, &$replacedFileName, &$replacedDisk, &$replacedConversionsDisk, &$replacedConversions, &$replacedResponsive): Media {
                 $file = $payload->file;
 
                 if ($isSingle) {
@@ -331,6 +463,10 @@ final readonly class UploadMediaAction
 
                     if ($existing !== null) {
                         $replacedFileName = $existing->file_name;
+                        $replacedDisk = $existing->disk;
+                        $replacedConversionsDisk = $existing->conversions_disk ?? $existing->disk;
+                        $replacedConversions = $existing->conversions()->get(['id', 'disk', 'path'])->all();
+                        $replacedResponsive = $existing->responsive_images;
                         $fileName = basename($fullPath);
                         $name = pathinfo($fileName, PATHINFO_FILENAME);
 
@@ -344,9 +480,11 @@ final readonly class UploadMediaAction
                             'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
                             'original_name' => $file->getClientOriginalName(),
                             'original_extension' => $file->getClientOriginalExtension(),
-                            'sha256' => hash_file('sha256', $file->getRealPath()),
+                            'sha256' => $this->hashStoredFile($disk, $fullPath),
                             'meta' => $meta,
                             'custom_properties' => $existing->custom_properties,
+                            'generated_conversions' => [],
+                            'responsive_images' => [],
                             'order_column' => $existing->order_column,
                         ]);
 
@@ -386,7 +524,7 @@ final readonly class UploadMediaAction
                     'visibility' => $this->resolveVisibility($payload->collectionName, $owner)->value,
                     'original_name' => $file->getClientOriginalName(),
                     'original_extension' => $file->getClientOriginalExtension(),
-                    'sha256' => hash_file('sha256', $file->getRealPath()),
+                    'sha256' => $this->hashStoredFile($disk, $fullPath),
                     'manipulations' => [],
                     'generated_conversions' => [],
                     'responsive_images' => [],
@@ -406,10 +544,38 @@ final readonly class UploadMediaAction
                 return $media;
             });
 
-            // Clean up old file and its variants after successful single_file replacement.
+            // Clean up replaced files after successful single_file replacement,
+            // using the pre-save snapshot (disks may have changed too).
             if ($isSingle && $media->wasChanged('file_name') && is_string($replacedFileName) && $replacedFileName !== $media->file_name) {
-                Storage::disk($disk)->delete(MediaPrefix::basePath($media->collection_name, $replacedFileName));
-                Storage::disk($disk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
+                $oldDisk = is_string($replacedDisk) ? $replacedDisk : $disk;
+                $oldConversionsDisk = is_string($replacedConversionsDisk) ? $replacedConversionsDisk : $disk;
+
+                Storage::disk($oldDisk)->delete(MediaPrefix::basePath($media->collection_name, $replacedFileName));
+                Storage::disk($oldDisk)->deleteDirectory(MediaPrefix::join('variants', (string) $media->id));
+                Storage::disk($oldConversionsDisk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
+
+                foreach ($replacedConversions as $oldConversion) {
+                    Storage::disk($oldConversion->disk)->delete($oldConversion->path);
+                    $oldConversion->delete();
+                }
+
+                if ($replacedResponsive !== null) {
+                    foreach ($replacedResponsive as $info) {
+                        $path = $info['path'];
+
+                        if ($path === '') {
+                            continue;
+                        }
+
+                        Storage::disk($oldConversionsDisk)->delete($path);
+                    }
+                }
+            }
+
+            try {
+                $this->enforceCollectionLimit($owner, $payload->collectionName);
+            } catch (Throwable) {
+                // Limit enforcement is best-effort cleanup; the upload itself succeeded.
             }
 
             return $media;

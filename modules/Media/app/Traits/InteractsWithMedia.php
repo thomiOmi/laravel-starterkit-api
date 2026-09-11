@@ -12,9 +12,9 @@ use Modules\Media\Actions\DeleteMediaAction;
 use Modules\Media\Actions\ReorderMediaAction;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\Downloaders\MediaDownloader;
+use Modules\Media\Support\FileAdder;
 use Modules\Media\Support\MediaCollection;
 use Modules\Media\Support\MediaConversion;
-use Modules\Media\Support\PendingMedia;
 
 /**
  * Provides media relationship and helper methods for owning models.
@@ -45,16 +45,16 @@ trait InteractsWithMedia
     /**
      * Start a fluent media attachment for the model.
      */
-    public function addMedia(UploadedFile $file): PendingMedia
+    public function addMedia(UploadedFile $file): FileAdder
     {
         if (! $this instanceof Model) {
             throw new \LogicException('InteractsWithMedia can only be used on Eloquent models.');
         }
 
-        return new PendingMedia($this, $file);
+        return new FileAdder($this, $file);
     }
 
-    public function addMediaFromRequest(string $key): PendingMedia
+    public function addMediaFromRequest(string $key): FileAdder
     {
         /** @var mixed $file */
         $file = request()->file($key);
@@ -68,7 +68,7 @@ trait InteractsWithMedia
 
     /**
      * @param  array<int, string>  $keys
-     * @return array<int, PendingMedia>
+     * @return array<int, FileAdder>
      */
     public function addMultipleMediaFromRequest(array $keys): array
     {
@@ -98,14 +98,14 @@ trait InteractsWithMedia
      *
      * @param  array<string, string>  $headers
      */
-    public function addMediaFromUrl(string $url, ?string $filename = null, array $headers = []): PendingMedia
+    public function addMediaFromUrl(string $url, ?string $filename = null, array $headers = []): FileAdder
     {
         $downloaded = app(MediaDownloader::class)->download($url, $headers);
 
         return $this->addMediaFromString($downloaded['content'], $filename ?? $downloaded['filename']);
     }
 
-    public function addMediaFromString(string $content, string $filename): PendingMedia
+    public function addMediaFromString(string $content, string $filename): FileAdder
     {
         $file = UploadedFile::fake()->createWithContent($filename, $content);
 
@@ -166,7 +166,7 @@ trait InteractsWithMedia
 
     /**
      * @param  array<int, string>|null  $keys  Null attaches every uploaded file key.
-     * @return array<int, PendingMedia>
+     * @return array<int, FileAdder>
      */
     public function addAllMediaFromRequest(?array $keys = null): array
     {

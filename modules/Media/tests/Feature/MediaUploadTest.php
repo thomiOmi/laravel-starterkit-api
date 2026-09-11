@@ -11,12 +11,14 @@ use Illuminate\Support\Str;
 use Modules\Media\Events\MediaUploaded;
 use Modules\Media\Http\Controllers\V1\MediaUploadController;
 use Modules\Media\Models\Media;
+use Modules\Media\Support\FileNamer\MediaFileNamer;
 
 covers(MediaUploadController::class);
 
 describe('POST /api/v1/media', function () {
     beforeEach(function () {
         Storage::fake('public');
+        Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaCreate->value,
@@ -53,7 +55,7 @@ describe('POST /api/v1/media', function () {
             ->and($meta['height'] ?? null)->toBeInt()
             ->and($meta['height'] ?? 0)->toBeGreaterThan(0);
 
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
         Event::assertDispatched(MediaUploaded::class, fn (MediaUploaded $event): bool => $event->media->is($media));
     });
 
@@ -69,11 +71,11 @@ describe('POST /api/v1/media', function () {
         $media = Media::query()->sole();
         expect($media->mime_type)->toBe('image/webp')
             ->and($media->getPath() ?? '')->toEndWith('.webp');
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
     it('stores non-image files untouched when their extension is allowed', function () {
-        config(['media.mimes' => ['pdf']]);
+        config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -87,7 +89,27 @@ describe('POST /api/v1/media', function () {
             ->and($media->getPath() ?? '')->toEndWith('.pdf')
             ->and($media->meta)->toHaveKey('original_name')
             ->and($media->meta)->not->toHaveKey('width');
-        Storage::disk('public')->assertExists($media->getPath() ?? '');
+        Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
+    });
+
+    it('stores private uploads off the public disk', function () {
+        config(['media.allowed_extensions' => ['pdf']]);
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $response = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('contracts.pdf', 10, 'application/pdf'),
+        ]);
+
+        assertSuccessResponse($response, 201);
+
+        $media = Media::query()->sole();
+
+        expect($media->disk)->toBe('local')
+            ->and($media->url())->toBeNull();
+
+        Storage::disk('local')->assertExists($media->getPath() ?? '');
+        Storage::disk('public')->assertMissing($media->getPath() ?? '');
     });
 
     it('rejects invalid collection names', function (string $collection) {
@@ -118,7 +140,7 @@ describe('POST /api/v1/media', function () {
         expect($response->json('data.media.collection_name'))->toBe('default');
     });
 
-    it('rejects disallowed extensions', function (string $filename) {
+    it('rejects executable extensions', function (string $filename) {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -130,8 +152,66 @@ describe('POST /api/v1/media', function () {
         $response->assertJsonValidationErrors(['file']);
     })->with([
         'script' => 'malware.exe',
-        'text' => 'notes.txt',
+        'double' => 'shell.php.txt',
     ]);
+
+    it('accepts non-image files by default when no allowlist is configured', function () {
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $response = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
+        ]);
+
+        assertSuccessResponse($response, 201);
+    });
+
+    it('rejects extensions outside the global allowlist', function () {
+        config(['media.allowed_extensions' => ['png', 'jpg']]);
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $response = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['file']);
+    });
+
+    it('checksums the stored bytes', function () {
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $response = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'),
+        ]);
+
+        assertSuccessResponse($response, 201);
+
+        $media = Media::query()->sole();
+        $stored = Storage::disk($media->disk)->get($media->getPath() ?? '');
+
+        expect($media->sha256)->toBe(hash('sha256', (string) $stored));
+    });
+
+    it('rejects a custom namer collision instead of overwriting', function () {
+        config(['media.file_namer' => ConstantFileNamer::class]);
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $first = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('one.pdf', 10, 'application/pdf'),
+        ]);
+
+        assertSuccessResponse($first, 201);
+
+        $second = $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->create('two.pdf', 10, 'application/pdf'),
+        ]);
+
+        assertProblemResponse($second, 400);
+    });
 
     it('rejects files above the size limit', function () {
         $user = loginAsUser();
@@ -159,3 +239,21 @@ describe('POST /api/v1/media', function () {
         assertProblemResponse($response, 403);
     });
 });
+
+final class ConstantFileNamer implements MediaFileNamer
+{
+    public function originalFileName(string $fileName): string
+    {
+        return 'fixed.pdf';
+    }
+
+    public function conversionFileName(string $fileName, string $conversion): string
+    {
+        return 'fixed-'.$conversion.'.pdf';
+    }
+
+    public function responsiveFileName(string $fileName): string
+    {
+        return $fileName;
+    }
+}

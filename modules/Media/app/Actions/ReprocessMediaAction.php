@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Media\Actions;
 
+use InvalidArgumentException;
 use Modules\Media\Jobs\ProcessMediaJob;
 use Modules\Media\Models\Media;
 use Modules\Media\Services\MediaConversionService;
@@ -17,8 +18,18 @@ final readonly class ReprocessMediaAction
         private MediaConversionService $conversionService,
     ) {}
 
-    public function handle(Media $media, bool $queued = false): void
+    public function handle(Media $media, bool $queued = false, ?string $conversion = null): void
     {
+        if ($conversion !== null && $conversion !== '') {
+            $generated = $this->conversionService->generateNamed($media, $conversion);
+
+            if ($generated === null) {
+                throw new InvalidArgumentException("Conversion [{$conversion}] is not defined for this media.");
+            }
+
+            return;
+        }
+
         if ($queued || config()->boolean('media.queue', false)) {
             ProcessMediaJob::dispatch($media->id);
 

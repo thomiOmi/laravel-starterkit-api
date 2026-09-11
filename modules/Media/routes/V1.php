@@ -24,9 +24,7 @@ Route::prefix('media')->middleware(['auth:sanctum', 'active', 'throttle:api'])->
         ->middleware('permission:'.PermissionEnum::MediaCreate->value)
         ->name('upload');
 
-    Route::get('/', MediaListController::class)
-        ->middleware('permission:'.PermissionEnum::MediaView->value)
-        ->name('index');
+    Route::get('/', MediaListController::class)->name('index');
 
     Route::get('/{media}', MediaShowController::class)->name('show');
     Route::get('/{media}/s/{modifiers}', MediaModifierController::class)->name('modifier')->where('modifiers', '.*');

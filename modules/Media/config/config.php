@@ -24,14 +24,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Private disk
+    |--------------------------------------------------------------------------
+    |
+    | Disk for non-public media. Keeping private files off the public
+    | disk means they cannot be fetched by direct URL.
+    |
+    */
+    'private_disk' => 'local',
+
+    /*
+    |--------------------------------------------------------------------------
     | Upload constraints
     |--------------------------------------------------------------------------
     |
-    | Maximum upload size in kilobytes and the allowed file extensions.
+    | Maximum upload size in kilobytes. Allowed extensions restrict the
+    | final file extension globally; null disables the allowlist and
+    | defers to collection rules plus the disallowed list below.
     |
     */
     'max_size' => 2048,
-    'mimes' => ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'],
+    'allowed_extensions' => null,
 
     /*
     |--------------------------------------------------------------------------
@@ -59,7 +72,7 @@ return [
     | control naming globally without touching upload code.
     |
     */
-    'file_namer' => env('MEDIA_FILE_NAMER', DefaultFileNamer::class),
+    'file_namer' => DefaultFileNamer::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -70,7 +83,7 @@ return [
     | path. Swap it for a custom MediaPathGenerator implementation.
     |
     */
-    'path_generator' => env('MEDIA_PATH_GENERATOR', DefaultPathGenerator::class),
+    'path_generator' => DefaultPathGenerator::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -94,7 +107,7 @@ return [
     | When urls to files get generated, this class will be called.
     |
     */
-    'url_generator' => env('MEDIA_URL_GENERATOR', DefaultUrlGenerator::class),
+    'url_generator' => DefaultUrlGenerator::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -105,7 +118,7 @@ return [
     | attached to generated public URLs for cache busting.
     |
     */
-    'version_urls' => env('MEDIA_VERSION_URLS', false),
+    'version_urls' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -166,7 +179,7 @@ return [
     | URL sits behind a firewall and needs extra client flags.
     |
     */
-    'media_downloader' => env('MEDIA_DOWNLOADER', DefaultDownloader::class),
+    'media_downloader' => DefaultDownloader::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -177,7 +190,7 @@ return [
     | media. Disable only in a local environment: it is a security risk.
     |
     */
-    'media_downloader_ssl' => env('MEDIA_DOWNLOADER_SSL', true),
+    'media_downloader_ssl' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -187,7 +200,18 @@ return [
     | Timeout in seconds for remote media downloads.
     |
     */
-    'downloader_timeout' => env('MEDIA_DOWNLOADER_TIMEOUT', 10),
+    'downloader_timeout' => 10,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Downloader plain HTTP
+    |--------------------------------------------------------------------------
+    |
+    | Only https URLs are fetched by default. Enable to allow plain http
+    | downloads, e.g. for local development.
+    |
+    */
+    'downloader_allow_http' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -211,5 +235,5 @@ return [
     | The class that contains the strategy for removing media files.
     |
     */
-    'file_remover' => env('MEDIA_FILE_REMOVER', DefaultFileRemover::class),
+    'file_remover' => DefaultFileRemover::class,
 ];

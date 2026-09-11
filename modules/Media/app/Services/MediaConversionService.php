@@ -54,6 +54,30 @@ final readonly class MediaConversionService
     }
 
     /**
+     * Generate a single named conversion using the model definitions.
+     *
+     * Returns null when the conversion is not defined for the media.
+     */
+    public function generateNamed(Media $media, string $name): ?MediaConversion
+    {
+        if (! str_starts_with($media->mime_type, 'image/')) {
+            return null;
+        }
+
+        $conversions = $this->resolveConversions($media);
+
+        if (! array_key_exists($name, $conversions)) {
+            return null;
+        }
+
+        try {
+            return $this->generateOne($media, $name, $conversions[$name]);
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /**
      * @return array<string, array{width?: int|null, height?: int|null, fit?: string, format?: string, quality?: int}>
      */
     private function resolveConversions(Media $media): array

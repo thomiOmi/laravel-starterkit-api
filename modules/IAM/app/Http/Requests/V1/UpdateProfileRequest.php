@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Modules\IAM\Http\Requests\V1;
 
 use App\Concerns\ProfileValidationRules;
-use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Dimensions;
 use Illuminate\Validation\Rules\Unique;
+use Modules\Media\Rules\AllowedFileName;
 
 /**
- * @phpstan-type UpdateProfileRules array<string, array<int, ValidationRule|Unique|string|Closure>>
+ * @phpstan-type UpdateProfileRules array<string, array<int, ValidationRule|Unique|Dimensions|string>>
  */
 class UpdateProfileRequest extends FormRequest
 {
@@ -55,29 +55,8 @@ class UpdateProfileRequest extends FormRequest
                 'file',
                 'image',
                 'max:'.config()->integer('media.max_size'),
-                function (string $attribute, mixed $value, Closure $fail): void {
-                    if (! $value instanceof UploadedFile) {
-                        return;
-                    }
-
-                    // Same denylist as media uploads, read from the shared
-                    // config list (the Media Support helper is an internal
-                    // layer this module must not import).
-                    $segments = explode('.', strtolower($value->getClientOriginalName()));
-                    array_shift($segments);
-
-                    $denied = [];
-
-                    foreach (config()->array('media.disallowed_extensions', []) as $extension) {
-                        if (is_string($extension) && $extension !== '') {
-                            $denied[] = strtolower($extension);
-                        }
-                    }
-
-                    if (array_intersect($segments, $denied) !== []) {
-                        $fail(__('validation.media_disallowed_extension'));
-                    }
-                },
+                Rule::dimensions()->minWidth(32)->minHeight(32)->ratio(1 / 1),
+                new AllowedFileName,
             ],
         ];
     }
