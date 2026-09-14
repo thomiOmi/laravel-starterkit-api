@@ -83,7 +83,7 @@ describe('POST /api/v1/media', function () {
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
         $response = $this->post('/api/v1/media', [
-            'file' => UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'),
+            'file' => UploadedFile::fake()->createWithContent('doc.pdf', "%PDF-1.4\nfake pdf body\n%%EOF"),
         ]);
 
         assertSuccessResponse($response, 201);
@@ -101,7 +101,7 @@ describe('POST /api/v1/media', function () {
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
         $response = $this->post('/api/v1/media', [
-            'file' => UploadedFile::fake()->create('contracts.pdf', 10, 'application/pdf'),
+            'file' => UploadedFile::fake()->createWithContent('contracts.pdf', "%PDF-1.4\nfake pdf body\n%%EOF"),
         ]);
 
         assertSuccessResponse($response, 201);
@@ -187,7 +187,7 @@ describe('POST /api/v1/media', function () {
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
         $response = $this->post('/api/v1/media', [
-            'file' => UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'),
+            'file' => UploadedFile::fake()->createWithContent('doc.pdf', "%PDF-1.4\nfake pdf body\n%%EOF"),
         ]);
 
         assertSuccessResponse($response, 201);
@@ -204,13 +204,13 @@ describe('POST /api/v1/media', function () {
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
         $first = $this->post('/api/v1/media', [
-            'file' => UploadedFile::fake()->create('one.pdf', 10, 'application/pdf'),
+            'file' => UploadedFile::fake()->createWithContent('one.pdf', "%PDF-1.4\nfake pdf body\n%%EOF"),
         ]);
 
         assertSuccessResponse($first, 201);
 
         $second = $this->post('/api/v1/media', [
-            'file' => UploadedFile::fake()->create('two.pdf', 10, 'application/pdf'),
+            'file' => UploadedFile::fake()->createWithContent('two.pdf', "%PDF-1.4\nfake pdf body\n%%EOF"),
         ]);
 
         assertProblemResponse($second, 400);

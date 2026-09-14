@@ -15,6 +15,8 @@ use Modules\Media\Support\FileRemover\DefaultFileRemover;
 use Modules\Media\Support\FileRemover\MediaFileRemover;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
 use Modules\Media\Support\PathGenerator\MediaPathGenerator;
+use Modules\Media\Support\Scanners\MediaScanner;
+use Modules\Media\Support\Scanners\NullScanner;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
 use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
 use Nwidart\Modules\Support\ModuleServiceProvider;
@@ -100,6 +102,15 @@ class MediaServiceProvider extends ModuleServiceProvider
 
             if (! is_a($class, MediaFileRemover::class, true)) {
                 $class = DefaultFileRemover::class;
+            }
+
+            return new $class;
+        });
+        $this->app->singleton(MediaScanner::class, function (): MediaScanner {
+            $class = config()->string('media.scanner', NullScanner::class);
+
+            if (! is_a($class, MediaScanner::class, true)) {
+                $class = NullScanner::class;
             }
 
             return new $class;
