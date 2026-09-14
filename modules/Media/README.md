@@ -56,6 +56,8 @@ Collections/conversions are **model-driven** (`registerMediaCollections` / `regi
 
 The storage layer accepts generic files, including PDFs, videos, text files, and office documents, subject to the configured size and extension rules. Non-image files are stored unchanged and retain their original MIME type, checksum, visibility, and signed download behavior.
 
+Remote downloads reject private hosts and redirects, verify TLS by default, enforce the configured timeout and byte limit while reading the response stream, and do not follow an unvalidated destination. Signed file responses set the stored MIME type and a sanitized filename.
+
 Image processing is intentionally separate from generic storage. Only supported image MIME types are normalized and passed through the image pipeline. `withManipulations()` currently supports `filter: grayscale`, `grayscale`, `blur`, `sharpen`, and `rotate`; these are applied before the stored source is encoded. Image conversions, responsive images, and on-demand modifiers do not apply to PDFs, videos, audio, or office documents.
 
 | Capability | Generic files | Images |
