@@ -140,6 +140,61 @@ final class MediaConversion
     }
 
     /**
+     * Build the storage path for a derived on-demand conversion.
+     *
+     * @param  array<string, mixed>  $modifiers
+     */
+    public static function derivedPath(string $mediaId, array $modifiers, string $cacheKey, string $format): string
+    {
+        /** @var int<1, 2000>|null $width */
+        $width = isset($modifiers['w']) && is_int($modifiers['w']) ? $modifiers['w'] : null;
+        /** @var int<1, 2000>|null $height */
+        $height = isset($modifiers['h']) && is_int($modifiers['h']) ? $modifiers['h'] : null;
+        /** @var string|null $fit */
+        $fit = isset($modifiers['fit']) && is_string($modifiers['fit']) ? $modifiers['fit'] : null;
+        /** @var string|null $kernel */
+        $kernel = isset($modifiers['kernel']) && is_string($modifiers['kernel']) ? $modifiers['kernel'] : null;
+        /** @var int<1, 100> $quality */
+        $quality = isset($modifiers['q']) && is_int($modifiers['q']) ? $modifiers['q'] : 80;
+
+        $readableParts = [];
+
+        if ($width !== null) {
+            $readableParts[] = "w{$width}";
+        }
+
+        if ($height !== null) {
+            $readableParts[] = "h{$height}";
+        }
+
+        if ($format !== '') {
+            $readableParts[] = "f_{$format}";
+        }
+
+        if ($quality !== 80) {
+            $readableParts[] = "q{$quality}";
+        }
+
+        if ($fit !== null) {
+            $readableParts[] = "fit_{$fit}";
+        }
+
+        if ($kernel !== null) {
+            $readableParts[] = "kernel_{$kernel}";
+        }
+
+        $readable = implode('-', $readableParts);
+
+        if ($readable === '') {
+            $readable = 'original';
+        }
+
+        $extension = $format === 'jpg' ? 'jpg' : $format;
+
+        return MediaPrefix::join('conversions/derived', $mediaId, $readable.'-'.substr($cacheKey, 0, 8).'.'.$extension);
+    }
+
+    /**
      * @return array{w?: int, h?: int, s?: string, f?: string, q?: int, format?: string, width?: int, height?: int}
      */
     private static function parseModifiers(string $modifiers): array

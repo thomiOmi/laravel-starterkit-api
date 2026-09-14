@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
 use Modules\Media\Actions\GenerateResponsiveImagesAction;
 use Modules\Media\Events\MediaProcessed;
 use Modules\Media\Events\MediaProcessingFailed;
@@ -36,17 +37,26 @@ final class ProcessMediaJob implements ShouldQueue
         }
 
         try {
+            $path = $media->getPath();
+
+            if (! is_string($path) || ! Storage::disk($media->disk)->exists($path)) {
+                throw new \RuntimeException('The source media file is missing.');
+            }
+
+            $media->markProcessing();
             $service->generate($media);
 
             if (GenerateResponsiveImagesAction::wantsResponsive($media)) {
                 $responsive->handle($media);
             }
 
+            $media->markProcessed();
             event(new MediaProcessed($media));
-        } catch (Throwable $e) {
-            event(new MediaProcessingFailed($media, $e->getMessage()));
+        } catch (Throwable $exception) {
+            $media->markProcessingFailed($exception->getMessage());
+            event(new MediaProcessingFailed($media, $exception->getMessage()));
 
-            throw $e;
+            throw $exception;
         }
     }
 }

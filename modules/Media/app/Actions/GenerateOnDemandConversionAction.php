@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Media\Actions;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
-use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 
 /**
@@ -21,60 +21,6 @@ use Modules\Media\Support\StorageOptions;
 final readonly class GenerateOnDemandConversionAction
 {
     /**
-     * Build the readable derived conversion path for the given parsed modifiers.
-     *
-     * @param  array<string, mixed>  $parsed
-     */
-    public function buildConversionPath(Media $media, array $parsed, string $cacheKey, string $format): string
-    {
-        /** @var int<1, 2000>|null $width */
-        $width = isset($parsed['w']) && is_int($parsed['w']) ? $parsed['w'] : null;
-        /** @var int<1, 2000>|null $height */
-        $height = isset($parsed['h']) && is_int($parsed['h']) ? $parsed['h'] : null;
-        /** @var string|null $fit */
-        $fit = isset($parsed['fit']) && is_string($parsed['fit']) ? $parsed['fit'] : null;
-        /** @var string|null $kernel */
-        $kernel = isset($parsed['kernel']) && is_string($parsed['kernel']) ? $parsed['kernel'] : null;
-        /** @var int<1, 100> $quality */
-        $quality = isset($parsed['q']) && is_int($parsed['q']) ? $parsed['q'] : 80;
-
-        $ext = $format === 'jpg' ? 'jpg' : $format;
-        $readableParts = [];
-
-        if ($width !== null) {
-            $readableParts[] = "w{$width}";
-        }
-
-        if ($height !== null) {
-            $readableParts[] = "h{$height}";
-        }
-
-        if ($format !== '') {
-            $readableParts[] = "f_{$format}";
-        }
-
-        if ($quality !== 80) {
-            $readableParts[] = "q{$quality}";
-        }
-
-        if ($fit !== null) {
-            $readableParts[] = "fit_{$fit}";
-        }
-
-        if ($kernel !== null) {
-            $readableParts[] = "kernel_{$kernel}";
-        }
-
-        $readable = implode('-', $readableParts);
-
-        if ($readable === '') {
-            $readable = 'original';
-        }
-
-        return MediaPrefix::join('conversions/derived', (string) $media->id, $readable.'-'.substr($cacheKey, 0, 8).'.'.$ext);
-    }
-
-    /**
      * Generate and persist the derived conversion file.
      *
      * @param  array<string, mixed>  $parsed
@@ -82,8 +28,14 @@ final readonly class GenerateOnDemandConversionAction
     public function handle(Media $media, array $parsed, string $conversionPath): void
     {
         $path = $media->getPath();
+        $sourceDisk = Storage::disk($media->disk);
 
-        abort_unless(is_string($path) && Storage::disk($media->disk)->exists($path), 404, __('general.resource_not_found', ['resource' => 'File']));
+        if (! is_string($path) || ! $sourceDisk->exists($path)) {
+            $mediaKey = $media->getKey();
+            $notFoundKey = is_int($mediaKey) || is_string($mediaKey) ? $mediaKey : 0;
+
+            throw (new ModelNotFoundException)->setModel(Media::class, $notFoundKey);
+        }
 
         /** @var int<1, 2000>|null $width */
         $width = isset($parsed['w']) && is_int($parsed['w']) ? $parsed['w'] : null;
@@ -101,6 +53,7 @@ final readonly class GenerateOnDemandConversionAction
         }
 
         $image = Image::fromStorage($path, $media->disk);
+        $conversionDisk = $media->conversions_disk ?? $media->disk;
 
         if ($width !== null || $height !== null) {
             if ($fit === 'cover' && $width !== null && $height !== null) {
@@ -117,6 +70,6 @@ final readonly class GenerateOnDemandConversionAction
         }
 
         $image = $image->toFormat($format)->quality($quality);
-        $image->storeAs(dirname($conversionPath), basename($conversionPath), $media->disk, StorageOptions::forVisibility($media->visibility->value));
+        $image->storeAs(dirname($conversionPath), basename($conversionPath), $conversionDisk, StorageOptions::forVisibility($media->visibility->value));
     }
 }

@@ -14,7 +14,13 @@ final readonly class DefaultUrlGenerator implements MediaUrlGenerator
     #[\Override]
     public function getUrl(Media $media): ?string
     {
-        return $media->url();
+        if (! $media->isPublic()) {
+            return null;
+        }
+
+        $path = $media->getPath();
+
+        return is_string($path) ? Storage::disk($media->disk)->url($path) : null;
     }
 
     #[\Override]

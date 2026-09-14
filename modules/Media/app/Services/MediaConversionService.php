@@ -161,13 +161,13 @@ final readonly class MediaConversionService
 
         if ($width !== null || $height !== null) {
             if ($fit === 'cover' && $width !== null && $height !== null) {
-                $image->cover(width: $width, height: $height);
+                $image = $image->cover(width: $width, height: $height);
             } else {
-                $image->scale(width: $width, height: $height);
+                $image = $image->scale(width: $width, height: $height);
             }
         }
 
-        $image->toFormat($format)->quality($quality);
+        $image = $image->toFormat($format)->quality($quality);
 
         $ext = $format === 'jpg' ? 'jpg' : $format;
         $baseName = app(MediaFileNamer::class)->conversionFileName($media->file_name, $name);
@@ -202,19 +202,5 @@ final readonly class MediaConversionService
                 'etag' => $etag,
             ]
         );
-    }
-
-    /**
-     * Delete all conversions for the media.
-     */
-    public function deleteConversions(Media $media): void
-    {
-        foreach ($media->conversions()->get() as $conv) {
-            Storage::disk($conv->disk)->delete($conv->path);
-            $conv->delete();
-        }
-
-        $conversionsDisk = $media->conversions_disk ?? $media->disk;
-        Storage::disk($conversionsDisk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
     }
 }

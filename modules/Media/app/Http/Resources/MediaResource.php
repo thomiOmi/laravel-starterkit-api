@@ -40,7 +40,7 @@ class MediaResource extends JsonResource
      * yields null until a caller explicitly passes a pre-resolved url such
      * as a temporary signed link.
      *
-     * @return array{id: string, name: string, file_name: string, collection_name: string, mime_type: string, size: int, visibility: string, url: string|null, original_name: string|null, original_extension: string|null, sha256: string|null, custom_properties: array<string, mixed>|null, order_column: int, uploaded_by_type: string|null, uploaded_by_id: string|null, model_type: string|null, model_id: string|null, conversions: array<string, string|null>, srcset: string|null, fallback_url: string|null, fallback_path: string|null, created_at: ?string}
+     * @return array{id: string, name: string, file_name: string, collection_name: string, mime_type: string, size: int, visibility: string, url: string|null, original_name: string|null, original_extension: string|null, sha256: string|null, custom_properties: array<string, mixed>|null, processing_status: string, processing_error: string|null, processed_at: ?string, order_column: int, uploaded_by_type: string|null, uploaded_by_id: string|null, model_type: string|null, model_id: string|null, conversions: array<string, string|null>, srcset: string|null, fallback_url: string|null, fallback_path: string|null, created_at: ?string}
      */
     #[\Override]
     public function toArray(Request $request): array
@@ -96,12 +96,13 @@ class MediaResource extends JsonResource
             'size' => $media->size,
             'visibility' => $media->visibility->value,
             'url' => $this->resolvedUrl ?? $media->url() ?? $fallbackUrl,
-            'original_name' => $media->original_name ?? (is_array($media->meta) && is_string($media->meta['original_name'] ?? null)
-                ? $media->meta['original_name']
-                : null),
+            'original_name' => $media->original_name,
             'original_extension' => $media->original_extension,
             'sha256' => $media->sha256,
             'custom_properties' => $media->custom_properties,
+            'processing_status' => $media->processing_status->value,
+            'processing_error' => $media->processing_error,
+            'processed_at' => $media->processed_at?->toDateTimeString(),
             'order_column' => $media->order_column,
             'uploaded_by_type' => $media->uploaded_by_type,
             'uploaded_by_id' => $media->uploaded_by_id,

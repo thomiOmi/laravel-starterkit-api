@@ -1,6 +1,6 @@
 # Media Module — Polymorphic Media Library (Spatie-inspired)
 
-> Lightweight custom module inspired by Spatie Media Library. Polymorphic `model_type/model_id` + `uploaded_by` morph, `order_column`, `sha256`, `custom_properties`, image conversions (`thumbnail`/`medium`/`large` via `MediaConversionService` + `ProcessMediaJob` (queue/sync)), `InteractsWithMedia` trait + `FileAdder` fluent, single_file `avatars`, responsive `srcset`, signed streaming. **Media is independent** (`requires []`), `IAM` `requires ["Media"]` (`User implements HasMedia`).
+> Lightweight custom module inspired by Spatie Media Library. Generic polymorphic file storage with image-specific processing: `model_type/model_id` + `uploaded_by` morph, `order_column`, `sha256`, `custom_properties`, image conversions (`thumbnail`/`medium`/`large` via `MediaConversionService` + `ProcessMediaJob` (queue/sync)), `InteractsWithMedia` trait + `FileAdder` fluent, single_file `avatars`, responsive `srcset`, signed streaming. **Media is independent** (`requires []`), `IAM` `requires ["Media"]` (`User implements HasMedia`).
 
 ## Setup
 
@@ -52,6 +52,26 @@ php artisan db:seed --class="Modules\IAM\Database\Seeders\IAMSeeder"
 
 Collections/conversions are **model-driven** (`registerMediaCollections` / `registerMediaConversions` on `HasMedia` models), not config. `queue` alone is config.
 
+### Supported File Scope
+
+The storage layer accepts generic files, including PDFs, videos, text files, and office documents, subject to the configured size and extension rules. Non-image files are stored unchanged and retain their original MIME type, checksum, visibility, and signed download behavior.
+
+Remote downloads reject private hosts and redirects, verify TLS by default, enforce the configured timeout and byte limit while reading the response stream, and do not follow an unvalidated destination. Signed file responses set the stored MIME type and a sanitized filename.
+
+Image processing is intentionally separate from generic storage. Only supported image MIME types are normalized and passed through the image pipeline. `withManipulations()` currently supports `filter: grayscale`, `grayscale`, `blur`, `sharpen`, and `rotate`; these are applied before the stored source is encoded. Image conversions, responsive images, and on-demand modifiers do not apply to PDFs, videos, audio, or office documents.
+
+| Capability | Generic files | Images |
+|------------|---------------|--------|
+| Upload and persist original bytes | Yes | Yes |
+| MIME, size, checksum, visibility | Yes | Yes |
+| Collections, ownership, ordering | Yes | Yes |
+| Signed download and cleanup | Yes | Yes |
+| Resize, format conversion, quality | No | Yes |
+| Responsive images and `srcset` | No | Yes |
+| Preview, thumbnail, or metadata extraction | Not implemented | Image metadata supported |
+
+Future processors for PDF, video, audio, or office documents should be added as explicit capabilities when a concrete product requirement exists. They should not be represented by placeholder conversions in the image pipeline.
+
 ## Architecture
 
 ### ERD
@@ -76,9 +96,11 @@ erDiagram
         string sha256 "nullable, indexed, 64"
         json manipulations "nullable"
         json custom_properties "nullable"
-        json generated_conversions "nullable"
         json responsive_images "nullable"
-        json meta "nullable (width,height,original_name)"
+        json meta "nullable (width,height)"
+        string processing_status "processed/pending/processing/failed"
+        text processing_error "nullable"
+        datetime processed_at "nullable"
         unsignedInteger order_column "default 0"
         string uploaded_by_type "nullable, morph"
         ulid uploaded_by_id "nullable"
@@ -223,7 +245,6 @@ classDiagram
     class MediaConversionBuilder { <<value object>> +width() +fit() +performOnCollections() +fromModifiers() }
     class UploadMediaAction { +handle(Payload, Model $owner, ?Model $uploader) }
     class MediaUrlGenerator { <<interface>> +getUrl() +getTemporaryUrl() }
-    class MediaStorageService { +store() +delete() }
     class MediaConversionService { +generate() +generateOne() +generateNamed() }
     class GenerateResponsiveImagesAction { +wantsResponsive() +handle() }
     class MediaFileRemover { <<interface>> +removeAllFiles() }
@@ -305,9 +326,9 @@ php artisan media:reprocess --conversion=thumbnail # single named conversion
 
 - **Collections/conversions:** `User::registerMediaCollections()` → `addMediaCollection()->singleFile()->visibility()->acceptsMimeTypes()->acceptsExtensions()->acceptsFile()->useFallbackUrl()->withResponsiveImages()`; `registerMediaConversions()` → `addMediaConversion()->width()->height()->fit()->format()->quality()->performOnCollections()` + `onQueue()`. `FileAdder` per-call `withResponsiveImagesIf()`, `storingConversionsOnDisk()`, `onQueue()`, `addCustomHeaders()`, `setOrder()`. `queue` global in config.
 - **File naming / paths / URLs / downloader / remover:** Swap via `media.file_namer` / `path_generator` / `custom_path_generators` / `url_generator` / `media_downloader` / `file_remover` (no `.env` override — config file = code review). Prefix via `media.prefix`, conversions disk `media.conversions_disk_name`, remote headers `media.remote.extra_headers`.
-- **Image pipeline:** `UploadMediaAction::storeProcessedImage` `orient()->optimize()` or `cover()`, `hashStoredFile()` stream.
+- **Image pipeline:** `UploadMediaAction::storeProcessedImage` applies orientation, optimization, and supported `withManipulations()` before encoding; named conversions and on-demand modifiers apply their own resize/format/quality transforms; `hashStoredFile()` uses streaming I/O.
 - **Trait:** `InteractsWithMedia` 26 methods: `media()` + `addMedia*` + `getMedia`/`getFirstMedia*` + `hasMedia` + `clear*` + `reorderMedia` + `register*` + `get*Collections`.
-- **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `Modules\Media\Events`.
+- **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `Modules\Media\Events`; processing state is persisted on `media.processing_status`, `processing_error`, and `processed_at`.
 - **Policy:** `MediaPolicy` `view/delete/update` via `#[UsePolicy]` — `isPublic` or `belongsToModel` or `is(uploadedBy)` or `can`.
 
 ## Testing

@@ -8,6 +8,8 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Modules\Media\Rules\AllowedFileName;
+use Modules\Media\Rules\DetectedMimeType;
+use Modules\Media\Rules\ImageDimensionLimits;
 
 class MediaUploadRequest extends FormRequest
 {
@@ -39,6 +41,8 @@ class MediaUploadRequest extends FormRequest
             'file',
             'max:'.config()->integer('media.max_size'),
             new AllowedFileName,
+            new DetectedMimeType,
+            new ImageDimensionLimits,
         ];
 
         if ($allowed !== []) {

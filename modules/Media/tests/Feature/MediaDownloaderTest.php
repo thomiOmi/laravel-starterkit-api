@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Support\Downloaders\DefaultDownloader;
@@ -17,8 +18,10 @@ describe('Media downloader', function () {
     });
 
     it('downloads a remote file and attaches it with the url basename', function () {
+        $jpeg = (string) UploadedFile::fake()->image('seed.jpg', 20, 20)->getContent();
+
         Http::fake([
-            'https://example.com/image.jpg' => Http::response('fake-image-content', 200),
+            'https://example.com/image.jpg' => Http::response($jpeg, 200),
         ]);
 
         $owner = loginAsUser();
@@ -30,8 +33,10 @@ describe('Media downloader', function () {
     });
 
     it('forwards custom headers to the remote request', function () {
+        $jpeg = (string) UploadedFile::fake()->image('seed.jpg', 20, 20)->getContent();
+
         Http::fake([
-            'https://example.com/private.jpg' => Http::response('content', 200),
+            'https://example.com/private.jpg' => Http::response($jpeg, 200),
         ]);
 
         $owner = loginAsUser();
@@ -74,6 +79,17 @@ describe('Media downloader', function () {
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
+    it('rejects redirects instead of following an unvalidated destination', function () {
+        Http::fake([
+            'https://example.com/redirect.jpg' => Http::response('', 302, ['Location' => 'https://127.0.0.1/private.jpg']),
+        ]);
+
+        $owner = loginAsUser();
+
+        expect(fn (): mixed => $owner->addMediaFromUrl('https://example.com/redirect.jpg')->toMediaCollection('default'))
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
+    });
+
     it('rejects plain http urls by default', function () {
         $owner = loginAsUser();
 
@@ -110,6 +126,8 @@ final class FixedContentDownloader implements MediaDownloader
 {
     public function download(string $url, array $headers = []): array
     {
-        return ['content' => 'fixed-content', 'filename' => basename((string) parse_url($url, PHP_URL_PATH))];
+        $jpeg = (string) UploadedFile::fake()->image('fixed.jpg', 20, 20)->getContent();
+
+        return ['content' => $jpeg, 'filename' => basename((string) parse_url($url, PHP_URL_PATH))];
     }
 }

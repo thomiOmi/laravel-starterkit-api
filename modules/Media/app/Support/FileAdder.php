@@ -196,6 +196,7 @@ final class FileAdder
             onQueue: $this->onQueue,
             customHeaders: $this->customHeaders,
             disk: $disk ?? $this->disk,
+            manipulations: $this->manipulations,
         );
 
         // Resolve the action via container to keep Media module self-contained.
@@ -231,6 +232,13 @@ final class FileAdder
                 }
 
                 $media->custom_properties = $merged;
+            }
+
+            if ($this->manipulations !== []) {
+                $media->manipulations = array_merge(
+                    is_array($media->manipulations) ? $media->manipulations : [],
+                    $this->manipulations
+                );
             }
 
             if ($this->name !== null) {

@@ -13,6 +13,7 @@ use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Jobs\ProcessMediaJob;
+use Modules\Media\Models\Media;
 use Modules\Media\Services\MediaConversionService;
 use Modules\Media\Traits\InteractsWithMedia;
 
@@ -82,6 +83,25 @@ describe('Media responsive images', function () {
         }
     });
 
+    it('reads originals from the source disk and writes responsive files to the conversion disk', function () {
+        Storage::fake('attachments');
+        $owner = responsiveOwner();
+        $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne([
+            'mime_type' => 'image/jpeg',
+            'conversions_disk' => 'attachments',
+        ]);
+        Storage::disk('public')->put($media->getPath() ?? '', (string) UploadedFile::fake()->image('source.jpg', 100, 80)->getContent());
+
+        app(GenerateResponsiveImagesAction::class)->handle($media);
+
+        $responsive = $media->fresh()?->responsive_images;
+        $path = is_array($responsive) ? ($responsive[32]['path'] ?? null) : null;
+
+        expect($path)->toBeString()
+            ->and(Storage::disk('attachments')->exists(is_string($path) ? $path : ''))->toBeTrue()
+            ->and(Storage::disk('public')->exists(is_string($path) ? $path : ''))->toBeFalse();
+    });
+
     it('stays empty when the collection did not opt in', function () {
         $user = loginAsUser();
 
@@ -125,6 +145,8 @@ describe('Media responsive images', function () {
             ->toMediaCollection('gallery');
 
         Bus::assertDispatched(ProcessMediaJob::class);
+        $queuedMedia = Media::query()->where('collection_name', 'gallery')->sole();
+        expect($queuedMedia->processing_status->value)->toBe('pending');
     });
 
     it('generates responsive images when the queued job runs', function () {
@@ -135,6 +157,28 @@ describe('Media responsive images', function () {
 
         new ProcessMediaJob((string) $media->id)->handle(app(MediaConversionService::class), app(GenerateResponsiveImagesAction::class));
 
-        expect($media->fresh()?->responsive_images)->not->toBe([]);
+        $processedMedia = $media->fresh();
+        if (! $processedMedia instanceof Media) {
+            throw new RuntimeException('Processed media was not found.');
+        }
+
+        expect($processedMedia->responsive_images)->not->toBe([])
+            ->and($processedMedia->processing_status->value)->toBe('processed')
+            ->and($processedMedia->processed_at)->not->toBeNull();
+    });
+
+    it('marks queued processing as failed when the source file is missing', function () {
+        $owner = responsiveOwner();
+        $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne(['mime_type' => 'image/jpeg']);
+
+        expect(function () use ($media): void {
+            new ProcessMediaJob((string) $media->id)->handle(app(MediaConversionService::class), app(GenerateResponsiveImagesAction::class));
+        })
+            ->toThrow(RuntimeException::class);
+
+        $failed = $media->fresh();
+        expect($failed?->processing_status->value)->toBe('failed')
+            ->and($failed?->processing_error)->toBe('The source media file is missing.')
+            ->and($failed?->processed_at)->toBeNull();
     });
 });

@@ -61,6 +61,19 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
             ->and(imagesy($image))->toBeLessThanOrEqual(100);
     });
 
+    it('stores on-demand conversions on the configured conversion disk', function () {
+        Storage::fake('attachments');
+        $user = loginAsUser();
+        $media = seedImageMedia($user);
+        $media->update(['conversions_disk' => 'attachments']);
+
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/32");
+
+        $response->assertOk();
+        expect(Storage::disk('attachments')->allFiles('conversions/derived/'.$media->id))->toHaveCount(1)
+            ->and(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toBeEmpty();
+    });
+
     it('honours the requested jpg format', function () {
         $user = loginAsUser();
         $media = seedImageMedia($user);
@@ -98,6 +111,22 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         $second->assertStatus(304);
         expect($second->headers->get('ETag'))->toBe($etag)
             ->and((string) $second->getContent())->toBeEmpty();
+    });
+
+    it('changes the derived cache identity when the media content version changes', function () {
+        $user = loginAsUser();
+        $media = seedImageMedia($user);
+        $media->update(['sha256' => str_repeat('a', 64)]);
+
+        $first = $this->getJson("/api/v1/media/{$media->id}/s/48");
+        $media->update(['sha256' => str_repeat('b', 64)]);
+
+        $second = $this->getJson("/api/v1/media/{$media->id}/s/48");
+
+        $first->assertOk();
+        $second->assertOk();
+        expect($second->headers->get('ETag'))->not->toBe($first->headers->get('ETag'))
+            ->and(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toHaveCount(2);
     });
 
     it('never upscales beyond the original dimensions', function () {

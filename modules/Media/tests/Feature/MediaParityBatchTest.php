@@ -30,6 +30,16 @@ describe('Media parity batch', function () {
         Storage::disk('public')->assertMissing('conversions/derived/'.$media->id.'/thumb.webp');
     });
 
+    it('removes derived conversions from the conversion disk', function () {
+        Storage::fake('attachments');
+        $media = MediaFactory::new()->createOne(['conversions_disk' => 'attachments']);
+        Storage::disk('attachments')->put('conversions/derived/'.$media->id.'/thumb.webp', 'variant');
+
+        app(MediaFileRemover::class)->removeAllFiles($media);
+
+        Storage::disk('attachments')->assertMissing('conversions/derived/'.$media->id.'/thumb.webp');
+    });
+
     it('uses a custom file remover from config on delete', function () {
         config(['media.file_remover' => RecordingFileRemover::class]);
 

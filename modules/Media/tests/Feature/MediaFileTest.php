@@ -29,6 +29,21 @@ describe('GET /api/v1/media/{media}/file', function () {
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
+    it('streams non-image files with their stored mime type', function () {
+        $media = MediaFactory::new()->createOne([
+            'file_name' => 'document.pdf',
+            'mime_type' => 'application/pdf',
+        ]);
+        Storage::disk($media->disk)->put($media->getPath() ?? '', '%PDF-1.4');
+
+        $response = $this->get($media->signedUrl(15));
+
+        $response->assertOk();
+        expect($response->headers->get('Content-Type'))->toContain('application/pdf')
+            ->and($response->headers->get('Content-Disposition'))->toContain('document.pdf')
+            ->and(Storage::disk($media->disk)->get($media->getPath() ?? ''))->toBe('%PDF-1.4');
+    });
+
     it('rejects tampered signatures', function () {
         $media = MediaFactory::new()->createOne();
         Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');

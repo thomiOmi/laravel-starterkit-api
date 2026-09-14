@@ -27,6 +27,9 @@ final readonly class MediaFileController extends Controller
 
         abort_unless(is_string($path) && $disk->exists($path), 404, __('general.resource_not_found', ['resource' => 'File']));
 
-        return $disk->response($path);
+        $fileName = str_replace(["\r", "\n", '"'], '', basename($media->file_name));
+        $fileName = $fileName !== '' ? $fileName : 'download';
+
+        return $disk->response($path, $fileName, ['Content-Type' => $media->mime_type], 'inline');
     }
 }
