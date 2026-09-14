@@ -74,6 +74,17 @@ describe('Media downloader', function () {
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
+    it('rejects redirects instead of following an unvalidated destination', function () {
+        Http::fake([
+            'https://example.com/redirect.jpg' => Http::response('', 302, ['Location' => 'https://127.0.0.1/private.jpg']),
+        ]);
+
+        $owner = loginAsUser();
+
+        expect(fn (): mixed => $owner->addMediaFromUrl('https://example.com/redirect.jpg')->toMediaCollection('default'))
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
+    });
+
     it('rejects plain http urls by default', function () {
         $owner = loginAsUser();
 

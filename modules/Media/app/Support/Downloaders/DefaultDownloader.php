@@ -20,7 +20,9 @@ final readonly class DefaultDownloader implements MediaDownloader
             $response = Http::withHeaders($headers)
                 ->withOptions([
                     'verify' => config()->boolean('media.media_downloader_ssl', true),
-                    'allow_redirects' => ['max' => 3],
+                    // Redirects are disabled so every destination remains subject to SSRF validation.
+                    'allow_redirects' => false,
+                    'stream' => true,
                 ])
                 ->timeout(config()->integer('media.downloader_timeout', 10))
                 ->get($url);
@@ -36,8 +38,29 @@ final readonly class DefaultDownloader implements MediaDownloader
             throw new InvalidArgumentException('Failed to fetch remote file.');
         }
 
-        $content = $response->body();
         $maxBytes = config()->integer('media.max_size') * 1024;
+        $contentLength = $response->header('Content-Length');
+
+        if (ctype_digit($contentLength) && (int) $contentLength > $maxBytes) {
+            throw new InvalidArgumentException('Failed to fetch remote file.');
+        }
+
+        $stream = $response->toPsrResponse()->getBody();
+        $content = '';
+
+        while (! $stream->eof()) {
+            $chunk = $stream->read(min(8192, $maxBytes - strlen($content) + 1));
+
+            if ($chunk === '') {
+                break;
+            }
+
+            $content .= $chunk;
+
+            if (strlen($content) > $maxBytes) {
+                throw new InvalidArgumentException('Failed to fetch remote file.');
+            }
+        }
 
         if ($content === '' || strlen($content) > $maxBytes) {
             throw new InvalidArgumentException('Failed to fetch remote file.');

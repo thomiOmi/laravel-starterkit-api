@@ -40,6 +40,7 @@ describe('GET /api/v1/media/{media}/file', function () {
 
         $response->assertOk();
         expect($response->headers->get('Content-Type'))->toContain('application/pdf')
+            ->and($response->headers->get('Content-Disposition'))->toContain('document.pdf')
             ->and(Storage::disk($media->disk)->get($media->getPath() ?? ''))->toBe('%PDF-1.4');
     });
 
