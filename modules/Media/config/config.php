@@ -6,6 +6,7 @@ use Modules\Media\Support\Downloaders\DefaultDownloader;
 use Modules\Media\Support\FileNamer\DefaultFileNamer;
 use Modules\Media\Support\FileRemover\DefaultFileRemover;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
+use Modules\Media\Support\Scanners\NullScanner;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
 
 return [
@@ -45,6 +46,22 @@ return [
     */
     'max_size' => 2048,
     'allowed_extensions' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Image dimension limits
+    |--------------------------------------------------------------------------
+    |
+    | Images whose probed dimensions exceed these limits are rejected before
+    | the GD/Imagick pipeline allocates memory (decompression-bomb
+    | protection). Pixel count caps width x height regardless of shape.
+    |
+    */
+    'image' => [
+        'max_width' => 8000,
+        'max_height' => 8000,
+        'max_pixels' => 25000000,
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -237,4 +254,16 @@ return [
     |
     */
     'file_remover' => DefaultFileRemover::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Malware scanner
+    |--------------------------------------------------------------------------
+    |
+    | Hook inspected on every upload before anything is stored. The default
+    | is a no-op; implement MediaScanner to wire ClamAV or another engine.
+    | No env override on purpose: swapping scanners is a code decision.
+    |
+    */
+    'scanner' => NullScanner::class,
 ];

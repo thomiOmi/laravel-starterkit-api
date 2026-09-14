@@ -40,5 +40,8 @@ final readonly class CreateUserAction
 }
 ```
 
+## Validate explicit storage disks via resolvability, not config
+Storage::fake('name') disks are not in config('filesystems.disks'), so disk-existence checks against config reject fakes. Validate explicit disks via Storage::disk() resolvability in try/catch instead.
+
 ## Cross-module features via contracts, consumers inject nullable
 A module that depends on another module's capability (e.g. IAM avatar via Media) must not import the other module's classes. Define a contract in app/Contracts (example: AvatarResolver), the owning module implements and binds it in its provider, and the consumer type-hints it as nullable (?AvatarResolver $resolver = null) so the feature degrades gracefully (throws a localized InvalidArgumentException) when the owner module is absent. Laravel's container falls back to the parameter default when an interface has no binding, so no container introspection is needed.
