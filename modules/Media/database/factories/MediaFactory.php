@@ -6,6 +6,7 @@ namespace Modules\Media\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Media\Enums\MediaProcessingStatus;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Models\Media;
 
@@ -43,9 +44,11 @@ class MediaFactory extends Factory
             'sha256' => hash('sha256', (string) fake()->unique()->md5()),
             'manipulations' => [],
             'custom_properties' => null,
-            'generated_conversions' => [],
             'responsive_images' => [],
-            'meta' => ['original_name' => $name.'.'.$ext],
+            'meta' => null,
+            'processing_status' => MediaProcessingStatus::Processed,
+            'processing_error' => null,
+            'processed_at' => now(),
             'order_column' => 0,
             'uploaded_by_type' => null,
             'uploaded_by_id' => null,

@@ -21,21 +21,44 @@ final readonly class ReprocessMediaAction
     public function handle(Media $media, bool $queued = false, ?string $conversion = null): void
     {
         if ($conversion !== null && $conversion !== '') {
-            $generated = $this->conversionService->generateNamed($media, $conversion);
+            $media->markProcessing();
+
+            try {
+                $generated = $this->conversionService->generateNamed($media, $conversion);
+            } catch (\Throwable $exception) {
+                $media->markProcessingFailed($exception->getMessage());
+
+                throw $exception;
+            }
 
             if ($generated === null) {
-                throw new InvalidArgumentException("Conversion [{$conversion}] is not defined for this media.");
+                $exception = new InvalidArgumentException("Conversion [{$conversion}] is not defined for this media.");
+                $media->markProcessingFailed($exception->getMessage());
+
+                throw $exception;
             }
+
+            $media->markProcessed();
 
             return;
         }
 
         if ($queued || config()->boolean('media.queue', false)) {
+            $media->markPending();
             ProcessMediaJob::dispatch($media->id);
 
             return;
         }
 
-        $this->conversionService->generate($media);
+        $media->markProcessing();
+
+        try {
+            $this->conversionService->generate($media);
+            $media->markProcessed();
+        } catch (\Throwable $exception) {
+            $media->markProcessingFailed($exception->getMessage());
+
+            throw $exception;
+        }
     }
 }

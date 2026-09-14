@@ -16,10 +16,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Modules\Media\Builders\MediaBuilder;
 use Modules\Media\Database\Factories\MediaFactory;
+use Modules\Media\Enums\MediaProcessingStatus;
 use Modules\Media\Enums\MediaVisibilityEnum;
 use Modules\Media\Observers\MediaObserver;
 use Modules\Media\Policies\MediaPolicy;
@@ -43,14 +45,16 @@ use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
  * @property string|null $sha256 The SHA-256 checksum of the stored file.
  * @property array<string, mixed>|null $manipulations JSON manipulations per conversion.
  * @property array<string, mixed>|null $custom_properties Application-level metadata.
- * @property array<string, mixed>|null $generated_conversions JSON map of generated conversions.
  * @property array<int, array{path: string, size: int|null}>|null $responsive_images JSON responsive data keyed by width.
  * @property array<string, mixed>|null $meta Free-form metadata (dimensions, etc.).
+ * @property MediaProcessingStatus $processing_status Conversion processing state.
+ * @property string|null $processing_error Last processing failure message.
+ * @property Carbon|null $processed_at Processing completion time.
  * @property int $order_column Ordering within the collection.
  * @property string|null $uploaded_by_type The uploader model class.
  * @property string|null $uploaded_by_id The uploader model key.
  */
-#[Fillable(['model_type', 'model_id', 'collection_name', 'name', 'file_name', 'disk', 'conversions_disk', 'mime_type', 'size', 'visibility', 'original_name', 'original_extension', 'sha256', 'manipulations', 'custom_properties', 'generated_conversions', 'responsive_images', 'meta', 'order_column', 'uploaded_by_type', 'uploaded_by_id'])]
+#[Fillable(['model_type', 'model_id', 'collection_name', 'name', 'file_name', 'disk', 'conversions_disk', 'mime_type', 'size', 'visibility', 'original_name', 'original_extension', 'sha256', 'manipulations', 'custom_properties', 'responsive_images', 'meta', 'processing_status', 'processing_error', 'processed_at', 'order_column', 'uploaded_by_type', 'uploaded_by_id'])]
 #[UseEloquentBuilder(MediaBuilder::class)]
 #[UseFactory(MediaFactory::class)]
 #[UsePolicy(MediaPolicy::class)]
@@ -125,6 +129,46 @@ class Media extends Model
     public function isPublic(): bool
     {
         return $this->visibility === MediaVisibilityEnum::Public;
+    }
+
+    /** Mark the media as actively processing derived files. */
+    public function markProcessing(): void
+    {
+        $this->forceFill([
+            'processing_status' => MediaProcessingStatus::Processing,
+            'processing_error' => null,
+            'processed_at' => null,
+        ])->save();
+    }
+
+    /** Mark the media as waiting for queued processing. */
+    public function markPending(): void
+    {
+        $this->forceFill([
+            'processing_status' => MediaProcessingStatus::Pending,
+            'processing_error' => null,
+            'processed_at' => null,
+        ])->save();
+    }
+
+    /** Mark the media as successfully processed. */
+    public function markProcessed(): void
+    {
+        $this->forceFill([
+            'processing_status' => MediaProcessingStatus::Processed,
+            'processing_error' => null,
+            'processed_at' => now(),
+        ])->save();
+    }
+
+    /** Mark the media as failed and retain the processing error. */
+    public function markProcessingFailed(string $reason): void
+    {
+        $this->forceFill([
+            'processing_status' => MediaProcessingStatus::Failed,
+            'processing_error' => $reason,
+            'processed_at' => null,
+        ])->save();
     }
 
     /**
@@ -410,8 +454,9 @@ class Media extends Model
             'meta' => 'array',
             'manipulations' => 'array',
             'custom_properties' => 'array',
-            'generated_conversions' => 'array',
             'responsive_images' => 'array',
+            'processing_status' => MediaProcessingStatus::class,
+            'processed_at' => 'datetime',
             'order_column' => 'integer',
         ];
     }

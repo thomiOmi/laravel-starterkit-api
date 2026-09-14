@@ -65,7 +65,7 @@ describe('GET /api/v1/media', function () {
     });
 });
 
-it('returns null original_name when meta is absent', function () {
+it('returns null original_name when the column is absent', function () {
     DB::table('permissions')->insertOrIgnore([
         'id' => (string) Str::ulid(),
         'name' => PermissionEnum::MediaView->value,
@@ -75,7 +75,7 @@ it('returns null original_name when meta is absent', function () {
     ]);
     $viewer = loginAsUser();
     $viewer->givePermissionTo(PermissionEnum::MediaView->value);
-    $media = MediaFactory::new()->forModel($viewer)->createOne(['meta' => null, 'original_name' => null]);
+    $media = MediaFactory::new()->forModel($viewer)->createOne(['original_name' => null]);
 
     $response = $this->getJson('/api/v1/media');
 

@@ -92,6 +92,8 @@ final readonly class UploadMediaAction
     private function dispatchConversions(Media $media, ?string $queue = null): void
     {
         if (! str_starts_with($media->mime_type, 'image/')) {
+            $media->markProcessed();
+
             return;
         }
 
@@ -121,10 +123,14 @@ final readonly class UploadMediaAction
             $queueName = $queue ?? (config()->boolean('media.queue', false) ? 'default' : null);
 
             if ($queueName !== null) {
+                $media->markPending();
                 ProcessMediaJob::dispatch($media->id)->onQueue($queueName);
 
                 return;
             }
+
+            $media->markProcessing();
+            $processingErrors = [];
 
             if ($modelConversions !== null) {
                 try {
@@ -133,6 +139,7 @@ final readonly class UploadMediaAction
                 } catch (Throwable $exception) {
                     Log::warning('Media conversions failed.', ['media_id' => $media->id, 'error' => $exception->getMessage()]);
                     event(new MediaProcessingFailed($media, $exception->getMessage()));
+                    $processingErrors[] = $exception->getMessage();
                 }
             }
 
@@ -142,13 +149,20 @@ final readonly class UploadMediaAction
                 } catch (Throwable $exception) {
                     Log::warning('Media responsive images failed.', ['media_id' => $media->id, 'error' => $exception->getMessage()]);
                     event(new MediaProcessingFailed($media, $exception->getMessage()));
+                    $processingErrors[] = $exception->getMessage();
                 }
+            }
+
+            if ($processingErrors === []) {
+                $media->markProcessed();
+            } else {
+                $media->markProcessingFailed(implode('; ', $processingErrors));
             }
 
             return;
         }
 
-        // No model-driven conversions and no responsive flag — nothing to generate.
+        $media->markProcessed();
     }
 
     /**
@@ -171,7 +185,6 @@ final readonly class UploadMediaAction
 
         /** @var array<string, mixed> $meta */
         $meta = array_filter([
-            'original_name' => $payload->file->getClientOriginalName(),
             'width' => $image->width(),
             'height' => $image->height(),
         ]);
@@ -215,7 +228,7 @@ final readonly class UploadMediaAction
             fullPath: $fullPath,
             mimeType: (string) $file->getMimeType(),
             size: (int) $file->getSize(),
-            meta: ['original_name' => $file->getClientOriginalName()],
+            meta: [],
         );
 
         return ['media' => $media, 'url' => $media->url()];
@@ -467,7 +480,6 @@ final readonly class UploadMediaAction
                             'meta' => $meta,
                             'manipulations' => $payload->manipulations,
                             'custom_properties' => $existing->custom_properties,
-                            'generated_conversions' => [],
                             'responsive_images' => [],
                             'order_column' => $existing->order_column,
                         ]);
@@ -510,7 +522,6 @@ final readonly class UploadMediaAction
                     'original_extension' => $file->getClientOriginalExtension(),
                     'sha256' => $this->hashStoredFile($disk, $fullPath),
                     'manipulations' => $payload->manipulations,
-                    'generated_conversions' => [],
                     'responsive_images' => [],
                     'meta' => $meta,
                     'custom_properties' => null,
