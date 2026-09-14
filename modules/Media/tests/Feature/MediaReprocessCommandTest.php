@@ -30,8 +30,11 @@ describe('media:reprocess', function () {
     it('fails when the named conversion is not defined', function () {
         $user = loginAsUser();
 
-        $user->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 100))->toMediaCollection('avatars');
+        $media = $user->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 100))->toMediaCollection('avatars');
 
         artisanCommand($this, 'media:reprocess', ['--conversion' => 'missing'])->assertFailed();
+
+        expect($media->fresh()?->processing_status->value)->toBe('failed')
+            ->and($media->fresh()?->processing_error)->toContain('Conversion [missing] is not defined');
     });
 });

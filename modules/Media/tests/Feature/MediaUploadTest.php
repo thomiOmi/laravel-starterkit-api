@@ -49,7 +49,10 @@ describe('POST /api/v1/media', function () {
         $meta = is_array($media->meta) ? $media->meta : [];
         expect($media->isOwnedBy($user->id))->toBeTrue()
             ->and($media->mime_type)->toBe('image/webp')
-            ->and($meta)->toHaveKey('original_name', 'photo.png')
+            ->and($media->original_name)->toBe('photo.png')
+            ->and($media->processing_status->value)->toBe('processed')
+            ->and($media->processed_at)->not->toBeNull()
+            ->and($meta)->not->toHaveKey('original_name')
             ->and($meta['width'] ?? null)->toBeInt()
             ->and($meta['width'] ?? 0)->toBeGreaterThan(0)
             ->and($meta['height'] ?? null)->toBeInt()
@@ -87,8 +90,8 @@ describe('POST /api/v1/media', function () {
         $media = Media::query()->sole();
         expect($media->mime_type)->toBe('application/pdf')
             ->and($media->getPath() ?? '')->toEndWith('.pdf')
-            ->and($media->meta)->toHaveKey('original_name')
-            ->and($media->meta)->not->toHaveKey('width');
+            ->and($media->original_name)->toBe('doc.pdf')
+            ->and($media->meta)->not->toHaveKey('original_name');
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 

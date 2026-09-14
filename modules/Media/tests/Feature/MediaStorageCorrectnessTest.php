@@ -76,8 +76,7 @@ describe('Media storage correctness', function () {
 
         expect(Media::query()->where('model_id', $owner->getKey())->where('collection_name', 'gallery')->count())->toBe(1)
             ->and($second->conversions()->count())->toBe(1)
-            ->and($second->responsive_images)->toBe([])
-            ->and($second->generated_conversions)->toBe([]);
+            ->and($second->responsive_images)->toBe([]);
 
         Storage::disk($oldConversion->disk)->assertMissing($oldConversion->path);
         Storage::disk($second->disk)->assertMissing(is_string($oldOriginal) ? $oldOriginal : '');

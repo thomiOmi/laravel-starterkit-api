@@ -94,9 +94,11 @@ erDiagram
         string sha256 "nullable, indexed, 64"
         json manipulations "nullable"
         json custom_properties "nullable"
-        json generated_conversions "nullable"
         json responsive_images "nullable"
-        json meta "nullable (width,height,original_name)"
+        json meta "nullable (width,height)"
+        string processing_status "processed/pending/processing/failed"
+        text processing_error "nullable"
+        datetime processed_at "nullable"
         unsignedInteger order_column "default 0"
         string uploaded_by_type "nullable, morph"
         ulid uploaded_by_id "nullable"
@@ -324,7 +326,7 @@ php artisan media:reprocess --conversion=thumbnail # single named conversion
 - **File naming / paths / URLs / downloader / remover:** Swap via `media.file_namer` / `path_generator` / `custom_path_generators` / `url_generator` / `media_downloader` / `file_remover` (no `.env` override — config file = code review). Prefix via `media.prefix`, conversions disk `media.conversions_disk_name`, remote headers `media.remote.extra_headers`.
 - **Image pipeline:** `UploadMediaAction::storeProcessedImage` applies orientation, optimization, and supported `withManipulations()` before encoding; named conversions and on-demand modifiers apply their own resize/format/quality transforms; `hashStoredFile()` uses streaming I/O.
 - **Trait:** `InteractsWithMedia` 26 methods: `media()` + `addMedia*` + `getMedia`/`getFirstMedia*` + `hasMedia` + `clear*` + `reorderMedia` + `register*` + `get*Collections`.
-- **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `Modules\Media\Events`.
+- **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `Modules\Media\Events`; processing state is persisted on `media.processing_status`, `processing_error`, and `processed_at`.
 - **Policy:** `MediaPolicy` `view/delete/update` via `#[UsePolicy]` — `isPublic` or `belongsToModel` or `is(uploadedBy)` or `can`.
 
 ## Testing

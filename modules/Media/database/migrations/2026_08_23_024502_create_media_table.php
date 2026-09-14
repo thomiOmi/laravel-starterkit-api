@@ -29,15 +29,16 @@ return new class extends Migration
             $table->string('sha256', 64)->nullable()->index();
             $table->json('manipulations')->nullable();
             $table->json('custom_properties')->nullable();
-            $table->json('generated_conversions')->nullable();
             $table->json('responsive_images')->nullable();
             $table->json('meta')->nullable();
+            $table->string('processing_status')->default('processed')->index();
+            $table->text('processing_error')->nullable();
+            $table->timestamp('processed_at')->nullable();
             $table->unsignedInteger('order_column')->default(0);
             $table->nullableUlidMorphs('uploaded_by');
             $table->timestamps();
 
             $table->index(['model_type', 'model_id', 'collection_name'], 'media_model_collection_index');
-            $table->index(['uploaded_by_type', 'uploaded_by_id'], 'media_uploader_index');
         });
     }
 
