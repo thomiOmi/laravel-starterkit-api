@@ -15,6 +15,9 @@ return [
     'media_extension_not_allowed' => 'Ekstensi berkas tidak diizinkan.',
     'media_name_collision' => 'Nama berkas hasil sudah dipakai.',
     'media_store_failed' => 'Berkas tidak dapat disimpan.',
+    'media_mime_mismatch' => 'Isi berkas tidak sesuai dengan ekstensinya.',
+    'media_dimensions_exceeded' => 'Dimensi gambar melebihi batas yang diizinkan.',
+    'media_malware_detected' => 'Berkas tidak lolos pemindaian malware.',
 
     /*
     |--------------------------------------------------------------------------

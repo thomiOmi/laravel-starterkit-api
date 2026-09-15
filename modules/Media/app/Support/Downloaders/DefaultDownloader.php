@@ -7,6 +7,7 @@ namespace Modules\Media\Support\Downloaders;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Modules\Media\Support\MediaMimeType;
 use Throwable;
 
 final readonly class DefaultDownloader implements MediaDownloader
@@ -68,8 +69,21 @@ final readonly class DefaultDownloader implements MediaDownloader
 
         $rawPath = parse_url($url, PHP_URL_PATH);
         $path = is_string($rawPath) && $rawPath !== '' ? $rawPath : 'file';
+        $filename = basename($path);
 
-        return ['content' => $content, 'filename' => basename($path)];
+        $detected = MediaMimeType::detectFromContent($content);
+
+        if ($detected === null || MediaMimeType::isBlocked($detected)) {
+            throw new InvalidArgumentException('Failed to fetch remote file.');
+        }
+
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if ($extension !== '' && ! MediaMimeType::extensionMatchesMime($extension, $detected)) {
+            throw new InvalidArgumentException('Failed to fetch remote file.');
+        }
+
+        return ['content' => $content, 'filename' => $filename];
     }
 
     /**

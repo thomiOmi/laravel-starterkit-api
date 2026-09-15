@@ -56,3 +56,6 @@ Any test overriding modules.* config (paths.modules or activators.file.statuses-
 
 ## Modular Pest testing conventions (strict Unit/Feature split)
 Unit = pure logic only: no DB traits (RefreshDatabase/DatabaseTransactions), no model persistence, no HTTP calls; reading config and container services is allowed. Enforced by ArchitectureTest across root tests/Unit and modules/*/tests/Unit. Database-backed behaviour belongs in the module's Feature suite, where tests/Pest.php applies RefreshDatabase automatically (never add it per-file there). Prefer describe()/it() with datasets (->with([...])) over duplicated assertions. Assert envelopes via assertSuccessResponse/assertProblemResponse helpers; 422 responses expose an errors member so ->assertJsonValidationErrors([...]) works. Mock third parties at facade/driver boundaries (Socialite::shouldReceive), never final action classes.
+
+## Hold UploadedFile fakes in a variable before probing the file
+UploadedFile::fake() temp files are deleted with the instance. Chaining ->getRealPath()/->getPathname() into a helper (finfo, getimagesize) probes a deleted path and returns null. Assign $file first, then pass $file->getPathname().

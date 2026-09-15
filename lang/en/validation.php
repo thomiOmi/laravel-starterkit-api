@@ -15,6 +15,9 @@ return [
     'media_extension_not_allowed' => 'The file extension is not allowed.',
     'media_name_collision' => 'The generated file name is already taken.',
     'media_store_failed' => 'The file could not be stored.',
+    'media_mime_mismatch' => 'The file content does not match its extension.',
+    'media_dimensions_exceeded' => 'The image dimensions exceed the allowed limits.',
+    'media_malware_detected' => 'The file did not pass the malware scan.',
 
     /*
     |--------------------------------------------------------------------------

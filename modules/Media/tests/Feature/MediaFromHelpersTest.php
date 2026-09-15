@@ -116,8 +116,10 @@ describe('Media from helpers', function () {
     });
 
     it('adds media from url', function () {
+        $jpeg = (string) UploadedFile::fake()->image('seed.jpg', 20, 20)->getContent();
+
         Http::fake([
-            'https://example.com/image.jpg' => Http::response('fake-image-content', 200, ['Content-Type' => 'image/jpeg']),
+            'https://example.com/image.jpg' => Http::response($jpeg, 200, ['Content-Type' => 'image/jpeg']),
         ]);
 
         $owner = new class extends Model
