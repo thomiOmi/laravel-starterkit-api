@@ -7,7 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Support\Downloaders\DefaultDownloader;
-use Modules\Media\Support\Downloaders\MediaDownloader;
+use Modules\Media\Tests\Support\FixedContentDownloader;
 
 covers(DefaultDownloader::class);
 
@@ -121,13 +121,3 @@ describe('Media downloader', function () {
         expect($media->original_name)->toBe('custom-name.jpg');
     });
 });
-
-final class FixedContentDownloader implements MediaDownloader
-{
-    public function download(string $url, array $headers = []): array
-    {
-        $jpeg = (string) UploadedFile::fake()->image('fixed.jpg', 20, 20)->getContent();
-
-        return ['content' => $jpeg, 'filename' => basename((string) parse_url($url, PHP_URL_PATH))];
-    }
-}
