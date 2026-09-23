@@ -20,9 +20,7 @@ final class ImageManipulations
         $filter = $manipulations['filter'] ?? null;
 
         if ($filter !== null) {
-            if (! is_string($filter)) {
-                throw new InvalidArgumentException('Image filter must be a string.');
-            }
+            throw_unless(is_string($filter), InvalidArgumentException::class, 'Image filter must be a string.');
 
             $image = match (strtolower($filter)) {
                 'grayscale' => $image->grayscale(),
@@ -41,13 +39,9 @@ final class ImageManipulations
 
             $level = $manipulations[$operation];
 
-            if (! is_int($level)) {
-                throw new InvalidArgumentException("Image {$operation} level must be an integer.");
-            }
+            throw_unless(is_int($level), InvalidArgumentException::class, "Image {$operation} level must be an integer.");
 
-            if ($level < 0 || $level > 100) {
-                throw new InvalidArgumentException("Image {$operation} level must be between 0 and 100.");
-            }
+            throw_if($level < 0 || $level > 100, InvalidArgumentException::class, "Image {$operation} level must be between 0 and 100.");
 
             $image = $operation === 'blur'
                 ? $image->blur($level)
@@ -57,9 +51,7 @@ final class ImageManipulations
         if (array_key_exists('rotate', $manipulations)) {
             $angle = $manipulations['rotate'];
 
-            if (! is_int($angle) && ! is_float($angle)) {
-                throw new InvalidArgumentException('Image rotation angle must be numeric.');
-            }
+            throw_if(! is_int($angle) && ! is_float($angle), InvalidArgumentException::class, 'Image rotation angle must be numeric.');
 
             $image = $image->rotate((float) $angle);
         }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Middleware\HandleIdempotentRequests;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\Repository;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -46,7 +47,7 @@ describe('http method bypass', function (): void {
     it('passes through for GET requests', function (): void {
         $response = $this->middleware->handle(
             createJsonRequest('GET'),
-            fn () => response('ok')
+            fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')
         );
 
         expect($response->isOk())->toBeTrue();
@@ -55,7 +56,7 @@ describe('http method bypass', function (): void {
     it('passes through for HEAD requests', function (): void {
         $response = $this->middleware->handle(
             createJsonRequest('HEAD'),
-            fn () => response('ok')
+            fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')
         );
 
         expect($response->isOk())->toBeTrue();
@@ -64,7 +65,7 @@ describe('http method bypass', function (): void {
     it('passes through for OPTIONS requests', function (): void {
         $response = $this->middleware->handle(
             createJsonRequest('OPTIONS'),
-            fn () => response('ok')
+            fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')
         );
 
         expect($response->isOk())->toBeTrue();
@@ -75,7 +76,7 @@ describe('key validation', function (): void {
     it('passes through when no key is provided', function (): void {
         $response = $this->middleware->handle(
             createJsonRequest('POST'),
-            fn () => response('ok')
+            fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')
         );
 
         expect($response->isOk())->toBeTrue();
@@ -84,7 +85,7 @@ describe('key validation', function (): void {
     it('passes through when key is empty', function (): void {
         $response = $this->middleware->handle(
             createJsonRequest('POST', [], ['Idempotency-Key' => '']),
-            fn () => response('ok')
+            fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')
         );
 
         expect($response->isOk())->toBeTrue();
@@ -93,7 +94,7 @@ describe('key validation', function (): void {
     it('passes through when key is whitespace-only', function (): void {
         $response = $this->middleware->handle(
             createJsonRequest('POST', [], ['Idempotency-Key' => '   ']),
-            fn () => response('ok')
+            fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')
         );
 
         expect($response->isOk())->toBeTrue();
@@ -102,7 +103,7 @@ describe('key validation', function (): void {
     it('throws validation exception for invalid keys', function (string $invalidKey): void {
         expect(fn () => $this->middleware->handle(
             createJsonRequest('POST', [], ['Idempotency-Key' => $invalidKey]),
-            fn () => response('ok')
+            fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')
         ))->toThrow(ValidationException::class);
     })->with([
         'plain-string' => ['not-a-uuid'],
@@ -119,7 +120,7 @@ describe('key validation', function (): void {
 
         $response = $this->middleware->handle(
             createJsonRequest('POST', [], ['Idempotency-Key' => $key]),
-            fn () => response('ok')
+            fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')
         );
 
         expect($response->isOk())->toBeTrue();
@@ -163,9 +164,9 @@ describe('response caching', function (): void {
         $key = (string) Str::uuid();
         $request = createJsonRequest('POST', [], ['Idempotency-Key' => $key]);
 
-        $this->middleware->handle($request, fn () => response('bad', 422));
+        $this->middleware->handle($request, fn (): ResponseFactory|\Illuminate\Http\Response => response('bad', 422));
 
-        $retry = $this->middleware->handle($request, fn () => response('ok', 200));
+        $retry = $this->middleware->handle($request, fn (): ResponseFactory|\Illuminate\Http\Response => response('ok', 200));
 
         expect($retry->isOk())->toBeTrue()
             ->and($retry->headers->has('Idempotency-Replayed'))->toBeFalse();
@@ -175,11 +176,11 @@ describe('response caching', function (): void {
         $key = (string) Str::uuid();
         $request = createJsonRequest('POST', [], ['Idempotency-Key' => $key]);
 
-        $this->middleware->handle($request, fn () => new StreamedResponse(function (): void {
+        $this->middleware->handle($request, fn (): StreamedResponse => new StreamedResponse(function (): void {
             echo 'stream';
         }));
 
-        $retry = $this->middleware->handle($request, fn () => response('ok'));
+        $retry = $this->middleware->handle($request, fn (): ResponseFactory|\Illuminate\Http\Response => response('ok'));
 
         expect($retry->isOk())->toBeTrue()
             ->and($retry->headers->has('Idempotency-Replayed'))->toBeFalse();
@@ -200,9 +201,7 @@ describe('response caching', function (): void {
 
         $raw = Cache::get($cacheKey);
 
-        if (! is_array($raw)) {
-            throw new RuntimeException('Cache entry should be an array');
-        }
+        throw_unless(is_array($raw), RuntimeException::class, 'Cache entry should be an array');
 
         $stored = $raw;
 
@@ -224,7 +223,7 @@ describe('conflict detection', function (): void {
 
         $second = createJsonRequest('POST', ['name' => 'Second'], ['Idempotency-Key' => $key]);
 
-        expect(fn () => $this->middleware->handle($second, fn () => response('ok')))
+        expect(fn () => $this->middleware->handle($second, fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')))
             ->toThrow(ConflictHttpException::class);
     });
 
@@ -241,7 +240,7 @@ describe('conflict detection', function (): void {
 
         Cache::lock("{$cacheKey}:lock", 30)->block(5);
 
-        expect(fn () => $this->middleware->handle($request, fn () => response('ok')))
+        expect(fn () => $this->middleware->handle($request, fn (): ResponseFactory|\Illuminate\Http\Response => response('ok')))
             ->toThrow(ConflictHttpException::class);
     });
 });

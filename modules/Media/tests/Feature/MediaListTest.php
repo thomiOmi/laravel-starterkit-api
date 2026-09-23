@@ -10,8 +10,8 @@ use Modules\Media\Http\Controllers\V1\MediaListController;
 
 covers(MediaListController::class);
 
-describe('GET /api/v1/media', function () {
-    beforeEach(function () {
+describe('GET /api/v1/media', function (): void {
+    beforeEach(function (): void {
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaView->value,
@@ -21,7 +21,7 @@ describe('GET /api/v1/media', function () {
         ]);
     });
 
-    it('lists only the authenticated user media', function () {
+    it('lists only the authenticated user media', function (): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaView->value);
 
@@ -35,7 +35,7 @@ describe('GET /api/v1/media', function () {
         expect($response->json('data'))->toHaveCount(2);
     });
 
-    it('filters by collection name', function () {
+    it('filters by collection name', function (): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaView->value);
 
@@ -49,11 +49,11 @@ describe('GET /api/v1/media', function () {
             ->and($response->json('data.0.collection_name'))->toBe('avatars');
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->getJson('/api/v1/media')->assertUnauthorized();
     });
 
-    it('allows owners to list their own media without the view permission', function () {
+    it('allows owners to list their own media without the view permission', function (): void {
         $user = loginAsUser();
 
         MediaFactory::new()->forModel($user)->createOne();
@@ -65,7 +65,7 @@ describe('GET /api/v1/media', function () {
     });
 });
 
-it('returns null original_name when the column is absent', function () {
+it('returns null original_name when the column is absent', function (): void {
     DB::table('permissions')->insertOrIgnore([
         'id' => (string) Str::ulid(),
         'name' => PermissionEnum::MediaView->value,
@@ -75,6 +75,7 @@ it('returns null original_name when the column is absent', function () {
     ]);
     $viewer = loginAsUser();
     $viewer->givePermissionTo(PermissionEnum::MediaView->value);
+
     $media = MediaFactory::new()->forModel($viewer)->createOne(['original_name' => null]);
 
     $response = $this->getJson('/api/v1/media');

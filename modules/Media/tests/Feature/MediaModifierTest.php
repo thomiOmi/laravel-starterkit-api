@@ -14,8 +14,8 @@ use Modules\Media\Models\Media;
 
 covers(MediaModifierController::class);
 
-describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
-    beforeEach(function () {
+describe('GET /api/v1/media/{media}/s/{modifiers}', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
@@ -41,7 +41,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         return $media;
     }
 
-    it('serves a resized webp conversion with long-lived cache headers', function () {
+    it('serves a resized webp conversion with long-lived cache headers', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
@@ -54,14 +54,13 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
             ->and($response->headers->get('ETag'))->toBeString();
 
         $image = imagecreatefromstring((string) $response->getContent());
-        if (! $image instanceof GdImage) {
-            throw new RuntimeException('The conversion response is not a decodable image.');
-        }
+        throw_unless($image instanceof GdImage, RuntimeException::class, 'The conversion response is not a decodable image.');
+
         expect(imagesx($image))->toBe(32)
             ->and(imagesy($image))->toBeLessThanOrEqual(100);
     });
 
-    it('stores on-demand conversions on the configured conversion disk', function () {
+    it('stores on-demand conversions on the configured conversion disk', function (): void {
         Storage::fake('attachments');
         $user = loginAsUser();
         $media = seedImageMedia($user);
@@ -74,32 +73,33 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
             ->and(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toBeEmpty();
     });
 
-    it('honours the requested jpg format', function () {
+    it('honours the requested jpg format', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
         $response = $this->getJson("/api/v1/media/{$media->id}/s/64/f/jpg");
 
         $response->assertOk();
+
         expect($response->headers->get('Content-Type'))->toContain('image/jpeg');
     });
 
-    it('parses s/320x200 shorthand', function () {
+    it('parses s/320x200 shorthand', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user, width: 100, height: 100);
 
         $response = $this->getJson("/api/v1/media/{$media->id}/s/320x200");
 
         $response->assertOk();
+
         $image = imagecreatefromstring((string) $response->getContent());
-        if (! $image instanceof GdImage) {
-            throw new RuntimeException('The conversion response is not a decodable image.');
-        }
+        throw_unless($image instanceof GdImage, RuntimeException::class, 'The conversion response is not a decodable image.');
+
         // Should be scaled to fit within 320x200, not upscaled beyond 100x100
         expect(imagesx($image))->toBeLessThanOrEqual(100);
     });
 
-    it('returns 304 when the etag still matches', function () {
+    it('returns 304 when the etag still matches', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
@@ -113,13 +113,14 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
             ->and((string) $second->getContent())->toBeEmpty();
     });
 
-    it('changes the derived cache identity when the media content version changes', function () {
+    it('changes the derived cache identity when the media content version changes', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user);
         $media->update(['sha256' => str_repeat('a', 64)]);
 
         $first = $this->getJson("/api/v1/media/{$media->id}/s/48");
         $first->assertOk();
+
         $firstFiles = Storage::disk('public')->allFiles('conversions/derived/'.$media->id);
         expect($firstFiles)->toHaveCount(1);
 
@@ -128,27 +129,28 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         $second = $this->getJson("/api/v1/media/{$media->id}/s/48");
 
         $second->assertOk();
+
         $secondFiles = Storage::disk('public')->allFiles('conversions/derived/'.$media->id);
         expect($second->headers->get('ETag'))->not->toBe($first->headers->get('ETag'))
             ->and($secondFiles)->toHaveCount(2);
     });
 
-    it('never upscales beyond the original dimensions', function () {
+    it('never upscales beyond the original dimensions', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user, width: 50, height: 40);
 
         $response = $this->getJson("/api/v1/media/{$media->id}/s/2000");
 
         $response->assertOk();
+
         $image = imagecreatefromstring((string) $response->getContent());
-        if (! $image instanceof GdImage) {
-            throw new RuntimeException('The conversion response is not a decodable image.');
-        }
+        throw_unless($image instanceof GdImage, RuntimeException::class, 'The conversion response is not a decodable image.');
+
         expect(imagesx($image))->toBe(50)
             ->and(imagesy($image))->toBe(40);
     });
 
-    it('caches the generated derived conversion on disk and serves later requests from it', function () {
+    it('caches the generated derived conversion on disk and serves later requests from it', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
@@ -167,7 +169,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
             ->and(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toHaveCount(1);
     });
 
-    it('rejects out-of-bounds widths and unsupported formats', function (string $modifiers) {
+    it('rejects out-of-bounds widths and unsupported formats', function (string $modifiers): void {
         $user = loginAsUser();
         $media = seedImageMedia($user);
 
@@ -181,23 +183,23 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         'unknown fit' => '64/fit/stretch',
     ]);
 
-    it('honours the fit modifier on derived conversions', function () {
+    it('honours the fit modifier on derived conversions', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user, width: 200, height: 100);
 
         $response = $this->getJson("/api/v1/media/{$media->id}/s/64x64/fit/cover");
 
         $response->assertOk();
+
         $image = imagecreatefromstring((string) $response->getContent());
-        if (! $image instanceof GdImage) {
-            throw new RuntimeException('The conversion response is not a decodable image.');
-        }
+        throw_unless($image instanceof GdImage, RuntimeException::class, 'The conversion response is not a decodable image.');
+
         expect(imagesx($image))->toBe(64)
             ->and(imagesy($image))->toBe(64)
             ->and(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toHaveCount(1);
     });
 
-    it('rejects non-image media with a problem response', function () {
+    it('rejects non-image media with a problem response', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne(['mime_type' => 'application/pdf']);
         Storage::disk('public')->put($media->getPath() ?? '', "%PDF-1.4\n");
@@ -207,7 +209,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         assertProblemResponse($response, 422, 'validation');
     });
 
-    it('forbids viewers without ownership or the view permission', function () {
+    it('forbids viewers without ownership or the view permission', function (): void {
         $owner = loginAsUser();
         seedImageMedia($owner);
         loginAsUser();
@@ -218,7 +220,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         assertProblemResponse($response, 403);
     });
 
-    it('allows staff with the view permission to read foreign media', function () {
+    it('allows staff with the view permission to read foreign media', function (): void {
         $owner = loginAsUser();
         $media = seedImageMedia($owner);
         $staff = loginAsUser();
@@ -229,17 +231,17 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         $response->assertOk();
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA/s/64')->assertUnauthorized();
     });
 
-    it('returns 404 for unknown media', function () {
+    it('returns 404 for unknown media', function (): void {
         loginAsUser();
 
         $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA/s/64')->assertNotFound();
     });
 
-    it('returns a problem response when the underlying file is missing', function () {
+    it('returns a problem response when the underlying file is missing', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne(['mime_type' => 'image/jpeg']);
 

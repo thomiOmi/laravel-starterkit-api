@@ -32,6 +32,6 @@ final readonly class LoginPayload
             'email' => $this->email,
             'password' => $this->password,
             'device_name' => $this->deviceName,
-        ], fn (mixed $value) => $value !== null);
+        ], fn (mixed $value): bool => $value !== null);
     }
 }

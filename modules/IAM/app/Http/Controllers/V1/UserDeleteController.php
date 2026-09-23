@@ -39,7 +39,6 @@ final readonly class UserDeleteController extends Controller
 
         if ($this->deleteUser->handle($user)) {
             return new SuccessResponse(
-                data: null,
                 title: __('general.resource_deleted', ['resource' => 'User']),
                 detail: __('general.resource_deleted', ['resource' => 'User']),
                 status: Response::HTTP_OK,

@@ -35,9 +35,7 @@ trait InteractsWithMedia
 
     private function getModelForMedia(): Model
     {
-        if (! $this instanceof Model) {
-            throw new \LogicException('InteractsWithMedia can only be used on Eloquent models.');
-        }
+        throw_unless($this instanceof Model, \LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
 
         return $this;
     }
@@ -47,21 +45,16 @@ trait InteractsWithMedia
      */
     public function addMedia(UploadedFile $file): FileAdder
     {
-        if (! $this instanceof Model) {
-            throw new \LogicException('InteractsWithMedia can only be used on Eloquent models.');
-        }
+        throw_unless($this instanceof Model, \LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
 
         return new FileAdder($this, $file);
     }
 
     public function addMediaFromRequest(string $key): FileAdder
     {
-        /** @var mixed $file */
         $file = request()->file($key);
 
-        if (! $file instanceof UploadedFile) {
-            throw new \InvalidArgumentException("File not found for key {$key}.");
-        }
+        throw_unless($file instanceof UploadedFile, \InvalidArgumentException::class, "File not found for key {$key}.");
 
         return $this->addMedia($file);
     }
@@ -75,7 +68,6 @@ trait InteractsWithMedia
         $result = [];
 
         foreach ($keys as $key) {
-            /** @var mixed $files */
             $files = request()->file($key);
 
             if ($files instanceof UploadedFile) {
@@ -100,7 +92,7 @@ trait InteractsWithMedia
      */
     public function addMediaFromUrl(string $url, ?string $filename = null, array $headers = []): FileAdder
     {
-        $downloaded = app(MediaDownloader::class)->download($url, $headers);
+        $downloaded = resolve(MediaDownloader::class)->download($url, $headers);
 
         return $this->addMediaFromString($downloaded['content'], $filename ?? $downloaded['filename']);
     }
@@ -216,7 +208,7 @@ trait InteractsWithMedia
         $count = 0;
 
         foreach ($media as $item) {
-            app(DeleteMediaAction::class)->handle($item);
+            resolve(DeleteMediaAction::class)->handle($item);
             $count++;
         }
 
@@ -233,7 +225,7 @@ trait InteractsWithMedia
         $count = 0;
 
         foreach ($media as $item) {
-            app(DeleteMediaAction::class)->handle($item);
+            resolve(DeleteMediaAction::class)->handle($item);
             $count++;
         }
 
@@ -247,11 +239,9 @@ trait InteractsWithMedia
      */
     public function reorderMedia(string $collection, array $orderedIds): void
     {
-        if (! $this instanceof Model) {
-            throw new \LogicException('InteractsWithMedia can only be used on Eloquent models.');
-        }
+        throw_unless($this instanceof Model, \LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
 
-        app(ReorderMediaAction::class)->handle($this, $collection, $orderedIds);
+        resolve(ReorderMediaAction::class)->handle($this, $collection, $orderedIds);
     }
 
     public function getFallbackMediaUrl(string $collection, string $conversion = ''): ?string

@@ -36,21 +36,21 @@ $tester = new readonly class
     }
 };
 
-describe('HasDefaultBehavior', function () use ($tester) {
+describe('HasDefaultBehavior', function () use ($tester): void {
 
-    it('generates lowercase ULID identifiers', function () use ($tester) {
+    it('generates lowercase ULID identifiers', function () use ($tester): void {
         expect($tester->newId())->toMatch('/^[0-7][0-9a-hjkmnp-tv-z]{25}$/');
     });
 
-    it('uses string primary keys', function () use ($tester) {
+    it('uses string primary keys', function () use ($tester): void {
         expect($tester->keyType())->toBe('string');
     });
 
-    it('serializes dates in Y-m-d H:i:s format', function () use ($tester) {
+    it('serializes dates in Y-m-d H:i:s format', function () use ($tester): void {
         expect($tester->serialize(new DateTimeImmutable('2026-07-26 15:30:00')))->toBe('2026-07-26 15:30:00');
     });
 
-    it('does not shift dates across timezones when serializing', function () use ($tester) {
+    it('does not shift dates across timezones when serializing', function () use ($tester): void {
         $date = new DateTimeImmutable('2026-07-26 15:30:00', new DateTimeZone('Asia/Jakarta'));
 
         expect($tester->serialize($date))->toBe('2026-07-26 15:30:00');

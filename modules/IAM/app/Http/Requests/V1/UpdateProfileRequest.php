@@ -55,7 +55,7 @@ class UpdateProfileRequest extends FormRequest
                 'file',
                 'image',
                 'max:'.config()->integer('media.max_size'),
-                Rule::dimensions()->minWidth(32)->minHeight(32)->ratio(1 / 1),
+                Rule::dimensions()->minWidth(32)->minHeight(32)->ratio(1),
                 new AllowedFileName,
             ],
         ];

@@ -10,8 +10,8 @@ use Modules\Media\Http\Controllers\V1\MediaShowController;
 
 covers(MediaShowController::class);
 
-describe('GET /api/v1/media/{media}', function () {
-    it('allows the owner to view without any permission', function () {
+describe('GET /api/v1/media/{media}', function (): void {
+    it('allows the owner to view without any permission', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
 
@@ -21,7 +21,7 @@ describe('GET /api/v1/media/{media}', function () {
         expect($response->json('data.id'))->toBe($media->id);
     });
 
-    it('allows a viewer with the view permission', function () {
+    it('allows a viewer with the view permission', function (): void {
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaView->value,
@@ -31,31 +31,32 @@ describe('GET /api/v1/media/{media}', function () {
         ]);
         $viewer = loginAsUser();
         $viewer->givePermissionTo(PermissionEnum::MediaView->value);
+
         $media = MediaFactory::new()->createOne();
 
         assertSuccessResponse($this->getJson("/api/v1/media/{$media->id}"), 200);
     });
 
-    it('rejects strangers without permission', function () {
+    it('rejects strangers without permission', function (): void {
         loginAsUser();
         $media = MediaFactory::new()->createOne();
 
         assertProblemResponse($this->getJson("/api/v1/media/{$media->id}"), 403);
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $media = MediaFactory::new()->createOne();
 
         $this->getJson("/api/v1/media/{$media->id}")->assertUnauthorized();
     });
 
-    it('returns 404 for unknown media', function () {
+    it('returns 404 for unknown media', function (): void {
         loginAsUser();
 
         $this->getJson('/api/v1/media/01AAAAAAAAAAAAAAAAAAAAAAAA')->assertNotFound();
     });
 
-    it('swaps the url for a signed link when expires is passed', function () {
+    it('swaps the url for a signed link when expires is passed', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
 
@@ -66,7 +67,7 @@ describe('GET /api/v1/media/{media}', function () {
             ->and($response->json('data.url'))->toContain('signature=');
     });
 
-    it('keeps the private url null without an expires parameter', function () {
+    it('keeps the private url null without an expires parameter', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
 
@@ -76,7 +77,7 @@ describe('GET /api/v1/media/{media}', function () {
         expect($response->json('data.url'))->toBeNull();
     });
 
-    it('rejects out-of-bounds expiry values', function (int $expires) {
+    it('rejects out-of-bounds expiry values', function (int $expires): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
 

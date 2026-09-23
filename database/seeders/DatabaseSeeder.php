@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
     {
         $seeders = [];
 
-        foreach (app(RepositoryInterface::class)->allEnabled() as $module) {
+        foreach (resolve(RepositoryInterface::class)->allEnabled() as $module) {
             if (! $module instanceof Module) {
                 continue;
             }

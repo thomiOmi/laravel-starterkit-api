@@ -26,6 +26,7 @@ use Modules\Media\Support\FileHash;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\ImageDimensions;
 use Modules\Media\Support\ImageManipulations;
+use Modules\Media\Support\MediaCollection;
 use Modules\Media\Support\MediaMimeType;
 use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\Scanners\MediaScanner;
@@ -131,7 +132,7 @@ final readonly class UploadMediaAction
 
             if ($queueName !== null) {
                 $media->markPending();
-                ProcessMediaJob::dispatch($media->id)->onQueue($queueName);
+                dispatch(new ProcessMediaJob($media->id))->onQueue($queueName);
 
                 return;
             }
@@ -142,7 +143,7 @@ final readonly class UploadMediaAction
             if ($modelConversions !== null) {
                 try {
                     // For model-driven, generate via service but respect performOnCollections
-                    app(MediaConversionService::class)->generate($media);
+                    resolve(MediaConversionService::class)->generate($media);
                 } catch (Throwable $exception) {
                     Log::warning('Media conversions failed.', ['media_id' => $media->id, 'error' => $exception->getMessage()]);
                     event(new MediaProcessingFailed($media, $exception->getMessage()));
@@ -152,7 +153,7 @@ final readonly class UploadMediaAction
 
             if ($wantsResponsive) {
                 try {
-                    app(GenerateResponsiveImagesAction::class)->handle($media);
+                    resolve(GenerateResponsiveImagesAction::class)->handle($media);
                 } catch (Throwable $exception) {
                     Log::warning('Media responsive images failed.', ['media_id' => $media->id, 'error' => $exception->getMessage()]);
                     event(new MediaProcessingFailed($media, $exception->getMessage()));
@@ -185,16 +186,14 @@ final readonly class UploadMediaAction
 
         $storedPath = $image->store(MediaPrefix::directory($payload->collectionName), $disk, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
 
-        if ($storedPath === false) {
-            throw new ImageException('The processed image could not be stored.');
-        }
+        throw_if($storedPath === false, ImageException::class, 'The processed image could not be stored.');
 
         try {
             $fullPath = $this->applyFileNamer($storedPath, $disk);
-        } catch (Throwable $exception) {
+        } catch (Throwable $throwable) {
             Storage::disk($disk)->delete($storedPath);
 
-            throw $exception;
+            throw $throwable;
         }
 
         /** @var array<string, mixed> $meta */
@@ -226,7 +225,7 @@ final readonly class UploadMediaAction
         $disk = $this->resolveDisk($payload, $visibility);
         $this->guardDiskAlignment($visibility, $disk, $payload->conversionsDisk);
         $file = $payload->file;
-        $filename = app(MediaFileNamer::class)->originalFileName($file->hashName());
+        $filename = resolve(MediaFileNamer::class)->originalFileName($file->hashName());
         $fullPath = MediaPrefix::basePath($payload->collectionName, $filename);
 
         if (Storage::disk($disk)->exists($fullPath)) {
@@ -262,7 +261,7 @@ final readonly class UploadMediaAction
      */
     private function applyFileNamer(string $storedPath, string $disk): string
     {
-        $candidate = app(MediaFileNamer::class)->originalFileName(basename($storedPath));
+        $candidate = resolve(MediaFileNamer::class)->originalFileName(basename($storedPath));
 
         if ($candidate === '' || $candidate === basename($storedPath)) {
             return $storedPath;
@@ -398,11 +397,9 @@ final readonly class UploadMediaAction
         }
 
         try {
-            app(MediaScanner::class)->scan($realPath);
-        } catch (InvalidArgumentException $exception) {
-            throw new InvalidArgumentException(
-                $exception->getMessage() !== '' ? $exception->getMessage() : __('validation.media_malware_detected')
-            );
+            resolve(MediaScanner::class)->scan($realPath);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            throw new InvalidArgumentException($invalidArgumentException->getMessage() !== '' ? $invalidArgumentException->getMessage() : __('validation.media_malware_detected'), $invalidArgumentException->getCode(), $invalidArgumentException);
         }
     }
 
@@ -481,7 +478,7 @@ final readonly class UploadMediaAction
 
         $collection = $model->getMediaCollection($payload->collectionName);
 
-        if ($collection === null) {
+        if (! $collection instanceof MediaCollection) {
             return;
         }
 
@@ -525,7 +522,7 @@ final readonly class UploadMediaAction
         if ($model instanceof HasMedia) {
             $collection = $model->getMediaCollection($collectionName);
 
-            if ($collection !== null && $collection->visibility !== null) {
+            if ($collection instanceof MediaCollection && $collection->visibility !== null) {
                 return $collection->visibility === MediaVisibilityEnum::Public->value
                     ? MediaVisibilityEnum::Public
                     : MediaVisibilityEnum::Private;
@@ -568,7 +565,7 @@ final readonly class UploadMediaAction
             ->get();
 
         foreach ($excess as $item) {
-            app(DeleteMediaAction::class)->handle($item);
+            resolve(DeleteMediaAction::class)->handle($item);
         }
     }
 
@@ -577,7 +574,7 @@ final readonly class UploadMediaAction
         if ($model instanceof HasMedia) {
             $collection = $model->getMediaCollection($collectionName);
 
-            if ($collection !== null) {
+            if ($collection instanceof MediaCollection) {
                 return $collection->singleFile;
             }
         }
@@ -649,7 +646,7 @@ final readonly class UploadMediaAction
                             'order_column' => $existing->order_column,
                         ]);
 
-                        if ($uploader !== null) {
+                        if ($uploader instanceof Model) {
                             $existing->uploadedBy()->associate($uploader);
                         }
 
@@ -695,7 +692,7 @@ final readonly class UploadMediaAction
 
                 $media->model()->associate($model);
 
-                if ($uploader !== null) {
+                if ($uploader instanceof Model) {
                     $media->uploadedBy()->associate($uploader);
                 }
 
@@ -739,10 +736,10 @@ final readonly class UploadMediaAction
             }
 
             return $media;
-        } catch (Throwable $exception) {
+        } catch (Throwable $throwable) {
             Storage::disk($disk)->delete($fullPath);
 
-            throw $exception;
+            throw $throwable;
         }
     }
 }

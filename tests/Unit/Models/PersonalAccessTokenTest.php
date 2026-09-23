@@ -6,24 +6,24 @@ use App\Models\Sanctum\PersonalAccessToken;
 
 covers(PersonalAccessToken::class);
 
-describe('PersonalAccessToken', function () {
+describe('PersonalAccessToken', function (): void {
 
-    describe('fillable', function () {
-        it('includes ip_address', function () {
+    describe('fillable', function (): void {
+        it('includes ip_address', function (): void {
             expect((new PersonalAccessToken)->getFillable())->toContain('ip_address', 'user_agent');
         });
     });
 
-    describe('casts', function () {
-        it('casts abilities to json', function () {
+    describe('casts', function (): void {
+        it('casts abilities to json', function (): void {
             expect((new PersonalAccessToken)->getCasts()['abilities'])->toBe('json');
         });
 
-        it('casts last_used_at to datetime', function () {
+        it('casts last_used_at to datetime', function (): void {
             expect((new PersonalAccessToken)->getCasts()['last_used_at'])->toBe('datetime');
         });
 
-        it('casts expires_at to datetime', function () {
+        it('casts expires_at to datetime', function (): void {
             expect((new PersonalAccessToken)->getCasts()['expires_at'])->toBe('datetime');
         });
     });

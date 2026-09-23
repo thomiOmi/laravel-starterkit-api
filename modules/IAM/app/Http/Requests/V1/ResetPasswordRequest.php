@@ -13,7 +13,8 @@ use Illuminate\Validation\Rules\Unique;
 
 final class ResetPasswordRequest extends FormRequest
 {
-    use PasswordValidationRules, ProfileValidationRules;
+    use PasswordValidationRules;
+    use ProfileValidationRules;
 
     public function authorize(): bool
     {

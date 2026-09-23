@@ -10,7 +10,8 @@ use Modules\Media\Models\Media;
 
 final readonly class MediaUploaded
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
     public function __construct(
         public Media $media,

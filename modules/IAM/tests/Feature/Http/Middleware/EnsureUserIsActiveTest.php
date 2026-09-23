@@ -9,28 +9,28 @@ use Modules\IAM\Http\Middleware\EnsureUserIsActive;
 
 covers(EnsureUserIsActive::class);
 
-describe('active middleware', function () {
-    beforeEach(function () {
+describe('active middleware', function (): void {
+    beforeEach(function (): void {
         Route::middleware(['api', 'auth:sanctum', 'active'])->get('/_test/active-only', fn (): JsonResponse => response()->json(['ok' => true]));
     });
 
-    it('blocks unauthenticated requests', function () {
+    it('blocks unauthenticated requests', function (): void {
         assertProblemResponse($this->getJson('/_test/active-only'), 401, 'authentication-required');
     });
 
-    it('allows active users', function () {
+    it('allows active users', function (): void {
         loginAsUser();
 
         $this->getJson('/_test/active-only')->assertOk();
     });
 
-    it('allows pending users to authenticate', function () {
+    it('allows pending users to authenticate', function (): void {
         loginAsUser(UserFactory::new()->pending()->createOne(['email_verified_at' => now()]));
 
         $this->getJson('/_test/active-only')->assertOk();
     });
 
-    it('blocks blocked statuses with the matching message key', function (string $state) {
+    it('blocks blocked statuses with the matching message key', function (string $state): void {
         $factory = match ($state) {
             'banned' => UserFactory::new()->banned(),
             'suspended' => UserFactory::new()->suspended(),

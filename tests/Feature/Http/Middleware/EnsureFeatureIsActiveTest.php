@@ -65,7 +65,7 @@ describe('EnsureFeatureIsActive', function (): void {
     it('resolves a build-time registry feature before falling back to Pennant', function (): void {
         config()->set('iam.features.self-registration', false);
 
-        expect(fn () => (new EnsureFeatureIsActive)->handle(
+        expect(fn (): Response => (new EnsureFeatureIsActive)->handle(
             new Request,
             fn (Request $req): Response => new Response('OK'),
             'iam.self-registration',

@@ -7,7 +7,7 @@ use Modules\IAM\Database\Seeders\IAMSeeder;
 
 covers(BulkActionRequest::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->seed(IAMSeeder::class);
     $this->user = loginAsUser();
 });
@@ -28,7 +28,7 @@ dataset('mismatched bulk actions', [
     'role delete with restore action' => ['api/v1/roles', 'delete', 'restore'],
 ]);
 
-describe('bulk authorization', function () {
+describe('bulk authorization', function (): void {
     it('authorizes bulk action when the user has the matching permission', function (string $prefix, string $action): void {
         $this->user = loginAsAdmin();
 
@@ -61,9 +61,9 @@ describe('bulk authorization', function () {
     })->with('mismatched bulk actions')->group('module:iam');
 });
 
-describe('bulk action validation', function () {
+describe('bulk action validation', function (): void {
 
-    it('requires ids as array with min 1 max 50 items', function () {
+    it('requires ids as array with min 1 max 50 items', function (): void {
         $this->user = loginAsAdmin();
 
         $response = $this->postJson('/api/v1/users/bulk/delete', ['ids' => []]);
@@ -71,7 +71,7 @@ describe('bulk action validation', function () {
         assertProblemResponse($response, 422);
     })->group('module:iam');
 
-    it('requires each id to be a ulid string', function () {
+    it('requires each id to be a ulid string', function (): void {
         $this->user = loginAsAdmin();
 
         $response = $this->postJson('/api/v1/users/bulk/delete', [

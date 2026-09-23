@@ -11,8 +11,8 @@ use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Models\Media;
 use Modules\Media\Services\MediaConversionService;
 
-describe('Media conversions', function () {
-    beforeEach(function () {
+describe('Media conversions', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
@@ -24,7 +24,7 @@ describe('Media conversions', function () {
         ]);
     });
 
-    it('generates conversions synchronously on upload when queue is false', function () {
+    it('generates conversions synchronously on upload when queue is false', function (): void {
         config(['media.queue' => false]);
 
         $user = loginAsUser();
@@ -46,7 +46,7 @@ describe('Media conversions', function () {
             ->and($media->url('thumbnail'))->toBe(Storage::disk('public')->url($conversion->path));
     });
 
-    it('returns null url for missing conversion', function () {
+    it('returns null url for missing conversion', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
 
@@ -54,7 +54,7 @@ describe('Media conversions', function () {
             ->and($media->hasGeneratedConversion('missing'))->toBeFalse();
     });
 
-    it('binds the named conversion etag to the media content version', function () {
+    it('binds the named conversion etag to the media content version', function (): void {
         config(['media.queue' => false]);
 
         $user = loginAsUser();
@@ -72,7 +72,7 @@ describe('Media conversions', function () {
         expect($originalEtag)->toBeString()->not->toBeEmpty();
 
         $media->update(['sha256' => str_repeat('a', 64)]);
-        app(MediaConversionService::class)->generateOne($media, 'thumbnail', [
+        resolve(MediaConversionService::class)->generateOne($media, 'thumbnail', [
             'width' => 32,
             'height' => 32,
             'fit' => 'cover',
@@ -86,7 +86,7 @@ describe('Media conversions', function () {
             ->and($regenerated->etag)->not->toBe($originalEtag);
     });
 
-    it('rejects an unknown fit in named conversion config', function () {
+    it('rejects an unknown fit in named conversion config', function (): void {
         config(['media.queue' => false]);
 
         $user = loginAsUser();
@@ -99,7 +99,7 @@ describe('Media conversions', function () {
 
         $media = Media::query()->firstOrFail();
 
-        expect(fn () => app(MediaConversionService::class)->generateOne($media, 'bad', [
+        expect(fn () => resolve(MediaConversionService::class)->generateOne($media, 'bad', [
             'width' => 32,
             'height' => 32,
             'fit' => 'stretch',

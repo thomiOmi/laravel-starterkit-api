@@ -25,7 +25,8 @@ use Modules\IAM\Payloads\V1\UserPayload;
  */
 final class UserRequest extends FormRequest
 {
-    use PasswordValidationRules, ProfileValidationRules;
+    use PasswordValidationRules;
+    use ProfileValidationRules;
 
     /**
      * Normalize the email before validation so the unique rule compares

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Media\Jobs;
 
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Actions\GenerateResponsiveImagesAction;
@@ -26,27 +26,12 @@ use Throwable;
  * 10s/30s backoff ladder so a stuck worker is reclaimed before the
  * connection re-delivers the job.
  */
+#[Backoff([10, 30])]
+#[Timeout(60)]
+#[Tries(3)]
 final class ProcessMediaJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
-    /**
-     * Attempt limit before the job is failed permanently.
-     */
-    public int $tries = 3;
-
-    /**
-     * Seconds allowed before the worker releases the job for another attempt.
-     * Must stay strictly below the queue connection retry_after.
-     */
-    public int $timeout = 60;
-
-    /**
-     * Backoff between attempts, in seconds, keyed by attempt number.
-     *
-     * @var array<int, int>
-     */
-    public array $backoff = [10, 30];
+    use Queueable;
 
     public function __construct(
         public readonly string $mediaId,
@@ -68,9 +53,7 @@ final class ProcessMediaJob implements ShouldQueue
         try {
             $path = $media->getPath();
 
-            if (! is_string($path) || ! Storage::disk($media->disk)->exists($path)) {
-                throw new \RuntimeException('The source media file is missing.');
-            }
+            throw_if(! is_string($path) || ! Storage::disk($media->disk)->exists($path), \RuntimeException::class, 'The source media file is missing.');
 
             $media->markProcessing();
             $service->generate($media);
@@ -86,17 +69,17 @@ final class ProcessMediaJob implements ShouldQueue
                 'media_id' => $media->id,
                 'duration_ms' => $this->durationMs($startedAt),
             ]);
-        } catch (Throwable $exception) {
-            $media->markProcessingFailed($exception->getMessage());
-            event(new MediaProcessingFailed($media, $exception->getMessage()));
+        } catch (Throwable $throwable) {
+            $media->markProcessingFailed($throwable->getMessage());
+            event(new MediaProcessingFailed($media, $throwable->getMessage()));
 
             Log::error('Media processing failed.', [
                 'media_id' => $media->id,
                 'duration_ms' => $this->durationMs($startedAt),
-                'error' => $exception->getMessage(),
+                'error' => $throwable->getMessage(),
             ]);
 
-            throw $exception;
+            throw $throwable;
         }
     }
 

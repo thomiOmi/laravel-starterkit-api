@@ -9,14 +9,14 @@ use Modules\IAM\Services\UserAuthorizationService;
 
 covers(UserAuthorizationService::class);
 
-describe('UserAuthorizationService', function () {
-    beforeEach(function () {
-        Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
-        Role::firstOrCreate(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
-        Role::firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
+describe('UserAuthorizationService', function (): void {
+    beforeEach(function (): void {
+        Role::query()->firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
     });
 
-    it('grants wildcard abilities to admins and super-admins', function (RoleEnum $role) {
+    it('grants wildcard abilities to admins and super-admins', function (RoleEnum $role): void {
         $user = UserFactory::new()->{$role === RoleEnum::Admin ? 'admin' : 'superAdmin'}()->createOne();
 
         expect((new UserAuthorizationService)->determineTokenAbilities($user))->toBe(['*']);
@@ -25,7 +25,7 @@ describe('UserAuthorizationService', function () {
         'super-admin' => RoleEnum::SuperAdmin,
     ]);
 
-    it('grants scoped abilities to regular users', function () {
+    it('grants scoped abilities to regular users', function (): void {
         $user = UserFactory::new()->createOne();
         $user->assignRole(RoleEnum::User->value);
 
@@ -33,7 +33,7 @@ describe('UserAuthorizationService', function () {
             ->toBe(['users:read', 'users:write', 'auth:manage']);
     });
 
-    it('creates a token with request metadata and expiry metadata', function () {
+    it('creates a token with request metadata and expiry metadata', function (): void {
         config()->set('sanctum.expiration', 60);
         $user = UserFactory::new()->createOne();
 

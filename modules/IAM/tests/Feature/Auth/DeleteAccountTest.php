@@ -7,8 +7,8 @@ use Modules\IAM\Http\Controllers\V1\DeleteAccountController;
 
 covers(DeleteAccountController::class);
 
-describe('DELETE /api/v1/auth/account', function () {
-    it('soft-deletes the account and revokes all tokens', function () {
+describe('DELETE /api/v1/auth/account', function (): void {
+    it('soft-deletes the account and revokes all tokens', function (): void {
         $user = UserFactory::new()->createOne(['password' => 'my-password']);
         $token = $user->createToken('current');
         $user->createToken('second-device');
@@ -21,7 +21,7 @@ describe('DELETE /api/v1/auth/account', function () {
             ->and($user->tokens()->count())->toBe(0);
     });
 
-    it('rejects a wrong password', function () {
+    it('rejects a wrong password', function (): void {
         $user = UserFactory::new()->createOne(['password' => 'my-password']);
         $token = $user->createToken('current');
 
@@ -33,7 +33,7 @@ describe('DELETE /api/v1/auth/account', function () {
         expect($user->fresh()?->deleted_at)->toBeNull();
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->deleteJson('/api/v1/auth/account')->assertUnauthorized();
     });
 });

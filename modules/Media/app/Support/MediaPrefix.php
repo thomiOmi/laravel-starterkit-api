@@ -33,9 +33,7 @@ final class MediaPrefix
                 continue;
             }
 
-            if ($trimmed === '.' || $trimmed === '..' || str_contains($trimmed, '../')) {
-                throw new InvalidArgumentException('Invalid storage path segment.');
-            }
+            throw_if($trimmed === '.' || $trimmed === '..' || str_contains($trimmed, '../'), InvalidArgumentException::class, 'Invalid storage path segment.');
 
             $parts[] = $trimmed;
         }

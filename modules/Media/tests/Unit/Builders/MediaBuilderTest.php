@@ -7,8 +7,8 @@ use Modules\Media\Builders\MediaBuilder;
 
 covers(MediaBuilder::class);
 
-describe('MediaBuilder', function () {
-    it('extends BaseQueryBuilder', function () {
+describe('MediaBuilder', function (): void {
+    it('extends BaseQueryBuilder', function (): void {
         $parent = new ReflectionClass(MediaBuilder::class)->getParentClass();
 
         expect($parent)->toBeInstanceOf(ReflectionClass::class);
@@ -18,7 +18,7 @@ describe('MediaBuilder', function () {
         }
     });
 
-    it('exposes expected allowed filters', function () {
+    it('exposes expected allowed filters', function (): void {
         $reflection = new ReflectionClass(MediaBuilder::class);
         $instance = $reflection->newInstanceWithoutConstructor();
         $filters = $reflection->getProperty('allowedFilters')->getValue($instance);
@@ -26,7 +26,7 @@ describe('MediaBuilder', function () {
         expect($filters)->toContain('collection_name');
     });
 
-    it('exposes allowed sorts and exact columns', function () {
+    it('exposes allowed sorts and exact columns', function (): void {
         $reflection = new ReflectionClass(MediaBuilder::class);
         $instance = $reflection->newInstanceWithoutConstructor();
 

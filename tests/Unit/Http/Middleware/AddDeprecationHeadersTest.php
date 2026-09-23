@@ -104,6 +104,6 @@ describe('AddDeprecationHeaders middleware', function (): void {
     });
 
     it('throws InvalidArgumentException when the date does not match Y-m-d', function (): void {
-        expect(fn () => handleDeprecation('+30 days'))->toThrow(InvalidArgumentException::class, 'expected format Y-m-d');
+        expect(fn (): Response => handleDeprecation('+30 days'))->toThrow(InvalidArgumentException::class, 'expected format Y-m-d');
     });
 });

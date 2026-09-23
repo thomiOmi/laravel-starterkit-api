@@ -8,14 +8,14 @@ use Modules\Media\Console\Commands\MediaReprocessCommand;
 
 covers(MediaReprocessCommand::class);
 
-describe('media:reprocess', function () {
-    beforeEach(function () {
+describe('media:reprocess', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         config(['media.queue' => false]);
     });
 
-    it('regenerates a single named conversion', function () {
+    it('regenerates a single named conversion', function (): void {
         $user = loginAsUser();
 
         $media = $user->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 100))->toMediaCollection('avatars');
@@ -27,7 +27,7 @@ describe('media:reprocess', function () {
         Storage::disk($conversion->disk)->assertExists($conversion->path);
     });
 
-    it('fails when the named conversion is not defined', function () {
+    it('fails when the named conversion is not defined', function (): void {
         $user = loginAsUser();
 
         $media = $user->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 100))->toMediaCollection('avatars');

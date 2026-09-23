@@ -9,15 +9,15 @@ use Modules\IAM\Database\Factories\UserFactory;
 
 covers(ResetPassword::class);
 
-describe('ResetPassword notification', function () {
+describe('ResetPassword notification', function (): void {
 
-    it('implements ShouldQueue', function () {
+    it('implements ShouldQueue', function (): void {
         $reflection = new ReflectionClass(ResetPassword::class);
 
         expect($reflection->implementsInterface(ShouldQueue::class))->toBeTrue();
     });
 
-    it('uses Queueable trait', function () {
+    it('uses Queueable trait', function (): void {
         expect(Queueable::class)->toBeIn(class_uses(ResetPassword::class) ?: []);
     });
 

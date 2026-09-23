@@ -140,13 +140,7 @@ final class MediaCleanupCommand extends Command
      */
     private function isUnderScannedDirectories(string $file, array $scanDirectories): bool
     {
-        foreach ($scanDirectories as $directory) {
-            if ($file === $directory || str_starts_with($file, $directory.'/')) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($scanDirectories, fn (string $directory): bool => $file === $directory || str_starts_with($file, $directory.'/'));
     }
 
     /**

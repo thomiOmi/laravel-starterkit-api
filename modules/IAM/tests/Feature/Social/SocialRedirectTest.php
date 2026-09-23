@@ -8,8 +8,8 @@ use Modules\IAM\Http\Controllers\V1\SocialRedirectController;
 
 covers(SocialRedirectController::class);
 
-describe('GET /api/v1/auth/social/{provider}/redirect', function () {
-    it('returns redirect url', function () {
+describe('GET /api/v1/auth/social/{provider}/redirect', function (): void {
+    it('returns redirect url', function (): void {
         $provider = Mockery::mock(AbstractProvider::class);
         $provider->shouldReceive('stateless->with->redirect->getTargetUrl')->andReturn('https://accounts.google.com/o/oauth2/auth?state=xyz');
         Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
@@ -20,7 +20,7 @@ describe('GET /api/v1/auth/social/{provider}/redirect', function () {
         expect($response->json('data.url'))->toContain('https://accounts.google.com');
     });
 
-    it('rejects unknown provider', function () {
+    it('rejects unknown provider', function (): void {
         $response = $this->getJson('/api/v1/auth/social/unknown/redirect');
 
         assertProblemResponse($response, 400);

@@ -59,8 +59,16 @@ use Spatie\Permission\Traits\HasRoles;
 #[ObservedBy([UserObserver::class])]
 class User extends Authenticatable implements HasMedia, Identity
 {
+    use HasApiTokens;
+    use HasDefaultBehavior;
+
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasDefaultBehavior, HasFactory, HasRoles, InteractsWithMedia, Notifiable, SoftDeletes;
+    use HasFactory;
+
+    use HasRoles;
+    use InteractsWithMedia;
+    use Notifiable;
+    use SoftDeletes;
 
     /**
      * Get the social accounts linked to this user.

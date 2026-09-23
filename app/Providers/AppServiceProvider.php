@@ -139,7 +139,7 @@ class AppServiceProvider extends ServiceProvider
                 ->by($request->user()?->id ?: $request->ip());
         });
 
-        RateLimiter::for('auth', function (Request $request) {
+        RateLimiter::for('auth', function (Request $request): array {
             $perEmail = config()->integer('rate-limiting.auth.limit_per_email');
             $perIp = config()->integer('rate-limiting.auth.limit_per_ip');
 
@@ -171,9 +171,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureSuperAdminGate(): void
     {
-        Gate::before(function (Identity $user, string $ability) {
-            return $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null;
-        });
+        Gate::before(fn (Identity $user, string $ability): ?true => $user->hasRole(RoleEnum::SuperAdmin->value) ? true : null);
     }
 
     /**
@@ -210,11 +208,7 @@ class AppServiceProvider extends ServiceProvider
             $scheme = $frontend->scheme();
             $host = $frontend->host();
 
-            if ($scheme === null || $host === null) {
-                throw new RuntimeException(
-                    'The "app.frontend_url" config value must be an absolute URL with a scheme and host.'
-                );
-            }
+            throw_if($scheme === null || $host === null, RuntimeException::class, 'The "app.frontend_url" config value must be an absolute URL with a scheme and host.');
 
             return (string) $signedUri
                 ->withScheme($scheme)
@@ -230,13 +224,11 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureEmailVerificationMail(): void
     {
-        VerifyEmail::toMailUsing(function (mixed $notifiable, string $url): MailMessage {
-            return (new MailMessage)
-                ->subject(__('auth.email_verify_subject'))
-                ->line(__('auth.email_verify_line'))
-                ->action(__('auth.email_verify_action'), $url)
-                ->line(__('auth.email_verify_footer'));
-        });
+        VerifyEmail::toMailUsing(fn (mixed $notifiable, string $url): MailMessage => (new MailMessage)
+            ->subject(__('auth.email_verify_subject'))
+            ->line(__('auth.email_verify_line'))
+            ->action(__('auth.email_verify_action'), $url)
+            ->line(__('auth.email_verify_footer')));
     }
 
     /**

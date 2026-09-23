@@ -10,14 +10,14 @@ use Modules\Media\Database\Factories\MediaFactory;
 
 covers(MediaCleanupCommand::class);
 
-describe('media:cleanup', function () {
-    beforeEach(function () {
+describe('media:cleanup', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         Event::fake([MessageLogged::class]);
     });
 
-    it('keeps responsive images, conversions, and the derived conversion cache', function () {
+    it('keeps responsive images, conversions, and the derived conversion cache', function (): void {
         $media = MediaFactory::new()->public()->createOne([
             'responsive_images' => [320 => ['path' => 'default/responsive-images/320-photo.webp', 'size' => 10]],
         ]);
@@ -44,7 +44,7 @@ describe('media:cleanup', function () {
         Storage::disk('public')->assertExists('conversions/derived/'.$media->id.'/w32-abcdef12.webp');
     });
 
-    it('ignores foreign directories and deletes nothing by default', function () {
+    it('ignores foreign directories and deletes nothing by default', function (): void {
         $keeper = MediaFactory::new()->public()->inCollection('avatars')->createOne();
         Storage::disk('public')->put($keeper->getPath() ?? '', 'keeper');
         Storage::disk('public')->put('other-module/file.txt', 'foreign');
@@ -57,7 +57,7 @@ describe('media:cleanup', function () {
         Storage::disk('public')->assertExists('avatars/orphan.webp');
     });
 
-    it('deletes real orphans only with force', function () {
+    it('deletes real orphans only with force', function (): void {
         $keeper = MediaFactory::new()->public()->inCollection('avatars')->createOne();
         Storage::disk('public')->put($keeper->getPath() ?? '', 'keeper');
         Storage::disk('public')->put('avatars/orphan.webp', 'orphan');
@@ -70,7 +70,7 @@ describe('media:cleanup', function () {
         Storage::disk('public')->assertExists('other-module/file.txt');
     });
 
-    it('warns about database records with missing files', function () {
+    it('warns about database records with missing files', function (): void {
         $media = MediaFactory::new()->createOne();
 
         artisanCommand($this, 'media:cleanup')
@@ -78,7 +78,7 @@ describe('media:cleanup', function () {
             ->assertSuccessful();
     });
 
-    it('logs a structured warning when orphan files are found', function () {
+    it('logs a structured warning when orphan files are found', function (): void {
         $keeper = MediaFactory::new()->public()->inCollection('avatars')->createOne();
         Storage::disk('public')->put($keeper->getPath() ?? '', 'keeper');
         Storage::disk('public')->put('avatars/orphan.webp', 'orphan');
@@ -92,7 +92,7 @@ describe('media:cleanup', function () {
             && ($event->context['files'] ?? null) === ['avatars/orphan.webp']);
     });
 
-    it('logs a structured warning when database records are missing files', function () {
+    it('logs a structured warning when database records are missing files', function (): void {
         $media = MediaFactory::new()->createOne();
 
         artisanCommand($this, 'media:cleanup')->assertSuccessful();

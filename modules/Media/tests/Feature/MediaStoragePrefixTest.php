@@ -14,8 +14,8 @@ use Modules\Media\Support\StorageOptions;
 covers(MediaPrefix::class);
 covers(StorageOptions::class);
 
-describe('Media storage prefix', function () {
-    beforeEach(function () {
+describe('Media storage prefix', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
@@ -27,17 +27,17 @@ describe('Media storage prefix', function () {
         ]);
     });
 
-    it('builds paths without a prefix by default', function () {
+    it('builds paths without a prefix by default', function (): void {
         expect(MediaPrefix::basePath('avatars', 'photo.webp'))->toBe('avatars/photo.webp')
             ->and(MediaPrefix::directory('avatars'))->toBe('avatars')
             ->and(MediaPrefix::join('conversions/derived', 'abc', 'w32-hash.webp'))->toBe('conversions/derived/abc/w32-hash.webp');
     });
 
-    it('merges only visibility by default for storage options', function () {
+    it('merges only visibility by default for storage options', function (): void {
         expect(StorageOptions::forVisibility('public'))->toBe(['visibility' => 'public']);
     });
 
-    it('merges configured remote headers into storage options', function () {
+    it('merges configured remote headers into storage options', function (): void {
         config(['media.remote.extra_headers' => ['CacheControl' => 'max-age=604800']]);
 
         expect(StorageOptions::forVisibility('private'))->toBe([
@@ -46,7 +46,7 @@ describe('Media storage prefix', function () {
         ]);
     });
 
-    it('stores and resolves uploads under the configured prefix', function () {
+    it('stores and resolves uploads under the configured prefix', function (): void {
         config(['media.prefix' => 'tenant-a']);
         config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
@@ -64,7 +64,7 @@ describe('Media storage prefix', function () {
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
-    it('stores conversions under the prefix with the conversions disk', function () {
+    it('stores conversions under the prefix with the conversions disk', function (): void {
         config(['media.prefix' => 'tenant-a']);
         config(['media.queue' => false]);
         $user = loginAsUser();
@@ -85,7 +85,7 @@ describe('Media storage prefix', function () {
         Storage::disk('public')->assertExists($conversion->path);
     });
 
-    it('uses the configured conversions disk when set', function () {
+    it('uses the configured conversions disk when set', function (): void {
         config(['media.conversions_disk_name' => 'public']);
         config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();

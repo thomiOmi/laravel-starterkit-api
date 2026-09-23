@@ -44,7 +44,7 @@ class IAMSeeder extends Seeder
      */
     private function forgetCachedPermissions(): void
     {
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        resolve(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
     /**
@@ -53,15 +53,15 @@ class IAMSeeder extends Seeder
     private function seedPermissionsAndRoles(): void
     {
         foreach (PermissionEnum::cases() as $permission) {
-            Permission::firstOrCreate(['name' => $permission->value, 'guard_name' => 'sanctum']);
+            Permission::query()->firstOrCreate(['name' => $permission->value, 'guard_name' => 'sanctum']);
         }
 
-        Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
 
-        $admin = Role::firstOrCreate(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
+        $admin = Role::query()->firstOrCreate(['name' => RoleEnum::Admin->value, 'guard_name' => 'sanctum']);
         $admin->givePermissionTo(PermissionEnum::cases());
 
-        $user = Role::firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
+        $user = Role::query()->firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
         $user->givePermissionTo([
             PermissionEnum::UserView->value,
             PermissionEnum::MediaView->value,

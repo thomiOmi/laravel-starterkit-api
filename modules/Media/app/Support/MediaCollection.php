@@ -12,8 +12,6 @@ use InvalidArgumentException;
  */
 final class MediaCollection
 {
-    public string $name;
-
     public bool $singleFile = false;
 
     public ?int $collectionSizeLimit = null;
@@ -25,7 +23,7 @@ final class MediaCollection
     public array $acceptsExtensions = [];
 
     /** @var callable|null */
-    public $acceptsFile = null;
+    public $acceptsFile;
 
     public ?string $fallbackUrl = null;
 
@@ -35,10 +33,7 @@ final class MediaCollection
 
     public bool $generateResponsiveImages = false;
 
-    public function __construct(string $name)
-    {
-        $this->name = $name;
-    }
+    public function __construct(public string $name) {}
 
     public function singleFile(): self
     {
@@ -49,9 +44,7 @@ final class MediaCollection
 
     public function onlyKeepLatest(int $limit): self
     {
-        if ($limit < 1) {
-            throw new InvalidArgumentException('Collection size limit must be at least 1.');
-        }
+        throw_if($limit < 1, InvalidArgumentException::class, 'Collection size limit must be at least 1.');
 
         $this->collectionSizeLimit = $limit;
 

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -11,8 +13,8 @@ use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Traits\InteractsWithMedia;
 
-describe('Media storage correctness', function () {
-    beforeEach(function () {
+describe('Media storage correctness', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         config(['media.queue' => false]);
@@ -20,17 +22,9 @@ describe('Media storage correctness', function () {
 
     function correctnessOwner(): Model&HasMedia
     {
-        $owner = new class extends Model implements HasMedia
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model implements HasMedia
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
 
             public function registerMediaCollections(): void
             {
@@ -65,7 +59,7 @@ describe('Media storage correctness', function () {
         return $owner;
     }
 
-    it('removes old conversions and resets derived json on single-file replacement', function () {
+    it('removes old conversions and resets derived json on single-file replacement', function (): void {
         $owner = correctnessOwner();
 
         $first = $owner->addMedia(UploadedFile::fake()->image('first.jpg', 100, 100))->toMediaCollection('gallery');
@@ -83,7 +77,7 @@ describe('Media storage correctness', function () {
         expect(Media::query()->whereKey($oldConversion->id)->exists())->toBeFalse();
     });
 
-    it('returns the database conversion path from getPath', function () {
+    it('returns the database conversion path from getPath', function (): void {
         $owner = correctnessOwner();
 
         $media = $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 100))->toMediaCollection('gallery');
@@ -93,7 +87,7 @@ describe('Media storage correctness', function () {
             ->and($media->getPath('missing'))->toBeNull();
     });
 
-    it('does not leak the per-call disk into later uploads', function () {
+    it('does not leak the per-call disk into later uploads', function (): void {
         Storage::fake('s3');
         $owner = correctnessOwner();
 

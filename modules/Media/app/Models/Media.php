@@ -7,6 +7,7 @@ namespace Modules\Media\Models;
 use App\Concerns\HasDefaultBehavior;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
@@ -61,8 +62,10 @@ use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
 #[ObservedBy([MediaObserver::class])]
 class Media extends Model
 {
+    use HasDefaultBehavior;
+
     /** @use HasFactory<MediaFactory> */
-    use HasDefaultBehavior, HasFactory;
+    use HasFactory;
 
     protected static function booted(): void
     {
@@ -70,6 +73,7 @@ class Media extends Model
             if (empty($model->name) && ! empty($model->file_name)) {
                 $model->name = pathinfo($model->file_name, PATHINFO_FILENAME);
             }
+
             if (empty($model->file_name) && ! empty($model->name)) {
                 $ext = $model->original_extension ?? 'bin';
                 $model->file_name = $model->name.'.'.$ext;
@@ -191,9 +195,10 @@ class Media extends Model
      * @param  Builder<Media>  $query
      * @return Builder<Media>
      */
-    public function scopeOrdered($query): Builder
+    #[Scope]
+    protected function ordered($query): Builder
     {
-        return $query->orderBy('order_column')->orderBy('created_at');
+        return $query->orderBy('order_column')->oldest();
     }
 
     /**
@@ -247,7 +252,7 @@ class Media extends Model
 
             $conv = $this->getConversion($conversion);
 
-            if ($conv === null) {
+            if (! $conv instanceof MediaConversion) {
                 return null;
             }
 
@@ -258,7 +263,7 @@ class Media extends Model
             return null;
         }
 
-        $url = app(MediaUrlGenerator::class)->getUrl($this);
+        $url = resolve(MediaUrlGenerator::class)->getUrl($this);
 
         if ($url === null) {
             return null;
@@ -299,7 +304,7 @@ class Media extends Model
             );
         }
 
-        return app(MediaUrlGenerator::class)->getTemporaryUrl($this, $expiration);
+        return resolve(MediaUrlGenerator::class)->getTemporaryUrl($this, $expiration);
     }
 
     public function getFullUrl(?string $conversion = null): ?string
@@ -335,7 +340,7 @@ class Media extends Model
             $class = $overrides[$modelType];
 
             if (is_string($class) && is_a($class, MediaPathGenerator::class, true)) {
-                $custom = app($class);
+                $custom = resolve($class);
 
                 if ($custom instanceof MediaPathGenerator) {
                     return $custom;
@@ -344,7 +349,7 @@ class Media extends Model
         }
 
         /** @var MediaPathGenerator $generator */
-        $generator = app(MediaPathGenerator::class);
+        $generator = resolve(MediaPathGenerator::class);
 
         return $generator;
     }

@@ -14,7 +14,8 @@ use Modules\IAM\Payloads\V1\LoginPayload;
 
 final class LoginRequest extends FormRequest
 {
-    use PasswordValidationRules, ProfileValidationRules;
+    use PasswordValidationRules;
+    use ProfileValidationRules;
 
     public function authorize(): bool
     {

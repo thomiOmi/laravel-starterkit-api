@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('media', function (Blueprint $table) {
+        Schema::create('media', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->nullableUlidMorphs('model');
             $table->string('collection_name')->default('default');

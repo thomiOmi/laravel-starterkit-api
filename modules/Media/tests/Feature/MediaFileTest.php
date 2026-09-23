@@ -10,13 +10,13 @@ use Modules\Media\Http\Controllers\V1\MediaFileController;
 
 covers(MediaFileController::class);
 
-describe('GET /api/v1/media/{media}/file', function () {
-    beforeEach(function () {
+describe('GET /api/v1/media/{media}/file', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
-    it('streams the stored file for a valid signed url of private media', function () {
+    it('streams the stored file for a valid signed url of private media', function (): void {
         $media = MediaFactory::new()->createOne(['mime_type' => 'image/png']);
         Storage::disk($media->disk)->put($media->getPath() ?? '', (string) UploadedFile::fake()->image('private.png')->getContent());
 
@@ -25,11 +25,12 @@ describe('GET /api/v1/media/{media}/file', function () {
         $response = $this->get($url);
 
         $response->assertOk();
+
         expect($response->headers->get('Content-Type'))->toContain('image/png');
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
-    it('streams non-image files with their stored mime type', function () {
+    it('streams non-image files with their stored mime type', function (): void {
         $media = MediaFactory::new()->createOne([
             'file_name' => 'document.pdf',
             'mime_type' => 'application/pdf',
@@ -44,7 +45,7 @@ describe('GET /api/v1/media/{media}/file', function () {
             ->and(Storage::disk($media->disk)->get($media->getPath() ?? ''))->toBe('%PDF-1.4');
     });
 
-    it('rejects tampered signatures', function () {
+    it('rejects tampered signatures', function (): void {
         $media = MediaFactory::new()->createOne();
         Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
 
@@ -54,7 +55,7 @@ describe('GET /api/v1/media/{media}/file', function () {
         $this->get($tampered)->assertForbidden();
     });
 
-    it('rejects expired signatures', function () {
+    it('rejects expired signatures', function (): void {
         $media = MediaFactory::new()->createOne();
         Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
 
@@ -67,13 +68,13 @@ describe('GET /api/v1/media/{media}/file', function () {
         $this->get($expired)->assertForbidden();
     });
 
-    it('rejects requests without a signature', function () {
+    it('rejects requests without a signature', function (): void {
         $media = MediaFactory::new()->createOne();
 
         $this->get("/api/v1/media/{$media->id}/file")->assertForbidden();
     });
 
-    it('returns 404 when the underlying file is missing', function () {
+    it('returns 404 when the underlying file is missing', function (): void {
         $media = MediaFactory::new()->createOne();
 
         $url = $media->signedUrl(15);

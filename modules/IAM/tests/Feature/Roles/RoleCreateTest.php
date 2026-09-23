@@ -9,12 +9,12 @@ use Modules\IAM\Models\Role;
 
 covers(RoleCreateController::class);
 
-describe('POST /api/v1/roles', function () {
-    beforeEach(function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::RoleCreate->value, 'guard_name' => 'sanctum']);
+describe('POST /api/v1/roles', function (): void {
+    beforeEach(function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::RoleCreate->value, 'guard_name' => 'sanctum']);
     });
 
-    it('creates a role with the create permission', function () {
+    it('creates a role with the create permission', function (): void {
         $creator = loginAsUser();
         $creator->givePermissionTo(PermissionEnum::RoleCreate->value);
 
@@ -28,10 +28,10 @@ describe('POST /api/v1/roles', function () {
             ->and($response->json('data.description'))->toBe('Can edit content');
     });
 
-    it('rejects duplicate role names', function () {
+    it('rejects duplicate role names', function (): void {
         $creator = loginAsUser();
         $creator->givePermissionTo(PermissionEnum::RoleCreate->value);
-        Role::firstOrCreate(['name' => 'editor', 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => 'editor', 'guard_name' => 'sanctum']);
 
         $response = $this->postJson('/api/v1/roles', ['name' => 'editor']);
 
@@ -39,7 +39,7 @@ describe('POST /api/v1/roles', function () {
         $response->assertJsonValidationErrors(['name']);
     });
 
-    it('rejects users without the create permission', function () {
+    it('rejects users without the create permission', function (): void {
         loginAsUser();
 
         assertProblemResponse($this->postJson('/api/v1/roles', ['name' => 'nope']), 403);

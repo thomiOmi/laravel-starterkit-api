@@ -45,7 +45,7 @@ final class FileAdder
     private array $manipulations = [];
 
     /** @var callable|null */
-    private $sanitizer = null;
+    private $sanitizer;
 
     public function __construct(
         private readonly Model $model,
@@ -200,7 +200,7 @@ final class FileAdder
         );
 
         // Resolve the action via container to keep Media module self-contained.
-        $action = app(UploadMediaAction::class);
+        $action = resolve(UploadMediaAction::class);
 
         // Determine uploader from auth context if available.
         $uploader = null;
@@ -255,7 +255,7 @@ final class FileAdder
         $fresh = $media->fresh();
 
         if ($this->generateResponsiveImages && $fresh instanceof Media && $fresh->responsive_images === []) {
-            app(GenerateResponsiveImagesAction::class)->handle($fresh);
+            resolve(GenerateResponsiveImagesAction::class)->handle($fresh);
 
             return $fresh->fresh() ?? $fresh;
         }

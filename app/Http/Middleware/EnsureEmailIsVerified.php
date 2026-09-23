@@ -31,6 +31,7 @@ final readonly class EnsureEmailIsVerified
             ! $request->user()->hasVerifiedEmail())) {
             throw new AccessDeniedHttpException(__('auth.email_verify_required'));
         }
+
         /** @var Response $response */
         $response = $next($request);
 

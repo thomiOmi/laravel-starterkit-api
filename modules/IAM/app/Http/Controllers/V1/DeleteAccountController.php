@@ -28,7 +28,6 @@ final readonly class DeleteAccountController extends Controller
         $this->deleteAccount->handle($currentUser, $request->payload());
 
         return new SuccessResponse(
-            data: null,
             title: __('general.resource_deleted', ['resource' => 'Account']),
             detail: __('general.resource_deleted', ['resource' => 'Account']),
             status: Response::HTTP_OK,

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
@@ -19,8 +21,8 @@ use Modules\Media\Traits\InteractsWithMedia;
 
 covers(GenerateResponsiveImagesAction::class);
 
-describe('Media responsive images', function () {
-    beforeEach(function () {
+describe('Media responsive images', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         config(['media.responsive.widths' => [32, 64, 2000]]);
@@ -28,17 +30,9 @@ describe('Media responsive images', function () {
 
     function responsiveOwner(): Model&HasMedia
     {
-        $owner = new class extends Model implements HasMedia
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model implements HasMedia
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
 
             public function registerMediaCollections(): void
             {
@@ -64,7 +58,7 @@ describe('Media responsive images', function () {
         return $owner;
     }
 
-    it('generates capped widths and fills the responsive json', function () {
+    it('generates capped widths and fills the responsive json', function (): void {
         $owner = responsiveOwner();
 
         $media = $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 80))
@@ -83,7 +77,7 @@ describe('Media responsive images', function () {
         }
     });
 
-    it('reads originals from the source disk and writes responsive files to the conversion disk', function () {
+    it('reads originals from the source disk and writes responsive files to the conversion disk', function (): void {
         Storage::fake('attachments');
         $owner = responsiveOwner();
         $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne([
@@ -92,7 +86,7 @@ describe('Media responsive images', function () {
         ]);
         Storage::disk('public')->put($media->getPath() ?? '', (string) UploadedFile::fake()->image('source.jpg', 100, 80)->getContent());
 
-        app(GenerateResponsiveImagesAction::class)->handle($media);
+        resolve(GenerateResponsiveImagesAction::class)->handle($media);
 
         $responsive = $media->fresh()?->responsive_images;
         $path = is_array($responsive) ? ($responsive[32]['path'] ?? null) : null;
@@ -102,7 +96,7 @@ describe('Media responsive images', function () {
             ->and(Storage::disk('public')->exists(is_string($path) ? $path : ''))->toBeFalse();
     });
 
-    it('stays empty when the collection did not opt in', function () {
+    it('stays empty when the collection did not opt in', function (): void {
         $user = loginAsUser();
 
         $media = $user->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 80))
@@ -111,7 +105,7 @@ describe('Media responsive images', function () {
         expect($media->fresh()?->responsive_images)->toBe([]);
     });
 
-    it('builds a sorted srcset for public media', function () {
+    it('builds a sorted srcset for public media', function (): void {
         $owner = responsiveOwner();
 
         $media = $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 80))
@@ -126,7 +120,7 @@ describe('Media responsive images', function () {
             ->and($srcset ?? '')->toContain('64w');
     });
 
-    it('returns null srcset for private media', function () {
+    it('returns null srcset for private media', function (): void {
         $owner = responsiveOwner();
 
         $media = $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 80))
@@ -135,7 +129,7 @@ describe('Media responsive images', function () {
         expect($media->fresh()?->getSrcset())->toBeNull();
     });
 
-    it('dispatches the job instead of generating inline when queued', function () {
+    it('dispatches the job instead of generating inline when queued', function (): void {
         config(['media.queue' => true]);
         Bus::fake([ProcessMediaJob::class]);
 
@@ -149,30 +143,28 @@ describe('Media responsive images', function () {
         expect($queuedMedia->processing_status->value)->toBe('pending');
     });
 
-    it('generates responsive images when the queued job runs', function () {
+    it('generates responsive images when the queued job runs', function (): void {
         $owner = responsiveOwner();
 
         $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne(['mime_type' => 'image/jpeg']);
         Storage::disk('public')->put($media->getPath() ?? '', (string) UploadedFile::fake()->image('seed.jpg', 100, 80)->getContent());
 
-        new ProcessMediaJob((string) $media->id)->handle(app(MediaConversionService::class), app(GenerateResponsiveImagesAction::class));
+        new ProcessMediaJob((string) $media->id)->handle(resolve(MediaConversionService::class), resolve(GenerateResponsiveImagesAction::class));
 
         $processedMedia = $media->fresh();
-        if (! $processedMedia instanceof Media) {
-            throw new RuntimeException('Processed media was not found.');
-        }
+        throw_unless($processedMedia instanceof Media, RuntimeException::class, 'Processed media was not found.');
 
         expect($processedMedia->responsive_images)->not->toBe([])
             ->and($processedMedia->processing_status->value)->toBe('processed')
             ->and($processedMedia->processed_at)->not->toBeNull();
     });
 
-    it('marks queued processing as failed when the source file is missing', function () {
+    it('marks queued processing as failed when the source file is missing', function (): void {
         $owner = responsiveOwner();
         $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne(['mime_type' => 'image/jpeg']);
 
         expect(function () use ($media): void {
-            new ProcessMediaJob((string) $media->id)->handle(app(MediaConversionService::class), app(GenerateResponsiveImagesAction::class));
+            new ProcessMediaJob((string) $media->id)->handle(resolve(MediaConversionService::class), resolve(GenerateResponsiveImagesAction::class));
         })
             ->toThrow(RuntimeException::class);
 

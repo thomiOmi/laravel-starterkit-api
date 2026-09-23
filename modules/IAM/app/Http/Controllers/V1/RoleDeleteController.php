@@ -34,7 +34,6 @@ final readonly class RoleDeleteController extends Controller
 
         if ($this->deleteRole->handle($role)) {
             return new SuccessResponse(
-                data: null,
                 title: __('general.resource_deleted', ['resource' => 'Role']),
                 detail: __('general.resource_deleted', ['resource' => 'Role']),
                 status: Response::HTTP_OK,

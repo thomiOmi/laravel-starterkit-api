@@ -7,8 +7,8 @@ use Modules\IAM\Http\Controllers\V1\LogoutOtherDevicesController;
 
 covers(LogoutOtherDevicesController::class);
 
-describe('POST /api/v1/auth/devices/logout-others', function () {
-    it('revokes every other session and keeps the current one', function () {
+describe('POST /api/v1/auth/devices/logout-others', function (): void {
+    it('revokes every other session and keeps the current one', function (): void {
         $user = UserFactory::new()->createOne(['password' => 'my-password']);
         $current = $user->createToken('current');
         $user->createToken('old-phone');
@@ -22,7 +22,7 @@ describe('POST /api/v1/auth/devices/logout-others', function () {
             ->and($user->tokens()->first()?->name)->toBe('current');
     });
 
-    it('rejects a wrong password', function () {
+    it('rejects a wrong password', function (): void {
         $user = UserFactory::new()->createOne(['password' => 'my-password']);
         $token = $user->createToken('current');
         $user->createToken('other');

@@ -24,7 +24,6 @@ final readonly class SocialUnlinkController extends Controller
         $this->socialUnlink->handle($currentUser, $provider);
 
         return new SuccessResponse(
-            data: null,
             title: 'OK',
             detail: __('auth.social_unlink_success'),
         );

@@ -9,8 +9,8 @@ use Modules\IAM\Http\Controllers\V1\VerifyEmailController;
 
 covers(VerifyEmailController::class);
 
-describe('GET /api/v1/auth/email/verify/{id}/{hash}', function () {
-    it('marks the user verified and active with a valid signed url', function () {
+describe('GET /api/v1/auth/email/verify/{id}/{hash}', function (): void {
+    it('marks the user verified and active with a valid signed url', function (): void {
         $user = UserFactory::new()->unverified()->createOne(['status' => UserStatusEnum::Pending]);
 
         $url = URL::temporarySignedRoute(
@@ -26,7 +26,7 @@ describe('GET /api/v1/auth/email/verify/{id}/{hash}', function () {
             ->and($user->fresh()?->status)->toBe(UserStatusEnum::Active);
     });
 
-    it('rejects a mismatched hash', function () {
+    it('rejects a mismatched hash', function (): void {
         $user = UserFactory::new()->unverified()->createOne();
 
         $url = URL::temporarySignedRoute(
@@ -38,7 +38,7 @@ describe('GET /api/v1/auth/email/verify/{id}/{hash}', function () {
         $this->actingAs($user, 'sanctum')->getJson($url)->assertForbidden();
     });
 
-    it('rejects unsigned urls', function () {
+    it('rejects unsigned urls', function (): void {
         $user = UserFactory::new()->unverified()->createOne();
 
         $this->actingAs($user, 'sanctum')

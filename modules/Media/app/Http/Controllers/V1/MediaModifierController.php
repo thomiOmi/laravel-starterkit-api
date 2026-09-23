@@ -39,11 +39,10 @@ final readonly class MediaModifierController extends Controller
         try {
             /** @var array<string, mixed> $parsed */
             $parsed = MediaConversion::parse($modifiers);
-        } catch (InvalidArgumentException $e) {
-            throw ValidationException::withMessages(['modifiers' => $e->getMessage()]);
+        } catch (InvalidArgumentException $invalidArgumentException) {
+            throw ValidationException::withMessages(['modifiers' => $invalidArgumentException->getMessage()]);
         }
 
-        /** @var string $format */
         $format = isset($parsed['f']) && is_string($parsed['f']) ? $parsed['f'] : 'webp';
 
         if ($format === 'jpeg') {

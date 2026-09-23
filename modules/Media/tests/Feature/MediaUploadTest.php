@@ -15,8 +15,8 @@ use Modules\Media\Support\FileNamer\MediaFileNamer;
 
 covers(MediaUploadController::class);
 
-describe('POST /api/v1/media', function () {
-    beforeEach(function () {
+describe('POST /api/v1/media', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
@@ -28,7 +28,7 @@ describe('POST /api/v1/media', function () {
         ]);
     });
 
-    it('stores the upload and returns the created media', function () {
+    it('stores the upload and returns the created media', function (): void {
         Event::fake([MediaUploaded::class]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -62,7 +62,7 @@ describe('POST /api/v1/media', function () {
         Event::assertDispatched(MediaUploaded::class, fn (MediaUploaded $event): bool => $event->media->is($media));
     });
 
-    it('normalizes decodable images to webp regardless of source format', function () {
+    it('normalizes decodable images to webp regardless of source format', function (): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -77,7 +77,7 @@ describe('POST /api/v1/media', function () {
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
-    it('stores non-image files untouched when their extension is allowed', function () {
+    it('stores non-image files untouched when their extension is allowed', function (): void {
         config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -95,7 +95,7 @@ describe('POST /api/v1/media', function () {
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
-    it('stores private uploads off the public disk', function () {
+    it('stores private uploads off the public disk', function (): void {
         config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -115,7 +115,7 @@ describe('POST /api/v1/media', function () {
         Storage::disk('public')->assertMissing($media->getPath() ?? '');
     });
 
-    it('rejects invalid collection names', function (string $collection) {
+    it('rejects invalid collection names', function (string $collection): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -131,7 +131,7 @@ describe('POST /api/v1/media', function () {
         'symbol' => 'col!ect',
     ]);
 
-    it('defaults the collection name', function () {
+    it('defaults the collection name', function (): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -143,7 +143,7 @@ describe('POST /api/v1/media', function () {
         expect($response->json('data.media.collection_name'))->toBe('default');
     });
 
-    it('rejects executable extensions', function (string $filename) {
+    it('rejects executable extensions', function (string $filename): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -158,7 +158,7 @@ describe('POST /api/v1/media', function () {
         'double' => 'shell.php.txt',
     ]);
 
-    it('accepts non-image files by default when no allowlist is configured', function () {
+    it('accepts non-image files by default when no allowlist is configured', function (): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -169,7 +169,7 @@ describe('POST /api/v1/media', function () {
         assertSuccessResponse($response, 201);
     });
 
-    it('rejects extensions outside the global allowlist', function () {
+    it('rejects extensions outside the global allowlist', function (): void {
         config(['media.allowed_extensions' => ['png', 'jpg']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -182,7 +182,7 @@ describe('POST /api/v1/media', function () {
         $response->assertJsonValidationErrors(['file']);
     });
 
-    it('checksums the stored bytes', function () {
+    it('checksums the stored bytes', function (): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -198,7 +198,7 @@ describe('POST /api/v1/media', function () {
         expect($media->sha256)->toBe(hash('sha256', (string) $stored));
     });
 
-    it('rejects a custom namer collision instead of overwriting', function () {
+    it('rejects a custom namer collision instead of overwriting', function (): void {
         config(['media.file_namer' => ConstantFileNamer::class]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -216,7 +216,7 @@ describe('POST /api/v1/media', function () {
         assertProblemResponse($second, 400);
     });
 
-    it('rejects files above the size limit', function () {
+    it('rejects files above the size limit', function (): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -228,11 +228,11 @@ describe('POST /api/v1/media', function () {
         $response->assertJsonValidationErrors(['file']);
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->postJson('/api/v1/media')->assertUnauthorized();
     });
 
-    it('rejects users without the create permission', function () {
+    it('rejects users without the create permission', function (): void {
         loginAsUser();
 
         $response = $this->post('/api/v1/media', [

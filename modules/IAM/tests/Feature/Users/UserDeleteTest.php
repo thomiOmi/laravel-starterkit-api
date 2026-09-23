@@ -11,22 +11,23 @@ use Modules\IAM\Models\Role;
 
 covers(UserDeleteController::class);
 
-describe('DELETE /api/v1/users/{user}', function () {
-    beforeEach(function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
-        Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
+describe('DELETE /api/v1/users/{user}', function (): void {
+    beforeEach(function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
     });
 
-    it('soft-deletes another user with the delete permission', function () {
+    it('soft-deletes another user with the delete permission', function (): void {
         $actor = loginAsUser();
         $actor->givePermissionTo(PermissionEnum::UserDelete->value);
+
         $target = UserFactory::new()->createOne();
 
         assertSuccessResponse($this->deleteJson("/api/v1/users/{$target->id}"), 200);
         expect($target->refresh()->deleted_at)->not->toBeNull();
     });
 
-    it('blocks deleting yourself even with permission', function () {
+    it('blocks deleting yourself even with permission', function (): void {
         $actor = loginAsUser();
         $actor->givePermissionTo(PermissionEnum::UserDelete->value);
 
@@ -34,16 +35,17 @@ describe('DELETE /api/v1/users/{user}', function () {
         expect($actor->refresh()->deleted_at)->toBeNull();
     });
 
-    it('blocks deleting super-admins', function () {
+    it('blocks deleting super-admins', function (): void {
         $actor = loginAsUser();
         $actor->givePermissionTo(PermissionEnum::UserDelete->value);
+
         $superAdmin = UserFactory::new()->superAdmin()->createOne();
 
         assertProblemResponse($this->deleteJson("/api/v1/users/{$superAdmin->id}"), 403);
         expect($superAdmin->refresh()->deleted_at)->toBeNull();
     });
 
-    it('rejects users without the delete permission', function () {
+    it('rejects users without the delete permission', function (): void {
         loginAsUser();
         $target = UserFactory::new()->createOne();
 

@@ -7,8 +7,8 @@ use Modules\IAM\Http\Requests\V1\LoginRequest;
 
 covers(LoginRequest::class);
 
-describe('LoginRequest', function () {
-    it('extends FormRequest and authorizes all', function () {
+describe('LoginRequest', function (): void {
+    it('extends FormRequest and authorizes all', function (): void {
         $parent = new ReflectionClass(LoginRequest::class)->getParentClass();
 
         expect($parent)->toBeInstanceOf(ReflectionClass::class);
@@ -19,7 +19,7 @@ describe('LoginRequest', function () {
         }
     });
 
-    it('defines expected validation rules', function () {
+    it('defines expected validation rules', function (): void {
         $request = new LoginRequest;
         $rules = $request->rules();
 
@@ -27,7 +27,7 @@ describe('LoginRequest', function () {
             ->and($rules['device_name'])->toContain('nullable', 'string', 'max:255');
     });
 
-    it('exposes payload via FormRequest', function () {
+    it('exposes payload via FormRequest', function (): void {
         expect(new ReflectionClass(LoginRequest::class)->hasMethod('payload'))->toBeTrue();
     });
 });

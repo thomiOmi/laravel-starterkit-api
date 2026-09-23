@@ -24,7 +24,7 @@ trait FormatDate
             }
         }
 
-        return $date !== null ? $this->formatDateTime($date) : null;
+        return $date instanceof DateTimeInterface ? $this->formatDateTime($date) : null;
     }
 
     protected function formatDateTime(DateTimeInterface $date): string

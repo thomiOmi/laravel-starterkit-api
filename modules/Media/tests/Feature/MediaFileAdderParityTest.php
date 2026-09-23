@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
@@ -14,25 +16,17 @@ use Modules\Media\Traits\InteractsWithMedia;
 
 covers(FileAdder::class);
 
-describe('Media file adder parity', function () {
-    beforeEach(function () {
+describe('Media file adder parity', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
     function limitedOwner(): Model&HasMedia
     {
-        $owner = new class extends Model implements HasMedia
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model implements HasMedia
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
 
             public function registerMediaCollections(): void
             {
@@ -46,7 +40,7 @@ describe('Media file adder parity', function () {
         return $owner;
     }
 
-    it('keeps only the latest items of a limited collection', function () {
+    it('keeps only the latest items of a limited collection', function (): void {
         $owner = limitedOwner();
 
         for ($i = 0; $i < 4; $i++) {
@@ -56,14 +50,14 @@ describe('Media file adder parity', function () {
         expect($owner->getMedia('gallery'))->toHaveCount(3);
     });
 
-    it('rejects a non-positive collection limit', function () {
+    it('rejects a non-positive collection limit', function (): void {
         $owner = limitedOwner();
 
         expect(fn (): mixed => $owner->addMediaCollection('broken')->onlyKeepLatest(0))
             ->toThrow(InvalidArgumentException::class);
     });
 
-    it('forces queued processing per call', function () {
+    it('forces queued processing per call', function (): void {
         config(['media.queue' => false]);
         Bus::fake([ProcessMediaJob::class]);
 
@@ -76,7 +70,7 @@ describe('Media file adder parity', function () {
         Bus::assertDispatched(ProcessMediaJob::class);
     });
 
-    it('toggles responsive generation per call', function () {
+    it('toggles responsive generation per call', function (): void {
         config(['media.responsive.widths' => [32]]);
 
         $owner = limitedOwner();
@@ -94,7 +88,7 @@ describe('Media file adder parity', function () {
         expect($without->fresh()?->responsive_images)->toBe([]);
     });
 
-    it('accepts custom headers per call', function () {
+    it('accepts custom headers per call', function (): void {
         $owner = limitedOwner();
 
         $media = $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))
@@ -105,17 +99,13 @@ describe('Media file adder parity', function () {
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
-    it('stores manipulations in the media manipulation metadata', function () {
+    it('stores manipulations in the media manipulation metadata', function (): void {
         $owner = limitedOwner();
         $source = imagecreatetruecolor(20, 20);
-        if (! $source instanceof GdImage) {
-            throw new RuntimeException('Unable to create the test image.');
-        }
+        throw_unless($source instanceof GdImage, RuntimeException::class, 'Unable to create the test image.');
 
         $red = imagecolorallocate($source, 255, 0, 0);
-        if (! is_int($red)) {
-            throw new RuntimeException('Unable to allocate the test color.');
-        }
+        throw_unless(is_int($red), RuntimeException::class, 'Unable to allocate the test color.');
 
         imagefill($source, 0, 0, $red);
         ob_start();
@@ -127,9 +117,7 @@ describe('Media file adder parity', function () {
             ->withManipulations(['filter' => 'grayscale'])
             ->toMediaCollection('gallery');
         $processed = imagecreatefromstring((string) Storage::disk($media->disk)->get($media->getPath() ?? ''));
-        if (! $processed instanceof GdImage) {
-            throw new RuntimeException('Unable to decode the processed test image.');
-        }
+        throw_unless($processed instanceof GdImage, RuntimeException::class, 'Unable to decode the processed test image.');
 
         $pixel = imagecolorat($processed, 10, 10);
         imagedestroy($processed);

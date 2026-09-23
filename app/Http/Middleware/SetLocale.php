@@ -67,7 +67,7 @@ final readonly class SetLocale
             $paths = glob(lang_path('*'), GLOB_ONLYDIR);
             $directories = $paths !== false ? $paths : [];
 
-            $locales = array_map('basename', $directories);
+            $locales = array_map(basename(...), $directories);
             sort($locales);
 
             return $locales !== [] ? $locales : ['en'];

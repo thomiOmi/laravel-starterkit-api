@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Support\MediaCollection;
 use Modules\Media\Support\StorageOptions;
 use Throwable;
 
@@ -51,7 +52,7 @@ final readonly class GenerateResponsiveImagesAction
 
         $collection = $model->getMediaCollection($media->collection_name);
 
-        return $collection !== null && $collection->generateResponsiveImages;
+        return $collection instanceof MediaCollection && $collection->generateResponsiveImages;
     }
 
     /**
@@ -131,7 +132,7 @@ final readonly class GenerateResponsiveImagesAction
 
         $image = Image::fromStorage($path, $sourceDisk)->orient()->scale(width: $width)->toFormat($format)->quality(80);
 
-        $fileName = $width.'-'.app(MediaFileNamer::class)->responsiveFileName($media->file_name);
+        $fileName = $width.'-'.resolve(MediaFileNamer::class)->responsiveFileName($media->file_name);
         $directory = dirname($path).'/responsive-images';
 
         $image->storeAs($directory, $fileName, $conversionDisk, StorageOptions::forVisibility($media->visibility->value));

@@ -42,7 +42,7 @@ final readonly class EnsureFeatureIsActive
     /**
      * Resolve a build-time registry feature first, then fall back to Pennant.
      */
-    protected function isActive(string $feature): bool
+    private function isActive(string $feature): bool
     {
         $parts = explode('.', $feature, 2);
 

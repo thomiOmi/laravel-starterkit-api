@@ -41,9 +41,7 @@ final readonly class GenerateOnDemandConversionAction
         $width = isset($parsed['w']) && is_int($parsed['w']) ? $parsed['w'] : null;
         /** @var int<1, 2000>|null $height */
         $height = isset($parsed['h']) && is_int($parsed['h']) ? $parsed['h'] : null;
-        /** @var string $format */
         $format = isset($parsed['f']) && is_string($parsed['f']) ? $parsed['f'] : 'webp';
-        /** @var string|null $fit */
         $fit = isset($parsed['fit']) && is_string($parsed['fit']) ? $parsed['fit'] : null;
         /** @var int<1, 100> $quality */
         $quality = isset($parsed['q']) && is_int($parsed['q']) ? $parsed['q'] : 80;

@@ -37,13 +37,7 @@ final class DisallowedExtensions
         $segments = explode('.', strtolower(basename($filename)));
         array_shift($segments);
 
-        foreach ($segments as $segment) {
-            if ($segment !== '' && in_array($segment, $denied, true)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($segments, fn (string $segment): bool => $segment !== '' && in_array($segment, $denied, true));
     }
 
     /**

@@ -9,8 +9,8 @@ use Modules\IAM\Http\Controllers\V1\ForgotPasswordController;
 
 covers(ForgotPasswordController::class);
 
-describe('POST /api/v1/auth/forgot-password', function () {
-    it('sends a reset link for a known email', function () {
+describe('POST /api/v1/auth/forgot-password', function (): void {
+    it('sends a reset link for a known email', function (): void {
         Notification::fake();
         $user = UserFactory::new()->createOne(['email' => 'jane@example.com']);
 
@@ -20,7 +20,7 @@ describe('POST /api/v1/auth/forgot-password', function () {
         Notification::assertSentTo($user, ResetPasswordNotification::class);
     });
 
-    it('responds identically for unknown emails to prevent enumeration', function () {
+    it('responds identically for unknown emails to prevent enumeration', function (): void {
         Notification::fake();
 
         $response = $this->postJson('/api/v1/auth/forgot-password', ['email' => 'ghost@example.com']);
@@ -29,7 +29,7 @@ describe('POST /api/v1/auth/forgot-password', function () {
         Notification::assertNothingSent();
     });
 
-    it('validates the email format', function () {
+    it('validates the email format', function (): void {
         $response = $this->postJson('/api/v1/auth/forgot-password', ['email' => 'not-an-email']);
 
         assertProblemResponse($response, 422, 'validation');

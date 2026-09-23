@@ -7,21 +7,21 @@ use Modules\Media\Support\ImageDimensions;
 
 covers(ImageDimensions::class);
 
-describe('ImageDimensions support', function () {
-    it('measures real image files without a full decode', function () {
+describe('ImageDimensions support', function (): void {
+    it('measures real image files without a full decode', function (): void {
         // Keep the fake instance alive: the temp file is removed with it.
         $file = UploadedFile::fake()->image('photo.jpg', 64, 48);
 
         expect(ImageDimensions::measure($file->getPathname()))->toBe(['width' => 64, 'height' => 48]);
     });
 
-    it('returns null for non-images', function () {
+    it('returns null for non-images', function (): void {
         $file = UploadedFile::fake()->createWithContent('notes.txt', 'hello world');
 
         expect(ImageDimensions::measure($file->getPathname()))->toBeNull();
     });
 
-    it('flags dimensions beyond the configured limits', function () {
+    it('flags dimensions beyond the configured limits', function (): void {
         $file = UploadedFile::fake()->image('photo.jpg', 64, 48);
         $path = $file->getPathname();
 

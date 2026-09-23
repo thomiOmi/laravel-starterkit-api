@@ -7,8 +7,8 @@ use Modules\IAM\Http\Controllers\V1\ChangePasswordController;
 
 covers(ChangePasswordController::class);
 
-describe('POST /api/v1/auth/change-password', function () {
-    it('changes the password and revokes other sessions', function () {
+describe('POST /api/v1/auth/change-password', function (): void {
+    it('changes the password and revokes other sessions', function (): void {
         $user = UserFactory::new()->createOne(['password' => 'current-pass']);
         $current = $user->createToken('current');
         $user->createToken('other-device');
@@ -29,7 +29,7 @@ describe('POST /api/v1/auth/change-password', function () {
         ])->assertOk();
     });
 
-    it('rejects a wrong current password', function () {
+    it('rejects a wrong current password', function (): void {
         $user = UserFactory::new()->createOne(['password' => 'current-pass']);
         $token = $user->createToken('current');
 
@@ -44,7 +44,7 @@ describe('POST /api/v1/auth/change-password', function () {
         $response->assertJsonValidationErrors(['current_password']);
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->postJson('/api/v1/auth/change-password')->assertUnauthorized();
     });
 });

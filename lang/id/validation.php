@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'social_provider_invalid' => 'Penyedia sosial yang dipilih tidak valid.',
     'social_state_invalid' => 'Status autentikasi sosial tidak valid.',

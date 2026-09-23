@@ -58,7 +58,7 @@ Three tiers:
 - Static analysis: `./vendor/bin/phpstan analyse --memory-limit=512M` (level max, test files included via `pest-plugin-phpstan`; no baseline, no `@phpstan-ignore`)
 - Type coverage: `php artisan test --coverage --type-coverage --min=100 --memory-limit=512M`
   - `--memory-limit=512M` is required: phpunit runs as a child process that ignores `-d memory_limit`; the type-coverage plugin applies it via `ini_set` in-process
-- Rector dry run: `composer rector:dry` (`PestSetList::CODING_STYLE`), part of `composer ci:check`
+- Rector dry run: `composer rector:dry` (`PestSetList::CODING_STYLE`, `withComposerBased(laravel: true, phpunit: true)`, PHP 8.4 sets, prepared sets for deadCode/codeQuality/typeDeclarations/privatization/earlyReturn/codingStyle, and Laravel sets incl. `LARAVEL_CODE_QUALITY`/`LARAVEL_COLLECTION`/`LARAVEL_FACTORIES`/`LARAVEL_IF_HELPERS`), part of `composer ci:check`; skips `AddArrowFunctionReturnTypeRector`, `AddHasFactoryToModelsRector`, `CarbonToDateFacadeRector`, `tests/Architecture/ArchitectureTest.php`, and `config/database.php`
 - Clear PHPStan cache with `phpstan clear-result-cache` (prefix `PAO_DISABLE=1` — the `laravel/pao` wrapper breaks non-analyse commands)
 - No `dd()`, `dump()`, `console.log()` in committed code
 - Production security gate: `php artisan security:check`

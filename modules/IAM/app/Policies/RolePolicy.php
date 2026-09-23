@@ -23,7 +23,7 @@ final class RolePolicy
     /**
      * Determine whether the user can view the role.
      */
-    public function view(User $user, Role $role): bool
+    public function view(User $user): bool
     {
         return $user->can(PermissionEnum::RoleView->value);
     }

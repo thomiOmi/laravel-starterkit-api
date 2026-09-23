@@ -30,6 +30,7 @@ final readonly class EnsureUserIsActive
         if (! $user->status->allowsAuthentication()) {
             throw new AccessDeniedHttpException(__($user->status->blockedMessageKey()));
         }
+
         /** @var Response $response */
         $response = $next($request);
 

@@ -28,7 +28,6 @@ final readonly class LogoutOtherDevicesController extends Controller
         $this->logoutOtherDevices->handle($currentUser);
 
         return new SuccessResponse(
-            data: null,
             title: __('auth.other_devices_logout_success'),
             detail: __('auth.other_devices_logout_success'),
             status: SymfonyResponse::HTTP_OK,

@@ -17,7 +17,7 @@ final readonly class AssignRolesToUserAction
      */
     public function handle(User $user, array $roles): User
     {
-        DB::transaction(fn () => $user->syncRoles($roles));
+        DB::transaction(fn (): User => $user->syncRoles($roles));
 
         return $user;
     }

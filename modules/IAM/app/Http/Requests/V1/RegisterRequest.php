@@ -24,7 +24,8 @@ final class RegisterRequest extends FormRequest
         $this->normalizeEmail();
     }
 
-    use PasswordValidationRules, ProfileValidationRules;
+    use PasswordValidationRules;
+    use ProfileValidationRules;
 
     public function authorize(): bool
     {

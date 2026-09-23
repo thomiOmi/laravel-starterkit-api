@@ -17,16 +17,17 @@ covers([
     UserAssignRolesController::class,
 ]);
 
-describe('POST /api/v1/users/bulk/delete', function () {
-    beforeEach(function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
-        Permission::firstOrCreate(['name' => PermissionEnum::UserRestore->value, 'guard_name' => 'sanctum']);
-        Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
+describe('POST /api/v1/users/bulk/delete', function (): void {
+    beforeEach(function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserDelete->value, 'guard_name' => 'sanctum']);
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserRestore->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
     });
 
-    it('soft-deletes the given users and skips super-admins', function () {
+    it('soft-deletes the given users and skips super-admins', function (): void {
         $actor = loginAsUser();
         $actor->givePermissionTo(PermissionEnum::UserDelete->value);
+
         $victim = UserFactory::new()->createOne();
         $superAdmin = UserFactory::new()->superAdmin()->createOne();
 
@@ -39,7 +40,7 @@ describe('POST /api/v1/users/bulk/delete', function () {
             ->and($superAdmin->refresh()->deleted_at)->toBeNull();
     });
 
-    it('validates the ids payload', function () {
+    it('validates the ids payload', function (): void {
         $actor = loginAsUser();
         $actor->givePermissionTo(PermissionEnum::UserDelete->value);
 
@@ -50,14 +51,15 @@ describe('POST /api/v1/users/bulk/delete', function () {
     });
 });
 
-describe('POST /api/v1/users/bulk/restore', function () {
-    beforeEach(function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::UserRestore->value, 'guard_name' => 'sanctum']);
+describe('POST /api/v1/users/bulk/restore', function (): void {
+    beforeEach(function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserRestore->value, 'guard_name' => 'sanctum']);
     });
 
-    it('restores soft-deleted users', function () {
+    it('restores soft-deleted users', function (): void {
         $actor = loginAsUser();
         $actor->givePermissionTo(PermissionEnum::UserRestore->value);
+
         $trashed = UserFactory::new()->createOne();
         $trashed->delete();
 
@@ -68,17 +70,18 @@ describe('POST /api/v1/users/bulk/restore', function () {
     });
 });
 
-describe('PUT /api/v1/users/{user}/roles', function () {
-    beforeEach(function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
+describe('PUT /api/v1/users/{user}/roles', function (): void {
+    beforeEach(function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
         foreach ([RoleEnum::SuperAdmin, RoleEnum::Admin, RoleEnum::User] as $role) {
-            Role::firstOrCreate(['name' => $role->value, 'guard_name' => 'sanctum']);
+            Role::query()->firstOrCreate(['name' => $role->value, 'guard_name' => 'sanctum']);
         }
     });
 
-    it('syncs roles on a non-super-admin target', function () {
+    it('syncs roles on a non-super-admin target', function (): void {
         $editor = loginAsUser();
         $editor->givePermissionTo(PermissionEnum::UserEdit->value);
+
         $target = UserFactory::new()->createOne();
 
         $response = $this->putJson("/api/v1/users/{$target->id}/roles", [
@@ -91,9 +94,10 @@ describe('PUT /api/v1/users/{user}/roles', function () {
             ->and($target->refresh()->hasRole(RoleEnum::SuperAdmin->value))->toBeFalse();
     });
 
-    it('blocks assigning super-admin without being one', function () {
+    it('blocks assigning super-admin without being one', function (): void {
         $editor = loginAsUser();
         $editor->givePermissionTo(PermissionEnum::UserEdit->value);
+
         $target = UserFactory::new()->createOne();
 
         assertProblemResponse($this->putJson("/api/v1/users/{$target->id}/roles", [
@@ -101,9 +105,10 @@ describe('PUT /api/v1/users/{user}/roles', function () {
         ]), 403);
     });
 
-    it('rejects unknown role names', function () {
+    it('rejects unknown role names', function (): void {
         $editor = loginAsUser();
         $editor->givePermissionTo(PermissionEnum::UserEdit->value);
+
         $target = UserFactory::new()->createOne();
 
         $response = $this->putJson("/api/v1/users/{$target->id}/roles", [

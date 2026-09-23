@@ -60,9 +60,7 @@ final readonly class ProblemResponse implements Responsable
         if ($this->extensions !== []) {
             $protectedKeys = ['status', 'title', 'detail', 'type', 'instance', 'timestamp'];
 
-            $processedExtensions = array_map(function (mixed $value) {
-                return $value instanceof Arrayable ? $value->toArray() : $value;
-            }, $this->extensions);
+            $processedExtensions = array_map(fn (mixed $value) => $value instanceof Arrayable ? $value->toArray() : $value, $this->extensions);
 
             $cleanExtension = array_diff_key($processedExtensions, array_flip($protectedKeys));
             $payload = array_merge($payload, $cleanExtension);
@@ -88,7 +86,7 @@ final readonly class ProblemResponse implements Responsable
             }
 
             $headers[$key] = is_array($value)
-                ? array_values(array_map('strval', $value))
+                ? array_values(array_map(strval(...), $value))
                 : strval($value);
         }
 

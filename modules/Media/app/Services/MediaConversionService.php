@@ -81,11 +81,11 @@ final readonly class MediaConversionService
 
         try {
             return $this->generateOne($media, $name, $conversions[$name]);
-        } catch (Throwable $exception) {
+        } catch (Throwable $throwable) {
             Log::warning('Media conversion failed.', [
                 'media_id' => $media->id,
                 'conversion' => $name,
-                'error' => $exception->getMessage(),
+                'error' => $throwable->getMessage(),
             ]);
 
             return null;
@@ -144,8 +144,8 @@ final readonly class MediaConversionService
     {
         $sourceDisk = $media->disk;
         $disk = $media->conversions_disk ?? $media->disk;
-        $width = array_key_exists('width', $cfg) ? $cfg['width'] : null;
-        $height = array_key_exists('height', $cfg) ? $cfg['height'] : null;
+        $width = $cfg['width'] ?? null;
+        $height = $cfg['height'] ?? null;
         $format = $cfg['format'] ?? 'webp';
         $quality = $cfg['quality'] ?? 80;
         $fit = $cfg['fit'] ?? 'contain';
@@ -172,9 +172,7 @@ final readonly class MediaConversionService
 
         $path = $media->getPath();
 
-        if (! is_string($path)) {
-            throw new \RuntimeException('Media path is missing.');
-        }
+        throw_unless(is_string($path), \RuntimeException::class, 'Media path is missing.');
 
         $image = Image::fromStorage($path, $sourceDisk)->orient();
 
@@ -192,8 +190,8 @@ final readonly class MediaConversionService
 
         $image = $image->toFormat($format)->quality($quality);
 
-        $ext = $format === 'jpg' ? 'jpg' : $format;
-        $baseName = app(MediaFileNamer::class)->conversionFileName($media->file_name, $name);
+        $ext = $format;
+        $baseName = resolve(MediaFileNamer::class)->conversionFileName($media->file_name, $name);
 
         if (pathinfo($baseName, PATHINFO_EXTENSION) === '') {
             $baseName .= '.'.$ext;

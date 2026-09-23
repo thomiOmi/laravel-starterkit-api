@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 
 covers(ProblemResponse::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config()->set('errors.docs_url', 'https://docs.example.com/problems');
     config()->set('errors.types.default', 'general-error');
     config()->set('errors.types.validation', 'validation-failed');
 });
 
-describe('basic error structure', function () {
-    it('returns default error structure', function () {
+describe('basic error structure', function (): void {
+    it('returns default error structure', function (): void {
         $response = new ProblemResponse(detail: 'Something went wrong')->toResponse(new Request);
 
         expect($response->getStatusCode())->toBe(400)
@@ -26,7 +26,7 @@ describe('basic error structure', function () {
             ->toHaveKey('timestamp');
     });
 
-    it('uses custom title when provided', function () {
+    it('uses custom title when provided', function (): void {
         $response = new ProblemResponse(
             typeKey: 'validation',
             title: 'Validation Failed',
@@ -38,7 +38,7 @@ describe('basic error structure', function () {
         expect($data)->toMatchArray(['title' => 'Validation Failed', 'type' => 'https://docs.example.com/problems/validation-failed', 'status' => 422]);
     });
 
-    it('falls back to HTTP status text when title is empty', function () {
+    it('falls back to HTTP status text when title is empty', function (): void {
         $response = new ProblemResponse(
             title: '',
             status: 404,
@@ -50,7 +50,7 @@ describe('basic error structure', function () {
         expect($data['title'])->toBe('Not Found');
     });
 
-    it('uses unknown status text fallback', function () {
+    it('uses unknown status text fallback', function (): void {
         $response = new ProblemResponse(
             title: '',
             status: 499,
@@ -63,8 +63,8 @@ describe('basic error structure', function () {
     });
 });
 
-describe('type URI', function () {
-    it('uses about:blank type URI', function () {
+describe('type URI', function (): void {
+    it('uses about:blank type URI', function (): void {
         $response = new ProblemResponse(
             typeKey: 'about:blank',
             detail: 'Custom error',
@@ -76,8 +76,8 @@ describe('type URI', function () {
     });
 });
 
-describe('instance', function () {
-    it('includes instance URI', function () {
+describe('instance', function (): void {
+    it('includes instance URI', function (): void {
         $response = new ProblemResponse(
             detail: 'Error',
             instance: '/api/v1/users/123',
@@ -88,7 +88,7 @@ describe('instance', function () {
         expect($data['instance'])->toBe('/api/v1/users/123');
     });
 
-    it('omits instance when empty', function () {
+    it('omits instance when empty', function (): void {
         $response = new ProblemResponse(detail: 'Error')->toResponse(new Request);
 
         $data = responseData($response);
@@ -97,8 +97,8 @@ describe('instance', function () {
     });
 });
 
-describe('extensions', function () {
-    it('includes extension members', function () {
+describe('extensions', function (): void {
+    it('includes extension members', function (): void {
         $response = new ProblemResponse(
             detail: 'Error',
             extensions: ['errors' => ['name' => ['Required']]],
@@ -109,7 +109,7 @@ describe('extensions', function () {
         expect($data['errors'])->toBe(['name' => ['Required']]);
     });
 
-    it('converts Arrayable extensions to array', function () {
+    it('converts Arrayable extensions to array', function (): void {
         $arrayable = new class implements Arrayable
         {
             public function toArray(): array
@@ -128,7 +128,7 @@ describe('extensions', function () {
         expect($data['meta'])->toBe(['key' => 'value']);
     });
 
-    it('filters protected keys from extensions', function () {
+    it('filters protected keys from extensions', function (): void {
         $response = new ProblemResponse(
             detail: 'Error',
             extensions: ['status' => 'should_not_override', 'custom' => 'ok'],
@@ -139,8 +139,8 @@ describe('extensions', function () {
     });
 });
 
-describe('headers', function () {
-    it('merges custom headers', function () {
+describe('headers', function (): void {
+    it('merges custom headers', function (): void {
         $response = new ProblemResponse(
             detail: 'Error',
             headers: ['X-Request-ID' => 'abc-123'],
@@ -150,7 +150,7 @@ describe('headers', function () {
             ->and($response->headers->get('Content-Type'))->toBe('application/problem+json');
     });
 
-    it('stringifies integer header values', function () {
+    it('stringifies integer header values', function (): void {
         $response = new ProblemResponse(
             detail: 'Error',
             headers: ['Retry-After' => 60],
@@ -159,7 +159,7 @@ describe('headers', function () {
         expect($response->headers->get('Retry-After'))->toBe('60');
     });
 
-    it('supports multi-value headers', function () {
+    it('supports multi-value headers', function (): void {
         $response = new ProblemResponse(
             detail: 'Error',
             headers: ['Link' => [
@@ -174,7 +174,7 @@ describe('headers', function () {
         ]);
     });
 
-    it('drops null header values', function () {
+    it('drops null header values', function (): void {
         $response = new ProblemResponse(
             detail: 'Error',
             headers: ['X-Null-Header' => null],
@@ -184,14 +184,14 @@ describe('headers', function () {
     });
 });
 
-describe('snapshots', function () {
-    it('matches snapshot for default error', function () {
+describe('snapshots', function (): void {
+    it('matches snapshot for default error', function (): void {
         $response = new ProblemResponse(detail: 'Something went wrong')->toResponse(new Request);
 
         expect($response->getContent())->toMatchSnapshot();
     });
 
-    it('matches snapshot with extensions and instance', function () {
+    it('matches snapshot with extensions and instance', function (): void {
         $response = new ProblemResponse(
             typeKey: 'validation',
             title: 'Validation Failed',

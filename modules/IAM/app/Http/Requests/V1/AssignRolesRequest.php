@@ -10,6 +10,7 @@ use App\Enums\RoleEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Modules\IAM\Models\User;
 
 final class AssignRolesRequest extends FormRequest
 {
@@ -47,18 +48,14 @@ final class AssignRolesRequest extends FormRequest
             $targetUser = $userId;
         } elseif (is_string($userId)) {
             /** @var class-string<Model> $model */
-            $model = (string) config('auth.providers.users.model', 'Modules\IAM\Models\User');
+            $model = (string) config('auth.providers.users.model', User::class);
             /** @var Identity&Model $targetUser */
             $targetUser = $model::query()->findOrFail($userId);
         } else {
             return true;
         }
 
-        if ($targetUser->hasRole(RoleEnum::SuperAdmin->value)) {
-            return false;
-        }
-
-        return true;
+        return ! $targetUser->hasRole(RoleEnum::SuperAdmin->value);
     }
 
     /**

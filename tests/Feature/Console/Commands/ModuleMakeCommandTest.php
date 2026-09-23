@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Process;
 use Nwidart\Modules\Commands\Make\ModuleMakeCommand;
@@ -12,7 +13,7 @@ beforeEach(function (): void {
     Process::fake();
 
     $root = base_path('tests/Fixtures/module-make');
-    $files = app('files');
+    $files = resolve(Filesystem::class);
 
     $files->makeDirectory($root, 0755, true);
     $files->put($root.'/statuses.json', '{}');
@@ -21,11 +22,11 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    app('files')->deleteDirectory(base_path('tests/Fixtures/module-make'));
+    resolve(Filesystem::class)->deleteDirectory(base_path('tests/Fixtures/module-make'));
 });
 
-describe('module:make command', function () {
-    it('scaffolds a backend-only module following the kit structure', function () {
+describe('module:make command', function (): void {
+    it('scaffolds a backend-only module following the kit structure', function (): void {
         artisanCommand($this, 'module:make', ['name' => ['Blog'], '--disabled' => true])
             ->expectsOutputToContain('Module [Blog] created successfully.')
             ->assertSuccessful();
@@ -109,7 +110,7 @@ describe('module:make command', function () {
             ->and(Arr::get($composer, 'autoload.psr-4.Modules\\Blog\\Database\\Factories\\'))->toBe('database/factories/');
     });
 
-    it('creates a plain module without providers, routes and controllers', function () {
+    it('creates a plain module without providers, routes and controllers', function (): void {
         artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--plain' => true, '--disabled' => true])
             ->expectsOutputToContain('Module [Gadget] created successfully.')
             ->assertSuccessful();
@@ -136,7 +137,7 @@ describe('module:make command', function () {
             ->and($json['requires'])->toBe([]);
     });
 
-    it('can delete a generated module', function () {
+    it('can delete a generated module', function (): void {
         artisanCommand($this, 'module:make', ['name' => ['Shop'], '--disabled' => true])
             ->assertSuccessful();
 

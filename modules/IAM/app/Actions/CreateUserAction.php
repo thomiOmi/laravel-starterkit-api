@@ -13,7 +13,7 @@ final readonly class CreateUserAction
 {
     public function handle(UserPayload $payload): User
     {
-        $user = User::create([
+        $user = User::query()->create([
             ...$payload->toArray(),
             'status' => $payload->status ?? UserStatusEnum::Pending,
         ]);

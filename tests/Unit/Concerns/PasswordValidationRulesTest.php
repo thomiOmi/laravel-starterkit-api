@@ -25,36 +25,36 @@ $tester = new readonly class
     }
 };
 
-describe('PasswordValidationRules', function () use ($tester) {
+describe('PasswordValidationRules', function () use ($tester): void {
 
-    describe('password rules', function () use ($tester) {
-        it('include required by default', function () use ($tester) {
+    describe('password rules', function () use ($tester): void {
+        it('include required by default', function () use ($tester): void {
             $rules = $tester->runPasswordRules();
 
             expect($rules)->toContain('required', 'string', 'confirmed');
         });
 
-        it('exclude required when set to false', function () use ($tester) {
+        it('exclude required when set to false', function () use ($tester): void {
             $rules = $tester->runPasswordRules(required: false);
 
             expect($rules)->toContain('nullable')->not->toContain('required');
         });
 
-        it('exclude confirmed when set to false', function () use ($tester) {
+        it('exclude confirmed when set to false', function () use ($tester): void {
             $rules = $tester->runPasswordRules(confirmed: false);
 
             expect($rules)->not->toContain('confirmed');
         });
 
-        it('exclude validation when set to false', function () use ($tester) {
+        it('exclude validation when set to false', function () use ($tester): void {
             $rules = $tester->runPasswordRules(confirmed: false, validate: false);
 
             expect($rules)->toBe(['required', 'string', 'max:255']);
         });
     });
 
-    describe('current password rules', function () use ($tester) {
-        it('are always the same', function () use ($tester) {
+    describe('current password rules', function () use ($tester): void {
+        it('are always the same', function () use ($tester): void {
             expect($tester->runCurrentPasswordRules())->toBe(['required', 'string', 'max:255', 'current_password']);
         });
     });

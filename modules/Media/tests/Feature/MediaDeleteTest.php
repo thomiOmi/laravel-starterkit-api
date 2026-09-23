@@ -14,13 +14,13 @@ use Modules\Media\Models\Media;
 
 covers(MediaDeleteController::class);
 
-describe('DELETE /api/v1/media/{media}', function () {
-    beforeEach(function () {
+describe('DELETE /api/v1/media/{media}', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
-    it('allows the owner to delete without any permission and removes the file', function () {
+    it('allows the owner to delete without any permission and removes the file', function (): void {
         Event::fake([MediaDeleted::class]);
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
@@ -39,7 +39,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         Event::assertDispatched(MediaDeleted::class);
     });
 
-    it('removes non-image files when their media record is deleted', function () {
+    it('removes non-image files when their media record is deleted', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne([
             'file_name' => 'document.pdf',
@@ -52,7 +52,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         Storage::disk($media->disk)->assertMissing('default/document.pdf');
     });
 
-    it('allows a user with the delete permission to remove other media', function () {
+    it('allows a user with the delete permission to remove other media', function (): void {
         DB::table('permissions')->insertOrIgnore([
             'id' => (string) Str::ulid(),
             'name' => PermissionEnum::MediaDelete->value,
@@ -62,6 +62,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         ]);
         $staff = loginAsUser();
         $staff->givePermissionTo(PermissionEnum::MediaDelete->value);
+
         $media = MediaFactory::new()->createOne();
         Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
 
@@ -70,7 +71,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         Storage::disk($media->disk)->assertMissing($media->getPath() ?? '');
     });
 
-    it('rejects strangers without permission', function () {
+    it('rejects strangers without permission', function (): void {
         loginAsUser();
         $media = MediaFactory::new()->createOne();
 
@@ -78,7 +79,7 @@ describe('DELETE /api/v1/media/{media}', function () {
         expect(Media::query()->whereKey($media->id)->exists())->toBeTrue();
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $media = MediaFactory::new()->createOne();
 
         $this->deleteJson("/api/v1/media/{$media->id}")->assertUnauthorized();

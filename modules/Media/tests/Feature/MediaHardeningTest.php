@@ -15,8 +15,8 @@ use Modules\Media\Support\StorageOptions;
 
 covers(UploadMediaAction::class);
 
-describe('Media hardening', function () {
-    beforeEach(function () {
+describe('Media hardening', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
@@ -28,8 +28,8 @@ describe('Media hardening', function () {
         ]);
     });
 
-    describe('content-based mime validation', function () {
-        it('rejects executable bytes renamed to an image extension', function () {
+    describe('content-based mime validation', function (): void {
+        it('rejects executable bytes renamed to an image extension', function (): void {
             $user = loginAsUser();
             $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -43,7 +43,7 @@ describe('Media hardening', function () {
             expect(Media::query()->count())->toBe(0);
         });
 
-        it('rejects plain text bytes with an image extension', function () {
+        it('rejects plain text bytes with an image extension', function (): void {
             $user = loginAsUser();
             $user->givePermissionTo(PermissionEnum::MediaCreate->value);
 
@@ -56,7 +56,7 @@ describe('Media hardening', function () {
             expect(Media::query()->count())->toBe(0);
         });
 
-        it('rejects spoofed content on the programmatic path', function () {
+        it('rejects spoofed content on the programmatic path', function (): void {
             $user = loginAsUser();
 
             expect(fn (): mixed => $user->addMedia(UploadedFile::fake()->createWithContent('photo.png', '<?php echo "pwned"; ?>'))->toMediaCollection('avatars'))
@@ -65,8 +65,8 @@ describe('Media hardening', function () {
         });
     });
 
-    describe('image dimension limits', function () {
-        it('rejects images wider than the configured maximum', function () {
+    describe('image dimension limits', function (): void {
+        it('rejects images wider than the configured maximum', function (): void {
             config(['media.image.max_width' => 10]);
             $user = loginAsUser();
             $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -81,7 +81,7 @@ describe('Media hardening', function () {
             expect(Media::query()->count())->toBe(0);
         });
 
-        it('rejects images exceeding the pixel budget', function () {
+        it('rejects images exceeding the pixel budget', function (): void {
             config(['media.image.max_pixels' => 100]);
             $user = loginAsUser();
 
@@ -91,8 +91,8 @@ describe('Media hardening', function () {
         });
     });
 
-    describe('private and public storage alignment', function () {
-        it('refuses private media forced onto the public disk', function () {
+    describe('private and public storage alignment', function (): void {
+        it('refuses private media forced onto the public disk', function (): void {
             $user = loginAsUser();
 
             expect(fn (): mixed => $user->addMedia(UploadedFile::fake()->createWithContent('notes.txt', 'hello world'))->withDisk('public')->toMediaCollection('default'))
@@ -100,7 +100,7 @@ describe('Media hardening', function () {
                 ->and(Media::query()->count())->toBe(0);
         });
 
-        it('refuses public media forced onto the private disk', function () {
+        it('refuses public media forced onto the private disk', function (): void {
             $user = loginAsUser();
 
             expect(fn (): mixed => $user->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))->withDisk('local')->toMediaCollection('avatars'))
@@ -108,7 +108,7 @@ describe('Media hardening', function () {
                 ->and(Media::query()->count())->toBe(0);
         });
 
-        it('refuses conversions pinned to the wrong visibility disk', function () {
+        it('refuses conversions pinned to the wrong visibility disk', function (): void {
             $user = loginAsUser();
 
             expect(fn (): mixed => $user->addMedia(UploadedFile::fake()->createWithContent('notes.txt', 'hello world'))->storingConversionsOnDisk('public')->toMediaCollection('default'))
@@ -116,7 +116,7 @@ describe('Media hardening', function () {
                 ->and(Media::query()->count())->toBe(0);
         });
 
-        it('refuses unknown disks', function () {
+        it('refuses unknown disks', function (): void {
             $user = loginAsUser();
 
             expect(fn (): mixed => $user->addMedia(UploadedFile::fake()->createWithContent('notes.txt', 'hello world'))->withDisk('nope')->toMediaCollection('default'))
@@ -124,7 +124,7 @@ describe('Media hardening', function () {
                 ->and(Media::query()->count())->toBe(0);
         });
 
-        it('ignores visibility overrides smuggled through custom headers', function () {
+        it('ignores visibility overrides smuggled through custom headers', function (): void {
             $user = loginAsUser();
 
             $media = $user->addMedia(UploadedFile::fake()->createWithContent('notes.txt', 'hello world'))
@@ -137,8 +137,8 @@ describe('Media hardening', function () {
         });
     });
 
-    describe('malware scanning hook', function () {
-        it('rejects uploads flagged by the configured scanner without storing anything', function () {
+    describe('malware scanning hook', function (): void {
+        it('rejects uploads flagged by the configured scanner without storing anything', function (): void {
             app()->instance(MediaScanner::class, new RejectingMediaScanner);
             $user = loginAsUser();
             $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -154,8 +154,8 @@ describe('Media hardening', function () {
         });
     });
 
-    describe('partial storage failures', function () {
-        it('removes the processed file when the namer collides after storing', function () {
+    describe('partial storage failures', function (): void {
+        it('removes the processed file when the namer collides after storing', function (): void {
             config(['media.file_namer' => TakenNameFileNamer::class]);
             $user = loginAsUser();
             $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -171,7 +171,7 @@ describe('Media hardening', function () {
                 ->and(Storage::disk('public')->allFiles('avatars'))->toBe(['avatars/taken.webp']);
         });
 
-        it('removes the raw file when the database write fails validation after storing', function () {
+        it('removes the raw file when the database write fails validation after storing', function (): void {
             config(['media.file_namer' => HardeningEvilFileNamer::class]);
             config(['media.allowed_extensions' => ['txt']]);
             $user = loginAsUser();

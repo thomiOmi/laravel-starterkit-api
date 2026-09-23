@@ -8,8 +8,8 @@ use Modules\Media\Rules\AllowedFileName;
 
 covers(AllowedFileName::class);
 
-describe('AllowedFileName rule', function () {
-    it('fails files with a disallowed segment and passes clean files', function () {
+describe('AllowedFileName rule', function (): void {
+    it('fails files with a disallowed segment and passes clean files', function (): void {
         $rejected = Validator::make(
             ['file' => UploadedFile::fake()->image('shell.php.jpg', 20, 20)],
             ['file' => [new AllowedFileName]]
@@ -25,7 +25,7 @@ describe('AllowedFileName rule', function () {
         expect($accepted->fails())->toBeFalse();
     });
 
-    it('ignores non-file values', function () {
+    it('ignores non-file values', function (): void {
         $validator = Validator::make(
             ['file' => 'not-a-file'],
             ['file' => [new AllowedFileName]]

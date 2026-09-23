@@ -9,12 +9,12 @@ use Modules\IAM\Models\Permission;
 
 covers(RoleListController::class);
 
-describe('GET /api/v1/roles', function () {
-    it('rejects unauthenticated request', function () {
+describe('GET /api/v1/roles', function (): void {
+    it('rejects unauthenticated request', function (): void {
         $this->getJson('/api/v1/roles')->assertUnauthorized();
     });
 
-    it('rejects without permission', function () {
+    it('rejects without permission', function (): void {
         loginAsUser();
 
         $response = $this->getJson('/api/v1/roles');
@@ -22,8 +22,8 @@ describe('GET /api/v1/roles', function () {
         assertProblemResponse($response, 403);
     });
 
-    it('returns paginated roles with permission', function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::RoleView->value, 'guard_name' => 'sanctum']);
+    it('returns paginated roles with permission', function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::RoleView->value, 'guard_name' => 'sanctum']);
         $viewer = loginAsUser();
         $viewer->givePermissionTo(PermissionEnum::RoleView->value);
         RoleFactory::new()->count(2)->create();
@@ -35,8 +35,8 @@ describe('GET /api/v1/roles', function () {
         expect($response->json('data'))->toHaveCount(2);
     });
 
-    it('rejects unverified user', function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::RoleView->value, 'guard_name' => 'sanctum']);
+    it('rejects unverified user', function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::RoleView->value, 'guard_name' => 'sanctum']);
         $user = loginAsUnverifiedUser();
         $user->givePermissionTo(PermissionEnum::RoleView->value);
 

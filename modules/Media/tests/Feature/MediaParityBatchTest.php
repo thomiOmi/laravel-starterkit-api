@@ -13,45 +13,45 @@ use Modules\Media\Support\FileRemover\MediaFileRemover;
 
 covers(DefaultFileRemover::class);
 
-describe('Media parity batch', function () {
-    beforeEach(function () {
+describe('Media parity batch', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
-    it('removes every related file through the file remover', function () {
+    it('removes every related file through the file remover', function (): void {
         $media = MediaFactory::new()->public()->createOne();
         Storage::disk('public')->put($media->getPath() ?? '', 'original');
         Storage::disk('public')->put('conversions/derived/'.$media->id.'/thumb.webp', 'variant');
 
-        app(MediaFileRemover::class)->removeAllFiles($media);
+        resolve(MediaFileRemover::class)->removeAllFiles($media);
 
         Storage::disk('public')->assertMissing($media->getPath() ?? '');
         Storage::disk('public')->assertMissing('conversions/derived/'.$media->id.'/thumb.webp');
     });
 
-    it('removes derived conversions from the conversion disk', function () {
+    it('removes derived conversions from the conversion disk', function (): void {
         Storage::fake('attachments');
         $media = MediaFactory::new()->createOne(['conversions_disk' => 'attachments']);
         Storage::disk('attachments')->put('conversions/derived/'.$media->id.'/thumb.webp', 'variant');
 
-        app(MediaFileRemover::class)->removeAllFiles($media);
+        resolve(MediaFileRemover::class)->removeAllFiles($media);
 
         Storage::disk('attachments')->assertMissing('conversions/derived/'.$media->id.'/thumb.webp');
     });
 
-    it('uses a custom file remover from config on delete', function () {
+    it('uses a custom file remover from config on delete', function (): void {
         config(['media.file_remover' => RecordingFileRemover::class]);
 
         $media = MediaFactory::new()->forModel(loginAsUser())->createOne();
         Storage::disk('public')->put($media->getPath() ?? '', 'original');
 
-        app(DeleteMediaAction::class)->handle($media);
+        resolve(DeleteMediaAction::class)->handle($media);
 
         expect(RecordingFileRemover::$removed)->toContain($media->id);
     });
 
-    it('resolves the first media path with and without conversion', function () {
+    it('resolves the first media path with and without conversion', function (): void {
         $user = loginAsUser();
 
         expect($user->getFirstMediaPath('avatars'))->toBeNull();
@@ -61,7 +61,7 @@ describe('Media parity batch', function () {
         expect($user->getFirstMediaPath('avatars'))->toBe($media->getPath());
     });
 
-    it('attaches every uploaded file key via addAllMediaFromRequest', function () {
+    it('attaches every uploaded file key via addAllMediaFromRequest', function (): void {
         $user = loginAsUser();
 
         app()->instance(
@@ -83,14 +83,14 @@ describe('Media parity batch', function () {
         expect($user->getMedia('default'))->toHaveCount(2);
     });
 
-    it('exposes registered collections under the Spatie name', function () {
+    it('exposes registered collections under the Spatie name', function (): void {
         $user = loginAsUser();
 
         expect($user->getRegisteredMediaCollections())->toBe($user->getMediaCollections())
             ->and($user->getRegisteredMediaCollections())->toHaveKey('avatars');
     });
 
-    it('generates responsive images per call without a collection flag', function () {
+    it('generates responsive images per call without a collection flag', function (): void {
         config(['media.responsive.widths' => [32]]);
         $user = loginAsUser();
 
@@ -101,7 +101,7 @@ describe('Media parity batch', function () {
         expect($media->fresh()?->responsive_images)->not->toBe([]);
     });
 
-    it('stores conversions on the per-call disk', function () {
+    it('stores conversions on the per-call disk', function (): void {
         Storage::fake('attachments');
         config(['media.queue' => false]);
         $user = loginAsUser();
@@ -113,7 +113,7 @@ describe('Media parity batch', function () {
         expect($media->conversions_disk)->toBe('attachments');
     });
 
-    it('honours an explicit order on create', function () {
+    it('honours an explicit order on create', function (): void {
         $user = loginAsUser();
 
         $media = $user->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))
@@ -123,7 +123,7 @@ describe('Media parity batch', function () {
         expect($media->order_column)->toBe(5);
     });
 
-    it('has no shared collection enum anymore', function () {
+    it('has no shared collection enum anymore', function (): void {
         expect(class_exists('App\Enums\MediaCollection'))->toBeFalse();
     });
 });

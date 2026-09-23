@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
 |--------------------------------------------------------------------------
 | API Route Versioning
@@ -9,7 +11,6 @@
 | Each version corresponds to a route file under the modules directory.
 |
 */
-
 return [
 
     /*
