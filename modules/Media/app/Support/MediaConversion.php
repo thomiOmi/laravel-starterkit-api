@@ -13,6 +13,12 @@ use InvalidArgumentException;
  */
 final class MediaConversion
 {
+    /** @var array<int, string> */
+    public const array ALLOWED_FITS = ['contain', 'cover', 'fill'];
+
+    /** @var array<int, string> */
+    public const array ALLOWED_FORMATS = ['webp', 'jpg', 'jpeg'];
+
     public string $name;
 
     public ?int $width = null;
@@ -37,6 +43,10 @@ final class MediaConversion
 
     public function width(int $width): self
     {
+        if ($width < 32 || $width > 2000) {
+            throw new InvalidArgumentException('Width must be between 32 and 2000.');
+        }
+
         $this->width = $width;
 
         return $this;
@@ -44,6 +54,10 @@ final class MediaConversion
 
     public function height(int $height): self
     {
+        if ($height < 32 || $height > 2000) {
+            throw new InvalidArgumentException('Height must be between 32 and 2000.');
+        }
+
         $this->height = $height;
 
         return $this;
@@ -51,6 +65,10 @@ final class MediaConversion
 
     public function fit(string $fit): self
     {
+        if (! in_array($fit, self::ALLOWED_FITS, true)) {
+            throw new InvalidArgumentException('Fit must be one of: '.implode(', ', self::ALLOWED_FITS).'.');
+        }
+
         $this->fit = $fit;
 
         return $this;
@@ -58,6 +76,12 @@ final class MediaConversion
 
     public function format(string $format): self
     {
+        $format = strtolower($format);
+
+        if (! in_array($format, self::ALLOWED_FORMATS, true)) {
+            throw new InvalidArgumentException('Format must be one of: '.implode(', ', self::ALLOWED_FORMATS).'.');
+        }
+
         $this->format = $format;
 
         return $this;
@@ -65,6 +89,10 @@ final class MediaConversion
 
     public function quality(int $quality): self
     {
+        if ($quality < 1 || $quality > 100) {
+            throw new InvalidArgumentException('Quality must be between 1 and 100.');
+        }
+
         $this->quality = $quality;
 
         return $this;
@@ -118,11 +146,15 @@ final class MediaConversion
             $instance->quality((int) $parsed['q']);
         }
 
+        if (isset($parsed['fit'])) {
+            $instance->fit($parsed['fit']);
+        }
+
         return $instance;
     }
 
     /**
-     * @return array{w?: int, h?: int, s?: string, f?: string, q?: int, format?: string, width?: int, height?: int}
+     * @return array{w?: int, h?: int, s?: string, f?: string, q?: int, fit?: string, format?: string, width?: int, height?: int}
      */
     public static function parse(string $modifiers): array
     {
@@ -195,7 +227,7 @@ final class MediaConversion
     }
 
     /**
-     * @return array{w?: int, h?: int, s?: string, f?: string, q?: int, format?: string, width?: int, height?: int}
+     * @return array{w?: int, h?: int, s?: string, f?: string, q?: int, fit?: string, format?: string, width?: int, height?: int}
      */
     private static function parseModifiers(string $modifiers): array
     {
@@ -272,6 +304,9 @@ final class MediaConversion
                             $result['q'] = $parsedQ;
                         }
                         break;
+                    case 'fit':
+                        $result['fit'] = strtolower($value);
+                        break;
                 }
             }
         } else {
@@ -337,6 +372,9 @@ final class MediaConversion
                     case 'quality':
                         $result['q'] = (int) $value;
                         break;
+                    case 'fit':
+                        $result['fit'] = $value;
+                        break;
                 }
             }
         }
@@ -365,12 +403,16 @@ final class MediaConversion
             throw new InvalidArgumentException('Height must be between 32 and 2000.');
         }
 
-        if (isset($result['f']) && ! in_array($result['f'], ['webp', 'jpg', 'jpeg'], true)) {
-            throw new InvalidArgumentException('Format must be one of: webp, jpg.');
+        if (isset($result['f']) && ! in_array($result['f'], self::ALLOWED_FORMATS, true)) {
+            throw new InvalidArgumentException('Format must be one of: '.implode(', ', self::ALLOWED_FORMATS).'.');
         }
 
         if (isset($result['q']) && ($result['q'] < 1 || $result['q'] > 100)) {
             throw new InvalidArgumentException('Quality must be between 1 and 100.');
+        }
+
+        if (isset($result['fit']) && ! in_array($result['fit'], self::ALLOWED_FITS, true)) {
+            throw new InvalidArgumentException('Fit must be one of: '.implode(', ', self::ALLOWED_FITS).'.');
         }
 
         if (! isset($result['w']) && ! isset($result['h']) && ! isset($result['f']) && ! isset($result['q'])) {
