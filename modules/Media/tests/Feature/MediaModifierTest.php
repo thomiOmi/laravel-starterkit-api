@@ -119,14 +119,18 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         $media->update(['sha256' => str_repeat('a', 64)]);
 
         $first = $this->getJson("/api/v1/media/{$media->id}/s/48");
+        $first->assertOk();
+        $firstFiles = Storage::disk('public')->allFiles('conversions/derived/'.$media->id);
+        expect($firstFiles)->toHaveCount(1);
+
         $media->update(['sha256' => str_repeat('b', 64)]);
 
         $second = $this->getJson("/api/v1/media/{$media->id}/s/48");
 
-        $first->assertOk();
         $second->assertOk();
+        $secondFiles = Storage::disk('public')->allFiles('conversions/derived/'.$media->id);
         expect($second->headers->get('ETag'))->not->toBe($first->headers->get('ETag'))
-            ->and(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toHaveCount(2);
+            ->and($secondFiles)->toHaveCount(2);
     });
 
     it('never upscales beyond the original dimensions', function () {
@@ -174,7 +178,24 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function () {
         'width below minimum' => '31',
         'width above maximum' => '2001',
         'gif output' => '64/f/gif',
+        'unknown fit' => '64/fit/stretch',
     ]);
+
+    it('honours the fit modifier on derived conversions', function () {
+        $user = loginAsUser();
+        $media = seedImageMedia($user, width: 200, height: 100);
+
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/64x64/fit/cover");
+
+        $response->assertOk();
+        $image = imagecreatefromstring((string) $response->getContent());
+        if (! $image instanceof GdImage) {
+            throw new RuntimeException('The conversion response is not a decodable image.');
+        }
+        expect(imagesx($image))->toBe(64)
+            ->and(imagesy($image))->toBe(64)
+            ->and(Storage::disk('public')->allFiles('conversions/derived/'.$media->id))->toHaveCount(1);
+    });
 
     it('rejects non-image media with a problem response', function () {
         $user = loginAsUser();

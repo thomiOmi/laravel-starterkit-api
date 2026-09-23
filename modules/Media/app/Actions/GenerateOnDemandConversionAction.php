@@ -52,7 +52,7 @@ final readonly class GenerateOnDemandConversionAction
             $format = 'jpg';
         }
 
-        $image = Image::fromStorage($path, $media->disk);
+        $image = Image::fromStorage($path, $media->disk)->orient();
         $conversionDisk = $media->conversions_disk ?? $media->disk;
 
         if ($width !== null || $height !== null) {
