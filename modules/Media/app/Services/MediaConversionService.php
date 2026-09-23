@@ -6,11 +6,14 @@ namespace Modules\Media\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Image;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Support\MediaConversion as MediaConversionDefinition;
 use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 use Throwable;
@@ -44,8 +47,14 @@ final readonly class MediaConversionService
 
             try {
                 $results[$stringName] = $this->generateOne($media, $stringName, $cfg);
-            } catch (Throwable) {
+            } catch (Throwable $exception) {
                 // Skip failed conversions, continue with others.
+                Log::warning('Media conversion failed.', [
+                    'media_id' => $media->id,
+                    'conversion' => $stringName,
+                    'error' => $exception->getMessage(),
+                ]);
+
                 continue;
             }
         }
@@ -72,7 +81,13 @@ final readonly class MediaConversionService
 
         try {
             return $this->generateOne($media, $name, $conversions[$name]);
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            Log::warning('Media conversion failed.', [
+                'media_id' => $media->id,
+                'conversion' => $name,
+                'error' => $exception->getMessage(),
+            ]);
+
             return null;
         }
     }
@@ -151,17 +166,25 @@ final readonly class MediaConversionService
             $quality = 100;
         }
 
+        if (! in_array($fit, MediaConversionDefinition::ALLOWED_FITS, true)) {
+            throw new InvalidArgumentException('Fit must be one of: '.implode(', ', MediaConversionDefinition::ALLOWED_FITS).'.');
+        }
+
         $path = $media->getPath();
 
         if (! is_string($path)) {
             throw new \RuntimeException('Media path is missing.');
         }
 
-        $image = Image::fromStorage($path, $sourceDisk);
+        $image = Image::fromStorage($path, $sourceDisk)->orient();
 
         if ($width !== null || $height !== null) {
             if ($fit === 'cover' && $width !== null && $height !== null) {
                 $image = $image->cover(width: $width, height: $height);
+            } elseif ($fit === 'contain' && $width !== null && $height !== null) {
+                $image = $image->contain(width: $width, height: $height);
+            } elseif ($fit === 'fill' && $width !== null && $height !== null) {
+                $image = $image->resize(width: $width, height: $height);
             } else {
                 $image = $image->scale(width: $width, height: $height);
             }
@@ -190,7 +213,16 @@ final readonly class MediaConversionService
             $size = null;
         }
 
-        $etag = hash('xxh128', $media->id.'|'.$name.'|'.$media->updated_at?->timestamp.'|'.$format.'|'.$width.'x'.$height);
+        $etag = hash('xxh128', implode('|', [
+            $media->sha256 ?? (string) $media->updated_at?->timestamp,
+            $media->id,
+            $name,
+            $format,
+            $width,
+            $height,
+            $fit,
+            $quality,
+        ]));
 
         return $media->conversions()->updateOrCreate(
             ['name' => $name],

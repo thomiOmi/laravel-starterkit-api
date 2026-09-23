@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Models\Media;
+use Modules\Media\Services\MediaConversionService;
 
 describe('Media conversions', function () {
     beforeEach(function () {
@@ -51,5 +52,59 @@ describe('Media conversions', function () {
 
         expect($media->url('missing'))->toBeNull()
             ->and($media->hasGeneratedConversion('missing'))->toBeFalse();
+    });
+
+    it('binds the named conversion etag to the media content version', function () {
+        config(['media.queue' => false]);
+
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->image('photo.jpg', 100, 100),
+            'collection_name' => 'avatars',
+        ])->assertCreated();
+
+        $media = Media::query()->firstOrFail();
+        $conversion = $media->conversions()->where('name', 'thumbnail')->firstOrFail();
+        $originalEtag = $conversion->etag;
+
+        expect($originalEtag)->toBeString()->not->toBeEmpty();
+
+        $media->update(['sha256' => str_repeat('a', 64)]);
+        app(MediaConversionService::class)->generateOne($media, 'thumbnail', [
+            'width' => 32,
+            'height' => 32,
+            'fit' => 'cover',
+            'format' => 'webp',
+            'quality' => 80,
+        ]);
+
+        $regenerated = $media->conversions()->where('name', 'thumbnail')->firstOrFail();
+
+        expect($regenerated->etag)->toBeString()
+            ->and($regenerated->etag)->not->toBe($originalEtag);
+    });
+
+    it('rejects an unknown fit in named conversion config', function () {
+        config(['media.queue' => false]);
+
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+        $this->post('/api/v1/media', [
+            'file' => UploadedFile::fake()->image('photo.jpg', 100, 100),
+            'collection_name' => 'avatars',
+        ])->assertCreated();
+
+        $media = Media::query()->firstOrFail();
+
+        expect(fn () => app(MediaConversionService::class)->generateOne($media, 'bad', [
+            'width' => 32,
+            'height' => 32,
+            'fit' => 'stretch',
+            'format' => 'webp',
+            'quality' => 80,
+        ]))->toThrow(InvalidArgumentException::class, 'Fit must be one of: contain, cover, fill.');
     });
 });
