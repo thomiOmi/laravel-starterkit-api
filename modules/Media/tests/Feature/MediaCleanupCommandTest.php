@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Log\Events\MessageLogged;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Console\Commands\MediaCleanupCommand;
 use Modules\Media\Database\Factories\MediaFactory;
@@ -12,6 +14,7 @@ describe('media:cleanup', function () {
     beforeEach(function () {
         Storage::fake('public');
         Storage::fake('local');
+        Event::fake([MessageLogged::class]);
     });
 
     it('keeps responsive images, conversions, and the derived conversion cache', function () {
@@ -73,5 +76,30 @@ describe('media:cleanup', function () {
         artisanCommand($this, 'media:cleanup')
             ->expectsOutputToContain('Missing file for media '.$media->id)
             ->assertSuccessful();
+    });
+
+    it('logs a structured warning when orphan files are found', function () {
+        $keeper = MediaFactory::new()->public()->inCollection('avatars')->createOne();
+        Storage::disk('public')->put($keeper->getPath() ?? '', 'keeper');
+        Storage::disk('public')->put('avatars/orphan.webp', 'orphan');
+
+        artisanCommand($this, 'media:cleanup')->assertSuccessful();
+
+        Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'warning'
+            && str_contains((string) $event->message, 'Media orphan files detected.')
+            && ($event->context['count'] ?? null) === 1
+            && ($event->context['destructive'] ?? null) === false
+            && ($event->context['files'] ?? null) === ['avatars/orphan.webp']);
+    });
+
+    it('logs a structured warning when database records are missing files', function () {
+        $media = MediaFactory::new()->createOne();
+
+        artisanCommand($this, 'media:cleanup')->assertSuccessful();
+
+        Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'warning'
+            && str_contains((string) $event->message, 'Media records with missing files.')
+            && ($event->context['count'] ?? null) === 1
+            && ($event->context['media_ids'] ?? null) === [(string) $media->id]);
     });
 });

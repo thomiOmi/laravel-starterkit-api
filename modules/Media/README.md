@@ -344,6 +344,7 @@ Coverage: `MediaUploadTest` (WebP, single_file avatars upsert, prefix, headers, 
 
 ## Related Docs
 
+- [Media Operations Runbook](../../docs/media-operations.md)
 - [API Standard](../../docs/api-standard.md)
 - [Architecture](../../docs/architecture.md)
 - [Rate Limiting](../../docs/rate-limiting.md)

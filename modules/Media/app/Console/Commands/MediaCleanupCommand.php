@@ -7,6 +7,7 @@ namespace Modules\Media\Console\Commands;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
@@ -75,22 +76,35 @@ final class MediaCleanupCommand extends Command
             } else {
                 $this->info('Dry run: no files deleted. Pass --force to delete.');
             }
+
+            Log::warning('Media orphan files detected.', [
+                'count' => count($orphans),
+                'destructive' => $destructive,
+                'files' => $orphans,
+            ]);
         }
 
         // Also check for DB records with missing files.
         $missing = 0;
+        $missingIds = [];
 
         foreach (Media::query()->cursor() as $media) {
             $path = $media->getPath();
 
             if (! is_string($path) || ! $storage->exists($path)) {
                 $missing++;
+                $missingIds[] = (string) $media->id;
                 $this->warn(sprintf('Missing file for media %s: %s', $media->id, $path ?? 'null'));
             }
         }
 
         if ($missing > 0) {
             $this->warn(sprintf('Found %d DB records with missing files.', $missing));
+
+            Log::warning('Media records with missing files.', [
+                'count' => $missing,
+                'media_ids' => $missingIds,
+            ]);
         }
 
         return self::SUCCESS;
