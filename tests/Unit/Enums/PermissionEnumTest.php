@@ -6,9 +6,9 @@ use App\Enums\PermissionEnum;
 
 covers(PermissionEnum::class);
 
-describe('PermissionEnum', function () {
+describe('PermissionEnum', function (): void {
 
-    describe('user permissions', function () {
+    describe('user permissions', function (): void {
         it('has UserView', fn () => expect(PermissionEnum::UserView->value)->toBe('user.view'));
         it('has UserCreate', fn () => expect(PermissionEnum::UserCreate->value)->toBe('user.create'));
         it('has UserEdit', fn () => expect(PermissionEnum::UserEdit->value)->toBe('user.edit'));
@@ -16,28 +16,28 @@ describe('PermissionEnum', function () {
         it('has UserRestore', fn () => expect(PermissionEnum::UserRestore->value)->toBe('user.restore'));
     });
 
-    describe('role permissions', function () {
+    describe('role permissions', function (): void {
         it('has RoleView', fn () => expect(PermissionEnum::RoleView->value)->toBe('role.view'));
         it('has RoleCreate', fn () => expect(PermissionEnum::RoleCreate->value)->toBe('role.create'));
         it('has RoleEdit', fn () => expect(PermissionEnum::RoleEdit->value)->toBe('role.edit'));
         it('has RoleDelete', fn () => expect(PermissionEnum::RoleDelete->value)->toBe('role.delete'));
     });
 
-    describe('permission permissions', function () {
+    describe('permission permissions', function (): void {
         it('has PermissionView', fn () => expect(PermissionEnum::PermissionView->value)->toBe('permission.view'));
         it('has PermissionCreate', fn () => expect(PermissionEnum::PermissionCreate->value)->toBe('permission.create'));
         it('has PermissionEdit', fn () => expect(PermissionEnum::PermissionEdit->value)->toBe('permission.edit'));
         it('has PermissionDelete', fn () => expect(PermissionEnum::PermissionDelete->value)->toBe('permission.delete'));
     });
 
-    describe('media permissions', function () {
+    describe('media permissions', function (): void {
         it('has MediaView', fn () => expect(PermissionEnum::MediaView->value)->toBe('media.view'));
         it('has MediaCreate', fn () => expect(PermissionEnum::MediaCreate->value)->toBe('media.create'));
         it('has MediaDelete', fn () => expect(PermissionEnum::MediaDelete->value)->toBe('media.delete'));
     });
 
-    describe('label', function () {
-        it('returns the English label by default', function () {
+    describe('label', function (): void {
+        it('returns the English label by default', function (): void {
             expect(PermissionEnum::UserView->label())->toBe('View users')
                 ->and(PermissionEnum::RoleEdit->label())->toBe('Edit roles')
                 ->and(PermissionEnum::PermissionDelete->label())->toBe('Delete permissions')
@@ -46,7 +46,7 @@ describe('PermissionEnum', function () {
                 ->and(PermissionEnum::MediaDelete->label())->toBe('Delete media');
         });
 
-        it('returns the Indonesian label in the id locale', function () {
+        it('returns the Indonesian label in the id locale', function (): void {
             app()->setLocale('id');
 
             expect(PermissionEnum::UserView->label())->toBe('Lihat pengguna')

@@ -6,12 +6,12 @@ use Modules\IAM\Models\Permission;
 
 covers(Permission::class);
 
-describe('Permission', function () {
-    it('has expected fillable attributes', function () {
+describe('Permission', function (): void {
+    it('has expected fillable attributes', function (): void {
         expect((new Permission)->getFillable())->toContain('name', 'guard_name', 'description');
     });
 
-    it('does not use auto-incrementing ids', function () {
+    it('does not use auto-incrementing ids', function (): void {
         expect((new Permission)->getIncrementing())->toBeFalse();
     });
 });

@@ -8,8 +8,8 @@ use Modules\IAM\Http\Controllers\V1\UpdateProfileController;
 covers(MeController::class);
 covers(UpdateProfileController::class);
 
-describe('GET /api/v1/auth/me', function () {
-    it('returns authenticated user', function () {
+describe('GET /api/v1/auth/me', function (): void {
+    it('returns authenticated user', function (): void {
         $user = loginAsUser();
 
         $response = $this->getJson('/api/v1/auth/me');
@@ -18,15 +18,15 @@ describe('GET /api/v1/auth/me', function () {
         expect($response->json('data.email'))->toBe($user->email);
     });
 
-    it('rejects unauthenticated request', function () {
+    it('rejects unauthenticated request', function (): void {
         $response = $this->getJson('/api/v1/auth/me');
 
         assertProblemResponse($response, 401);
     });
 });
 
-describe('PUT /api/v1/auth/me', function () {
-    it('updates profile name', function () {
+describe('PUT /api/v1/auth/me', function (): void {
+    it('updates profile name', function (): void {
         loginAsUser();
 
         $response = $this->putJson('/api/v1/auth/me', [
@@ -37,7 +37,7 @@ describe('PUT /api/v1/auth/me', function () {
         expect($response->json('data.user.name'))->toBe('New Name');
     });
 
-    it('rejects unverified user', function () {
+    it('rejects unverified user', function (): void {
         loginAsUnverifiedUser();
 
         $response = $this->putJson('/api/v1/auth/me', ['name' => 'New Name']);

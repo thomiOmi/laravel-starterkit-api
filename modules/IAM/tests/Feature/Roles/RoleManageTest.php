@@ -18,18 +18,20 @@ covers([
     RoleBulkDeleteController::class,
 ]);
 
-describe('role management guards', function () {
-    beforeEach(function () {
+describe('role management guards', function (): void {
+    beforeEach(function (): void {
         foreach ([PermissionEnum::RoleView, PermissionEnum::RoleEdit, PermissionEnum::RoleDelete] as $permission) {
-            Permission::firstOrCreate(['name' => $permission->value, 'guard_name' => 'sanctum']);
+            Permission::query()->firstOrCreate(['name' => $permission->value, 'guard_name' => 'sanctum']);
         }
-        Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum', 'description' => 'Keeper']);
-        Role::firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
+
+        Role::query()->firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum', 'description' => 'Keeper']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
     });
 
-    it('blocks updating the super-admin role', function () {
+    it('blocks updating the super-admin role', function (): void {
         $editor = loginAsUser();
         $editor->givePermissionTo(PermissionEnum::RoleEdit->value);
+
         $superAdmin = Role::query()->where('name', RoleEnum::SuperAdmin->value)->firstOrFail();
 
         assertProblemResponse($this->putJson("/api/v1/roles/{$superAdmin->id}", [
@@ -37,9 +39,10 @@ describe('role management guards', function () {
         ]), 403);
     });
 
-    it('updates a normal role with the edit permission', function () {
+    it('updates a normal role with the edit permission', function (): void {
         $editor = loginAsUser();
         $editor->givePermissionTo(PermissionEnum::RoleEdit->value);
+
         $role = Role::query()->where('name', RoleEnum::User->value)->firstOrFail();
 
         assertSuccessResponse(
@@ -48,9 +51,10 @@ describe('role management guards', function () {
         );
     });
 
-    it('blocks deleting the super-admin role and permits deleting others', function () {
+    it('blocks deleting the super-admin role and permits deleting others', function (): void {
         $actor = loginAsUser();
         $actor->givePermissionTo(PermissionEnum::RoleDelete->value);
+
         $superAdmin = Role::query()->where('name', RoleEnum::SuperAdmin->value)->firstOrFail();
         $userRole = Role::query()->where('name', RoleEnum::User->value)->firstOrFail();
 

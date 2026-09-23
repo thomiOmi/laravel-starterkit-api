@@ -6,7 +6,7 @@ use App\Support\Production\ProductionSecurityCheck;
 
 covers(ProductionSecurityCheck::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config()->set('app.debug', false);
     config()->set('app.env', 'production');
     config()->set('app.url', 'https://example.com');
@@ -23,8 +23,8 @@ beforeEach(function () {
     config()->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
 });
 
-describe('production config', function () {
-    it('passes all checks with production config', function () {
+describe('production config', function (): void {
+    it('passes all checks with production config', function (): void {
         $result = (new ProductionSecurityCheck)();
 
         $failed = array_filter($result, fn (array $r): bool => $r['status'] === 'fail');
@@ -34,8 +34,8 @@ describe('production config', function () {
     });
 });
 
-describe('failure cases', function () {
-    it('fails when misconfigured', function (string $configKey, string|bool|array|null $configValue, string $checkName) {
+describe('failure cases', function (): void {
+    it('fails when misconfigured', function (string $configKey, string|bool|array|null $configValue, string $checkName): void {
         config()->set($configKey, $configValue);
 
         $result = (new ProductionSecurityCheck)();
@@ -45,8 +45,8 @@ describe('failure cases', function () {
     })->with('securityFailCases');
 });
 
-describe('multiple failures', function () {
-    it('returns multiple failures at once', function () {
+describe('multiple failures', function (): void {
+    it('returns multiple failures at once', function (): void {
         config()->set('app.debug', true);
         config()->set('app.env', 'local');
         config()->set('app.url', 'http://insecure.com');

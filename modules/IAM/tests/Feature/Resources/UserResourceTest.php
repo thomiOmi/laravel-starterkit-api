@@ -10,8 +10,8 @@ use Modules\IAM\Models\Role;
 
 covers(UserResource::class);
 
-describe('UserResource', function () {
-    it('exposes core fields and omits relations unless loaded', function () {
+describe('UserResource', function (): void {
+    it('exposes core fields and omits relations unless loaded', function (): void {
         $user = UserFactory::new()->createOne();
 
         $data = new UserResource($user)->resolve(new Request);
@@ -22,8 +22,8 @@ describe('UserResource', function () {
             ->and($data)->not->toHaveKey('permissions');
     });
 
-    it('includes roles when loaded', function () {
-        Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
+    it('includes roles when loaded', function (): void {
+        Role::query()->firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
         $user = UserFactory::new()->superAdmin()->createOne();
         $user->load('roles');
 

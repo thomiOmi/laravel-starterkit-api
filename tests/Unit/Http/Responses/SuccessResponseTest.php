@@ -11,8 +11,8 @@ use Illuminate\Pagination\Paginator;
 
 covers(SuccessResponse::class);
 
-describe('basic response structure', function () {
-    it('returns basic data without title or detail', function () {
+describe('basic response structure', function (): void {
+    it('returns basic data without title or detail', function (): void {
         $response = new SuccessResponse(data: ['id' => 1])->toResponse(new Request);
 
         expect($response->getStatusCode())->toBe(200)
@@ -22,7 +22,7 @@ describe('basic response structure', function () {
             ]);
     });
 
-    it('includes title and detail when provided', function () {
+    it('includes title and detail when provided', function (): void {
         $response = new SuccessResponse(
             data: ['id' => 1],
             title: 'Created',
@@ -33,14 +33,14 @@ describe('basic response structure', function () {
         expect($data)->toMatchArray(['title' => 'Created', 'detail' => 'Resource created successfully']);
     });
 
-    it('returns no content for 204 status', function () {
+    it('returns no content for 204 status', function (): void {
         $response = new SuccessResponse(status: 204)->toResponse(new Request);
 
         expect($response->getStatusCode())->toBe(204)
             ->and($response->getContent())->toBe('');
     });
 
-    it('returns no content for 205 status', function () {
+    it('returns no content for 205 status', function (): void {
         $response = new SuccessResponse(status: 205)->toResponse(new Request);
 
         expect($response->getStatusCode())->toBe(205)
@@ -48,8 +48,8 @@ describe('basic response structure', function () {
     });
 });
 
-describe('pagination meta', function () {
-    it('includes pagination meta for LengthAwarePaginator', function () {
+describe('pagination meta', function (): void {
+    it('includes pagination meta for LengthAwarePaginator', function (): void {
         $items = [['id' => 1], ['id' => 2]];
         $paginator = new LengthAwarePaginator($items, 10, 2, 1);
 
@@ -66,7 +66,7 @@ describe('pagination meta', function () {
             ]);
     });
 
-    it('includes pagination meta for simple Paginator', function () {
+    it('includes pagination meta for simple Paginator', function (): void {
         $items = [['id' => 1], ['id' => 2]];
         $paginator = new Paginator($items, 2, 1);
 
@@ -81,7 +81,7 @@ describe('pagination meta', function () {
             ])->not->toHaveKey('last_page')->not->toHaveKey('total');
     });
 
-    it('includes pagination meta for CursorPaginator', function () {
+    it('includes pagination meta for CursorPaginator', function (): void {
         $items = [['id' => 1]];
         $paginator = new CursorPaginator($items, 2);
 
@@ -96,7 +96,7 @@ describe('pagination meta', function () {
             ->toHaveKeys(['next_cursor', 'prev_cursor']);
     });
 
-    it('paginates with ResourceCollection containing paginator', function () {
+    it('paginates with ResourceCollection containing paginator', function (): void {
         $items = [['id' => 1]];
         $paginator = new LengthAwarePaginator($items, 5, 1, 1);
 
@@ -116,8 +116,8 @@ describe('pagination meta', function () {
     });
 });
 
-describe('extra features', function () {
-    it('resolves data from ResourceCollection', function () {
+describe('extra features', function (): void {
+    it('resolves data from ResourceCollection', function (): void {
         $resource = new class(collect([['id' => 1]])) extends ResourceCollection
         {
             /** @return array<mixed> */
@@ -133,7 +133,7 @@ describe('extra features', function () {
         expect($data['data'])->toBe([['id' => 1]]);
     });
 
-    it('filters protected keys from extra data', function () {
+    it('filters protected keys from extra data', function (): void {
         $extra = ['custom_key' => 'value', 'status' => 'should_not_override'];
 
         $response = new SuccessResponse(
@@ -145,7 +145,7 @@ describe('extra features', function () {
         expect($data)->toMatchArray(['custom_key' => 'value', 'status' => 200]);
     });
 
-    it('merges custom headers', function () {
+    it('merges custom headers', function (): void {
         $response = new SuccessResponse(
             data: ['id' => 1],
             headers: ['X-Custom' => 'test-value'],
@@ -154,7 +154,7 @@ describe('extra features', function () {
         expect($response->headers->get('X-Custom'))->toBe('test-value');
     });
 
-    it('normalizes mixed header values', function () {
+    it('normalizes mixed header values', function (): void {
         $response = new SuccessResponse(
             data: ['id' => 1],
             headers: ['X-Int' => 42, 'X-Null' => null, 'X-List' => ['a', 'b']],
@@ -165,7 +165,7 @@ describe('extra features', function () {
             ->and($response->headers->all('X-List'))->toBe(['a', 'b']);
     });
 
-    it('normalizes headers for no content responses', function () {
+    it('normalizes headers for no content responses', function (): void {
         $response = new SuccessResponse(
             status: 204,
             headers: ['X-Int' => 42, 'X-Null' => null],
@@ -176,14 +176,14 @@ describe('extra features', function () {
     });
 });
 
-describe('snapshots', function () {
-    it('matches snapshot for basic response', function () {
+describe('snapshots', function (): void {
+    it('matches snapshot for basic response', function (): void {
         $response = new SuccessResponse(data: ['id' => 1])->toResponse(new Request);
 
         expect($response->getContent())->toMatchSnapshot();
     });
 
-    it('matches snapshot for paginated response', function () {
+    it('matches snapshot for paginated response', function (): void {
         $items = [['id' => 1], ['id' => 2]];
         $paginator = new LengthAwarePaginator($items, 10, 2, 1);
 
@@ -192,7 +192,7 @@ describe('snapshots', function () {
         expect($response->getContent())->toMatchSnapshot();
     });
 
-    it('matches snapshot with title and detail', function () {
+    it('matches snapshot with title and detail', function (): void {
         $response = new SuccessResponse(
             data: ['id' => 1],
             title: 'Created',

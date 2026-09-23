@@ -12,14 +12,14 @@ use Modules\IAM\Models\Role;
 
 covers(UserUpdateController::class);
 
-describe('PUT /api/v1/users/{user}', function () {
-    beforeEach(function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
-        Role::firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
-        Role::firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
+describe('PUT /api/v1/users/{user}', function (): void {
+    beforeEach(function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserEdit->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::SuperAdmin->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
     });
 
-    it('allows self updates without permission', function () {
+    it('allows self updates without permission', function (): void {
         $user = loginAsUser();
 
         $response = $this->putJson("/api/v1/users/{$user->id}", ['name' => 'Renamed Self', 'email' => $user->email]);
@@ -28,9 +28,10 @@ describe('PUT /api/v1/users/{user}', function () {
         expect($response->json('data.name'))->toBe('Renamed Self');
     });
 
-    it('permits editors to update others', function () {
+    it('permits editors to update others', function (): void {
         $editor = loginAsUser();
         $editor->givePermissionTo(PermissionEnum::UserEdit->value);
+
         $target = UserFactory::new()->createOne();
 
         assertSuccessResponse(
@@ -39,15 +40,16 @@ describe('PUT /api/v1/users/{user}', function () {
         );
     });
 
-    it('blocks editing super-admins even with permission', function () {
+    it('blocks editing super-admins even with permission', function (): void {
         $editor = loginAsUser();
         $editor->givePermissionTo(PermissionEnum::UserEdit->value);
+
         $superAdmin = UserFactory::new()->superAdmin()->createOne();
 
         assertProblemResponse($this->putJson("/api/v1/users/{$superAdmin->id}", ['name' => 'Hijack']), 403);
     });
 
-    it('prohibits status changes without the edit permission', function () {
+    it('prohibits status changes without the edit permission', function (): void {
         $user = loginAsUser();
 
         $response = $this->putJson("/api/v1/users/{$user->id}", [

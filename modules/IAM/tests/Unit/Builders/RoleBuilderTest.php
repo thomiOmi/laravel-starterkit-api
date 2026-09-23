@@ -7,8 +7,8 @@ use Modules\IAM\Builders\RoleBuilder;
 
 covers(RoleBuilder::class);
 
-describe('RoleBuilder', function () {
-    it('extends BaseQueryBuilder', function () {
+describe('RoleBuilder', function (): void {
+    it('extends BaseQueryBuilder', function (): void {
         $parent = new ReflectionClass(RoleBuilder::class)->getParentClass();
 
         expect($parent)->toBeInstanceOf(ReflectionClass::class);
@@ -18,7 +18,7 @@ describe('RoleBuilder', function () {
         }
     });
 
-    it('exposes expected configuration', function () {
+    it('exposes expected configuration', function (): void {
         $reflection = new ReflectionClass(RoleBuilder::class);
         $instance = $reflection->newInstanceWithoutConstructor();
 

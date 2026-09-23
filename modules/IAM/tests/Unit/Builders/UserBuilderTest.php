@@ -7,8 +7,8 @@ use Modules\IAM\Builders\UserBuilder;
 
 covers(UserBuilder::class);
 
-describe('UserBuilder', function () {
-    it('extends BaseQueryBuilder', function () {
+describe('UserBuilder', function (): void {
+    it('extends BaseQueryBuilder', function (): void {
         $parent = new ReflectionClass(UserBuilder::class)->getParentClass();
 
         expect($parent)->toBeInstanceOf(ReflectionClass::class);
@@ -18,7 +18,7 @@ describe('UserBuilder', function () {
         }
     });
 
-    it('exposes expected allowed filters', function () {
+    it('exposes expected allowed filters', function (): void {
         $reflection = new ReflectionClass(UserBuilder::class);
         $property = $reflection->getProperty('allowedFilters');
         $instance = $reflection->newInstanceWithoutConstructor();
@@ -28,7 +28,7 @@ describe('UserBuilder', function () {
             ->and($filters)->toContain('created_at');
     });
 
-    it('exposes allowed sorts, fields and searchable columns', function () {
+    it('exposes allowed sorts, fields and searchable columns', function (): void {
         $reflection = new ReflectionClass(UserBuilder::class);
         $instance = $reflection->newInstanceWithoutConstructor();
 

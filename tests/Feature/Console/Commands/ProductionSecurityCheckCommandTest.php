@@ -6,7 +6,7 @@ use App\Console\Commands\ProductionSecurityCheckCommand;
 
 covers(ProductionSecurityCheckCommand::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     config()->set('app.debug', false);
     config()->set('app.env', 'production');
     config()->set('app.url', 'https://example.com');
@@ -20,8 +20,8 @@ beforeEach(function () {
     config()->set('logging.default', 'daily');
 });
 
-describe('security:check command', function () {
-    it('runs security check and shows table', function () {
+describe('security:check command', function (): void {
+    it('runs security check and shows table', function (): void {
         artisanCommand($this, 'security:check')
             ->expectsOutputToContain('All production security checks passed')
             ->assertSuccessful();

@@ -9,7 +9,7 @@ use Modules\IAM\Models\User;
 use Nwidart\Modules\Contracts\RepositoryInterface;
 use Nwidart\Modules\Module;
 
-test('DatabaseSeeder seeds every enabled module that ships a seeder', function () {
+test('DatabaseSeeder seeds every enabled module that ships a seeder', function (): void {
     $repository = Mockery::mock(RepositoryInterface::class);
     $repository->shouldReceive('allEnabled')->andReturn([
         Mockery::mock(Module::class)->shouldReceive('getStudlyName')->andReturn('IAM')->getMock(),
@@ -19,6 +19,6 @@ test('DatabaseSeeder seeds every enabled module that ships a seeder', function (
 
     (new DatabaseSeeder)->run();
 
-    expect(User::where('email', 'superadmin@example.com')->exists())->toBeTrue()
-        ->and(Role::where('name', RoleEnum::SuperAdmin->value)->exists())->toBeTrue();
+    expect(User::query()->where('email', 'superadmin@example.com')->exists())->toBeTrue()
+        ->and(Role::query()->where('name', RoleEnum::SuperAdmin->value)->exists())->toBeTrue();
 });

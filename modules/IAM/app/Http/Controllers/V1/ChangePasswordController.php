@@ -27,7 +27,6 @@ final readonly class ChangePasswordController extends Controller
         $this->changePassword->handle($currentUser, $request->payload());
 
         return new SuccessResponse(
-            data: null,
             title: __('auth.password_updated'),
             detail: __('auth.password_updated'),
         );

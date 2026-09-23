@@ -13,13 +13,13 @@ use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
 covers(DefaultPathGenerator::class);
 covers(DefaultUrlGenerator::class);
 
-describe('Media generators config', function () {
-    beforeEach(function () {
+describe('Media generators config', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
-    it('uses a custom path generator from config', function () {
+    it('uses a custom path generator from config', function (): void {
         config(['media.path_generator' => CustomPrefixPathGenerator::class]);
 
         $media = MediaFactory::new()->public()->createOne();
@@ -27,7 +27,7 @@ describe('Media generators config', function () {
         expect($media->getPath())->toBe('custom/'.$media->file_name);
     });
 
-    it('uses a custom path generator only for the configured model', function () {
+    it('uses a custom path generator only for the configured model', function (): void {
         $owner = loginAsUser();
         config(['media.custom_path_generators' => [
             $owner->getMorphClass() => CustomPrefixPathGenerator::class,
@@ -40,7 +40,7 @@ describe('Media generators config', function () {
             ->and($orphan->getPath())->toBe($orphan->collection_name.'/'.$orphan->file_name);
     });
 
-    it('falls back to the default generator for invalid config classes', function () {
+    it('falls back to the default generator for invalid config classes', function (): void {
         config(['media.path_generator' => stdClass::class]);
 
         $media = MediaFactory::new()->createOne();
@@ -48,7 +48,7 @@ describe('Media generators config', function () {
         expect($media->getPath())->toBe($media->collection_name.'/'.$media->file_name);
     });
 
-    it('uses a custom url generator from config', function () {
+    it('uses a custom url generator from config', function (): void {
         config(['media.url_generator' => FixedUrlGenerator::class]);
 
         $media = MediaFactory::new()->public()->createOne();
@@ -56,10 +56,10 @@ describe('Media generators config', function () {
 
         expect($media->url())->toBe('https://cdn.example.test/'.$media->file_name)
             ->and($media->getTemporaryUrl($expiration))->toBe('https://cdn.example.test/'.$media->file_name.'?expires='.$expiration->timestamp)
-            ->and(app(MediaUrlGenerator::class)->getUrl($media))->toBe('https://cdn.example.test/'.$media->file_name);
+            ->and(resolve(MediaUrlGenerator::class)->getUrl($media))->toBe('https://cdn.example.test/'.$media->file_name);
     });
 
-    it('appends a version query string when version_urls is enabled', function () {
+    it('appends a version query string when version_urls is enabled', function (): void {
         config(['media.version_urls' => true]);
 
         $media = MediaFactory::new()->public()->createOne();
@@ -67,13 +67,13 @@ describe('Media generators config', function () {
         expect($media->url() ?? '')->toMatch('/\?v=\d+$/');
     });
 
-    it('omits the version query string by default', function () {
+    it('omits the version query string by default', function (): void {
         $media = MediaFactory::new()->public()->createOne();
 
         expect($media->url() ?? '')->not->toContain('?v=');
     });
 
-    it('uses the configured default lifetime for signed urls', function () {
+    it('uses the configured default lifetime for signed urls', function (): void {
         config(['media.temporary_url_default_lifetime' => 60]);
 
         $media = MediaFactory::new()->createOne();

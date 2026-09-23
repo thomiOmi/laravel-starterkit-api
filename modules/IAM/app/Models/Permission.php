@@ -36,6 +36,8 @@ use Spatie\Permission\Models\Permission as SpatiePermission;
 #[UsePolicy(PermissionPolicy::class)]
 class Permission extends SpatiePermission
 {
+    use HasDefaultBehavior;
+
     /** @use HasFactory<PermissionFactory> */
-    use HasDefaultBehavior, HasFactory;
+    use HasFactory;
 }

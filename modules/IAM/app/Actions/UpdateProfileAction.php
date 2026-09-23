@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Actions;
 
+use Illuminate\Http\UploadedFile;
 use InvalidArgumentException;
 use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\UpdateProfilePayload;
@@ -27,7 +28,7 @@ final readonly class UpdateProfileAction
             $verificationRequired = true;
         }
 
-        if ($payload->avatarFile !== null) {
+        if ($payload->avatarFile instanceof UploadedFile) {
             // Profile avatars deliberately bypass the media.create permission:
             // owner-only, locked to the avatars collection, guarded by the
             // collection mime rules in UploadMediaAction. Single-file

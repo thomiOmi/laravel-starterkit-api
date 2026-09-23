@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /** @return array{permissions: string, roles: string} */
-    private static function tableNames(): array
+    private function tableNames(): array
     {
         return [
             'permissions' => config()->string('permission.table_names.permissions', 'permissions'),
@@ -19,7 +19,7 @@ return new class extends Migration
 
     public function up(): void
     {
-        $tableNames = self::tableNames();
+        $tableNames = $this->tableNames();
 
         if (! Schema::hasColumn($tableNames['permissions'], 'description')) {
             Schema::table($tableNames['permissions'], static function (Blueprint $table): void {
@@ -30,7 +30,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        $tableNames = self::tableNames();
+        $tableNames = $this->tableNames();
 
         Schema::table($tableNames['permissions'], static function (Blueprint $table): void {
             $table->dropColumn('description');

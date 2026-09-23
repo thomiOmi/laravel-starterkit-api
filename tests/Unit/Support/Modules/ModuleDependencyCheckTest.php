@@ -19,7 +19,7 @@ function dependencyCheck(): ModuleDependencyCheck
 {
     bindFixtureModulePaths();
 
-    return new ModuleDependencyCheck(app(RepositoryInterface::class));
+    return new ModuleDependencyCheck(resolve(RepositoryInterface::class));
 }
 
 /**

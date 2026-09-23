@@ -8,16 +8,16 @@ use Modules\IAM\Models\User;
 
 covers(User::class);
 
-describe('User', function () {
-    it('has expected fillable attributes', function () {
+describe('User', function (): void {
+    it('has expected fillable attributes', function (): void {
         expect((new User)->getFillable())->toContain('name', 'email', 'status', 'password', 'avatar');
     });
 
-    it('hides password and remember_token', function () {
+    it('hides password and remember_token', function (): void {
         expect((new User)->getHidden())->toContain('password', 'remember_token');
     });
 
-    it('casts status to UserStatusEnum and password to hashed', function () {
+    it('casts status to UserStatusEnum and password to hashed', function (): void {
         $casts = (new User)->getCasts();
 
         expect($casts['status'])->toBe(UserStatusEnum::class)
@@ -25,7 +25,7 @@ describe('User', function () {
             ->and($casts['email_verified_at'])->toBe('datetime');
     });
 
-    it('reports hasPassword correctly', function () {
+    it('reports hasPassword correctly', function (): void {
         $withPassword = UserFactory::new()->createOne(['password' => 'secret']);
         $withoutPassword = UserFactory::new()->social()->createOne();
 
@@ -33,7 +33,7 @@ describe('User', function () {
             ->and($withoutPassword->hasPassword())->toBeFalse();
     });
 
-    it('activates status when email becomes verified', function () {
+    it('activates status when email becomes verified', function (): void {
         $user = UserFactory::new()->unverified()->createOne(['status' => UserStatusEnum::Pending]);
 
         $user->forceFill(['email_verified_at' => now()])->save();
@@ -41,7 +41,7 @@ describe('User', function () {
         expect($user->fresh()?->status)->toBe(UserStatusEnum::Active);
     });
 
-    it('has many social accounts', function () {
+    it('has many social accounts', function (): void {
         $user = UserFactory::new()->createOne();
         $account = $user->socialAccounts()->create([
             'provider' => 'google',

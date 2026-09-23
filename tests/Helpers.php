@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\RoleEnum;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Testing\PendingCommand;
 use Illuminate\Testing\TestResponse;
@@ -220,9 +221,7 @@ function artisanCommand(TestCase $test, string $command, array $parameters = [])
 {
     $pending = $test->artisan($command, $parameters);
 
-    if (! $pending instanceof PendingCommand) {
-        throw new LogicException('Mocked console output must be enabled to assert on the pending command.');
-    }
+    throw_unless($pending instanceof PendingCommand, LogicException::class, 'Mocked console output must be enabled to assert on the pending command.');
 
     return $pending;
 }
@@ -236,9 +235,7 @@ function decodeModuleJson(string $path): array
 {
     $json = json_decode(file_get_contents($path) ?: '', true);
 
-    if (! is_array($json)) {
-        throw new RuntimeException("Invalid JSON in {$path}");
-    }
+    throw_unless(is_array($json), RuntimeException::class, "Invalid JSON in {$path}");
 
     return $json;
 }
@@ -253,7 +250,7 @@ function decodeModuleJson(string $path): array
 function writeFixtureModule(string $name, array $requires = [], bool $enabled = true): string
 {
     $root = base_path('tests/Fixtures/dependency-check');
-    $files = app('files');
+    $files = resolve(Filesystem::class);
     $modulePath = "{$root}/modules/{$name}";
 
     $files->makeDirectory($modulePath, 0755, true);
@@ -271,9 +268,7 @@ function writeFixtureModule(string $name, array $requires = [], bool $enabled = 
 
     $manifestJson = json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-    if ($manifestJson === false) {
-        throw new RuntimeException("Failed to encode module.json for {$name}.");
-    }
+    throw_if($manifestJson === false, RuntimeException::class, "Failed to encode module.json for {$name}.");
 
     $files->put($modulePath.'/module.json', $manifestJson);
     $files->put($modulePath.'/composer.json', '{}');
@@ -285,9 +280,7 @@ function writeFixtureModule(string $name, array $requires = [], bool $enabled = 
 
     $statusesJson = json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-    if ($statusesJson === false) {
-        throw new RuntimeException('Failed to encode the fixture statuses file.');
-    }
+    throw_if($statusesJson === false, RuntimeException::class, 'Failed to encode the fixture statuses file.');
 
     $files->put($statusesPath, $statusesJson);
 
@@ -299,7 +292,7 @@ function writeFixtureModule(string $name, array $requires = [], bool $enabled = 
  */
 function clearFixtureModules(): void
 {
-    app('files')->deleteDirectory(base_path('tests/Fixtures/dependency-check'));
+    resolve(Filesystem::class)->deleteDirectory(base_path('tests/Fixtures/dependency-check'));
 }
 
 /**

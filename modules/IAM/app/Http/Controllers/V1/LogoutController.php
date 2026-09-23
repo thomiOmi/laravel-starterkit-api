@@ -26,7 +26,6 @@ final readonly class LogoutController extends Controller
         $this->logoutAction->handle($currentUser);
 
         return new SuccessResponse(
-            data: null,
             title: 'OK',
             detail: __('auth.logout_success'),
         );

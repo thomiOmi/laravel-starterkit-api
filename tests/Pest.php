@@ -52,5 +52,5 @@ pest()->beforeEach(function (): void {
     config(['logging.default' => 'null']);
     app()->forgetInstance('log');
 
-    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    resolve(PermissionRegistrar::class)->forgetCachedPermissions();
 });

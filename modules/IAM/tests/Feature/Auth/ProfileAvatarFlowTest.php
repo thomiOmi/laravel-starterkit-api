@@ -10,8 +10,8 @@ use Modules\Media\Models\Media;
 
 covers(UpdateProfileController::class);
 
-describe('avatar end-to-end flow', function () {
-    it('uploads an avatar file directly through the profile update endpoint', function () {
+describe('avatar end-to-end flow', function (): void {
+    it('uploads an avatar file directly through the profile update endpoint', function (): void {
         Storage::fake('public');
         Storage::fake('local');
 
@@ -30,7 +30,7 @@ describe('avatar end-to-end flow', function () {
             ->and(Media::query()->where('model_id', $user->id)->where('collection_name', 'avatars')->count())->toBe(1);
     });
 
-    it('resolves the avatar url with the configured prefix', function () {
+    it('resolves the avatar url with the configured prefix', function (): void {
         config(['media.prefix' => 'tenant-a']);
         Storage::fake('public');
         Storage::fake('local');
@@ -45,7 +45,7 @@ describe('avatar end-to-end flow', function () {
         expect($update->json('data.user.avatar'))->toContain('tenant-a/avatars/');
     });
 
-    it('replaces the previous avatar file on re-upload', function () {
+    it('replaces the previous avatar file on re-upload', function (): void {
         Storage::fake('public');
         Storage::fake('local');
 
@@ -78,7 +78,7 @@ describe('avatar end-to-end flow', function () {
         Storage::disk('public')->assertMissing(Str::after($firstPath, '/storage/'));
     });
 
-    it('rejects non-image avatars with a validation error', function () {
+    it('rejects non-image avatars with a validation error', function (): void {
         Storage::fake('public');
         Storage::fake('local');
         loginAsUser();
@@ -91,7 +91,7 @@ describe('avatar end-to-end flow', function () {
         $response->assertJsonValidationErrors(['avatar']);
     });
 
-    it('rejects double extensions with a validation error', function () {
+    it('rejects double extensions with a validation error', function (): void {
         Storage::fake('public');
         Storage::fake('local');
         loginAsUser();
@@ -104,7 +104,7 @@ describe('avatar end-to-end flow', function () {
         $response->assertJsonValidationErrors(['avatar']);
     });
 
-    it('rejects non-square avatars with a validation error', function () {
+    it('rejects non-square avatars with a validation error', function (): void {
         Storage::fake('public');
         Storage::fake('local');
         loginAsUser();
@@ -117,7 +117,7 @@ describe('avatar end-to-end flow', function () {
         $response->assertJsonValidationErrors(['avatar']);
     });
 
-    it('rejects the legacy media id payload', function () {
+    it('rejects the legacy media id payload', function (): void {
         Storage::fake('public');
         Storage::fake('local');
         loginAsUser();

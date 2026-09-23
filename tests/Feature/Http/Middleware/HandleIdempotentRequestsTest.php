@@ -30,8 +30,8 @@ describe('replay behavior', function (): void {
         $first->assertOk()
             ->assertHeaderMissing('Idempotency-Replayed')
             ->assertHeaderMissing('Idempotency-Key')
-            ->assertJsonPath('timestamp', fn ($ts) => filled($ts))
-            ->assertJsonPath('random', fn ($r) => is_int($r));
+            ->assertJsonPath('timestamp', fn ($ts): bool => filled($ts))
+            ->assertJsonPath('random', fn ($r): bool => is_int($r));
 
         $replay = $this->postJson('/_test/idempotency', [], ['Idempotency-Key' => $key]);
 
@@ -54,7 +54,7 @@ describe('replay behavior', function (): void {
 
         $response->assertHeaderMissing('Idempotency-Replayed')
             ->assertJsonPath('status', Response::HTTP_CONFLICT)
-            ->assertJsonPath('type', fn (string $type) => str_contains($type, 'conflict'));
+            ->assertJsonPath('type', fn (string $type): bool => str_contains($type, 'conflict'));
     });
 
     it('does not cache failed responses so retry succeeds', function (): void {
@@ -117,7 +117,7 @@ describe('replay behavior', function (): void {
 
         $response->assertOk()
             ->assertHeaderMissing('Idempotency-Replayed')
-            ->assertJsonPath('timestamp', fn ($ts) => filled($ts));
+            ->assertJsonPath('timestamp', fn ($ts): bool => filled($ts));
 
         $replaced = Cache::get($cacheKey);
         $status = is_array($replaced) ? $replaced['status'] : null;
@@ -147,7 +147,7 @@ describe('replay behavior', function (): void {
 
         $response->assertOk()
             ->assertHeaderMissing('Idempotency-Replayed')
-            ->assertJsonPath('timestamp', fn ($ts) => filled($ts));
+            ->assertJsonPath('timestamp', fn ($ts): bool => filled($ts));
     });
 });
 

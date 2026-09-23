@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('media_conversions', function (Blueprint $table) {
+        Schema::create('media_conversions', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->foreignUlid('media_id')->constrained('media')->cascadeOnDelete();
             $table->string('name', 50);

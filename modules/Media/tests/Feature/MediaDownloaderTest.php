@@ -11,13 +11,13 @@ use Modules\Media\Tests\Support\FixedContentDownloader;
 
 covers(DefaultDownloader::class);
 
-describe('Media downloader', function () {
-    beforeEach(function () {
+describe('Media downloader', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
-    it('downloads a remote file and attaches it with the url basename', function () {
+    it('downloads a remote file and attaches it with the url basename', function (): void {
         $jpeg = (string) UploadedFile::fake()->image('seed.jpg', 20, 20)->getContent();
 
         Http::fake([
@@ -32,7 +32,7 @@ describe('Media downloader', function () {
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
-    it('forwards custom headers to the remote request', function () {
+    it('forwards custom headers to the remote request', function (): void {
         $jpeg = (string) UploadedFile::fake()->image('seed.jpg', 20, 20)->getContent();
 
         Http::fake([
@@ -46,7 +46,7 @@ describe('Media downloader', function () {
         Http::assertSent(fn (mixed $request): bool => $request instanceof Request && $request->hasHeader('Authorization', 'Bearer secret'));
     });
 
-    it('throws for non-successful responses', function () {
+    it('throws for non-successful responses', function (): void {
         Http::fake([
             'https://example.com/missing.jpg' => Http::response('nope', 404),
         ]);
@@ -57,7 +57,7 @@ describe('Media downloader', function () {
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
-    it('throws for connection failures', function () {
+    it('throws for connection failures', function (): void {
         Http::fake([
             'https://example.com/*' => Http::failedConnection(),
         ]);
@@ -68,7 +68,7 @@ describe('Media downloader', function () {
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
-    it('throws for empty bodies', function () {
+    it('throws for empty bodies', function (): void {
         Http::fake([
             'https://example.com/empty.jpg' => Http::response('', 200),
         ]);
@@ -79,7 +79,7 @@ describe('Media downloader', function () {
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
-    it('rejects redirects instead of following an unvalidated destination', function () {
+    it('rejects redirects instead of following an unvalidated destination', function (): void {
         Http::fake([
             'https://example.com/redirect.jpg' => Http::response('', 302, ['Location' => 'https://127.0.0.1/private.jpg']),
         ]);
@@ -90,28 +90,28 @@ describe('Media downloader', function () {
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
-    it('rejects plain http urls by default', function () {
+    it('rejects plain http urls by default', function (): void {
         $owner = loginAsUser();
 
         expect(fn (): mixed => $owner->addMediaFromUrl('http://example.com/image.jpg')->toMediaCollection('default'))
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
-    it('rejects private IP literals without network access', function () {
+    it('rejects private IP literals without network access', function (): void {
         $owner = loginAsUser();
 
         expect(fn (): mixed => $owner->addMediaFromUrl('https://127.0.0.1/image.jpg')->toMediaCollection('default'))
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
-    it('rejects localhost hostnames', function () {
+    it('rejects localhost hostnames', function (): void {
         $owner = loginAsUser();
 
         expect(fn (): mixed => $owner->addMediaFromUrl('https://localhost/image.jpg')->toMediaCollection('default'))
             ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.');
     });
 
-    it('uses a custom downloader from config', function () {
+    it('uses a custom downloader from config', function (): void {
         config(['media.media_downloader' => FixedContentDownloader::class]);
 
         $owner = loginAsUser();

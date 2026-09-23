@@ -7,8 +7,8 @@ use Modules\IAM\Http\Controllers\V1\SocialUnlinkController;
 
 covers(SocialUnlinkController::class);
 
-describe('DELETE /api/v1/auth/social/{provider}', function () {
-    it('unlinks a provider while another sign-in method remains', function () {
+describe('DELETE /api/v1/auth/social/{provider}', function (): void {
+    it('unlinks a provider while another sign-in method remains', function (): void {
         $user = UserFactory::new()->createOne(['password' => 'my-password']);
         $user->socialAccounts()->createMany([
             ['provider' => 'google', 'provider_id' => 'g-1'],
@@ -23,7 +23,7 @@ describe('DELETE /api/v1/auth/social/{provider}', function () {
             ->and($user->socialAccounts()->count())->toBe(1);
     });
 
-    it('blocks unlinking the last method when the user has no password', function () {
+    it('blocks unlinking the last method when the user has no password', function (): void {
         $user = UserFactory::new()->social('google')->createOne();
         loginAsUser($user);
 
@@ -34,7 +34,7 @@ describe('DELETE /api/v1/auth/social/{provider}', function () {
             ->and($user->socialAccounts()->count())->toBe(1);
     });
 
-    it('allows unlinking the last provider when a password is set', function () {
+    it('allows unlinking the last provider when a password is set', function (): void {
         $user = UserFactory::new()->social('google')->createOne(['password' => 'fallback-pass']);
         loginAsUser($user);
 
@@ -42,14 +42,14 @@ describe('DELETE /api/v1/auth/social/{provider}', function () {
         expect($user->socialAccounts()->count())->toBe(0);
     });
 
-    it('rejects unlinking a provider that is not linked', function () {
+    it('rejects unlinking a provider that is not linked', function (): void {
         $user = UserFactory::new()->createOne(['password' => 'my-password']);
         loginAsUser($user);
 
         assertProblemResponse($this->deleteJson('/api/v1/auth/social/github'), 400);
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->deleteJson('/api/v1/auth/social/google')->assertUnauthorized();
     });
 });

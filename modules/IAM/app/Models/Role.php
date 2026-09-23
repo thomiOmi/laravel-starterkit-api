@@ -39,6 +39,8 @@ use Spatie\Permission\Models\Role as SpatieRole;
 #[UsePolicy(RolePolicy::class)]
 class Role extends SpatieRole
 {
+    use HasDefaultBehavior;
+
     /** @use HasFactory<RoleFactory> */
-    use HasDefaultBehavior, HasFactory;
+    use HasFactory;
 }

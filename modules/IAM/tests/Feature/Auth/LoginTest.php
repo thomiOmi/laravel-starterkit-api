@@ -7,8 +7,8 @@ use Modules\IAM\Http\Controllers\V1\LoginController;
 
 covers(LoginController::class);
 
-describe('POST /api/v1/auth/login', function () {
-    it('authenticates with valid credentials', function () {
+describe('POST /api/v1/auth/login', function (): void {
+    it('authenticates with valid credentials', function (): void {
         UserFactory::new()->createOne(['email' => 'jane@example.com', 'password' => 'password123']);
 
         $response = $this->postJson('/api/v1/auth/login', [
@@ -23,7 +23,7 @@ describe('POST /api/v1/auth/login', function () {
             ->and($response->json('data.token_type'))->toBe('Bearer');
     });
 
-    it('rejects unknown email', function () {
+    it('rejects unknown email', function (): void {
         $response = $this->postJson('/api/v1/auth/login', [
             'email' => 'ghost@example.com',
             'password' => 'password123',
@@ -33,7 +33,7 @@ describe('POST /api/v1/auth/login', function () {
         $response->assertJsonValidationErrors(['email', 'password']);
     });
 
-    it('rejects wrong password', function () {
+    it('rejects wrong password', function (): void {
         UserFactory::new()->createOne(['email' => 'jane@example.com', 'password' => 'correct']);
 
         $response = $this->postJson('/api/v1/auth/login', [
@@ -45,7 +45,7 @@ describe('POST /api/v1/auth/login', function () {
         $response->assertJsonValidationErrors(['email', 'password']);
     });
 
-    it('blocks banned user', function () {
+    it('blocks banned user', function (): void {
         UserFactory::new()->banned()->createOne(['email' => 'banned@example.com', 'password' => 'password123']);
 
         $response = $this->postJson('/api/v1/auth/login', [

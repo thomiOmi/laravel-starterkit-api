@@ -26,16 +26,16 @@ function renderApiException(Throwable $e, string $path = '/api/v1/anything'): Te
 {
     $request = Request::create($path);
 
-    $rendered = app(Handler::class)->render($request, $e);
+    $rendered = resolve(Handler::class)->render($request, $e);
 
     return TestResponse::fromBaseResponse(Router::toResponse($request, $rendered));
 }
 
-describe('ExceptionHandler', function () {
+describe('ExceptionHandler', function (): void {
 
-    describe('validation', function () {
+    describe('validation', function (): void {
 
-        it('renders 422 problem response with field errors', function () {
+        it('renders 422 problem response with field errors', function (): void {
             $response = renderApiException(ValidationException::withMessages(['email' => ['The email field is required.']]));
 
             assertProblemResponse($response, Response::HTTP_UNPROCESSABLE_ENTITY, 'validation-failed');
@@ -45,9 +45,9 @@ describe('ExceptionHandler', function () {
 
     });
 
-    describe('authentication', function () {
+    describe('authentication', function (): void {
 
-        it('renders 401 unauthenticated problem response', function () {
+        it('renders 401 unauthenticated problem response', function (): void {
             $response = renderApiException(new AuthenticationException('Unauthenticated.'));
 
             assertProblemResponse($response, Response::HTTP_UNAUTHORIZED, 'authentication-required');
@@ -57,9 +57,9 @@ describe('ExceptionHandler', function () {
 
     });
 
-    describe('forbidden', function () {
+    describe('forbidden', function (): void {
 
-        it('renders 403 problem response for access denied', function () {
+        it('renders 403 problem response for access denied', function (): void {
             $response = renderApiException(new AccessDeniedHttpException('Access denied.'));
 
             assertProblemResponse($response, Response::HTTP_FORBIDDEN, 'access-denied');
@@ -67,13 +67,13 @@ describe('ExceptionHandler', function () {
             expect($response->json('detail'))->toBe('Access denied.');
         })->group('smoke');
 
-        it('renders 403 problem response for authorization exception', function () {
+        it('renders 403 problem response for authorization exception', function (): void {
             $response = renderApiException(new AuthorizationException('This action is unauthorized.'));
 
             assertProblemResponse($response, Response::HTTP_FORBIDDEN, 'access-denied');
         })->group('smoke');
 
-        it('uses the invalid signature detail for invalid signature exceptions', function () {
+        it('uses the invalid signature detail for invalid signature exceptions', function (): void {
             $response = renderApiException(new InvalidSignatureException);
 
             assertProblemResponse($response, Response::HTTP_FORBIDDEN, 'access-denied');
@@ -81,7 +81,7 @@ describe('ExceptionHandler', function () {
             expect($response->json('detail'))->toBe(__('auth.invalid_signature'));
         })->group('smoke');
 
-        it('forwards custom headers from access denied exceptions', function () {
+        it('forwards custom headers from access denied exceptions', function (): void {
             $response = renderApiException(new AccessDeniedHttpException(
                 'Access denied.',
                 null,
@@ -94,9 +94,9 @@ describe('ExceptionHandler', function () {
 
     });
 
-    describe('not found', function () {
+    describe('not found', function (): void {
 
-        it('renders 404 problem response for missing routes', function () {
+        it('renders 404 problem response for missing routes', function (): void {
             $response = renderApiException(new NotFoundHttpException);
 
             assertProblemResponse($response, Response::HTTP_NOT_FOUND, 'resource-not-found');
@@ -104,13 +104,13 @@ describe('ExceptionHandler', function () {
             expect($response->json('detail'))->toBe(__('auth.not_found_detail'));
         })->group('smoke');
 
-        it('renders 404 problem response for missing models', function () {
+        it('renders 404 problem response for missing models', function (): void {
             $response = renderApiException(new ModelNotFoundException);
 
             assertProblemResponse($response, Response::HTTP_NOT_FOUND, 'resource-not-found');
         })->group('smoke');
 
-        it('forwards custom headers from not found exceptions', function () {
+        it('forwards custom headers from not found exceptions', function (): void {
             $response = renderApiException(new NotFoundHttpException(
                 'Resource missing.',
                 null,
@@ -123,9 +123,9 @@ describe('ExceptionHandler', function () {
 
     });
 
-    describe('rate limit', function () {
+    describe('rate limit', function (): void {
 
-        it('renders 429 rate_limited problem response', function () {
+        it('renders 429 rate_limited problem response', function (): void {
             $response = renderApiException(new TooManyRequestsHttpException(60));
 
             assertProblemResponse($response, Response::HTTP_TOO_MANY_REQUESTS, 'rate-limit-exceeded');
@@ -137,9 +137,9 @@ describe('ExceptionHandler', function () {
 
     });
 
-    describe('bad request', function () {
+    describe('bad request', function (): void {
 
-        it('renders 400 problem response for invalid arguments', function () {
+        it('renders 400 problem response for invalid arguments', function (): void {
             $response = renderApiException(new InvalidArgumentException('Invalid request payload.'));
 
             assertProblemResponse($response, Response::HTTP_BAD_REQUEST, 'invalid-request-payload');
@@ -149,9 +149,9 @@ describe('ExceptionHandler', function () {
 
     });
 
-    describe('generic http exceptions', function () {
+    describe('generic http exceptions', function (): void {
 
-        it('preserves the exception status code', function () {
+        it('preserves the exception status code', function (): void {
             $response = renderApiException(new HttpException(Response::HTTP_I_AM_A_TEAPOT, 'I am a teapot'));
 
             assertProblemResponse($response, Response::HTTP_I_AM_A_TEAPOT, 'general-error');
@@ -159,7 +159,7 @@ describe('ExceptionHandler', function () {
             expect($response->json('detail'))->toBe('I am a teapot');
         })->group('smoke');
 
-        it('forwards custom string headers from the exception', function () {
+        it('forwards custom string headers from the exception', function (): void {
             $response = renderApiException(new HttpException(
                 Response::HTTP_I_AM_A_TEAPOT,
                 'I am a teapot',
@@ -170,7 +170,7 @@ describe('ExceptionHandler', function () {
             $response->assertHeader('X-Custom-Header', 'custom-value');
         })->group('smoke');
 
-        it('stringifies integer header values', function () {
+        it('stringifies integer header values', function (): void {
             $response = renderApiException(new HttpException(
                 Response::HTTP_I_AM_A_TEAPOT,
                 'I am a teapot',
@@ -181,7 +181,7 @@ describe('ExceptionHandler', function () {
             $response->assertHeader('X-Retry-Count', '3');
         })->group('smoke');
 
-        it('forwards multi-value headers from the exception', function () {
+        it('forwards multi-value headers from the exception', function (): void {
             $response = renderApiException(new HttpException(
                 Response::HTTP_I_AM_A_TEAPOT,
                 'I am a teapot',
@@ -200,9 +200,9 @@ describe('ExceptionHandler', function () {
 
     });
 
-    describe('internal errors', function () {
+    describe('internal errors', function (): void {
 
-        it('renders 500 problem response hiding details when debug is off', function () {
+        it('renders 500 problem response hiding details when debug is off', function (): void {
             config()->set('app.debug', false);
 
             $response = renderApiException(new RuntimeException('Top secret failure'));
@@ -212,7 +212,7 @@ describe('ExceptionHandler', function () {
             expect($response->json('detail'))->toBe(__('auth.internal_error_detail'));
         })->group('smoke');
 
-        it('renders 500 problem response with details when debug is on', function () {
+        it('renders 500 problem response with details when debug is on', function (): void {
             config()->set('app.debug', true);
 
             $response = renderApiException(new RuntimeException('Top secret failure'));
@@ -224,9 +224,9 @@ describe('ExceptionHandler', function () {
 
     });
 
-    describe('request agnostic rendering', function () {
+    describe('request agnostic rendering', function (): void {
 
-        it('renders problem responses even for non-api requests', function () {
+        it('renders problem responses even for non-api requests', function (): void {
             $response = renderApiException(new NotFoundHttpException, '/');
 
             assertProblemResponse($response, Response::HTTP_NOT_FOUND, 'resource-not-found');

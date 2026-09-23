@@ -9,12 +9,12 @@ use Modules\IAM\Models\Permission;
 
 covers(UserListController::class);
 
-describe('GET /api/v1/users', function () {
-    it('rejects unauthenticated request', function () {
+describe('GET /api/v1/users', function (): void {
+    it('rejects unauthenticated request', function (): void {
         $this->getJson('/api/v1/users')->assertUnauthorized();
     });
 
-    it('rejects without permission', function () {
+    it('rejects without permission', function (): void {
         loginAsUser();
 
         $response = $this->getJson('/api/v1/users');
@@ -22,8 +22,8 @@ describe('GET /api/v1/users', function () {
         assertProblemResponse($response, 403);
     });
 
-    it('returns paginated users with permission', function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
+    it('returns paginated users with permission', function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
         $viewer = loginAsUser(UserFactory::new()->createOne(['name' => 'Viewer Zero']));
         $viewer->givePermissionTo(PermissionEnum::UserView->value);
         UserFactory::new()->count(2)->create();
@@ -35,8 +35,8 @@ describe('GET /api/v1/users', function () {
         expect($response->json('data'))->toHaveCount(3); // 2 + viewer
     });
 
-    it('filters by search', function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
+    it('filters by search', function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserView->value, 'guard_name' => 'sanctum']);
         $viewer = loginAsUser(UserFactory::new()->createOne(['name' => 'Viewer Zero']));
         $viewer->givePermissionTo(PermissionEnum::UserView->value);
         UserFactory::new()->createOne(['name' => 'Alice Wonderland']);

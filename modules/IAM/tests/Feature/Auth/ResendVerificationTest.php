@@ -8,8 +8,8 @@ use Modules\IAM\Http\Controllers\V1\ResendVerificationController;
 
 covers(ResendVerificationController::class);
 
-describe('POST /api/v1/auth/email/verification-notification', function () {
-    it('sends the verification notification for unverified users', function () {
+describe('POST /api/v1/auth/email/verification-notification', function (): void {
+    it('sends the verification notification for unverified users', function (): void {
         Notification::fake();
         $user = loginAsUnverifiedUser();
 
@@ -21,7 +21,7 @@ describe('POST /api/v1/auth/email/verification-notification', function () {
         Notification::assertSentTo($user, VerifyEmailNotification::class);
     });
 
-    it('does not send for already verified users', function () {
+    it('does not send for already verified users', function (): void {
         Notification::fake();
         loginAsUser();
 
@@ -33,7 +33,7 @@ describe('POST /api/v1/auth/email/verification-notification', function () {
         Notification::assertNothingSent();
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->postJson('/api/v1/auth/email/verification-notification')->assertUnauthorized();
     });
 });

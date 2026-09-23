@@ -28,7 +28,6 @@ final readonly class DeleteDeviceController extends Controller
         $this->deleteDevice->handle($currentUser, $device);
 
         return new SuccessResponse(
-            data: null,
             title: __('general.resource_deleted', ['resource' => 'Device']),
             detail: __('general.resource_deleted', ['resource' => 'Device']),
             status: SymfonyResponse::HTTP_OK,

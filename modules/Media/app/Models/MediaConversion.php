@@ -26,8 +26,10 @@ use Modules\Media\Database\Factories\MediaConversionFactory;
 #[UseFactory(MediaConversionFactory::class)]
 class MediaConversion extends Model
 {
+    use HasDefaultBehavior;
+
     /** @use HasFactory<MediaConversionFactory> */
-    use HasDefaultBehavior, HasFactory;
+    use HasFactory;
 
     /**
      * Get the media that owns the conversion.

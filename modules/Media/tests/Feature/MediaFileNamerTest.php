@@ -13,8 +13,8 @@ use Modules\Media\Support\FileNamer\MediaFileNamer;
 
 covers(DefaultFileNamer::class);
 
-describe('Media file namer', function () {
-    beforeEach(function () {
+describe('Media file namer', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         DB::table('permissions')->insertOrIgnore([
@@ -26,7 +26,7 @@ describe('Media file namer', function () {
         ]);
     });
 
-    it('returns the input unchanged with the default namer', function () {
+    it('returns the input unchanged with the default namer', function (): void {
         $namer = new DefaultFileNamer;
 
         expect($namer->originalFileName('abc123.png'))->toBe('abc123.png')
@@ -34,7 +34,7 @@ describe('Media file namer', function () {
             ->and($namer->responsiveFileName('abc123.webp'))->toBe('abc123.webp');
     });
 
-    it('keeps hash-based paths by default on upload', function () {
+    it('keeps hash-based paths by default on upload', function (): void {
         config(['media.allowed_extensions' => ['pdf']]);
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -51,7 +51,7 @@ describe('Media file namer', function () {
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
-    it('uses a custom namer from config for originals and conversions', function () {
+    it('uses a custom namer from config for originals and conversions', function (): void {
         config(['media.file_namer' => CustomPrefixFileNamer::class]);
         config(['media.queue' => false]);
 
@@ -77,7 +77,7 @@ describe('Media file namer', function () {
         Storage::disk('public')->assertExists($conversion->path);
     });
 
-    it('lets an explicit usingFileName win over the namer for the original name', function () {
+    it('lets an explicit usingFileName win over the namer for the original name', function (): void {
         config(['media.file_namer' => CustomPrefixFileNamer::class]);
 
         $user = loginAsUser();

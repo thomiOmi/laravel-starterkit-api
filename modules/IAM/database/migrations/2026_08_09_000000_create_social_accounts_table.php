@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('social_accounts', function (Blueprint $table) {
+        Schema::create('social_accounts', function (Blueprint $table): void {
             $table->ulid('id')->primary();
             $table->foreignUlid('user_id')->constrained()->cascadeOnDelete();
             $table->string('provider');
@@ -28,7 +28,7 @@ return new class extends Migration
 
         $this->moveLegacyBindings();
 
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->dropIndex(['provider', 'provider_id']);
             $table->dropColumn(['provider', 'provider_id']);
         });
@@ -53,7 +53,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table): void {
             $table->string('provider')->nullable()->after('password');
             $table->string('provider_id')->nullable()->after('provider');
             $table->index(['provider', 'provider_id']);

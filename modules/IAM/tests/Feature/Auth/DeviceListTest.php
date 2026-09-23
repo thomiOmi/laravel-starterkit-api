@@ -7,8 +7,8 @@ use Modules\IAM\Http\Controllers\V1\DeviceListController;
 
 covers(DeviceListController::class);
 
-describe('GET /api/v1/auth/devices', function () {
-    it('lists the authenticated user devices with the current flag', function () {
+describe('GET /api/v1/auth/devices', function (): void {
+    it('lists the authenticated user devices with the current flag', function (): void {
         $user = UserFactory::new()->createOne();
         $current = $user->createToken('current');
         $user->createToken('second');
@@ -32,7 +32,7 @@ describe('GET /api/v1/auth/devices', function () {
         expect($currentCount)->toBe(1);
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->getJson('/api/v1/auth/devices')->assertUnauthorized();
     });
 });

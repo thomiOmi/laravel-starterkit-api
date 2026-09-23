@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -10,24 +12,16 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Traits\InteractsWithMedia;
 
-describe('Media from helpers', function () {
-    beforeEach(function () {
+describe('Media from helpers', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
-    it('adds media from string', function () {
-        $owner = new class extends Model
+    it('adds media from string', function (): void {
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
         $owner->forceFill(['id' => (string) Str::ulid()]);
         $owner->exists = true;
@@ -46,18 +40,10 @@ describe('Media from helpers', function () {
             ->and(Storage::disk($media->disk)->exists($media->getPath() ?? ''))->toBeTrue();
     });
 
-    it('uses usingFileName and sanitizingFileName', function () {
-        $owner = new class extends Model
+    it('uses usingFileName and sanitizingFileName', function (): void {
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
         $owner->forceFill(['id' => (string) Str::ulid()]);
         $owner->exists = true;
@@ -84,18 +70,10 @@ describe('Media from helpers', function () {
             ->and(Storage::disk($media->disk)->exists($media->getPath() ?? ''))->toBeTrue();
     });
 
-    it('preservingOriginal skips image processing', function () {
-        $owner = new class extends Model
+    it('preservingOriginal skips image processing', function (): void {
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
         $owner->forceFill(['id' => (string) Str::ulid()]);
         $owner->exists = true;
@@ -115,24 +93,16 @@ describe('Media from helpers', function () {
         expect($media->mime_type)->toBe('image/jpeg');
     });
 
-    it('adds media from url', function () {
+    it('adds media from url', function (): void {
         $jpeg = (string) UploadedFile::fake()->image('seed.jpg', 20, 20)->getContent();
 
         Http::fake([
             'https://example.com/image.jpg' => Http::response($jpeg, 200, ['Content-Type' => 'image/jpeg']),
         ]);
 
-        $owner = new class extends Model
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
         $owner->forceFill(['id' => (string) Str::ulid()]);
         $owner->exists = true;

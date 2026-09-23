@@ -7,8 +7,8 @@ use Modules\IAM\Builders\PermissionBuilder;
 
 covers(PermissionBuilder::class);
 
-describe('PermissionBuilder', function () {
-    it('extends BaseQueryBuilder', function () {
+describe('PermissionBuilder', function (): void {
+    it('extends BaseQueryBuilder', function (): void {
         $parent = new ReflectionClass(PermissionBuilder::class)->getParentClass();
 
         expect($parent)->toBeInstanceOf(ReflectionClass::class);
@@ -18,7 +18,7 @@ describe('PermissionBuilder', function () {
         }
     });
 
-    it('exposes expected configuration', function () {
+    it('exposes expected configuration', function (): void {
         $reflection = new ReflectionClass(PermissionBuilder::class);
         $instance = $reflection->newInstanceWithoutConstructor();
 

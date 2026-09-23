@@ -39,12 +39,12 @@ function makeQueryBuilder(array $query = [], array $config = []): TestQueryBuild
     return $builder;
 }
 
-beforeEach(function () {
-    app()->detectEnvironment(fn () => 'testing');
+beforeEach(function (): void {
+    app()->detectEnvironment(fn (): string => 'testing');
 });
 
-describe('search', function () {
-    it('applies LIKE on searchable columns', function () {
+describe('search', function (): void {
+    it('applies LIKE on searchable columns', function (): void {
         $builder = makeQueryBuilder(
             query: ['search' => 'bob'],
             config: ['searchableColumns' => ['name', 'email']],
@@ -56,7 +56,7 @@ describe('search', function () {
             ->toContain('?');
     });
 
-    it('is skipped when param is empty', function () {
+    it('is skipped when param is empty', function (): void {
         $builder = makeQueryBuilder(config: ['searchableColumns' => ['name', 'email']]);
 
         $sql = $builder->allowedSearch()->toSql();
@@ -64,7 +64,7 @@ describe('search', function () {
         expect($sql)->not->toContain('like');
     });
 
-    it('is skipped when searchable columns is empty', function () {
+    it('is skipped when searchable columns is empty', function (): void {
         $builder = makeQueryBuilder(query: ['search' => 'bob']);
 
         $sql = $builder->allowedSearch()->toSql();
@@ -73,8 +73,8 @@ describe('search', function () {
     });
 });
 
-describe('filter', function () {
-    it('applies LIKE for string values', function () {
+describe('filter', function (): void {
+    it('applies LIKE for string values', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['name' => 'bob']],
             config: ['allowedFilters' => ['name']],
@@ -86,7 +86,7 @@ describe('filter', function () {
             ->toContain('like');
     });
 
-    it('applies exact match for exactMatchColumns', function () {
+    it('applies exact match for exactMatchColumns', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['status' => 'active']],
             config: ['allowedFilters' => ['status'], 'exactMatchColumns' => ['status']],
@@ -98,7 +98,7 @@ describe('filter', function () {
             ->toContain('= ?');
     });
 
-    it('applies numeric exact match', function () {
+    it('applies numeric exact match', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['age' => '25']],
             config: ['allowedFilters' => ['age']],
@@ -109,7 +109,7 @@ describe('filter', function () {
         expect($sql)->toContain('= ?');
     });
 
-    it('applies WHERE IN for array values', function () {
+    it('applies WHERE IN for array values', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['name' => ['bob', 'alice']]],
             config: ['allowedFilters' => ['name']],
@@ -120,7 +120,7 @@ describe('filter', function () {
         expect($sql)->toContain('in');
     });
 
-    it('handles operator prefix', function (string $prefix, string $column, string $value, string $expectSql) {
+    it('handles operator prefix', function (string $prefix, string $column, string $value, string $expectSql): void {
         $builder = makeQueryBuilder(
             query: ['filter' => [$column => $prefix.$value]],
             config: ['allowedFilters' => [$column]],
@@ -131,7 +131,7 @@ describe('filter', function () {
         expect($sql)->toContain($expectSql);
     })->with('filterOperators');
 
-    it('handles null value', function () {
+    it('handles null value', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['name' => 'null']],
             config: ['allowedFilters' => ['name']],
@@ -142,7 +142,7 @@ describe('filter', function () {
         expect($sql)->toContain('is null');
     });
 
-    it('handles !null value', function () {
+    it('handles !null value', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['name' => '!null']],
             config: ['allowedFilters' => ['name']],
@@ -153,7 +153,7 @@ describe('filter', function () {
         expect($sql)->toContain('is not null');
     });
 
-    it('handles boolean true', function () {
+    it('handles boolean true', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['status' => 'true']],
             config: ['allowedFilters' => ['status']],
@@ -164,7 +164,7 @@ describe('filter', function () {
         expect($sql)->toContain('= ?');
     });
 
-    it('handles boolean false', function () {
+    it('handles boolean false', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['status' => 'false']],
             config: ['allowedFilters' => ['status']],
@@ -175,15 +175,15 @@ describe('filter', function () {
         expect($sql)->toContain('= ?');
     });
 
-    it('throws for unknown filter key in non-production', function () {
+    it('throws for unknown filter key in non-production', function (): void {
         $builder = makeQueryBuilder(query: ['filter' => ['unknown_field' => 'value']]);
 
-        expect(fn () => $builder->allowedFilters())
+        expect(fn (): TestQueryBuilder => $builder->allowedFilters())
             ->toThrow(InvalidArgumentException::class, 'BaseQueryBuilder: unknown filter key');
     });
 
-    it('silently logs unknown keys in production', function () {
-        app()->detectEnvironment(fn () => 'production');
+    it('silently logs unknown keys in production', function (): void {
+        app()->detectEnvironment(fn (): string => 'production');
         Log::shouldReceive('debug')->once();
 
         $builder = makeQueryBuilder(query: ['filter' => ['unknown_field' => 'value']]);
@@ -192,8 +192,8 @@ describe('filter', function () {
     });
 });
 
-describe('sort', function () {
-    it('applies default latest when no sort param', function () {
+describe('sort', function (): void {
+    it('applies default latest when no sort param', function (): void {
         $builder = makeQueryBuilder();
 
         $sql = $builder->allowedSorts()->toSql();
@@ -201,7 +201,7 @@ describe('sort', function () {
         expect($sql)->toContain('order by');
     });
 
-    it('applies ascending order', function () {
+    it('applies ascending order', function (): void {
         $builder = makeQueryBuilder(
             query: ['sort' => 'name'],
             config: ['allowedSorts' => ['name']],
@@ -213,7 +213,7 @@ describe('sort', function () {
             ->toContain('asc');
     });
 
-    it('applies descending order', function () {
+    it('applies descending order', function (): void {
         $builder = makeQueryBuilder(
             query: ['sort' => '-name'],
             config: ['allowedSorts' => ['name']],
@@ -225,7 +225,7 @@ describe('sort', function () {
             ->toContain('desc');
     });
 
-    it('handles multiple columns', function () {
+    it('handles multiple columns', function (): void {
         $builder = makeQueryBuilder(
             query: ['sort' => '-age,name'],
             config: ['allowedSorts' => ['age', 'name']],
@@ -237,19 +237,19 @@ describe('sort', function () {
             ->toContain('asc');
     });
 
-    it('throws for unknown column in non-production', function () {
+    it('throws for unknown column in non-production', function (): void {
         $builder = makeQueryBuilder(
             query: ['sort' => 'unknown_column'],
             config: ['allowedSorts' => ['name']],
         );
 
-        expect(fn () => $builder->allowedSorts())
+        expect(fn (): TestQueryBuilder => $builder->allowedSorts())
             ->toThrow(InvalidArgumentException::class, 'BaseQueryBuilder: unknown sort column');
     });
 });
 
-describe('fields', function () {
-    it('applies sparse field selection', function () {
+describe('fields', function (): void {
+    it('applies sparse field selection', function (): void {
         $builder = makeQueryBuilder(
             query: ['fields' => ['users' => 'name,email']],
             config: ['allowedFields' => ['name', 'email']],
@@ -262,7 +262,7 @@ describe('fields', function () {
             ->toContain('email');
     });
 
-    it('always includes primary key', function () {
+    it('always includes primary key', function (): void {
         $builder = makeQueryBuilder(
             query: ['fields' => ['users' => 'name']],
             config: ['allowedFields' => ['name']],
@@ -273,19 +273,19 @@ describe('fields', function () {
         expect($sql)->toContain('id');
     });
 
-    it('throws for unknown field in non-production', function () {
+    it('throws for unknown field in non-production', function (): void {
         $builder = makeQueryBuilder(
             query: ['fields' => ['users' => 'unknown_col']],
             config: ['allowedFields' => ['name']],
         );
 
-        expect(fn () => $builder->allowedFields())
+        expect(fn (): TestQueryBuilder => $builder->allowedFields())
             ->toThrow(InvalidArgumentException::class, 'BaseQueryBuilder: unknown fields');
     });
 });
 
-describe('includes', function () {
-    it('applies eager loading', function () {
+describe('includes', function (): void {
+    it('applies eager loading', function (): void {
         $builder = makeQueryBuilder(
             query: ['include' => 'roles'],
             config: ['allowedIncludes' => ['roles']],
@@ -296,7 +296,7 @@ describe('includes', function () {
         expect($query->getEagerLoads())->toHaveKey('roles');
     });
 
-    it('handles nested relations', function () {
+    it('handles nested relations', function (): void {
         $builder = makeQueryBuilder(
             query: ['include' => 'roles.permissions'],
             config: ['allowedIncludes' => ['roles']],
@@ -307,19 +307,19 @@ describe('includes', function () {
         expect($query->getEagerLoads())->toHaveKey('roles.permissions');
     });
 
-    it('throws for unknown include in non-production', function () {
+    it('throws for unknown include in non-production', function (): void {
         $builder = makeQueryBuilder(
             query: ['include' => 'unknown_relation'],
             config: ['allowedIncludes' => ['roles']],
         );
 
-        expect(fn () => $builder->allowedIncludes())
+        expect(fn (): TestQueryBuilder => $builder->allowedIncludes())
             ->toThrow(InvalidArgumentException::class, 'BaseQueryBuilder: unknown includes');
     });
 });
 
-describe('trashed', function () {
-    it('with includes soft deleted records', function () {
+describe('trashed', function (): void {
+    it('with includes soft deleted records', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['trashed' => 'with']],
             config: ['allowedFilters' => ['trashed']],
@@ -330,7 +330,7 @@ describe('trashed', function () {
         expect($sql)->not->toContain('"deleted_at" is null');
     });
 
-    it('only shows only soft deleted records', function () {
+    it('only shows only soft deleted records', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['trashed' => 'only']],
             config: ['allowedFilters' => ['trashed']],
@@ -341,7 +341,7 @@ describe('trashed', function () {
         expect($sql)->toContain('is not null');
     });
 
-    it('ignores invalid values', function () {
+    it('ignores invalid values', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['trashed' => 'invalid']],
             config: ['allowedFilters' => ['trashed']],
@@ -353,27 +353,27 @@ describe('trashed', function () {
     });
 });
 
-describe('report warning', function () {
-    it('throws in non-production environment', function () {
+describe('report warning', function (): void {
+    it('throws in non-production environment', function (): void {
         $builder = makeQueryBuilder();
 
         $reflection = new ReflectionMethod(BaseQueryBuilder::class, 'reportWarning');
 
-        expect(fn () => $reflection->invoke($builder, 'test warning'))
+        expect(fn (): mixed => $reflection->invoke($builder, 'test warning'))
             ->toThrow(InvalidArgumentException::class, 'test warning');
     });
 
-    it('logs in production environment', function () {
-        app()->detectEnvironment(fn () => 'production');
+    it('logs in production environment', function (): void {
+        app()->detectEnvironment(fn (): string => 'production');
 
         $builder = makeQueryBuilder(query: ['filter' => ['unknown_key' => 'value']]);
 
-        expect(fn () => $builder->allowedFilters())->not->toThrow(InvalidArgumentException::class);
+        expect(fn (): TestQueryBuilder => $builder->allowedFilters())->not->toThrow(InvalidArgumentException::class);
     });
 });
 
-describe('value truncation', function () {
-    it('truncates long filter values', function () {
+describe('value truncation', function (): void {
+    it('truncates long filter values', function (): void {
         $builder = makeQueryBuilder(
             query: ['filter' => ['name' => str_repeat('a', 300)]],
             config: ['allowedFilters' => ['name']],

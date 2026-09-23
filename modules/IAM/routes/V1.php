@@ -42,7 +42,7 @@ use Modules\IAM\Http\Controllers\V1\UserShowController;
 use Modules\IAM\Http\Controllers\V1\UserUpdateController;
 use Modules\IAM\Http\Controllers\V1\VerifyEmailController;
 
-Route::prefix('auth')->name('auth.')->group(function () {
+Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('login', LoginController::class)->middleware('throttle:auth')->name('login');
     Route::post('register', RegisterController::class)
         ->middleware(['feature-flag:iam.self-registration', 'throttle:auth', 'idempotency'])
@@ -57,7 +57,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::get('social/{provider}/redirect', SocialRedirectController::class)->middleware('throttle:api')->name('social.redirect');
     Route::get('social/{provider}/callback', SocialCallbackController::class)->middleware('throttle:api')->name('social.callback');
 
-    Route::middleware(['auth:sanctum', 'active', 'throttle:authenticated'])->group(function () {
+    Route::middleware(['auth:sanctum', 'active', 'throttle:authenticated'])->group(function (): void {
         Route::post('email/verification-notification', ResendVerificationController::class)
             ->middleware('ability:users:write')
             ->name('verification.send');
@@ -72,7 +72,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
 
         Route::get('me', MeController::class)->middleware('ability:users:read')->name('me');
 
-        Route::middleware('verified')->group(function () {
+        Route::middleware('verified')->group(function (): void {
             Route::put('me', UpdateProfileController::class)->name('me.update');
 
             Route::get('social/{provider}/link', SocialLinkController::class)->name('social.link');
@@ -85,7 +85,7 @@ Route::prefix('auth')->name('auth.')->group(function () {
     });
 });
 
-Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function (): void {
     Route::get('/', UserListController::class)->middleware('permission:'.PermissionEnum::UserView->value)->name('index');
     Route::post('/', UserCreateController::class)->middleware('permission:'.PermissionEnum::UserCreate->value)->name('create');
 
@@ -98,7 +98,7 @@ Route::prefix('users')->name('user.')->middleware(['auth:sanctum', 'active', 've
     Route::delete('/{user}', UserDeleteController::class)->middleware('permission:'.PermissionEnum::UserDelete->value)->name('delete');
 })->whereUlid(['user']);
 
-Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function (): void {
     Route::get('/', RoleListController::class)->middleware('permission:'.PermissionEnum::RoleView->value)->name('index');
     Route::post('/', RoleCreateController::class)->middleware('permission:'.PermissionEnum::RoleCreate->value)->name('create');
 
@@ -109,7 +109,7 @@ Route::prefix('roles')->name('role.')->middleware(['auth:sanctum', 'active', 've
     Route::delete('/{role}', RoleDeleteController::class)->middleware('permission:'.PermissionEnum::RoleDelete->value)->name('delete');
 })->whereUlid(['role']);
 
-Route::prefix('permissions')->name('permission.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function () {
+Route::prefix('permissions')->name('permission.')->middleware(['auth:sanctum', 'active', 'verified', 'throttle:api'])->group(function (): void {
     Route::get('/', PermissionListController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('index');
     Route::post('/', PermissionCreateController::class)->middleware('permission:'.PermissionEnum::PermissionCreate->value)->name('create');
     Route::get('/{permission}', PermissionShowController::class)->middleware('permission:'.PermissionEnum::PermissionView->value)->name('show');

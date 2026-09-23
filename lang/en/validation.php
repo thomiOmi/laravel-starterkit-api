@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'social_provider_invalid' => 'The selected social provider is invalid.',
     'social_state_invalid' => 'The social authentication state is invalid.',

@@ -11,13 +11,13 @@ use Modules\IAM\Models\Role;
 
 covers(RegisterController::class);
 
-describe('POST /api/v1/auth/register', function () {
-    beforeEach(function () {
+describe('POST /api/v1/auth/register', function (): void {
+    beforeEach(function (): void {
         config()->set('iam.features.self-registration', true);
-        Role::firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
     });
 
-    it('creates a user with the User role and returns a token', function () {
+    it('creates a user with the User role and returns a token', function (): void {
         Event::fake([Registered::class]);
 
         $response = $this->postJson('/api/v1/auth/register', [
@@ -36,7 +36,7 @@ describe('POST /api/v1/auth/register', function () {
         Event::assertDispatched(Registered::class);
     });
 
-    it('rejects duplicate emails', function () {
+    it('rejects duplicate emails', function (): void {
         UserFactory::new()->createOne(['email' => 'jane@example.com']);
 
         $response = $this->postJson('/api/v1/auth/register', [
@@ -50,7 +50,7 @@ describe('POST /api/v1/auth/register', function () {
         $response->assertJsonValidationErrors(['email']);
     });
 
-    it('is disabled when the feature flag is off', function () {
+    it('is disabled when the feature flag is off', function (): void {
         config()->set('iam.features.self-registration', false);
 
         $response = $this->postJson('/api/v1/auth/register', [

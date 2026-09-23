@@ -10,9 +10,9 @@ use Modules\IAM\Providers\IAMServiceProvider;
 
 covers([AddTraceId::class, AddSecurityHeaders::class, SetLocale::class, ProblemResponse::class, IAMServiceProvider::class]);
 
-describe('global api middleware pipeline', function () {
+describe('global api middleware pipeline', function (): void {
 
-    it('renders missing api routes as problem responses with trace id and security headers', function () {
+    it('renders missing api routes as problem responses with trace id and security headers', function (): void {
         $response = $this->getJson('/api/v1/__missing__');
 
         assertProblemResponse($response, 404, 'resource-not-found');
@@ -26,7 +26,7 @@ describe('global api middleware pipeline', function () {
             ->and($response->headers->get('Cache-Control'))->toBe('no-store, private');
     })->group('smoke');
 
-    it('does not send HSTS outside production', function () {
+    it('does not send HSTS outside production', function (): void {
         $response = $this->getJson('/api/v1/__missing__');
 
         expect($response->headers->has('Strict-Transport-Security'))->toBeFalse();

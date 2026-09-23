@@ -55,6 +55,6 @@ final readonly class UserPayload
             'email' => $this->email,
             'password' => $this->password,
             'status' => $this->status,
-        ], fn (mixed $value) => $value !== null);
+        ], fn (mixed $value): bool => $value !== null);
     }
 }

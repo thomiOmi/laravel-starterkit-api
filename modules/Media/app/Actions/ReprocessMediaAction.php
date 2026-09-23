@@ -7,6 +7,7 @@ namespace Modules\Media\Actions;
 use InvalidArgumentException;
 use Modules\Media\Jobs\ProcessMediaJob;
 use Modules\Media\Models\Media;
+use Modules\Media\Models\MediaConversion;
 use Modules\Media\Services\MediaConversionService;
 
 /**
@@ -31,7 +32,7 @@ final readonly class ReprocessMediaAction
                 throw $exception;
             }
 
-            if ($generated === null) {
+            if (! $generated instanceof MediaConversion) {
                 $exception = new InvalidArgumentException("Conversion [{$conversion}] is not defined for this media.");
                 $media->markProcessingFailed($exception->getMessage());
 
@@ -45,7 +46,7 @@ final readonly class ReprocessMediaAction
 
         if ($queued || config()->boolean('media.queue', false)) {
             $media->markPending();
-            ProcessMediaJob::dispatch($media->id);
+            dispatch(new ProcessMediaJob($media->id));
 
             return;
         }
@@ -55,10 +56,10 @@ final readonly class ReprocessMediaAction
         try {
             $this->conversionService->generate($media);
             $media->markProcessed();
-        } catch (\Throwable $exception) {
-            $media->markProcessingFailed($exception->getMessage());
+        } catch (\Throwable $throwable) {
+            $media->markProcessingFailed($throwable->getMessage());
 
-            throw $exception;
+            throw $throwable;
         }
     }
 }

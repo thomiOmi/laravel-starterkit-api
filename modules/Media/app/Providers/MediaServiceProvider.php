@@ -61,7 +61,7 @@ class MediaServiceProvider extends ModuleServiceProvider
     {
         parent::register();
 
-        $this->app->singleton(MediaUrlGenerator::class, function (): MediaUrlGenerator {
+        $this->app->singleton(function (): MediaUrlGenerator {
             $class = config()->string('media.url_generator', DefaultUrlGenerator::class);
 
             if (! is_a($class, MediaUrlGenerator::class, true)) {
@@ -70,7 +70,7 @@ class MediaServiceProvider extends ModuleServiceProvider
 
             return new $class;
         });
-        $this->app->singleton(MediaPathGenerator::class, function (): MediaPathGenerator {
+        $this->app->singleton(function (): MediaPathGenerator {
             $class = config()->string('media.path_generator', DefaultPathGenerator::class);
 
             if (! is_a($class, MediaPathGenerator::class, true)) {
@@ -79,7 +79,7 @@ class MediaServiceProvider extends ModuleServiceProvider
 
             return new $class;
         });
-        $this->app->singleton(MediaFileNamer::class, function (): MediaFileNamer {
+        $this->app->singleton(function (): MediaFileNamer {
             $class = config()->string('media.file_namer', DefaultFileNamer::class);
 
             if (! is_a($class, MediaFileNamer::class, true)) {
@@ -88,7 +88,7 @@ class MediaServiceProvider extends ModuleServiceProvider
 
             return new $class;
         });
-        $this->app->singleton(MediaDownloader::class, function (): MediaDownloader {
+        $this->app->singleton(function (): MediaDownloader {
             $class = config()->string('media.media_downloader', DefaultDownloader::class);
 
             if (! is_a($class, MediaDownloader::class, true)) {
@@ -97,7 +97,7 @@ class MediaServiceProvider extends ModuleServiceProvider
 
             return new $class;
         });
-        $this->app->singleton(MediaFileRemover::class, function (): MediaFileRemover {
+        $this->app->singleton(function (): MediaFileRemover {
             $class = config()->string('media.file_remover', DefaultFileRemover::class);
 
             if (! is_a($class, MediaFileRemover::class, true)) {
@@ -106,7 +106,7 @@ class MediaServiceProvider extends ModuleServiceProvider
 
             return new $class;
         });
-        $this->app->singleton(MediaScanner::class, function (): MediaScanner {
+        $this->app->singleton(function (): MediaScanner {
             $class = config()->string('media.scanner', NullScanner::class);
 
             if (! is_a($class, MediaScanner::class, true)) {

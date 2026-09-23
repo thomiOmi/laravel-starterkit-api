@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -13,24 +15,16 @@ use Modules\Media\Traits\InteractsWithMedia;
 
 covers(InteractsWithMedia::class);
 
-describe('InteractsWithMedia', function () {
-    beforeEach(function () {
+describe('InteractsWithMedia', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
-    it('provides media relationship and collection helpers', function () {
-        $owner = new class extends Model
+    it('provides media relationship and collection helpers', function (): void {
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
 
         $owner->forceFill(['id' => (string) Str::ulid()]);
@@ -52,21 +46,13 @@ describe('InteractsWithMedia', function () {
             ->and($owner->getFirstMedia('missing'))->toBeNull();
     });
 
-    it('adds media via pending builder', function () {
+    it('adds media via pending builder', function (): void {
         Storage::fake('public');
         Storage::fake('local');
 
-        $owner = new class extends Model
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
 
         $ownerId = (string) Str::ulid();
@@ -99,18 +85,10 @@ describe('InteractsWithMedia', function () {
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
     });
 
-    it('returns url helpers', function () {
-        $owner = new class extends Model
+    it('returns url helpers', function (): void {
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
 
         $owner->forceFill(['id' => (string) Str::ulid()]);
@@ -128,18 +106,10 @@ describe('InteractsWithMedia', function () {
             ->and($owner->getFirstMediaSignedUrl('missing'))->toBeNull();
     });
 
-    it('clears a media collection', function () {
-        $owner = new class extends Model
+    it('clears a media collection', function (): void {
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
 
         $owner->forceFill(['id' => (string) Str::ulid()]);

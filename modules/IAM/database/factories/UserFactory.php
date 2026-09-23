@@ -47,7 +47,7 @@ class UserFactory extends Factory
      */
     public function pending(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'status' => UserStatusEnum::Pending,
             'email_verified_at' => null,
         ]);
@@ -58,7 +58,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'email_verified_at' => null,
         ]);
     }
@@ -99,7 +99,7 @@ class UserFactory extends Factory
     private function withRole(RoleEnum $role): static
     {
         return $this->afterCreating(
-            fn (User $user) => $user->assignRole($role->value)
+            fn (User $user): User => $user->assignRole($role->value)
         );
     }
 
@@ -108,7 +108,7 @@ class UserFactory extends Factory
      */
     public function banned(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'status' => UserStatusEnum::Banned,
         ]);
     }
@@ -118,7 +118,7 @@ class UserFactory extends Factory
      */
     public function suspended(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'status' => UserStatusEnum::Suspended,
         ]);
     }
@@ -128,7 +128,7 @@ class UserFactory extends Factory
      */
     public function inactive(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'status' => UserStatusEnum::Inactive,
         ]);
     }
@@ -140,7 +140,7 @@ class UserFactory extends Factory
      */
     public function social(string $provider = 'google'): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'password' => null,
             'avatar' => fake()->imageUrl(),
         ])->afterCreating(function (User $user) use ($provider): void {

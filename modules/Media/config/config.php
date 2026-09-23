@@ -169,7 +169,7 @@ return [
     | disk as the original file.
     |
     */
-    'conversions_disk_name' => env('MEDIA_CONVERSIONS_DISK', null),
+    'conversions_disk_name' => env('MEDIA_CONVERSIONS_DISK'),
 
     'remote' => [
         /*

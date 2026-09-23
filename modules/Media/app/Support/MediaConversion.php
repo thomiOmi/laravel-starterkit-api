@@ -19,8 +19,6 @@ final class MediaConversion
     /** @var array<int, string> */
     public const array ALLOWED_FORMATS = ['webp', 'jpg', 'jpeg'];
 
-    public string $name;
-
     public ?int $width = null;
 
     public ?int $height = null;
@@ -36,16 +34,11 @@ final class MediaConversion
 
     public bool $nonQueued = false;
 
-    public function __construct(string $name)
-    {
-        $this->name = $name;
-    }
+    public function __construct(public string $name) {}
 
     public function width(int $width): self
     {
-        if ($width < 32 || $width > 2000) {
-            throw new InvalidArgumentException('Width must be between 32 and 2000.');
-        }
+        throw_if($width < 32 || $width > 2000, InvalidArgumentException::class, 'Width must be between 32 and 2000.');
 
         $this->width = $width;
 
@@ -54,9 +47,7 @@ final class MediaConversion
 
     public function height(int $height): self
     {
-        if ($height < 32 || $height > 2000) {
-            throw new InvalidArgumentException('Height must be between 32 and 2000.');
-        }
+        throw_if($height < 32 || $height > 2000, InvalidArgumentException::class, 'Height must be between 32 and 2000.');
 
         $this->height = $height;
 
@@ -89,9 +80,7 @@ final class MediaConversion
 
     public function quality(int $quality): self
     {
-        if ($quality < 1 || $quality > 100) {
-            throw new InvalidArgumentException('Quality must be between 1 and 100.');
-        }
+        throw_if($quality < 1 || $quality > 100, InvalidArgumentException::class, 'Quality must be between 1 and 100.');
 
         $this->quality = $quality;
 
@@ -182,9 +171,7 @@ final class MediaConversion
         $width = isset($modifiers['w']) && is_int($modifiers['w']) ? $modifiers['w'] : null;
         /** @var int<1, 2000>|null $height */
         $height = isset($modifiers['h']) && is_int($modifiers['h']) ? $modifiers['h'] : null;
-        /** @var string|null $fit */
         $fit = isset($modifiers['fit']) && is_string($modifiers['fit']) ? $modifiers['fit'] : null;
-        /** @var string|null $kernel */
         $kernel = isset($modifiers['kernel']) && is_string($modifiers['kernel']) ? $modifiers['kernel'] : null;
         /** @var int<1, 100> $quality */
         $quality = isset($modifiers['q']) && is_int($modifiers['q']) ? $modifiers['q'] : 80;
@@ -221,7 +208,7 @@ final class MediaConversion
             $readable = 'original';
         }
 
-        $extension = $format === 'jpg' ? 'jpg' : $format;
+        $extension = $format;
 
         return MediaPrefix::join('conversions/derived', $mediaId, $readable.'-'.substr($cacheKey, 0, 8).'.'.$extension);
     }
@@ -233,9 +220,7 @@ final class MediaConversion
     {
         $modifiers = trim($modifiers, '/');
 
-        if ($modifiers === '') {
-            throw new InvalidArgumentException('Modifiers cannot be empty.');
-        }
+        throw_if($modifiers === '', InvalidArgumentException::class, 'Modifiers cannot be empty.');
 
         $result = [];
         $isIpxStyle = str_contains($modifiers, ',') || str_contains($modifiers, '_');
@@ -255,7 +240,7 @@ final class MediaConversion
                 }
 
                 $key = strtolower((string) $key);
-                $value = trim((string) $value);
+                $value = trim($value);
 
                 switch ($key) {
                     case 's':
@@ -268,6 +253,7 @@ final class MediaConversion
                             if ($parsedW !== null) {
                                 $result['w'] = $parsedW;
                             }
+
                             if ($parsedH !== null) {
                                 $result['h'] = $parsedH;
                             }
@@ -277,6 +263,7 @@ final class MediaConversion
                                 $result['w'] = $parsedW;
                             }
                         }
+
                         break;
                     case 'w':
                     case 'width':
@@ -284,6 +271,7 @@ final class MediaConversion
                         if ($parsedW !== null) {
                             $result['w'] = $parsedW;
                         }
+
                         break;
                     case 'h':
                     case 'height':
@@ -291,6 +279,7 @@ final class MediaConversion
                         if ($parsedH !== null) {
                             $result['h'] = $parsedH;
                         }
+
                         break;
                     case 'f':
                     case 'format':
@@ -303,6 +292,7 @@ final class MediaConversion
                         if ($parsedQ !== null) {
                             $result['q'] = $parsedQ;
                         }
+
                         break;
                     case 'fit':
                         $result['fit'] = strtolower($value);
@@ -335,7 +325,9 @@ final class MediaConversion
                 array_shift($parts);
             }
 
-            for ($i = 0; $i < count($parts); $i += 2) {
+            $counter = count($parts);
+
+            for ($i = 0; $i < $counter; $i += 2) {
                 $key = $parts[$i];
                 $value = $parts[$i + 1] ?? null;
 
@@ -362,6 +354,7 @@ final class MediaConversion
                         } else {
                             $result['w'] = (int) $value;
                         }
+
                         break;
                     case 'f':
                     case 'format':
@@ -395,29 +388,21 @@ final class MediaConversion
             $result['height'] = $result['h'];
         }
 
-        if (isset($result['w']) && ($result['w'] < 32 || $result['w'] > 2000)) {
-            throw new InvalidArgumentException('Width must be between 32 and 2000.');
-        }
+        throw_if(isset($result['w']) && ($result['w'] < 32 || $result['w'] > 2000), InvalidArgumentException::class, 'Width must be between 32 and 2000.');
 
-        if (isset($result['h']) && ($result['h'] < 32 || $result['h'] > 2000)) {
-            throw new InvalidArgumentException('Height must be between 32 and 2000.');
-        }
+        throw_if(isset($result['h']) && ($result['h'] < 32 || $result['h'] > 2000), InvalidArgumentException::class, 'Height must be between 32 and 2000.');
 
         if (isset($result['f']) && ! in_array($result['f'], self::ALLOWED_FORMATS, true)) {
             throw new InvalidArgumentException('Format must be one of: '.implode(', ', self::ALLOWED_FORMATS).'.');
         }
 
-        if (isset($result['q']) && ($result['q'] < 1 || $result['q'] > 100)) {
-            throw new InvalidArgumentException('Quality must be between 1 and 100.');
-        }
+        throw_if(isset($result['q']) && ($result['q'] < 1 || $result['q'] > 100), InvalidArgumentException::class, 'Quality must be between 1 and 100.');
 
         if (isset($result['fit']) && ! in_array($result['fit'], self::ALLOWED_FITS, true)) {
             throw new InvalidArgumentException('Fit must be one of: '.implode(', ', self::ALLOWED_FITS).'.');
         }
 
-        if (! isset($result['w']) && ! isset($result['h']) && ! isset($result['f']) && ! isset($result['q'])) {
-            throw new InvalidArgumentException('At least one modifier (w, h, f, q) must be provided.');
-        }
+        throw_if(! isset($result['w']) && ! isset($result['h']) && ! isset($result['f']) && ! isset($result['q']), InvalidArgumentException::class, 'At least one modifier (w, h, f, q) must be provided.');
 
         return $result;
     }

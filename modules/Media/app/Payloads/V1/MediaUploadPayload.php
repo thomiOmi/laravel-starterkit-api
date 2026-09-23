@@ -30,12 +30,11 @@ final readonly class MediaUploadPayload
     public static function fromRequest(MediaUploadRequest $request): self
     {
         $collection = $request->safe()->string('collection_name')->trim()->toString();
-        /** @var mixed $file */
         $file = $request->file('file');
 
         if ($file instanceof UploadedFile) {
             $resolved = $file;
-        } elseif (is_array($file) && isset($file[0]) && $file[0] instanceof UploadedFile) {
+        } elseif (is_array($file) && isset($file[0])) {
             $resolved = $file[0];
         } else {
             throw new \InvalidArgumentException('File is required.');

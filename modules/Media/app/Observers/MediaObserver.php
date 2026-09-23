@@ -13,6 +13,6 @@ final class MediaObserver
     {
         // Single storage cleanup site: runs while conversion rows are
         // still readable. Storage deletes are idempotent.
-        app(MediaFileRemover::class)->removeAllFiles($media);
+        resolve(MediaFileRemover::class)->removeAllFiles($media);
     }
 }

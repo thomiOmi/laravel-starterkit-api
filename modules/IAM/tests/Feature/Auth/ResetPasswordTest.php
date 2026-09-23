@@ -8,8 +8,8 @@ use Modules\IAM\Http\Controllers\V1\ResetPasswordController;
 
 covers(ResetPasswordController::class);
 
-describe('POST /api/v1/auth/reset-password', function () {
-    it('resets the password with a valid token', function () {
+describe('POST /api/v1/auth/reset-password', function (): void {
+    it('resets the password with a valid token', function (): void {
         $user = UserFactory::new()->createOne(['email' => 'jane@example.com', 'password' => 'old-password']);
         $token = Password::createToken($user);
 
@@ -29,7 +29,7 @@ describe('POST /api/v1/auth/reset-password', function () {
         ])->assertOk();
     });
 
-    it('rejects an invalid token', function () {
+    it('rejects an invalid token', function (): void {
         $user = UserFactory::new()->createOne(['email' => 'jane@example.com']);
 
         $response = $this->postJson('/api/v1/auth/reset-password', [

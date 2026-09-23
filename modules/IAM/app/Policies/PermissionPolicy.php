@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\IAM\Policies;
 
 use App\Enums\PermissionEnum;
-use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\User;
 
 /**
@@ -22,7 +21,7 @@ final class PermissionPolicy
     /**
      * Determine whether the user can view the permission.
      */
-    public function view(User $user, Permission $permission): bool
+    public function view(User $user): bool
     {
         return $user->can(PermissionEnum::PermissionView->value);
     }
@@ -38,7 +37,7 @@ final class PermissionPolicy
     /**
      * Determine whether the user can update the permission.
      */
-    public function update(User $user, Permission $permission): bool
+    public function update(User $user): bool
     {
         return $user->can(PermissionEnum::PermissionEdit->value);
     }
@@ -46,7 +45,7 @@ final class PermissionPolicy
     /**
      * Determine whether the user can delete the permission.
      */
-    public function delete(User $user, Permission $permission): bool
+    public function delete(User $user): bool
     {
         return $user->can(PermissionEnum::PermissionDelete->value);
     }

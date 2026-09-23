@@ -21,7 +21,7 @@ final readonly class RegisterAction
      */
     public function handle(RegisterPayload $payload, ?string $ip = null, ?string $userAgent = null): array
     {
-        $user = User::create([
+        $user = User::query()->create([
             'name' => $payload->name,
             'email' => $payload->email,
             'password' => $payload->password,

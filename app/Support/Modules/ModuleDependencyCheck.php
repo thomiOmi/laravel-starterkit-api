@@ -37,7 +37,7 @@ final readonly class ModuleDependencyCheck
             foreach ($dependencies as $dependency) {
                 $installed = $this->modules->find($dependency);
 
-                if ($installed === null) {
+                if (! $installed instanceof Module) {
                     $rows[] = [
                         'check' => "$module -> $dependency",
                         'status' => 'fail',

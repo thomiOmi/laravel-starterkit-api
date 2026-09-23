@@ -8,8 +8,8 @@ use Modules\Media\Console\Commands\MediaCleanupCommand;
 
 covers(MediaCleanupCommand::class);
 
-describe('console schedule', function () {
-    it('schedules a daily dry-run of media:cleanup', function () {
+describe('console schedule', function (): void {
+    it('schedules a daily dry-run of media:cleanup', function (): void {
         $event = collect(Schedule::events())
             ->first(fn (Event $scheduled): bool => str_contains((string) ($scheduled->command ?? ''), 'media:cleanup'));
 

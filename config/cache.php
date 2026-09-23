@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Str;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;

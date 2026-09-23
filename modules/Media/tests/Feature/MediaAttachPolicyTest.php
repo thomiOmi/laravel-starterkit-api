@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
@@ -14,25 +16,17 @@ use Modules\Media\Traits\InteractsWithMedia;
 
 covers(AttachMediaAction::class);
 
-describe('Media attach authorization', function () {
-    beforeEach(function () {
+describe('Media attach authorization', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
     });
 
     function attachOwner(): Model&HasMedia
     {
-        $owner = new class extends Model implements HasMedia
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model implements HasMedia
         {
             use InteractsWithMedia;
-
-            protected $table = 'users';
-
-            public $incrementing = false;
-
-            protected $keyType = 'string';
-
-            protected $primaryKey = 'id';
         };
 
         $owner->forceFill(['id' => (string) Str::ulid()]);
@@ -41,7 +35,7 @@ describe('Media attach authorization', function () {
         return $owner;
     }
 
-    it('allows the owner to reassign media', function () {
+    it('allows the owner to reassign media', function (): void {
         $owner = loginAsUser();
         $other = loginAsUser();
 
@@ -52,12 +46,12 @@ describe('Media attach authorization', function () {
         // Caller (Request/Controller) authorizes before invoking the pure Action.
         Gate::authorize('update', $media);
 
-        $moved = app(AttachMediaAction::class)->handle($media, $other);
+        $moved = resolve(AttachMediaAction::class)->handle($media, $other);
 
         expect($moved->model_id)->toBe($other->getKey());
     });
 
-    it('forbids strangers from reassigning media', function () {
+    it('forbids strangers from reassigning media', function (): void {
         $owner = attachOwner();
 
         $media = $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 20, 20))->toMediaCollection('default');

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'resource_retrieved' => ':resource berhasil diambil',
     'resource_created' => ':resource berhasil dibuat',

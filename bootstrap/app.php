@@ -76,30 +76,24 @@ return Application::configure(basePath: dirname(__DIR__))
         // $middleware->throttleApi(); // We will define custom throttle in routes
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e): bool {
-            return $request->is('api/*') || $request->expectsJson();
-        });
+        $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $e): bool => $request->is('api/*') || $request->expectsJson());
 
         // Validation Exception (422)
-        $exceptions->render(function (ValidationException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
-                typeKey: 'validation',
-                title: __('auth.http_validation_failed'),
-                status: Response::HTTP_UNPROCESSABLE_ENTITY,
-                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.validation_failed'),
-                extensions: ['errors' => $e->errors()],
-            );
-        });
+        $exceptions->render(fn (ValidationException $e, Request $request): ProblemResponse => new ProblemResponse(
+            typeKey: 'validation',
+            title: __('auth.http_validation_failed'),
+            status: Response::HTTP_UNPROCESSABLE_ENTITY,
+            detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.validation_failed'),
+            extensions: ['errors' => $e->errors()],
+        ));
 
         // Authentication Exception (401)
-        $exceptions->render(function (AuthenticationException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
-                typeKey: 'unauthenticated',
-                title: __('auth.http_unauthorized'),
-                status: Response::HTTP_UNAUTHORIZED,
-                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.unauthenticated'),
-            );
-        });
+        $exceptions->render(fn (AuthenticationException $e, Request $request): ProblemResponse => new ProblemResponse(
+            typeKey: 'unauthenticated',
+            title: __('auth.http_unauthorized'),
+            status: Response::HTTP_UNAUTHORIZED,
+            detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.unauthenticated'),
+        ));
 
         // Access Denied / Forbidden (403)
         $exceptions->render(function (AccessDeniedHttpException|InvalidSignatureException|AuthorizationException $e, Request $request): ProblemResponse {
@@ -148,14 +142,12 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // Invalid Argument Exception (400)
-        $exceptions->render(function (InvalidArgumentException $e, Request $request): ProblemResponse {
-            return new ProblemResponse(
-                typeKey: 'bad_request',
-                title: __('auth.http_bad_request'),
-                status: Response::HTTP_BAD_REQUEST,
-                detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.bad_request_detail'),
-            );
-        });
+        $exceptions->render(fn (InvalidArgumentException $e, Request $request): ProblemResponse => new ProblemResponse(
+            typeKey: 'bad_request',
+            title: __('auth.http_bad_request'),
+            status: Response::HTTP_BAD_REQUEST,
+            detail: $e->getMessage() !== '' ? $e->getMessage() : __('auth.bad_request_detail'),
+        ));
 
         // Conflict Exception (409)
         $exceptions->render(function (ConflictHttpException $e, Request $request): ProblemResponse {

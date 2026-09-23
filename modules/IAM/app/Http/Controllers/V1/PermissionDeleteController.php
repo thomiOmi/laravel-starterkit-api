@@ -34,7 +34,6 @@ final readonly class PermissionDeleteController extends Controller
 
         if ($this->deletePermission->handle($permission)) {
             return new SuccessResponse(
-                data: null,
                 title: __('general.resource_deleted', ['resource' => 'Permission']),
                 detail: __('general.resource_deleted', ['resource' => 'Permission']),
                 status: Response::HTTP_OK,

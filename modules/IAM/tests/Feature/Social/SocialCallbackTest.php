@@ -12,12 +12,12 @@ use Modules\IAM\Support\SocialState;
 
 covers(SocialCallbackController::class);
 
-beforeEach(function () {
-    Role::firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
+beforeEach(function (): void {
+    Role::query()->firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
 });
 
-describe('GET /api/v1/auth/social/{provider}/callback', function () {
-    it('returns user and token on valid callback', function () {
+describe('GET /api/v1/auth/social/{provider}/callback', function (): void {
+    it('returns user and token on valid callback', function (): void {
         $state = SocialState::create('login');
         $socialUser = Mockery::mock(SocialiteUser::class);
         $socialUser->shouldReceive('getId')->andReturn('google-123');
@@ -37,7 +37,7 @@ describe('GET /api/v1/auth/social/{provider}/callback', function () {
             ->and($response->json('data.access_token'))->not->toBeEmpty();
     });
 
-    it('rejects invalid state', function () {
+    it('rejects invalid state', function (): void {
         $response = $this->getJson('/api/v1/auth/social/google/callback?state=bad');
 
         assertProblemResponse($response, 400);

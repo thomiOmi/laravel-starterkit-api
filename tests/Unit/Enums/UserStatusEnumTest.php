@@ -6,7 +6,7 @@ use App\Enums\UserStatusEnum;
 
 covers(UserStatusEnum::class);
 
-describe('UserStatusEnum', function () {
+describe('UserStatusEnum', function (): void {
 
     it('has Active', fn () => expect(UserStatusEnum::Active->value)->toBe('active'));
     it('has Inactive', fn () => expect(UserStatusEnum::Inactive->value)->toBe('inactive'));
@@ -30,7 +30,7 @@ describe('UserStatusEnum', function () {
     });
 
     describe('label', function (): void {
-        it('returns the English label by default', function () {
+        it('returns the English label by default', function (): void {
             expect(UserStatusEnum::Active->label())->toBe('Active')
                 ->and(UserStatusEnum::Inactive->label())->toBe('Inactive')
                 ->and(UserStatusEnum::Pending->label())->toBe('Pending')
@@ -38,7 +38,7 @@ describe('UserStatusEnum', function () {
                 ->and(UserStatusEnum::Banned->label())->toBe('Banned');
         });
 
-        it('returns the Indonesian label in the id locale', function () {
+        it('returns the Indonesian label in the id locale', function (): void {
             app()->setLocale('id');
 
             expect(UserStatusEnum::Active->label())->toBe('Aktif')

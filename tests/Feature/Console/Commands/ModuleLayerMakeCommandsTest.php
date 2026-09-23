@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Process;
 
 beforeEach(function (): void {
     Process::fake();
 
-    $files = app('files');
+    $files = resolve(Filesystem::class);
     $modulePath = base_path('tests/Fixtures/modules/Widget');
 
     config()->set('modules.paths.modules', base_path('tests/Fixtures/modules'));
@@ -22,9 +23,7 @@ beforeEach(function (): void {
         'providers' => [],
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-    if ($moduleJson === false) {
-        throw new RuntimeException('Failed to encode the module.json fixture.');
-    }
+    throw_if($moduleJson === false, RuntimeException::class, 'Failed to encode the module.json fixture.');
 
     $files->put($modulePath.'/module.json', $moduleJson);
 
@@ -32,11 +31,11 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    app('files')->deleteDirectory(base_path('tests/Fixtures/modules'));
+    resolve(Filesystem::class)->deleteDirectory(base_path('tests/Fixtures/modules'));
 });
 
-describe('module layer commands generate convention-compliant files', function () {
-    it('generates a strict-typed, attribute-based model in app/Models', function () {
+describe('module layer commands generate convention-compliant files', function (): void {
+    it('generates a strict-typed, attribute-based model in app/Models', function (): void {
         artisanCommand($this, 'module:make-model', ['model' => 'Product', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -52,7 +51,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->not->toContain('final class');
     });
 
-    it('generates scopes into app/Models/Scopes', function () {
+    it('generates scopes into app/Models/Scopes', function (): void {
         artisanCommand($this, 'module:make-scope', ['name' => 'ActiveProduct', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -63,7 +62,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('class ActiveProduct implements Scope');
     });
 
-    it('generates final readonly actions with handle(): void', function () {
+    it('generates final readonly actions with handle(): void', function (): void {
         artisanCommand($this, 'module:make-action', ['name' => 'RegisterProduct', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -74,7 +73,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('public function handle(): void');
     });
 
-    it('generates final readonly invokable actions', function () {
+    it('generates final readonly invokable actions', function (): void {
         artisanCommand($this, 'module:make-action', ['name' => 'PublishProduct', 'module' => 'Widget', '--invokable' => true])
             ->assertSuccessful();
 
@@ -84,7 +83,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('public function __invoke(): void');
     });
 
-    it('generates final readonly services without a handle method', function () {
+    it('generates final readonly services without a handle method', function (): void {
         artisanCommand($this, 'module:make-service', ['name' => 'ProductService', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -95,7 +94,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->not->toContain('handle');
     });
 
-    it('maps helpers to the Support layer as final classes', function () {
+    it('maps helpers to the Support layer as final classes', function (): void {
         artisanCommand($this, 'module:make-helper', ['name' => 'StringHelper', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -106,7 +105,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('final class StringHelper');
     });
 
-    it('maps interfaces to app/Contracts', function () {
+    it('maps interfaces to app/Contracts', function (): void {
         artisanCommand($this, 'module:make-interface', ['name' => 'ProductContract', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -117,7 +116,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('interface ProductContract');
     });
 
-    it('maps resources to app/Http/Resources', function () {
+    it('maps resources to app/Http/Resources', function (): void {
         artisanCommand($this, 'module:make-resource', ['name' => 'ProductResource', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -128,7 +127,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('class ProductResource extends JsonResource');
     });
 
-    it('generates form requests in app/Http/Requests', function () {
+    it('generates form requests in app/Http/Requests', function (): void {
         artisanCommand($this, 'module:make-request', ['name' => 'StoreProductRequest', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -139,7 +138,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('public function rules(): array');
     });
 
-    it('generates middleware in app/Http/Middleware', function () {
+    it('generates middleware in app/Http/Middleware', function (): void {
         artisanCommand($this, 'module:make-middleware', ['name' => 'EnsureProductIsVisible', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -150,7 +149,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('public function handle(Request $request, Closure $next)');
     });
 
-    it('generates attribute-based commands with handle(): int in app/Console/Commands', function () {
+    it('generates attribute-based commands with handle(): int in app/Console/Commands', function (): void {
         artisanCommand($this, 'module:make-command', ['name' => 'SeedProducts', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -166,7 +165,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->not->toContain('getArguments');
     });
 
-    it('maps mail to app/Mail', function () {
+    it('maps mail to app/Mail', function (): void {
         artisanCommand($this, 'module:make-mail', ['name' => 'OrderShipped', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -177,7 +176,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('class OrderShipped extends Mailable');
     });
 
-    it('generates factories in database/factories', function () {
+    it('generates factories in database/factories', function (): void {
         artisanCommand($this, 'module:make-factory', ['name' => 'Product', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -188,7 +187,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('public function definition(): array');
     });
 
-    it('generates strict-typed migrations in database/migrations', function () {
+    it('generates strict-typed migrations in database/migrations', function (): void {
         artisanCommand($this, 'module:make-migration', ['name' => 'create_products_table', 'module' => 'Widget'])
             ->assertSuccessful();
 
@@ -204,7 +203,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->toContain('Schema::create');
     });
 
-    it('generates API controllers returning SuccessResponse', function () {
+    it('generates API controllers returning SuccessResponse', function (): void {
         artisanCommand($this, 'module:make-controller', ['controller' => 'ProductController', 'module' => 'Widget', '--api' => true])
             ->assertSuccessful();
 
@@ -219,7 +218,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->not->toContain('response()->json');
     });
 
-    it('generates invokable controllers returning SuccessResponse', function () {
+    it('generates invokable controllers returning SuccessResponse', function (): void {
         artisanCommand($this, 'module:make-controller', ['controller' => 'ProductShowController', 'module' => 'Widget', '--invokable' => true])
             ->assertSuccessful();
 
@@ -230,7 +229,7 @@ describe('module layer commands generate convention-compliant files', function (
             ->not->toContain('response()->json');
     });
 
-    it('generates plain controllers as final readonly', function () {
+    it('generates plain controllers as final readonly', function (): void {
         artisanCommand($this, 'module:make-controller', ['controller' => 'PlainProductController', 'module' => 'Widget', '--plain' => true])
             ->assertSuccessful();
 

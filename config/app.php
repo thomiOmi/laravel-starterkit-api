@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -83,7 +85,7 @@ return [
     */
 
     'trusted_hosts' => array_values(array_filter(array_unique(array_map(
-        fn (string $host) => preg_quote(trim($host), '/'),
+        fn (string $host): string => preg_quote(trim($host), '/'),
         explode(',', (string) (env('APP_TRUSTED_HOSTS') ?: implode(',', [
             'localhost',
             '127.0.0.1',

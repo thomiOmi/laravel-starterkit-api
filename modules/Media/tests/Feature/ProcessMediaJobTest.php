@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Log\Events\MessageLogged;
+use Illuminate\Queue\Attributes\Backoff;
+use Illuminate\Queue\Attributes\Timeout;
+use Illuminate\Queue\Attributes\Tries;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Actions\GenerateResponsiveImagesAction;
@@ -13,30 +16,33 @@ use Modules\Media\Services\MediaConversionService;
 
 covers(ProcessMediaJob::class);
 
-describe('ProcessMediaJob', function () {
-    beforeEach(function () {
+describe('ProcessMediaJob', function (): void {
+    beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
         Event::fake([MessageLogged::class]);
     });
 
-    it('configures a retry policy below the queue retry_after window', function () {
-        $job = new ProcessMediaJob('01TEST');
+    it('configures a retry policy below the queue retry_after window', function (): void {
+        $reflection = new ReflectionClass(ProcessMediaJob::class);
+        $tries = $reflection->getAttributes(Tries::class)[0]->newInstance()->tries;
+        $timeout = $reflection->getAttributes(Timeout::class)[0]->newInstance()->timeout;
+        $backoff = $reflection->getAttributes(Backoff::class)[0]->newInstance()->backoff;
 
-        expect($job->tries)->toBe(3)
-            ->and($job->timeout)->toBe(60)
-            ->and($job->backoff)->toBe([10, 30])
-            ->and($job->timeout)->toBeLessThan((int) config('queue.connections.database.retry_after', 90));
+        expect($tries)->toBe(3)
+            ->and($timeout)->toBe(60)
+            ->and($backoff)->toBe([10, 30])
+            ->and($timeout)->toBeLessThan((int) config('queue.connections.database.retry_after', 90));
     });
 
-    it('logs duration and media id on success', function () {
+    it('logs duration and media id on success', function (): void {
         $user = loginAsUser();
         $media = $user->addMedia(UploadedFile::fake()->image('photo.jpg', 40, 40))
             ->toMediaCollection('avatars');
 
         new ProcessMediaJob((string) $media->id)->handle(
-            app(MediaConversionService::class),
-            app(GenerateResponsiveImagesAction::class)
+            resolve(MediaConversionService::class),
+            resolve(GenerateResponsiveImagesAction::class)
         );
 
         Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'info'
@@ -47,7 +53,7 @@ describe('ProcessMediaJob', function () {
             && $event->context['duration_ms'] >= 0);
     });
 
-    it('logs an error with duration and message when processing fails', function () {
+    it('logs an error with duration and message when processing fails', function (): void {
         $media = Media::query()->create([
             'collection_name' => 'default',
             'name' => 'missing',
@@ -62,8 +68,8 @@ describe('ProcessMediaJob', function () {
 
         expect(function () use ($media): void {
             new ProcessMediaJob((string) $media->id)->handle(
-                app(MediaConversionService::class),
-                app(GenerateResponsiveImagesAction::class)
+                resolve(MediaConversionService::class),
+                resolve(GenerateResponsiveImagesAction::class)
             );
         })->toThrow(RuntimeException::class);
 
@@ -74,10 +80,10 @@ describe('ProcessMediaJob', function () {
             && isset($event->context['duration_ms']));
     });
 
-    it('logs and returns when the media row no longer exists', function () {
+    it('logs and returns when the media row no longer exists', function (): void {
         new ProcessMediaJob('01MISSING')->handle(
-            app(MediaConversionService::class),
-            app(GenerateResponsiveImagesAction::class)
+            resolve(MediaConversionService::class),
+            resolve(GenerateResponsiveImagesAction::class)
         );
 
         Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'info'

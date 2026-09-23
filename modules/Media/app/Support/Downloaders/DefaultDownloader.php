@@ -27,10 +27,10 @@ final readonly class DefaultDownloader implements MediaDownloader
                 ])
                 ->timeout(config()->integer('media.downloader_timeout', 10))
                 ->get($url);
-        } catch (Throwable $exception) {
-            Log::warning('Media download failed.', ['url' => $url, 'error' => $exception->getMessage()]);
+        } catch (Throwable $throwable) {
+            Log::warning('Media download failed.', ['url' => $url, 'error' => $throwable->getMessage()]);
 
-            throw new InvalidArgumentException('Failed to fetch remote file.');
+            throw new InvalidArgumentException('Failed to fetch remote file.', $throwable->getCode(), $throwable);
         }
 
         if (! $response->successful()) {
@@ -42,9 +42,7 @@ final readonly class DefaultDownloader implements MediaDownloader
         $maxBytes = config()->integer('media.max_size') * 1024;
         $contentLength = $response->header('Content-Length');
 
-        if (ctype_digit($contentLength) && (int) $contentLength > $maxBytes) {
-            throw new InvalidArgumentException('Failed to fetch remote file.');
-        }
+        throw_if(ctype_digit($contentLength) && (int) $contentLength > $maxBytes, InvalidArgumentException::class, 'Failed to fetch remote file.');
 
         $stream = $response->toPsrResponse()->getBody();
         $content = '';
@@ -58,14 +56,10 @@ final readonly class DefaultDownloader implements MediaDownloader
 
             $content .= $chunk;
 
-            if (strlen($content) > $maxBytes) {
-                throw new InvalidArgumentException('Failed to fetch remote file.');
-            }
+            throw_if(strlen($content) > $maxBytes, InvalidArgumentException::class, 'Failed to fetch remote file.');
         }
 
-        if ($content === '' || strlen($content) > $maxBytes) {
-            throw new InvalidArgumentException('Failed to fetch remote file.');
-        }
+        throw_if($content === '' || strlen($content) > $maxBytes, InvalidArgumentException::class, 'Failed to fetch remote file.');
 
         $rawPath = parse_url($url, PHP_URL_PATH);
         $path = is_string($rawPath) && $rawPath !== '' ? $rawPath : 'file';
@@ -73,15 +67,11 @@ final readonly class DefaultDownloader implements MediaDownloader
 
         $detected = MediaMimeType::detectFromContent($content);
 
-        if ($detected === null || MediaMimeType::isBlocked($detected)) {
-            throw new InvalidArgumentException('Failed to fetch remote file.');
-        }
+        throw_if($detected === null || MediaMimeType::isBlocked($detected), InvalidArgumentException::class, 'Failed to fetch remote file.');
 
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        if ($extension !== '' && ! MediaMimeType::extensionMatchesMime($extension, $detected)) {
-            throw new InvalidArgumentException('Failed to fetch remote file.');
-        }
+        throw_if($extension !== '' && ! MediaMimeType::extensionMatchesMime($extension, $detected), InvalidArgumentException::class, 'Failed to fetch remote file.');
 
         return ['content' => $content, 'filename' => $filename];
     }
@@ -95,22 +85,16 @@ final readonly class DefaultDownloader implements MediaDownloader
     {
         $parts = parse_url($url);
 
-        if (! is_array($parts)) {
-            throw new InvalidArgumentException('Failed to fetch remote file.');
-        }
+        throw_unless(is_array($parts), InvalidArgumentException::class, 'Failed to fetch remote file.');
 
         $scheme = strtolower((string) ($parts['scheme'] ?? ''));
         $allowHttp = config()->boolean('media.downloader_allow_http', false);
 
-        if ($scheme !== 'https' && ! ($allowHttp && $scheme === 'http')) {
-            throw new InvalidArgumentException('Failed to fetch remote file.');
-        }
+        throw_if($scheme !== 'https' && (! $allowHttp || $scheme !== 'http'), InvalidArgumentException::class, 'Failed to fetch remote file.');
 
         $host = (string) ($parts['host'] ?? '');
 
-        if ($host === '' || $this->isBlockedHost($host)) {
-            throw new InvalidArgumentException('Failed to fetch remote file.');
-        }
+        throw_if($host === '' || $this->isBlockedHost($host), InvalidArgumentException::class, 'Failed to fetch remote file.');
     }
 
     private function isBlockedHost(string $host): bool

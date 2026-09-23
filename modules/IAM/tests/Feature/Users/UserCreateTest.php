@@ -12,13 +12,13 @@ use Modules\IAM\Models\Role;
 
 covers(UserCreateController::class);
 
-describe('POST /api/v1/users', function () {
-    beforeEach(function () {
-        Permission::firstOrCreate(['name' => PermissionEnum::UserCreate->value, 'guard_name' => 'sanctum']);
-        Role::firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
+describe('POST /api/v1/users', function (): void {
+    beforeEach(function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserCreate->value, 'guard_name' => 'sanctum']);
+        Role::query()->firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
     });
 
-    it('creates a user with the create permission', function () {
+    it('creates a user with the create permission', function (): void {
         $creator = loginAsUser();
         $creator->givePermissionTo(PermissionEnum::UserCreate->value);
 
@@ -35,7 +35,7 @@ describe('POST /api/v1/users', function () {
         // Admin-created users start pending until they verify their email.
     });
 
-    it('rejects duplicate emails', function () {
+    it('rejects duplicate emails', function (): void {
         $creator = loginAsUser();
         $creator->givePermissionTo(PermissionEnum::UserCreate->value);
         UserFactory::new()->createOne(['email' => 'taken@example.com']);
@@ -51,7 +51,7 @@ describe('POST /api/v1/users', function () {
         $response->assertJsonValidationErrors(['email']);
     });
 
-    it('rejects users without the create permission', function () {
+    it('rejects users without the create permission', function (): void {
         loginAsUser();
 
         assertProblemResponse($this->postJson('/api/v1/users', [
@@ -60,7 +60,7 @@ describe('POST /api/v1/users', function () {
         ]), 403);
     });
 
-    it('rejects unauthenticated requests', function () {
+    it('rejects unauthenticated requests', function (): void {
         $this->postJson('/api/v1/users')->assertUnauthorized();
     });
 });
