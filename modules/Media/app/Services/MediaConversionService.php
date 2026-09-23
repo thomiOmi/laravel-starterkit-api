@@ -6,6 +6,7 @@ namespace Modules\Media\Services;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Image;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
@@ -44,8 +45,14 @@ final readonly class MediaConversionService
 
             try {
                 $results[$stringName] = $this->generateOne($media, $stringName, $cfg);
-            } catch (Throwable) {
+            } catch (Throwable $exception) {
                 // Skip failed conversions, continue with others.
+                Log::warning('Media conversion failed.', [
+                    'media_id' => $media->id,
+                    'conversion' => $stringName,
+                    'error' => $exception->getMessage(),
+                ]);
+
                 continue;
             }
         }
@@ -72,7 +79,13 @@ final readonly class MediaConversionService
 
         try {
             return $this->generateOne($media, $name, $conversions[$name]);
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            Log::warning('Media conversion failed.', [
+                'media_id' => $media->id,
+                'conversion' => $name,
+                'error' => $exception->getMessage(),
+            ]);
+
             return null;
         }
     }

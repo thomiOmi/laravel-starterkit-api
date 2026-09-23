@@ -12,3 +12,5 @@ Artisan::command('inspire', function (): void {
 
 Schedule::command('sanctum:prune-expired --hours=24')->daily();
 Schedule::command('auth:clear-resets')->everyFifteenMinutes();
+// Dry-run by default: reports orphan media files without deleting. Add --force only after reviewing the report.
+Schedule::command('media:cleanup')->dailyAt('03:00')->withoutOverlapping();
