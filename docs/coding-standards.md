@@ -54,7 +54,7 @@ Three tiers:
 - Every change must have a corresponding test
 ## Code Quality
 
-- Format: `./vendor/bin/pint --dirty --format agent`
+- Format: `./vendor/bin/pint --dirty --format agent` (preset `laravel` + `declare_strict_types`, `strict_comparison`, `no_superfluous_elseif`, `no_useless_else`, `array_push`, `backtick_to_shell_exec`, `visibility_required`, `modernize_types_casting`; `config/database.php` excluded via `notPath`) (preset `laravel` + `declare_strict_types`, `strict_comparison`, `no_superfluous_elseif`, `no_useless_else`, `array_push`, `backtick_to_shell_exec`, `visibility_required`, `modernize_types_casting`; `config/database.php` excluded via `notPath`)
 - Static analysis: `./vendor/bin/phpstan analyse --memory-limit=512M` (level max, test files included via `pest-plugin-phpstan`; no baseline, no `@phpstan-ignore`)
 - Type coverage: `php artisan test --coverage --type-coverage --min=100 --memory-limit=512M`
   - `--memory-limit=512M` is required: phpunit runs as a child process that ignores `-d memory_limit`; the type-coverage plugin applies it via `ini_set` in-process
