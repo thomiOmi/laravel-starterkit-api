@@ -87,7 +87,7 @@ final readonly class ProblemResponse implements Responsable
 
             $headers[$key] = is_array($value)
                 ? array_values(array_map(strval(...), $value))
-                : strval($value);
+                : (string) $value;
         }
 
         return $headers;
