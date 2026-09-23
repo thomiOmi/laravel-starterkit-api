@@ -24,7 +24,6 @@ Keep the sections in this order and update them as they change:
 
 - **Header**: one line stating the file is the operational tracker, not the decision source of truth.
 - **Status snapshot** (`## Status snapshot (YYYY-MM-DD)`): date, branch + HEAD short SHA, one-line summary of project state, and dated bullets of notable changes. Refresh the date and HEAD on every update (`git rev-parse --short HEAD`).
-
 - **Active focus**: the current work, in priority order. Fill when starting work; empty it when work ends.
 - **Backlog**: deferred items, each with a status word (DITUNDA = deferred / SKIP / DITUTUP = closed) and a date.
 - **Known issues**: open issues; closed ones stay listed with a DITUTUP (closed) date and reopening conditions.
