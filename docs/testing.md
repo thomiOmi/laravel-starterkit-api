@@ -10,7 +10,7 @@
 | `composer lint:staged` | Auto-fix code style for staged files only (`@php vendor/bin/pint --parallel --dirty`) |
 | `composer lint:check` | Check code style without modifications |
 | `composer types:check` | Run PHPStan static analysis (level max, includes test files via `pest-plugin-phpstan`) |
-| `composer test` | Run the test suite: `vendor/bin/pest --parallel` (unit + feature, with baseline) |
+| `composer test` | Run the test suite in two phases: `vendor/bin/pest --parallel --testsuite=Unit,Feature,Modules`, then `vendor/bin/pest --testsuite=Architecture` |
 | `composer test:profanity` | Run profanity checks on test files |
 | `composer test:profile` | Run the suite and report the slowest tests (`vendor/bin/pest --profile`) |
 | `composer ci:check` | Full CI pipeline - runs `lint:check`, `rector:dry`, `types:check`, `test`, then `test:profanity` |
@@ -268,7 +268,10 @@ php artisan test          # always a full run
 
 ## Optimizing Tests
 
-- **Parallel**: `composer test` runs `vendor/bin/pest --parallel` — one process per CPU core. Each worker gets its own SQLite `:memory:` database, so tests stay isolated; do not rely on shared files or global state between tests.
+- **Parallel, in two phases**: `composer test` runs `Unit`, `Feature`, and `Modules` with `--parallel` (one process per CPU core), then runs the `Architecture` suite on its own. Each parallel worker gets its own SQLite `:memory:` database, so database state stays isolated.
+- **Why Architecture runs separately**: `arch()` scans the whole `Tests\` namespace, whose PSR-4 root is `tests/`. Meanwhile several feature tests write and delete fixture modules under `tests/Fixtures/` (`ModuleMakeCommandTest`, `ModuleLayerMakeCommandsTest`, the `dependency-check` helper). In the same parallel run, a worker could delete a fixture file while the architecture worker was reading it, producing `file_get_contents ... No such file or directory`. Splitting the suite removes the race without giving up parallel speed on the other 678 tests.
+- **Do not rely on shared files between tests.** Database isolation is handled per worker, but the filesystem is genuinely shared. A test that writes into `tests/` must clean up in `afterEach`, and anything it leaves behind will be visible to the architecture scan.
+- **Verify the split adds no coverage gap**: `Unit,Feature,Modules` plus `Architecture` must total the full suite count (currently 678 + 93 = 771).
 - **Compact printer**: `--compact` is used only in CI (`composer ci:check` via `test`), not in `tests/Pest.php`, so local runs keep the full per-test output. It prints only failures and reduces I/O.
 - **Profiling**: `composer test:profile` runs `vendor/bin/pest --profile` to list the slowest tests — use it before optimizing specific tests.
 - **Sharding**: `vendor/bin/pest --parallel --update-shards` records per-class timings into `tests/.pest/shards.json` (committed). CI jobs can then run `vendor/bin/pest --ci --shard=N/TOTAL` with time-balanced distribution. Re-run `--update-shards` after adding or renaming test files, and commit the refreshed file.
