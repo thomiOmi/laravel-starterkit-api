@@ -90,7 +90,8 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php vendor/bin/pest --parallel"
+            "@php vendor/bin/pest --parallel --testsuite=Unit,Feature,Modules",
+            "@php vendor/bin/pest --testsuite=Architecture"
         ],
         "test:profanity": [
             "@php vendor/bin/pest --profanity"
