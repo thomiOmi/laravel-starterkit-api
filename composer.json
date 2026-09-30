@@ -189,7 +189,7 @@
             "wikimedia/composer-merge-plugin": true
         },
         "platform": {
-            "php": "8.4.22"
+            "php": "8.4.1"
         }
     },
     "minimum-stability": "stable",
