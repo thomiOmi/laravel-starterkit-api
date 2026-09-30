@@ -10,8 +10,10 @@ parameters:
         - routes
         - modules
         - tests
+        - lang
 
     excludePaths:
+        - config/database.php
 
     level: max
 
