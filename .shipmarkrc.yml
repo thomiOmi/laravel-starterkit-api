@@ -2,6 +2,7 @@ changelog:
   file: "CHANGELOG.md"
   includeHash: true
   includeDate: true
+  includeAuthor: true
 
 version:
   files:
@@ -10,10 +11,10 @@ version:
   tagPrefix: "v"
   tagMessage: "Release {version}"
   commitMessage: "chore(release): {version}"
-  syncCheck: false
+  syncCheck: true
 
 commits:
-  conventional: false
+  conventional: true
 
 git:
   push: true
