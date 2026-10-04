@@ -9,14 +9,6 @@
                 "artisan",
                 "boost:mcp"
             ]
-        },
-        "graphify": {
-            "type": "local",
-            "enabled": true,
-            "command": [
-                "graphify-mcp",
-                "graphify-out/graph.json"
-            ]
         }
     }
 }

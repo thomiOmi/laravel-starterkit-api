@@ -23,7 +23,6 @@
         "pest-plugin-agent",
         "create-adr",
         "create-prd",
-        "graphify",
         "laravel-attributes",
         "modular-architecture",
         "update-tasks"
