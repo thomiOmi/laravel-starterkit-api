@@ -33,12 +33,12 @@ php artisan db:seed --class="Modules\IAM\Database\Seeders\IAMSeeder"
 | `media.allowed_extensions` | `null` | Global extension allowlist (`null` = disabled, defer to disallowed + collection rules). |
 | `media.disallowed_extensions` | `DisallowedExtensions::$default` | Executable/script extensions blocked on every dot segment |
 | `media.file_namer` | `DefaultFileNamer` | Strategy for original/conversion/responsive names (`conversionFileName` = `{name}-{conversion}.{ext}`) |
-| `media.path_generator` | `DefaultPathGenerator` | Strategy for `getPath()` (`collection/file_name` + prefix) |
+| `media.path_generator` | `DefaultPathGenerator` | Strategy for `getPath()` (`collection/file_name` + prefix). Original path only; derivative directories come from `MediaPrefix` + `MediaFileNamer`, so an override does not change them |
 | `media.custom_path_generators` | `[]` | Per-model overrides keyed by `model_type` |
 | `media.url_generator` | `DefaultUrlGenerator` | Strategy for `url()` / `temporaryUrl()` |
 | `media.version_urls` | `false` | Append `?v=updated_at` cache-busting to public URLs |
 | `media.temporary_url_default_lifetime` | `10` | Default minutes for `signedUrl(null)` |
-| `media.prefix` | `''` | Prepended to every stored path via `App\Support\Media\MediaPrefix` |
+| `media.prefix` | `''` | Prepended to every stored path via `Modules\Media\Support\MediaPrefix` |
 | `media.conversions_disk_name` | `null` | Disk for conversions (null = same as original) |
 | `media.remote.extra_headers` | `[]` | Headers merged into every storage write (S3 `CacheControl` etc.) |
 | `media.media_downloader` | `DefaultDownloader` | Class for `addMediaFromUrl` fetching |
@@ -325,7 +325,7 @@ php artisan media:reprocess --conversion=thumbnail # single named conversion
 ## Customize
 
 - **Collections/conversions:** `User::registerMediaCollections()` → `addMediaCollection()->singleFile()->visibility()->acceptsMimeTypes()->acceptsExtensions()->acceptsFile()->useFallbackUrl()->withResponsiveImages()`; `registerMediaConversions()` → `addMediaConversion()->width()->height()->fit()->format()->quality()->performOnCollections()` + `onQueue()`. `FileAdder` per-call `withResponsiveImagesIf()`, `storingConversionsOnDisk()`, `onQueue()`, `addCustomHeaders()`, `setOrder()`. `queue` global in config.
-- **File naming / paths / URLs / downloader / remover:** Swap via `media.file_namer` / `path_generator` / `custom_path_generators` / `url_generator` / `media_downloader` / `file_remover` (no `.env` override — config file = code review). Prefix via `media.prefix`, conversions disk `media.conversions_disk_name`, remote headers `media.remote.extra_headers`.
+- **File naming / paths / URLs / downloader / remover:** Swap via `media.file_namer` / `path_generator` / `custom_path_generators` / `url_generator` / `media_downloader` / `file_remover` (no `.env` override — config file = code review). `path_generator` and `custom_path_generators` only affect the original file path; derivative filenames go through `file_namer`, and derivative directories (`conversions/`, `conversions/derived/`, `responsive-images/`) are fixed by `MediaPrefix`. Prefix via `media.prefix`, conversions disk `media.conversions_disk_name`, remote headers `media.remote.extra_headers`.
 - **Image pipeline:** `UploadMediaAction::storeProcessedImage` applies orientation, optimization, and supported `withManipulations()` before encoding; named conversions, on-demand modifiers, and responsive siblings apply `orient()` before resize/format/quality so EXIF rotation is consistent across all derived outputs. Builder and modifier validation rejects out-of-bounds width/height/quality and unsupported fit/format. `hashStoredFile()` uses streaming I/O.
 - **Trait:** `InteractsWithMedia` 26 methods: `media()` + `addMedia*` + `getMedia`/`getFirstMedia*` + `hasMedia` + `clear*` + `reorderMedia` + `register*` + `get*Collections`.
 - **Events:** `MediaCreated`/`MediaUploaded`/`MediaProcessed`/`MediaProcessingFailed`/`MediaDeleted` in `Modules\Media\Events`; processing state is persisted on `media.processing_status`, `processing_error`, and `processed_at`.
@@ -337,7 +337,7 @@ php artisan media:reprocess --conversion=thumbnail # single named conversion
 # All Media tests
 php artisan test --filter="Media"
 # Helpers: Storage::fake('public')+fake('local'), UploadedFile::fake()->image(), MediaFactory::new()->forModel($user), DB::table('permissions')->insertOrIgnore
-# Suites: MediaUploadTest (WebP, single_file, prefix, headers, disallowed, allowlist, namer collision, sha256), MediaConversionTest (thumbnail), InteractsWithMediaTest, MediaModifierTest (s/320, s/320x200, fit, cache, 304, 404, rate_limited), MediaParityBatchTest, MediaFileNamerTest, MediaDownloaderTest, MediaExtensionGuardTest, MediaStoragePrefixTest, MediaCleanupCommandTest, MediaStorageCorrectnessTest, MediaReprocessCommandTest, MediaFileAdderParityTest, MediaResponsiveTest, MediaAttachPolicyTest
+# Suites: MediaUploadTest (WebP, single_file, prefix, headers, disallowed, allowlist, namer collision, sha256), MediaConversionTest (thumbnail), InteractsWithMediaTest, MediaModifierTest (s/320, s/320x200, fit, cache, 304, 404, rate_limited), MediaParityBatchTest, MediaFileNamerTest, MediaDownloaderTest, MediaExtensionGuardTest, MediaStoragePrefixTest, MediaCleanupCommandTest, MediaStorageCorrectnessTest, MediaReprocessCommandTest, MediaFileAdderParityTest, MediaResponsiveTest, MediaPolicyTest
 ```
 
 Coverage: `MediaUploadTest` (WebP, single_file avatars upsert, prefix, headers, disallowed, `allowed_extensions`, namer, collision, sha256 stream), `MediaConversionTest` (thumbnail), `InteractsWithMediaTest`, `MediaModifierTest` (lock, conversions_disk, 404, 429), `MediaParityBatchTest` (remover, helpers), `MediaFileNamerTest`, `MediaDownloaderTest` (SSRF strict, headers, empty body), `MediaExtensionGuardTest`, `MediaStoragePrefixTest`, `MediaCleanupCommandTest` (scoped, force, derived conversion cache), `MediaStorageCorrectnessTest` (single-file reset, `getPath` DB truth, disk isolation), `MediaReprocessCommandTest`, `MediaFileAdderParityTest`, `MediaResponsiveTest`.

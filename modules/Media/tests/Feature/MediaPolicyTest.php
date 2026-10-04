@@ -18,6 +18,23 @@ describe('MediaPolicy uploader and visibility branches', function (): void {
         Storage::fake('local');
     });
 
+    it('lets the model owner manage media that belongs to no one else', function (string $ability): void {
+        $owner = loginAsUser();
+
+        $media = MediaFactory::new()->forModel($owner)->createOne();
+
+        expect($media->model_id)->toBe($owner->getKey())
+            ->and(Gate::forUser($owner)->allows($ability, $media))->toBeTrue();
+    })->with(['view', 'delete', 'update']);
+
+    it('denies the owner of a different model', function (string $ability): void {
+        $owner = loginAsUser();
+        $media = MediaFactory::new()->forModel($owner)->createOne();
+        $otherOwner = loginAsUser();
+
+        expect(Gate::forUser($otherOwner)->allows($ability, $media))->toBeFalse();
+    })->with(['view', 'delete', 'update']);
+
     it('lets the uploader manage media that belongs to no model', function (string $ability): void {
         $uploader = loginAsUser();
 
