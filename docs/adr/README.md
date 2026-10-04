@@ -42,11 +42,13 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0036](0036-media-polymorphic-squash.md) | Media Polymorphic Squash, Trait, Conversions and Single-File Avatars | Accepted | 2026-08-30 |
 | [0037](0037-media-opsi-b-collection-filename-structure.md) | Media Opsi B Full Replacement ULID collection/file_name + Structure Cleanup | Accepted | 2026-09-03 |
 | [0038](0038-responsive-images.md) | Responsive Images Generation Design | Accepted | 2026-09-04 |
+| [0039](0039-media-path-generator-owns-original-path-only.md) | MediaPathGenerator Owns Only the Original Path, MediaPrefix Owns Every Path | Accepted | 2026-10-05 |
 
 ## Process
 
 - A new ADR starts from `template.md`.
 - Number sequentially; do not reuse or reorder numbers (Superseded decisions keep their number and point to the replacement).
 - Status values: `Proposed`, `Accepted`, `Deprecated`, `Superseded by ADR-NNNN`.
+- Known gap: `0033` and `0034` do not exist and were never committed (verified against full history on 2026-10-05). They are not reserved — the next sequential number is `0040`.
 - Record the decision when it is settled, with the reason ("why") — not just the outcome.
 - Migrated from legacy decision tables on 2026-08-11; those working files are no longer the decision source of truth.

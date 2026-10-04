@@ -35,7 +35,7 @@ Contracts `HasMedia` (`media():MorphMany<Media,Model>`), `MediaUrlGenerator` (`g
 
 `UploadMediaAction` signature `handle(Payload, Model $owner, ?Model $uploader)`, config-driven `media.collections.*.{visibility,single_file}` + `media.conversions` + `media.queue` (`ProcessMediaJob` ShouldQueue). Single_file `avatars` uses `lockForUpdate` + `updateOrCreate` same id + `wasChanged('path')` cleanup of old file/`variants/{id}`. `order_column` for non-single_file = `max+1`. Dispatch `MediaUploaded` + `MediaCreated` + sync/queued conversions.
 
-`DeleteMediaAction` deletes `conversions` dir + files, `ReorderMediaAction`/`GenerateConversionAction`/`AttachMediaAction` added.
+`DeleteMediaAction` deletes `conversions` dir + files, `ReorderMediaAction`/`GenerateConversionAction` added. `AttachMediaAction` was added here too but removed on 2026-10-05 — it served the media-id avatar flow that `591996d` replaced with a file upload, and had no caller once that landed. See [ADR-0039](0039-media-path-generator-owns-original-path-only.md).
 
 `MediaPolicy` now `Identity $user` + `isPublic` or `belongsToModel` or `is(uploadedBy)` or `can`.
 

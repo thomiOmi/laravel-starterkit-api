@@ -17,7 +17,7 @@ The `media.responsive_images` JSON column exists (migration `2026_08_23_024502`,
 
 - API clients get ready `srcset` data without new dependencies (GD pipeline already present); no placeholder/JS surface to maintain.
 - Widths config keeps per-project tuning without code changes; capping avoids upscaling artifacts.
-- Implemented as designed, with one deviation: the JSON stores `{width: {path, size}}` instead of `{width: {url, size}}` — URLs are built on read via `Media::getSrcset()` so disk/URL changes do not stale stored rows.
+- Implemented as designed, with two deviations: the JSON stores `{width: {path, size}}` instead of `{width: {url, size}}` — URLs are built on read via `Media::getSrcset()` so disk/URL changes do not stale stored rows; and the `responsive-images/` directory is built inline at `GenerateResponsiveImagesAction:136` rather than through `getPathForResponsiveImages()`. See [ADR-0039](0039-media-path-generator-owns-original-path-only.md) for path ownership.
 
 ## Implementation (PR feat/media-responsive)
 
