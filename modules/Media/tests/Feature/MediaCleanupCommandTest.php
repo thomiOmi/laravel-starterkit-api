@@ -92,6 +92,53 @@ describe('media:cleanup', function (): void {
             && ($event->context['files'] ?? null) === ['avatars/orphan.webp']);
     });
 
+    it('stays non-destructive when force is combined with dry-run', function (): void {
+        $keeper = MediaFactory::new()->public()->inCollection('avatars')->createOne();
+        Storage::disk('public')->put($keeper->getPath() ?? '', 'keeper');
+        Storage::disk('public')->put('avatars/orphan.webp', 'orphan');
+
+        artisanCommand($this, 'media:cleanup', ['--force' => true, '--dry-run' => true])
+            ->expectsOutputToContain('Dry run: no files deleted. Pass --force to delete.')
+            ->assertSuccessful();
+
+        Storage::disk('public')->assertExists('avatars/orphan.webp');
+        Storage::disk('public')->assertExists($keeper->getPath() ?? '');
+    });
+
+    it('scans only the configured media disk', function (): void {
+        config(['media.disk' => 'public']);
+
+        $keeper = MediaFactory::new()->public()->inCollection('avatars')->createOne();
+        Storage::disk('public')->put($keeper->getPath() ?? '', 'keeper');
+        Storage::disk('local')->put('avatars/stray-on-private-disk.webp', 'stray');
+
+        artisanCommand($this, 'media:cleanup', ['--force' => true])
+            ->expectsOutputToContain('No orphan files found.')
+            ->assertSuccessful();
+
+        Storage::disk('public')->assertExists($keeper->getPath() ?? '');
+        // Orphan detection is scoped to media.disk by design.
+        Storage::disk('local')->assertExists('avatars/stray-on-private-disk.webp');
+    });
+
+    it('applies the media prefix when scanning for orphans', function (): void {
+        config(['media.prefix' => 'media']);
+
+        $media = MediaFactory::new()->public()->inCollection('avatars')->createOne(['file_name' => 'photo.png']);
+
+        Storage::disk('public')->put('media/avatars/photo.png', 'original');
+        Storage::disk('public')->put('media/avatars/orphan.png', 'orphan');
+        Storage::disk('public')->put('media/conversions/derived/'.$media->id.'/w32-abcdef12.webp', 'variant');
+
+        artisanCommand($this, 'media:cleanup', ['--force' => true])
+            ->expectsOutputToContain('Deleted 1 orphan file(s).')
+            ->assertSuccessful();
+
+        Storage::disk('public')->assertExists('media/avatars/photo.png');
+        Storage::disk('public')->assertMissing('media/avatars/orphan.png');
+        Storage::disk('public')->assertExists('media/conversions/derived/'.$media->id.'/w32-abcdef12.webp');
+    });
+
     it('logs a structured warning when database records are missing files', function (): void {
         $media = MediaFactory::new()->createOne();
 

@@ -14,6 +14,7 @@ describe('console schedule', function (): void {
             ->first(fn (Event $scheduled): bool => str_contains((string) ($scheduled->command ?? ''), 'media:cleanup'));
 
         expect($event)->toBeInstanceOf(Event::class)
-            ->and($event?->expression)->toBe('0 3 * * *');
+            ->and($event?->expression)->toBe('0 3 * * *')
+            ->and($event?->withoutOverlapping)->toBeTrue();
     });
 });
