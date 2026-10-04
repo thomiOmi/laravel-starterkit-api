@@ -35,6 +35,46 @@ describe('GET /api/v1/media', function (): void {
         expect($response->json('data'))->toHaveCount(2);
     });
 
+    it('honours the requested page size and reports the remaining pages', function (): void {
+        $user = loginAsUser();
+
+        MediaFactory::new()->forModel($user)->count(3)->create();
+
+        $firstPage = $this->getJson('/api/v1/media?page[size]=2');
+
+        assertSuccessResponse($firstPage, 200);
+        assertPaginatedResponse($firstPage);
+        expect($firstPage->json('data'))->toHaveCount(2)
+            ->and($firstPage->json('meta.per_page'))->toBe(2)
+            ->and($firstPage->json('meta.has_more'))->toBeTrue();
+
+        $secondPage = $this->getJson('/api/v1/media?page[size]=2&page[number]=2');
+
+        assertSuccessResponse($secondPage, 200);
+        assertPaginatedResponse($secondPage);
+        expect($secondPage->json('data'))->toHaveCount(1)
+            ->and($secondPage->json('meta.has_more'))->toBeFalse();
+    });
+
+    it('does not repeat rows across pages', function (): void {
+        $user = loginAsUser();
+
+        MediaFactory::new()->forModel($user)->count(3)->create();
+
+        $firstData = $this->getJson('/api/v1/media?page[size]=2')->json('data');
+        $secondData = $this->getJson('/api/v1/media?page[size]=2&page[number]=2')->json('data');
+
+        throw_unless(is_array($firstData), RuntimeException::class, 'First page data was not an array.');
+        throw_unless(is_array($secondData), RuntimeException::class, 'Second page data was not an array.');
+
+        $firstIds = collect($firstData)->pluck('id');
+        $secondIds = collect($secondData)->pluck('id');
+
+        expect($firstIds->count())->toBe(2)
+            ->and($secondIds->count())->toBe(1)
+            ->and($firstIds->intersect($secondIds))->toBeEmpty();
+    });
+
     it('filters by collection name', function (): void {
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaView->value);
