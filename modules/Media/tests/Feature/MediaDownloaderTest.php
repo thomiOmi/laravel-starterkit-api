@@ -6,7 +6,9 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Modules\Media\Models\Media;
 use Modules\Media\Support\Downloaders\DefaultDownloader;
+use Modules\Media\Support\MediaMimeType;
 use Modules\Media\Tests\Support\FixedContentDownloader;
 
 covers(DefaultDownloader::class);
@@ -30,6 +32,52 @@ describe('Media downloader', function (): void {
 
         expect($media->original_name)->toBe('image.jpg');
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
+        // The upload pipeline transcodes the fetched image, so only the decoded
+        // mime is stable; the raw remote bytes are deliberately not preserved.
+        $stored = Storage::disk($media->disk)->get($media->getPath() ?? '');
+        throw_unless(is_string($stored), RuntimeException::class, 'Stored file was not readable.');
+
+        expect(MediaMimeType::detectFromContent($stored))->toStartWith('image/');
+    });
+
+    it('rejects remote bodies that sniff as blocked content', function (string $body): void {
+        Http::fake(['example.com/*' => Http::response($body, 200)]);
+
+        $owner = loginAsUser();
+
+        expect(fn (): mixed => $owner->addMediaFromUrl('https://example.com/payload.jpg')->toMediaCollection('default'))
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.')
+            ->and(Media::query()->count())->toBe(0);
+    })->with([
+        'php payload named .jpg' => ['<?php echo "pwned"; ?>'],
+        'svg payload' => ['<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'],
+        'html payload' => ['<html><body><p>hi</p></body></html>'],
+    ]);
+
+    it('rejects an oversized download declared by content length', function (): void {
+        config(['media.max_size' => 1]);
+        $body = str_repeat('a', 2048);
+
+        Http::fake(['example.com/*' => Http::response($body, 200, ['Content-Length' => (string) strlen($body)])]);
+
+        $owner = loginAsUser();
+
+        expect(fn (): mixed => $owner->addMediaFromUrl('https://example.com/large.jpg')->toMediaCollection('default'))
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.')
+            ->and(Media::query()->count())->toBe(0);
+    });
+
+    it('rejects an oversized download caught while streaming', function (): void {
+        config(['media.max_size' => 1]);
+        $body = str_repeat('a', 2048);
+
+        Http::fake(['example.com/*' => Http::response($body, 200)]);
+
+        $owner = loginAsUser();
+
+        expect(fn (): mixed => $owner->addMediaFromUrl('https://example.com/large.jpg')->toMediaCollection('default'))
+            ->toThrow(InvalidArgumentException::class, 'Failed to fetch remote file.')
+            ->and(Media::query()->count())->toBe(0);
     });
 
     it('forwards custom headers to the remote request', function (): void {

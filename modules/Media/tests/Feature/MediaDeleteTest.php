@@ -11,6 +11,7 @@ use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Events\MediaDeleted;
 use Modules\Media\Http\Controllers\V1\MediaDeleteController;
 use Modules\Media\Models\Media;
+use Modules\Media\Models\MediaConversion;
 
 covers(MediaDeleteController::class);
 
@@ -83,5 +84,35 @@ describe('DELETE /api/v1/media/{media}', function (): void {
         $media = MediaFactory::new()->createOne();
 
         $this->deleteJson("/api/v1/media/{$media->id}")->assertUnauthorized();
+    });
+
+    it('removes conversion rows and responsive images from the conversions disk', function (): void {
+        $user = loginAsUser();
+        $media = MediaFactory::new()->forModel($user)->createOne([
+            'conversions_disk' => 'local',
+            'responsive_images' => [320 => ['path' => 'default/responsive-images/320-photo.png', 'size' => 10]],
+        ]);
+
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
+        Storage::disk('local')->put('default/responsive-images/320-photo.png', 'responsive');
+        Storage::disk('local')->put('conversions/'.$media->id.'/thumbnail.webp', 'conversion');
+        Storage::disk('local')->put('conversions/derived/'.$media->id.'/w32-abcdef12.webp', 'variant');
+
+        $media->conversions()->create([
+            'name' => 'thumbnail',
+            'disk' => 'local',
+            'path' => 'conversions/'.$media->id.'/thumbnail.webp',
+            'mime_type' => 'image/webp',
+            'size' => 10,
+            'etag' => 'test',
+        ]);
+
+        assertSuccessResponse($this->deleteJson("/api/v1/media/{$media->id}"), 200);
+
+        expect(MediaConversion::query()->where('media_id', $media->id)->exists())->toBeFalse();
+
+        Storage::disk('local')->assertMissing('default/responsive-images/320-photo.png');
+        Storage::disk('local')->assertMissing('conversions/'.$media->id.'/thumbnail.webp');
+        Storage::disk('local')->assertMissing('conversions/derived/'.$media->id);
     });
 });
