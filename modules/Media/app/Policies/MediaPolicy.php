@@ -61,8 +61,8 @@ final class MediaPolicy
      * Determine whether the user can reassign the media item.
      *
      * No media.update permission exists, so only owners and uploaders
-     * qualify. Callers (Request/Controller) must authorize via
-     * Gate::authorize('update', $media) before invoking AttachMediaAction.
+     * qualify. There is no re-parenting endpoint yet: callers authorize
+     * via Gate::authorize('update', $media) before touching model_id.
      */
     public function update(Identity $user, Media $media): bool
     {
