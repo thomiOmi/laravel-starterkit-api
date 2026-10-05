@@ -60,8 +60,6 @@ final readonly class GenerateOnDemandConversionAction
                 $image = $image->contain(width: $width, height: $height);
             } elseif ($fit === 'fill' && $width !== null && $height !== null) {
                 $image = $image->resize(width: $width, height: $height);
-            } elseif (isset($parsed['s']) && $width !== null && $height !== null) {
-                $image = $image->cover(width: $width, height: $height);
             } else {
                 $image = $image->scale(width: $width, height: $height);
             }
