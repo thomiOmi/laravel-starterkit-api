@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Http\Controllers\V1\MediaShowController;
@@ -11,6 +12,11 @@ use Modules\Media\Http\Controllers\V1\MediaShowController;
 covers(MediaShowController::class);
 
 describe('GET /api/v1/media/{media}', function (): void {
+    beforeEach(function (): void {
+        Storage::fake('public');
+        Storage::fake('local');
+    });
+
     it('allows the owner to view without any permission', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
@@ -65,6 +71,39 @@ describe('GET /api/v1/media/{media}', function (): void {
         assertSuccessResponse($response, 200);
         expect($response->json('data.url'))->toContain('/api/v1/media/'.$media->id.'/file')
             ->and($response->json('data.url'))->toContain('signature=');
+    });
+
+    it('keeps the signed link usable until the requested expiry elapses', function (): void {
+        $user = loginAsUser();
+        $media = MediaFactory::new()->forModel($user)->createOne();
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
+
+        $url = $this->getJson("/api/v1/media/{$media->id}?expires=5")->json('data.url');
+
+        throw_unless(is_string($url), RuntimeException::class, 'The signed url was not a string.');
+
+        $this->travel(4)->minutes();
+        $this->get($url)->assertOk();
+
+        $this->travel(3)->minutes();
+        $this->get($url)->assertForbidden();
+    });
+
+    it('applies the requested expiry rather than the configured default', function (): void {
+        config(['media.temporary_url_default_lifetime' => 60]);
+
+        $user = loginAsUser();
+        $media = MediaFactory::new()->forModel($user)->createOne();
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
+
+        $url = $this->getJson("/api/v1/media/{$media->id}?expires=5")->json('data.url');
+
+        throw_unless(is_string($url), RuntimeException::class, 'The signed url was not a string.');
+
+        // The default lifetime is 60 minutes, so the link must already be
+        // dead well before that to prove the query parameter won.
+        $this->travel(10)->minutes();
+        $this->get($url)->assertForbidden();
     });
 
     it('keeps the private url null without an expires parameter', function (): void {
