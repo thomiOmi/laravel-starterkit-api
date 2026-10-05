@@ -99,6 +99,24 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function (): void {
         expect(imagesx($image))->toBeLessThanOrEqual(100);
     });
 
+    it('caps both axes for s/320x200 on a wider source image', function (): void {
+        $user = loginAsUser();
+        // Wider than the requested box on both axes, so an ignored modifier
+        // would leave the image at 400x100 instead of 320x100.
+        $media = seedImageMedia($user, width: 400, height: 100);
+
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/320x200");
+
+        $response->assertOk();
+
+        $image = imagecreatefromstring((string) $response->getContent());
+        throw_unless($image instanceof GdImage, RuntimeException::class, 'The conversion response is not a decodable image.');
+
+        expect(imagesx($image))->toBeLessThanOrEqual(320)
+            ->and(imagesx($image))->toBeLessThan(400)
+            ->and(imagesy($image))->toBeLessThanOrEqual(200);
+    });
+
     it('returns 304 when the etag still matches', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user);

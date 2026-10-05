@@ -91,6 +91,24 @@ describe('MediaConversion modifiers', function (): void {
             ->toThrow(InvalidArgumentException::class, 'Format must be one of: webp, jpg, jpeg.');
     });
 
+    it('parses the slash s/ shorthand with and without a height', function (string $modifiers, array $expected): void {
+        expect(MediaConversion::parse($modifiers))->toMatchArray($expected);
+    })->with([
+        's/320' => ['s/320', ['s' => '320', 'w' => 320]],
+        's/320x200' => ['s/320x200', ['s' => '320x200', 'w' => 320, 'h' => 200]],
+        's/320x200/fit/cover' => ['s/320x200/fit/cover', ['s' => '320x200', 'w' => 320, 'h' => 200, 'fit' => 'cover']],
+    ]);
+
+    it('parses the ipx s and resize shorthands with and without a height', function (string $modifiers, array $expected): void {
+        expect(MediaConversion::parse($modifiers))->toMatchArray($expected);
+    })->with([
+        's_320' => ['s_320', ['s' => '320', 'w' => 320]],
+        's_320x200' => ['s_320x200', ['s' => '320x200', 'w' => 320, 'h' => 200]],
+        'resize_320' => ['resize_320', ['s' => '320', 'w' => 320]],
+        'resize_320x200' => ['resize_320x200', ['s' => '320x200', 'w' => 320, 'h' => 200]],
+        's_320x200,f_webp' => ['s_320x200,f_webp', ['s' => '320x200', 'w' => 320, 'h' => 200, 'f' => 'webp']],
+    ]);
+
     it('rejects empty modifiers', function (): void {
         expect(fn (): array => MediaConversion::parse(''))
             ->toThrow(InvalidArgumentException::class, 'Modifiers cannot be empty.');
