@@ -7,9 +7,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Actions\DeleteMediaAction;
 use Modules\Media\Database\Factories\MediaFactory;
-use Modules\Media\Models\Media;
 use Modules\Media\Support\FileRemover\DefaultFileRemover;
 use Modules\Media\Support\FileRemover\MediaFileRemover;
+use Modules\Media\Tests\Support\RecordingFileRemover;
 
 covers(DefaultFileRemover::class);
 
@@ -17,6 +17,8 @@ describe('Media parity batch', function (): void {
     beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
+        // The recording stub is static, so it has to be cleared between tests.
+        RecordingFileRemover::$removed = [];
     });
 
     it('removes every related file through the file remover', function (): void {
@@ -48,7 +50,7 @@ describe('Media parity batch', function (): void {
 
         resolve(DeleteMediaAction::class)->handle($media);
 
-        expect(RecordingFileRemover::$removed)->toContain($media->id);
+        expect(RecordingFileRemover::$removed)->toBe([(string) $media->id]);
     });
 
     it('resolves the first media path with and without conversion', function (): void {
@@ -127,24 +129,3 @@ describe('Media parity batch', function (): void {
         expect(class_exists('App\Enums\MediaCollection'))->toBeFalse();
     });
 });
-
-final class RecordingFileRemover implements MediaFileRemover
-{
-    /** @var array<int, string> */
-    public static array $removed = [];
-
-    public function removeAllFiles(Media $media): void
-    {
-        self::$removed[] = (string) $media->id;
-    }
-
-    public function removeResponsiveImages(Media $media): void
-    {
-        // No-op for the recording stub.
-    }
-
-    public function removeFile(string $path, string $disk): void
-    {
-        // No-op for the recording stub.
-    }
-}

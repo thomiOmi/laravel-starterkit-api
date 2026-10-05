@@ -15,10 +15,27 @@ describe('ImageManipulations', function (): void {
         return ImageFacade::fromUpload(UploadedFile::fake()->image('manip.jpg', 10, 10));
     }
 
-    it('applies grayscale via filter', function (): void {
-        $result = ImageManipulations::apply(manipImage(), ['filter' => 'grayscale']);
+    function manipIsGrey(string $hex): bool
+    {
+        $hex = strtolower(ltrim($hex, '#'));
 
-        expect((string) $result)->not->toBeEmpty();
+        if (strlen($hex) !== 6) {
+            return false;
+        }
+
+        [$red, $green, $blue] = str_split($hex, 2);
+
+        return $red === $green && $green === $blue;
+    }
+
+    it('applies grayscale via filter', function (): void {
+        $source = manipImage();
+        $before = $source->toBytes();
+
+        $result = ImageManipulations::apply($source, ['filter' => 'grayscale']);
+
+        expect($result->toBytes())->not->toBe($before)
+            ->and(manipIsGrey($result->dominantColor()))->toBeTrue();
     });
 
     it('rejects unknown filters', function (): void {
@@ -32,9 +49,12 @@ describe('ImageManipulations', function (): void {
     });
 
     it('applies blur and sharpen within bounds', function (): void {
-        $result = ImageManipulations::apply(manipImage(), ['blur' => 5, 'sharpen' => 3]);
+        $source = manipImage();
+        $before = $source->toBytes();
 
-        expect((string) $result)->not->toBeEmpty();
+        $result = ImageManipulations::apply($source, ['blur' => 5, 'sharpen' => 3]);
+
+        expect($result->toBytes())->not->toBe($before);
     });
 
     it('rejects non-integer blur level', function (): void {
@@ -53,9 +73,13 @@ describe('ImageManipulations', function (): void {
     });
 
     it('applies rotate with numeric angle', function (): void {
-        $result = ImageManipulations::apply(manipImage(), ['rotate' => 90]);
+        $source = manipImage();
+        $before = $source->toBytes();
 
-        expect((string) $result)->not->toBeEmpty();
+        $result = ImageManipulations::apply($source, ['rotate' => 90]);
+
+        expect($result->toBytes())->not->toBe($before)
+            ->and($result->dimensions())->toHaveCount(2);
     });
 
     it('rejects non-numeric rotate angle', function (): void {
@@ -64,8 +88,11 @@ describe('ImageManipulations', function (): void {
     });
 
     it('returns the image unchanged when no manipulations are present', function (): void {
-        $result = ImageManipulations::apply(manipImage(), []);
+        $source = manipImage();
+        $before = $source->toBytes();
 
-        expect((string) $result)->not->toBeEmpty();
+        $result = ImageManipulations::apply($source, []);
+
+        expect($result->toBytes())->toBe($before);
     });
 });

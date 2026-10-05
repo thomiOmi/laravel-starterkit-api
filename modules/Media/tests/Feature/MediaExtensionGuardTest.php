@@ -87,15 +87,38 @@ describe('Media extension guard', function (): void {
 
             public function registerMediaCollections(): void
             {
-                $this->addMediaCollection('docs')->acceptsFile(fn (): bool => false);
+                $this->addMediaCollection('docs')->acceptsFile(fn (UploadedFile $file): bool => false);
             }
         };
 
         $owner->forceFill(['id' => (string) Str::ulid()]);
         $owner->exists = true;
 
-        expect(fn (): mixed => $owner->addMedia(UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'))->toMediaCollection('docs'))
+        expect(fn (): mixed => $owner->addMedia(UploadedFile::fake()->createWithContent('doc.pdf', "%PDF-1.4\nbody\n%%EOF"))->toMediaCollection('docs'))
             ->toThrow(InvalidArgumentException::class);
+    });
+
+    it('passes the uploaded file itself to the acceptsFile callback', function (): void {
+        $owner = new #[Table(name: 'users', key: 'id', keyType: 'string')] #[WithoutIncrementing] class extends Model implements HasMedia
+        {
+            use InteractsWithMedia;
+
+            public function registerMediaCollections(): void
+            {
+                $this->addMediaCollection('docs')->acceptsFile(
+                    fn (UploadedFile $file): bool => $file->getClientOriginalExtension() === 'pdf'
+                );
+            }
+        };
+
+        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->exists = true;
+
+        $accepted = $owner->addMedia(UploadedFile::fake()->createWithContent('doc.pdf', "%PDF-1.4\nbody\n%%EOF"))
+            ->toMediaCollection('docs');
+
+        expect($accepted->original_extension)->toBe('pdf')
+            ->and(fn (): mixed => $owner->addMedia(UploadedFile::fake()->createWithContent('note.txt', 'hello world'))->toMediaCollection('docs'))->toThrow(InvalidArgumentException::class);
     });
 
     it('honours a collection acceptsExtensions list', function (): void {

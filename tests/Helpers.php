@@ -177,9 +177,12 @@ function assertPaginatedResponse(TestResponse $response): TestResponse
     $response->assertJsonStructure(['status', 'data', 'meta']);
 
     $meta = $response->json('meta');
+    throw_unless(is_array($meta), RuntimeException::class, 'Paginated response meta is not an array.');
+
     expect($meta)
-        ->toBeArray()
-        ->toHaveKeys(['per_page', 'has_more']);
+        ->toHaveKeys(['per_page', 'has_more'])
+        ->and($meta['per_page'])->toBeInt()->toBeGreaterThan(0)
+        ->and($meta['has_more'])->toBeBool();
 
     return $response;
 }

@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Support\Facades\Schedule;
-use Modules\Media\Console\Commands\MediaCleanupCommand;
-
-covers(MediaCleanupCommand::class);
 
 describe('console schedule', function (): void {
     it('schedules a daily dry-run of media:cleanup', function (): void {
