@@ -30,10 +30,16 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function (): void {
     /**
      * Persist a media row plus real decodable bytes on the fake public disk.
      */
-    function seedImageMedia(Model $owner, int $width = 200, int $height = 100): Media
+    function seedImageMedia(Model $owner, int $width = 200, int $height = 100, bool $public = false): Media
     {
+        $factory = MediaFactory::new()->forModel($owner);
+
+        if ($public) {
+            $factory = $factory->public();
+        }
+
         /** @var Media $media */
-        $media = MediaFactory::new()->forModel($owner)->createOne(['mime_type' => 'image/jpeg']);
+        $media = $factory->createOne(['mime_type' => 'image/jpeg']);
 
         $file = UploadedFile::fake()->image('seed.jpg', $width, $height);
         Storage::disk('public')->put($media->getPath() ?? '', (string) $file->getContent());
@@ -58,6 +64,59 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function (): void {
 
         expect(imagesx($image))->toBe(32)
             ->and(imagesy($image))->toBeLessThanOrEqual(100);
+    });
+
+    it('serves a freshly generated conversion of public media with a long public cache lifetime', function (): void {
+        $user = loginAsUser();
+        $media = seedImageMedia($user, public: true);
+
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/32");
+
+        $response->assertOk();
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+
+        expect($cacheControl)->toContain('public')
+            ->and($cacheControl)->toContain('max-age=31536000')
+            ->and($cacheControl)->not->toContain('private')
+            ->and($cacheControl)->not->toContain('no-store');
+    });
+
+    it('serves a disk cached conversion of public media with a long public cache lifetime', function (): void {
+        $user = loginAsUser();
+        $media = seedImageMedia($user, public: true);
+        $url = "/api/v1/media/{$media->id}/s/32";
+
+        $this->getJson($url)->assertOk();
+
+        $cached = $this->getJson($url);
+
+        $cached->assertOk();
+
+        $cacheControl = (string) $cached->headers->get('Cache-Control');
+
+        expect($cacheControl)->toContain('public')
+            ->and($cacheControl)->toContain('max-age=31536000')
+            ->and($cacheControl)->not->toContain('private')
+            ->and($cacheControl)->not->toContain('no-store');
+    });
+
+    it('serves private media with a private non cacheable lifetime when disk cached', function (): void {
+        $user = loginAsUser();
+        $media = seedImageMedia($user);
+        $url = "/api/v1/media/{$media->id}/s/32";
+
+        $this->getJson($url)->assertOk();
+
+        $cached = $this->getJson($url);
+
+        $cached->assertOk();
+
+        $cacheControl = (string) $cached->headers->get('Cache-Control');
+
+        expect($cacheControl)->toContain('private')
+            ->and($cacheControl)->toContain('no-store')
+            ->and($cacheControl)->not->toContain('public');
     });
 
     it('stores on-demand conversions on the configured conversion disk', function (): void {

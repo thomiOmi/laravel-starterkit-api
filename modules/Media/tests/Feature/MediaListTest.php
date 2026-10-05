@@ -89,6 +89,55 @@ describe('GET /api/v1/media', function (): void {
             ->and($response->json('data.0.collection_name'))->toBe('avatars');
     });
 
+    it('sorts newest first when no sort parameter is given', function (): void {
+        $user = loginAsUser();
+
+        $oldest = MediaFactory::new()->forModel($user)->createOne(['created_at' => now()->subDays(3)]);
+        $middle = MediaFactory::new()->forModel($user)->createOne(['created_at' => now()->subDays(2)]);
+        $newest = MediaFactory::new()->forModel($user)->createOne(['created_at' => now()->subDay()]);
+
+        $response = $this->getJson('/api/v1/media');
+
+        assertSuccessResponse($response, 200);
+
+        $data = $response->json('data');
+        throw_unless(is_array($data), RuntimeException::class, 'Response data was not an array.');
+
+        expect(collect($data)->pluck('id')->all())->toBe([$newest->id, $middle->id, $oldest->id]);
+    });
+
+    it('sorts by the requested whitelisted column', function (string $sort, string $column, array $expected): void {
+        $user = loginAsUser();
+
+        MediaFactory::new()->forModel($user)->createOne(['size' => 300, 'order_column' => 3]);
+        MediaFactory::new()->forModel($user)->createOne(['size' => 100, 'order_column' => 1]);
+        MediaFactory::new()->forModel($user)->createOne(['size' => 200, 'order_column' => 2]);
+
+        $response = $this->getJson('/api/v1/media?sort='.$sort);
+
+        assertSuccessResponse($response, 200);
+
+        $data = $response->json('data');
+        throw_unless(is_array($data), RuntimeException::class, 'Response data was not an array.');
+
+        expect(collect($data)->pluck($column)->all())->toBe($expected);
+    })->with([
+        'ascending size' => ['size', 'size', [100, 200, 300]],
+        'descending size' => ['-size', 'size', [300, 200, 100]],
+        'ascending order_column' => ['order_column', 'order_column', [1, 2, 3]],
+        'descending order_column' => ['-order_column', 'order_column', [3, 2, 1]],
+    ]);
+
+    it('rejects a sort column outside the whitelist', function (): void {
+        $user = loginAsUser();
+
+        MediaFactory::new()->forModel($user)->count(2)->create();
+
+        $response = $this->getJson('/api/v1/media?sort=mime_type');
+
+        assertProblemResponse($response, 400);
+    });
+
     it('rejects unauthenticated requests', function (): void {
         $this->getJson('/api/v1/media')->assertUnauthorized();
     });
