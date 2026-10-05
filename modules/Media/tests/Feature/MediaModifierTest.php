@@ -99,6 +99,25 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function (): void {
         expect(imagesx($image))->toBeLessThanOrEqual(100);
     });
 
+    it('fits s/320x200 inside the box without cropping or upscaling', function (): void {
+        $user = loginAsUser();
+        // Wider than the box on purpose. An ignored modifier would stay
+        // 400x100, and a crop-to-fill implementation would return exactly
+        // 320x200. Only fit-within-box keeps the 4:1 ratio and lands on
+        // 320x80, which is what Image::scale() (Intervention scaleDown) does.
+        $media = seedImageMedia($user, width: 400, height: 100);
+
+        $response = $this->getJson("/api/v1/media/{$media->id}/s/320x200");
+
+        $response->assertOk();
+
+        $image = imagecreatefromstring((string) $response->getContent());
+        throw_unless($image instanceof GdImage, RuntimeException::class, 'The conversion response is not a decodable image.');
+
+        expect(imagesx($image))->toBe(320)
+            ->and(imagesy($image))->toBe(80);
+    });
+
     it('returns 304 when the etag still matches', function (): void {
         $user = loginAsUser();
         $media = seedImageMedia($user);
