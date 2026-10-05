@@ -81,6 +81,21 @@ describe('Media hardening', function (): void {
             expect(Media::query()->count())->toBe(0);
         });
 
+        it('rejects images taller than the configured maximum', function (): void {
+            config(['media.image.max_height' => 10]);
+            $user = loginAsUser();
+            $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+
+            $response = $this->post('/api/v1/media', [
+                'file' => UploadedFile::fake()->image('photo.jpg', 48, 64),
+                'collection_name' => 'avatars',
+            ]);
+
+            assertProblemResponse($response, 422, 'validation');
+            $response->assertJsonValidationErrors(['file']);
+            expect(Media::query()->count())->toBe(0);
+        });
+
         it('rejects images exceeding the pixel budget', function (): void {
             config(['media.image.max_pixels' => 100]);
             $user = loginAsUser();
