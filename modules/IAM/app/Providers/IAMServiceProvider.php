@@ -46,7 +46,7 @@ class IAMServiceProvider extends ModuleServiceProvider
         parent::register();
 
         $this->mergeConfigFrom(
-            module_path($this->name, 'config/permission.php'),
+            base_path("modules/{$this->name}/config/permission.php"),
             'permission',
         );
     }
@@ -56,7 +56,18 @@ class IAMServiceProvider extends ModuleServiceProvider
      */
     public function boot(): void
     {
-        parent::boot();
+        $configPath = base_path("modules/{$this->name}/config/config.php");
+        if (file_exists($configPath)) {
+            $this->mergeConfigFrom($configPath, $this->nameLower);
+        }
+
+        $this->commands($this->commands);
+
+        if (app()->has('modules') && resolve('modules')->find($this->name) !== null) {
+            parent::boot();
+        } else {
+            $this->loadMigrationsFrom(base_path("modules/{$this->name}/database/migrations"));
+        }
 
         Route::aliasMiddleware('active', EnsureUserIsActive::class);
     }

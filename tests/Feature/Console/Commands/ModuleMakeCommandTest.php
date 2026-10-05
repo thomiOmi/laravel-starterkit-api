@@ -143,8 +143,7 @@ describe('module:make command', function (): void {
 
         expect(base_path('tests/Fixtures/module-make/modules/Shop'))->toBeDirectory();
 
-        artisanCommand($this, 'module:delete', ['module' => ['Shop']])
-            ->expectsConfirmation('Are you sure you want to run this command?', 'yes')
+        artisanCommand($this, 'module:delete', ['module' => ['Shop'], '--force' => true])
             ->assertSuccessful();
 
         expect(base_path('tests/Fixtures/module-make/modules/Shop'))->not->toBeDirectory();

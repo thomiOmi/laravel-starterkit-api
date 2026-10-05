@@ -304,8 +304,14 @@ function clearFixtureModules(): void
  */
 function forgetModuleSingletons(): void
 {
+    if (app()->bound(RepositoryInterface::class)) {
+        resolve(RepositoryInterface::class)->resetModules();
+    }
+
     app()->forgetInstance(RepositoryInterface::class);
     app()->forgetInstance(ActivatorInterface::class);
+    app()->forgetInstance('modules');
+    app()->forgetInstance('modules.activator');
 }
 
 /**
