@@ -304,8 +304,14 @@ function clearFixtureModules(): void
  */
 function forgetModuleSingletons(): void
 {
+    if (app()->bound(RepositoryInterface::class)) {
+        resolve(RepositoryInterface::class)->resetModules();
+    }
+
     app()->forgetInstance(RepositoryInterface::class);
     app()->forgetInstance(ActivatorInterface::class);
+    app()->forgetInstance('modules');
+    app()->forgetInstance('modules.activator');
 }
 
 /**
@@ -315,7 +321,10 @@ function forgetModuleSingletons(): void
  */
 function bindFixtureModulePaths(string $root = 'tests/Fixtures/dependency-check'): void
 {
-    config()->set('modules.paths.modules', base_path("{$root}/modules"));
+    $modulesPath = base_path("{$root}/modules");
+    resolve(Filesystem::class)->ensureDirectoryExists($modulesPath);
+
+    config()->set('modules.paths.modules', $modulesPath);
     config()->set('modules.activators.file.statuses-file', base_path("{$root}/statuses.json"));
     forgetModuleSingletons();
 }
