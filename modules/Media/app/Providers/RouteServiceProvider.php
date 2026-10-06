@@ -46,7 +46,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapWebRoutes(): void
     {
-        $routes = base_path("modules/{$this->name}/routes/web.php");
+        $routes = module_path($this->name, 'routes/web.php');
 
         if (file_exists($routes)) {
             Route::middleware('web')->group($routes);
@@ -68,7 +68,7 @@ class RouteServiceProvider extends ServiceProvider
         $versions = config()->array('apiroute.supported_versions', ['V1']);
 
         foreach ($versions as $version) {
-            $routeFile = base_path("modules/{$this->name}/routes/{$version}.php");
+            $routeFile = module_path($this->name, "routes/{$version}.php");
 
             if (! file_exists($routeFile)) {
                 continue;

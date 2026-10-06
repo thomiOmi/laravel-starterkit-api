@@ -1,6 +1,4 @@
 {
     "IAM": true,
-    "Media": true,
-    "Blog": false,
-    "Shop": false
+    "Media": true
 }
