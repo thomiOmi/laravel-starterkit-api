@@ -23,6 +23,9 @@ beforeEach(function (): void {
 
 afterEach(function (): void {
     resolve(Filesystem::class)->deleteDirectory(base_path('tests/Fixtures/module-make'));
+    config()->set('modules.paths.modules', base_path('modules'));
+    config()->set('modules.activators.file.statuses-file', base_path('modules_statuses.json'));
+    forgetModuleSingletons();
 });
 
 describe('module:make command', function (): void {

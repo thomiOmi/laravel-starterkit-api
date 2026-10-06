@@ -36,16 +36,15 @@ class MediaServiceProvider extends ModuleServiceProvider
     #[\Override]
     public function boot(): void
     {
-        $configPath = base_path("modules/{$this->name}/config/config.php");
-        if (file_exists($configPath)) {
-            $this->mergeConfigFrom($configPath, $this->nameLower);
-        }
-
-        $this->commands($this->commands);
-
         if (app()->has('modules') && resolve('modules')->find($this->name) !== null) {
             parent::boot();
         } else {
+            $configPath = base_path("modules/{$this->name}/config/config.php");
+            if (file_exists($configPath)) {
+                $this->mergeConfigFrom($configPath, $this->nameLower);
+            }
+
+            $this->commands($this->commands);
             $this->loadMigrationsFrom(base_path("modules/{$this->name}/database/migrations"));
         }
     }
