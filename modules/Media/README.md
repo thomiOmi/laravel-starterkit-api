@@ -31,6 +31,9 @@ php artisan db:seed --class="Modules\IAM\Database\Seeders\IAMSeeder"
 | `media.private_disk` | `local` | Disk for private collections (non-public visibility routes here). |
 | `media.max_size` | `2048` | Max upload KB (also used for downloader size cap `max_size * 1024`) |
 | `media.allowed_extensions` | `null` | Global extension allowlist (`null` = disabled, defer to disallowed + collection rules). |
+| `media.image.max_width` | `8000` | Maximum allowed image width in pixels |
+| `media.image.max_height` | `8000` | Maximum allowed image height in pixels |
+| `media.image.max_pixels` | `25000000` | Maximum allowed total pixel count (width x height) |
 | `media.disallowed_extensions` | `DisallowedExtensions::$default` | Executable/script extensions blocked on every dot segment |
 | `media.file_namer` | `DefaultFileNamer` | Strategy for original/conversion/responsive names (`conversionFileName` = `{name}-{conversion}.{ext}`) |
 | `media.path_generator` | `DefaultPathGenerator` | Strategy for `getPath()` (`collection/file_name` + prefix). Original path only; derivative directories come from `MediaPrefix` + `MediaFileNamer`, so an override does not change them |
