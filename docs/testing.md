@@ -59,7 +59,7 @@ phpunit.baseline.xml          # Whitelisted deprecations/notices
 
 Notes:
 
-- `Pest.php` also registers module test paths: `modules/*/tests/{Feature,Unit}`. `modules/IAM/tests/` is currently empty.
+- `Pest.php` also registers module test paths: `modules/*/tests/{Feature,Unit}`. Module tests live inside each active module (for example, `modules/IAM/tests/` and `modules/Media/tests/`).
 - `phpunit.xml` is strict (`failOnDeprecation`, `failOnNotice`, etc.) and declares the baseline — see Tooling notes above.
 
 ## Expectations (`tests/Expectations.php`)
