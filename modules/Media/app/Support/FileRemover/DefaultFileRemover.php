@@ -6,6 +6,7 @@ namespace Modules\Media\Support\FileRemover;
 
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
+use Modules\Media\Models\MediaConversion;
 use Modules\Media\Support\MediaPrefix;
 
 final readonly class DefaultFileRemover implements MediaFileRemover
@@ -19,7 +20,12 @@ final readonly class DefaultFileRemover implements MediaFileRemover
             $this->removeFile($path, $media->disk);
         }
 
-        foreach ($media->conversions()->get() as $conversion) {
+        /** @var iterable<MediaConversion> $conversions */
+        $conversions = $media->relationLoaded('conversions')
+            ? $media->getRelation('conversions')
+            : $media->conversions()->get();
+
+        foreach ($conversions as $conversion) {
             $this->removeFile($conversion->path, $conversion->disk);
         }
 
