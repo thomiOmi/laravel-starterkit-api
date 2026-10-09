@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support\FileRemover;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
+use Modules\Media\Models\MediaConversion;
 use Modules\Media\Support\MediaPrefix;
 
 final readonly class DefaultFileRemover implements MediaFileRemover
@@ -20,8 +22,13 @@ final readonly class DefaultFileRemover implements MediaFileRemover
         }
 
         // Reuse eager-loaded conversions if available to prevent redundant SQL queries during deletion.
-        $conversions = $media->relationLoaded('conversions')
+        $loadedConversions = $media->relationLoaded('conversions')
             ? $media->getRelation('conversions')
+            : $media->conversions()->get();
+
+        /** @var Collection<int, MediaConversion>|iterable<MediaConversion> $conversions */
+        $conversions = $loadedConversions instanceof Collection
+            ? $loadedConversions
             : $media->conversions()->get();
 
         foreach ($conversions as $conversion) {
