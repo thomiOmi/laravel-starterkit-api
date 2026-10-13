@@ -44,6 +44,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0038](0038-responsive-images.md) | Responsive Images Generation Design | Accepted | 2026-09-04 |
 | [0039](0039-media-path-generator-owns-original-path-only.md) | MediaPathGenerator Owns Only the Original Path, MediaPrefix Owns Every Path | Accepted | 2026-10-05 |
 | [0040](0040-media-path-generator-owns-derivative-directories.md) | MediaPathGenerator Owns Derivative Directories | Accepted | 2026-10-13 |
+| [0041](0041-upload-original-writes-through-path-generator.md) | Upload Original Writes Resolve Through the Path Generator | Accepted | 2026-10-13 |
 
 ## Process
 
