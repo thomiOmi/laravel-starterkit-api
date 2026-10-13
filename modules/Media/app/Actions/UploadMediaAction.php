@@ -708,8 +708,8 @@ final readonly class UploadMediaAction
                 $oldConversionsDisk = is_string($replacedConversionsDisk) ? $replacedConversionsDisk : $disk;
 
                 Storage::disk($oldDisk)->delete(MediaPrefix::basePath($media->collection_name, $replacedFileName));
-                Storage::disk($oldConversionsDisk)->deleteDirectory(MediaPrefix::join('conversions/derived', (string) $media->id));
-                Storage::disk($oldConversionsDisk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
+                Storage::disk($oldConversionsDisk)->deleteDirectory($media->getDerivedConversionsDirectory());
+                Storage::disk($oldConversionsDisk)->deleteDirectory($media->getConversionsDirectory());
 
                 foreach ($replacedConversions as $oldConversion) {
                     Storage::disk($oldConversion->disk)->delete($oldConversion->path);
