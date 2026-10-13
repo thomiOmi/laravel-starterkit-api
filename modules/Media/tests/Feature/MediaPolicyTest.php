@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\RoleEnum;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Policies\MediaPolicy;
 
@@ -73,13 +71,7 @@ describe('MediaPolicy uploader and visibility branches', function (): void {
     });
 
     it('lets a super admin manage media owned by someone else', function (): void {
-        DB::table('roles')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => RoleEnum::SuperAdmin->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensureRoleExists(RoleEnum::SuperAdmin->value);
 
         $owner = loginAsUser();
         $media = MediaFactory::new()->forModel($owner)->createOne();

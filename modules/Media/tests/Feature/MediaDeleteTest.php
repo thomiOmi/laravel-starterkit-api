@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Events\MediaDeleted;
 use Modules\Media\Http\Controllers\V1\MediaDeleteController;
@@ -55,13 +53,7 @@ describe('DELETE /api/v1/media/{media}', function (): void {
     });
 
     it('allows a user with the delete permission to remove other media', function (): void {
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaDelete->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaDelete->value);
         $staff = loginAsUser();
         $staff->givePermissionTo(PermissionEnum::MediaDelete->value);
 
