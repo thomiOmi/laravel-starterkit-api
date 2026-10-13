@@ -116,4 +116,22 @@ class MediaServiceProvider extends ModuleServiceProvider
             return new $class;
         });
     }
+
+    /**
+     * Bootstrap any application services.
+     */
+    #[\Override]
+    public function boot(): void
+    {
+        $module = $this->app->bound('modules') ? resolve('modules')->find($this->name) : null;
+
+        if ($module !== null) {
+            parent::boot();
+        } else {
+            $migrationPath = dirname(__DIR__, 2).'/database/migrations';
+            if (is_dir($migrationPath)) {
+                $this->loadMigrationsFrom($migrationPath);
+            }
+        }
+    }
 }

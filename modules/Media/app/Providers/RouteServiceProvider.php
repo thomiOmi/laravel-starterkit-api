@@ -44,9 +44,19 @@ class RouteServiceProvider extends ServiceProvider
      * These routes all receive session state, CSRF protection, etc.
      * The file may not exist for API-only modules, so guard before grouping.
      */
+    protected function modulePath(string $subpath = ''): string
+    {
+        $module = $this->app->bound('modules') ? resolve('modules')->find($this->name) : null;
+        if ($module !== null) {
+            return module_path($this->name, $subpath);
+        }
+
+        return dirname(__DIR__, 2).($subpath !== '' ? '/'.$subpath : '');
+    }
+
     protected function mapWebRoutes(): void
     {
-        $routes = module_path($this->name, 'routes/web.php');
+        $routes = $this->modulePath('routes/web.php');
 
         if (file_exists($routes)) {
             Route::middleware('web')->group($routes);
@@ -68,7 +78,7 @@ class RouteServiceProvider extends ServiceProvider
         $versions = config()->array('apiroute.supported_versions', ['V1']);
 
         foreach ($versions as $version) {
-            $routeFile = module_path($this->name, "routes/{$version}.php");
+            $routeFile = $this->modulePath("routes/{$version}.php");
 
             if (! file_exists($routeFile)) {
                 continue;
