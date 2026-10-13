@@ -133,7 +133,7 @@ final readonly class GenerateResponsiveImagesAction
         $image = Image::fromStorage($path, $sourceDisk)->orient()->scale(width: $width)->toFormat($format)->quality(80);
 
         $fileName = $width.'-'.resolve(MediaFileNamer::class)->responsiveFileName($media->file_name);
-        $directory = dirname($path).'/responsive-images';
+        $directory = $media->getResponsiveImagesDirectory();
 
         $image->storeAs($directory, $fileName, $conversionDisk, StorageOptions::forVisibility($media->visibility->value));
 

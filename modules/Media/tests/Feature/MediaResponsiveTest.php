@@ -138,8 +138,9 @@ describe('Media responsive images', function (): void {
         $owner->addMedia(UploadedFile::fake()->image('photo.jpg', 100, 80))
             ->toMediaCollection('gallery');
 
-        Bus::assertDispatched(ProcessMediaJob::class);
         $queuedMedia = Media::query()->where('collection_name', 'gallery')->sole();
+
+        Bus::assertDispatched(ProcessMediaJob::class, fn (ProcessMediaJob $job): bool => $job->mediaId === $queuedMedia->id);
         expect($queuedMedia->processing_status->value)->toBe('pending');
     });
 

@@ -67,7 +67,10 @@ describe('Media file adder parity', function (): void {
             ->onQueue()
             ->toMediaCollection('gallery');
 
-        Bus::assertDispatched(ProcessMediaJob::class);
+        $mediaId = $owner->getFirstMedia('gallery')?->id;
+        throw_unless(is_string($mediaId), RuntimeException::class, 'Queued gallery media was not found.');
+
+        Bus::assertDispatched(ProcessMediaJob::class, fn (ProcessMediaJob $job): bool => $job->mediaId === $mediaId);
     });
 
     it('toggles responsive generation per call', function (): void {

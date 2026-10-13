@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Media\Support;
 
 use InvalidArgumentException;
+use Modules\Media\Models\Media;
 
 /**
  * Builder for a single media conversion definition.
@@ -165,7 +166,7 @@ final class MediaConversion
      *
      * @param  array<string, mixed>  $modifiers
      */
-    public static function derivedPath(string $mediaId, array $modifiers, string $cacheKey, string $format): string
+    public static function derivedPath(Media $media, array $modifiers, string $cacheKey, string $format): string
     {
         /** @var int<1, 2000>|null $width */
         $width = isset($modifiers['w']) && is_int($modifiers['w']) ? $modifiers['w'] : null;
@@ -210,7 +211,7 @@ final class MediaConversion
 
         $extension = $format;
 
-        return MediaPrefix::join('conversions/derived', $mediaId, $readable.'-'.substr($cacheKey, 0, 8).'.'.$extension);
+        return $media->getDerivedConversionsDirectory().'/'.$readable.'-'.substr($cacheKey, 0, 8).'.'.$extension;
     }
 
     /**

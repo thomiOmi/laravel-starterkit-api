@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
@@ -18,13 +16,7 @@ describe('Media storage prefix', function (): void {
     beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaCreate->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaCreate->value);
     });
 
     it('builds paths without a prefix by default', function (): void {

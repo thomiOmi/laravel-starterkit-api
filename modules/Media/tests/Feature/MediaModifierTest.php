@@ -5,9 +5,7 @@ declare(strict_types=1);
 use App\Enums\PermissionEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Http\Controllers\V1\MediaModifierController;
 use Modules\Media\Models\Media;
@@ -18,13 +16,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function (): void {
     beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaView->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaView->value);
     });
 
     /**

@@ -3,9 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Http\Controllers\V1\MediaShowController;
 
@@ -28,13 +26,7 @@ describe('GET /api/v1/media/{media}', function (): void {
     });
 
     it('allows a viewer with the view permission', function (): void {
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaView->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaView->value);
         $viewer = loginAsUser();
         $viewer->givePermissionTo(PermissionEnum::MediaView->value);
 

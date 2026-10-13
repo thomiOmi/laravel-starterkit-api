@@ -60,7 +60,7 @@ final readonly class MediaModifierController extends Controller
             return $notModified;
         }
 
-        $conversionPath = MediaConversion::derivedPath((string) $media->id, $parsed, $cacheKey, $format);
+        $conversionPath = MediaConversion::derivedPath($media, $parsed, $cacheKey, $format);
         $disk = Storage::disk($media->conversions_disk ?? $media->disk);
         $isPublic = $media->isPublic();
 
