@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Models\Media;
-use Modules\Media\Services\MediaConversionService;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
 use Modules\Media\Support\PathGenerator\MediaPathGenerator;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
@@ -65,16 +67,35 @@ describe('Media generators config', function (): void {
     });
 
     it('stores eager conversions inside the custom conversions directory', function (): void {
-        $owner = loginAsUser();
+        config(['media.queue' => false]);
+
+        DB::table('permissions')->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'name' => PermissionEnum::MediaCreate->value,
+            'guard_name' => 'sanctum',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
         config(['media.custom_path_generators' => [
-            $owner->getMorphClass() => SupportCustomPrefixPathGenerator::class,
+            $user->getMorphClass() => SupportCustomPrefixPathGenerator::class,
         ]]);
 
-        $media = MediaFactory::new()->forModel($owner, 'avatars')->createOne(['mime_type' => 'image/jpeg']);
-        $file = UploadedFile::fake()->image('seed.jpg', 200, 100);
-        Storage::disk('public')->put($media->getPath() ?? '', (string) $file->getContent());
+        $file = UploadedFile::fake()->image('photo.jpg', 100, 100);
 
-        resolve(MediaConversionService::class)->generate($media);
+        $response = $this->post('/api/v1/media', [
+            'file' => $file,
+            'collection_name' => 'avatars',
+        ]);
+
+        assertSuccessResponse($response, 201);
+
+        $media = Media::query()->firstOrFail();
+
+        expect($media->getPath())->toStartWith('custom-prefix/avatars/')
+            ->and(Storage::disk($media->disk)->exists($media->getPath() ?? ''))->toBeTrue();
 
         $conversion = $media->conversions()->where('name', 'thumbnail')->firstOrFail();
 
@@ -82,6 +103,54 @@ describe('Media generators config', function (): void {
             ->and(Storage::disk('public')->exists($conversion->path))->toBeTrue();
     });
 
+    it('removes replaced custom originals on single-file replacement', function (): void {
+        $user = loginAsUser();
+        config(['media.custom_path_generators' => [
+            $user->getMorphClass() => SupportCustomPrefixPathGenerator::class,
+        ]]);
+
+        $first = $user->addMedia(UploadedFile::fake()->image('first.jpg', 100, 100))->toMediaCollection('avatars');
+        $oldOriginal = $first->getPath();
+        $oldConversion = $first->conversions()->where('name', 'thumbnail')->firstOrFail();
+
+        $second = $user->addMedia(UploadedFile::fake()->image('second.jpg', 100, 100))->toMediaCollection('avatars');
+
+        expect(Media::query()->where('model_id', $user->getKey())->where('collection_name', 'avatars')->count())->toBe(1)
+            ->and($second->getPath())->toStartWith('custom-prefix/avatars/');
+
+        Storage::disk($oldConversion->disk)->assertMissing($oldConversion->path);
+        Storage::disk($second->disk)->assertMissing(is_string($oldOriginal) ? $oldOriginal : '');
+    });
+
+    it('stores non-image uploads inside the custom originals directory', function (): void {
+        DB::table('permissions')->insertOrIgnore([
+            'id' => (string) Str::ulid(),
+            'name' => PermissionEnum::MediaCreate->value,
+            'guard_name' => 'sanctum',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $user = loginAsUser();
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
+        config(['media.custom_path_generators' => [
+            $user->getMorphClass() => SupportCustomPrefixPathGenerator::class,
+        ]]);
+
+        $file = UploadedFile::fake()->createWithContent('notes.txt', 'hello world');
+
+        $response = $this->post('/api/v1/media', [
+            'file' => $file,
+            'collection_name' => 'documents',
+        ]);
+
+        assertSuccessResponse($response, 201);
+
+        $media = Media::query()->firstOrFail();
+
+        expect($media->getPath())->toStartWith('custom-prefix/documents/')
+            ->and(Storage::disk($media->disk)->exists($media->getPath() ?? ''))->toBeTrue();
+    });
     it('stores on-demand derived conversions inside the custom derived directory', function (): void {
         $owner = loginAsUser();
         config(['media.custom_path_generators' => [

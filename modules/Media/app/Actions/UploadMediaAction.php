@@ -28,7 +28,6 @@ use Modules\Media\Support\ImageDimensions;
 use Modules\Media\Support\ImageManipulations;
 use Modules\Media\Support\MediaCollection;
 use Modules\Media\Support\MediaMimeType;
-use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\Scanners\MediaScanner;
 use Modules\Media\Support\StorageOptions;
 use RuntimeException;
@@ -174,6 +173,31 @@ final readonly class UploadMediaAction
     }
 
     /**
+     * Storage path for an original upload, resolved through the media
+     * path generator (including per-model overrides) via an unsaved
+     * Media carrier that is never persisted. The directory part of a
+     * generator path must not depend on the file name, so callers may
+     * pass a candidate name and take dirname() when only the
+     * directory is needed before the final name is known.
+     */
+    private function originalUploadPath(Model $model, string $collectionName, string $fileName): string
+    {
+        $probe = new Media;
+        $probe->forceFill([
+            'model_type' => $model->getMorphClass(),
+            'model_id' => $model->getKey(),
+            'collection_name' => $collectionName,
+            'file_name' => $fileName,
+        ]);
+
+        $path = $probe->getPath();
+
+        throw_unless(is_string($path) && $path !== '', RuntimeException::class, __('validation.media_store_failed'));
+
+        return $path;
+    }
+
+    /**
      * @return array{media: Media, url: string|null}
      */
     private function storeProcessedImage(MediaUploadPayload $payload, Model $model, ?Model $uploader = null): array
@@ -184,7 +208,7 @@ final readonly class UploadMediaAction
         $image = Image::fromUpload($payload->file)->orient()->optimize();
         $image = ImageManipulations::apply($image, $payload->manipulations);
 
-        $storedPath = $image->store(MediaPrefix::directory($payload->collectionName), $disk, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
+        $storedPath = $image->store(dirname($this->originalUploadPath($model, $payload->collectionName, $payload->file->hashName())), $disk, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
 
         throw_if($storedPath === false, ImageException::class, 'The processed image could not be stored.');
 
@@ -226,13 +250,13 @@ final readonly class UploadMediaAction
         $this->guardDiskAlignment($visibility, $disk, $payload->conversionsDisk);
         $file = $payload->file;
         $filename = resolve(MediaFileNamer::class)->originalFileName($file->hashName());
-        $fullPath = MediaPrefix::basePath($payload->collectionName, $filename);
+        $fullPath = $this->originalUploadPath($model, $payload->collectionName, $filename);
 
         if (Storage::disk($disk)->exists($fullPath)) {
             throw new InvalidArgumentException(__('validation.media_name_collision'));
         }
 
-        $stored = Storage::disk($disk)->putFileAs(MediaPrefix::directory($payload->collectionName), $file, $filename, StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
+        $stored = Storage::disk($disk)->putFileAs(dirname($fullPath), $file, basename($fullPath), StorageOptions::forVisibility($visibility->value, $payload->customHeaders));
 
         if ($stored === false) {
             throw new RuntimeException(__('validation.media_store_failed'));
@@ -707,7 +731,7 @@ final readonly class UploadMediaAction
                 $oldDisk = is_string($replacedDisk) ? $replacedDisk : $disk;
                 $oldConversionsDisk = is_string($replacedConversionsDisk) ? $replacedConversionsDisk : $disk;
 
-                Storage::disk($oldDisk)->delete(MediaPrefix::basePath($media->collection_name, $replacedFileName));
+                Storage::disk($oldDisk)->delete($this->originalUploadPath($model, $media->collection_name, $replacedFileName));
                 Storage::disk($oldConversionsDisk)->deleteDirectory($media->getDerivedConversionsDirectory());
                 Storage::disk($oldConversionsDisk)->deleteDirectory($media->getConversionsDirectory());
 
