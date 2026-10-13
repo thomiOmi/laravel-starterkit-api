@@ -197,4 +197,75 @@ describe('ProcessMediaJob', function (): void {
             ->and(array_keys($second->responsive_images))->toEqual($afterFirstRun)
             ->and($second->processing_status->value)->toBe('processed');
     });
+
+    it('processes a queued job end to end through a real worker', function (): void {
+        config(['queue.default' => 'database']);
+
+        $owner = jobOwner();
+        $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne(['mime_type' => 'image/jpeg']);
+        $file = UploadedFile::fake()->image('seed.jpg', 100, 80);
+        Storage::disk($media->disk)->put($media->getPath() ?? '', (string) $file->getContent());
+
+        dispatch(new ProcessMediaJob((string) $media->id));
+
+        $record = DB::table('jobs')->sole();
+        $payloadRaw = $record->payload;
+        throw_unless(is_string($payloadRaw), RuntimeException::class, 'Queued job payload was not a string.');
+        $payload = json_decode($payloadRaw, true);
+        throw_unless(is_array($payload), RuntimeException::class, 'Queued job payload was not an array.');
+        $data = $payload['data'] ?? null;
+        throw_unless(is_array($data), RuntimeException::class, 'Queued job payload data was not an array.');
+        $commandRaw = $data['command'] ?? null;
+        throw_unless(is_string($commandRaw), RuntimeException::class, 'Queued command was not a string.');
+        $command = unserialize($commandRaw);
+        throw_unless($command instanceof ProcessMediaJob, RuntimeException::class, 'Queued command was not a ProcessMediaJob.');
+
+        expect($command->mediaId)->toBe((string) $media->id);
+
+        artisanCommand($this, 'queue:work', ['--once' => true])->assertSuccessful();
+
+        $processed = $media->fresh();
+        throw_unless($processed instanceof Media, RuntimeException::class, 'Processed media was not found.');
+
+        expect(DB::table('jobs')->count())->toBe(0)
+            ->and($processed->processing_status->value)->toBe('processed')
+            ->and($processed->responsive_images)->not->toBe([]);
+
+        Event::assertDispatched(MediaProcessed::class, fn (MediaProcessed $event): bool => $event->media->is($media));
+    });
+
+    it('releases a failing job with backoff until the attribute tries run out', function (): void {
+        config(['queue.default' => 'database']);
+
+        $media = MediaFactory::new()->createOne(['mime_type' => 'image/jpeg']);
+
+        dispatch(new ProcessMediaJob((string) $media->id));
+
+        artisanCommand($this, 'queue:work', ['--once' => true])->assertSuccessful();
+        $firstAttempts = DB::table('jobs')->value('attempts');
+        throw_unless(is_numeric($firstAttempts), RuntimeException::class, 'Job attempts was not numeric.');
+        expect((int) $firstAttempts)->toBe(1)
+            ->and(DB::table('failed_jobs')->count())->toBe(0);
+
+        $this->travel(11)->seconds();
+        artisanCommand($this, 'queue:work', ['--once' => true])->assertSuccessful();
+        $secondAttempts = DB::table('jobs')->value('attempts');
+        throw_unless(is_numeric($secondAttempts), RuntimeException::class, 'Job attempts was not numeric.');
+        expect((int) $secondAttempts)->toBe(2)
+            ->and(DB::table('failed_jobs')->count())->toBe(0);
+
+        $this->travel(31)->seconds();
+        artisanCommand($this, 'queue:work', ['--once' => true])->assertSuccessful();
+        expect(DB::table('jobs')->count())->toBe(0)
+            ->and(DB::table('failed_jobs')->count())->toBe(1);
+
+        $failed = $media->fresh();
+        throw_unless($failed instanceof Media, RuntimeException::class, 'Failed media was not found.');
+
+        expect($failed->processing_status->value)->toBe('failed')
+            ->and($failed->processing_error)->toBe('The source media file is missing.');
+
+        Event::assertDispatched(MediaProcessingFailed::class, fn (MediaProcessingFailed $event): bool => $event->media->is($media)
+            && $event->reason === 'The source media file is missing.');
+    });
 });
