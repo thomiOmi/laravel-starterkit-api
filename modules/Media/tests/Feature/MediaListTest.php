@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Http\Controllers\V1\MediaListController;
 
@@ -12,13 +10,7 @@ covers(MediaListController::class);
 
 describe('GET /api/v1/media', function (): void {
     beforeEach(function (): void {
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaView->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaView->value);
     });
 
     it('lists only the authenticated user media', function (): void {
@@ -155,13 +147,7 @@ describe('GET /api/v1/media', function (): void {
 });
 
 it('returns null original_name when the column is absent', function (): void {
-    DB::table('permissions')->insertOrIgnore([
-        'id' => (string) Str::ulid(),
-        'name' => PermissionEnum::MediaView->value,
-        'guard_name' => 'sanctum',
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+    ensurePermissionExists(PermissionEnum::MediaView->value);
     $viewer = loginAsUser();
     $viewer->givePermissionTo(PermissionEnum::MediaView->value);
 

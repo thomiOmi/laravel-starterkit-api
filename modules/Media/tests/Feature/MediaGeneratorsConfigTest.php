@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
@@ -69,13 +67,7 @@ describe('Media generators config', function (): void {
     it('stores eager conversions inside the custom conversions directory', function (): void {
         config(['media.queue' => false]);
 
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaCreate->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaCreate->value);
 
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -123,13 +115,7 @@ describe('Media generators config', function (): void {
     });
 
     it('stores non-image uploads inside the custom originals directory', function (): void {
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaCreate->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaCreate->value);
 
         $user = loginAsUser();
         $user->givePermissionTo(PermissionEnum::MediaCreate->value);
