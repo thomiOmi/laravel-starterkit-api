@@ -2,13 +2,16 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Models\Media;
+use Modules\Media\Services\MediaConversionService;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
 use Modules\Media\Support\PathGenerator\MediaPathGenerator;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
 use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
+use Modules\Media\Tests\Support\CustomPrefixPathGenerator as SupportCustomPrefixPathGenerator;
 
 covers(DefaultPathGenerator::class);
 covers(DefaultUrlGenerator::class);
@@ -46,6 +49,53 @@ describe('Media generators config', function (): void {
         $media = MediaFactory::new()->createOne();
 
         expect($media->getPath())->toBe($media->collection_name.'/'.$media->file_name);
+    });
+
+    it('resolves derivative directories through the per-model path generator', function (): void {
+        $owner = loginAsUser();
+        config(['media.custom_path_generators' => [
+            $owner->getMorphClass() => SupportCustomPrefixPathGenerator::class,
+        ]]);
+
+        $media = MediaFactory::new()->forModel($owner, 'avatars')->createOne(['file_name' => 'photo.webp']);
+
+        expect($media->getConversionsDirectory())->toBe('custom-prefix/avatars/conversions/'.$media->id)
+            ->and($media->getDerivedConversionsDirectory())->toBe('custom-prefix/avatars/conversions/derived/'.$media->id)
+            ->and($media->getResponsiveImagesDirectory())->toBe('custom-prefix/avatars/responsive-images');
+    });
+
+    it('stores eager conversions inside the custom conversions directory', function (): void {
+        $owner = loginAsUser();
+        config(['media.custom_path_generators' => [
+            $owner->getMorphClass() => SupportCustomPrefixPathGenerator::class,
+        ]]);
+
+        $media = MediaFactory::new()->forModel($owner, 'avatars')->createOne(['mime_type' => 'image/jpeg']);
+        $file = UploadedFile::fake()->image('seed.jpg', 200, 100);
+        Storage::disk('public')->put($media->getPath() ?? '', (string) $file->getContent());
+
+        resolve(MediaConversionService::class)->generate($media);
+
+        $conversion = $media->conversions()->where('name', 'thumbnail')->firstOrFail();
+
+        expect($conversion->path)->toStartWith('custom-prefix/avatars/conversions/'.$media->id.'/')
+            ->and(Storage::disk('public')->exists($conversion->path))->toBeTrue();
+    });
+
+    it('stores on-demand derived conversions inside the custom derived directory', function (): void {
+        $owner = loginAsUser();
+        config(['media.custom_path_generators' => [
+            $owner->getMorphClass() => SupportCustomPrefixPathGenerator::class,
+        ]]);
+
+        $media = MediaFactory::new()->forModel($owner)->createOne(['mime_type' => 'image/jpeg']);
+        $file = UploadedFile::fake()->image('seed.jpg', 200, 100);
+        Storage::disk('public')->put($media->getPath() ?? '', (string) $file->getContent());
+
+        $this->getJson("/api/v1/media/{$media->id}/s/32")->assertOk();
+        $this->getJson("/api/v1/media/{$media->id}/s/32")->assertOk();
+
+        expect(Storage::disk('public')->allFiles('custom-prefix/default/conversions/derived/'.$media->id))->toHaveCount(1);
     });
 
     it('uses a custom url generator from config', function (): void {
@@ -92,14 +142,19 @@ final class CustomPrefixPathGenerator implements MediaPathGenerator
         return 'custom/'.$media->file_name;
     }
 
-    public function getPathForConversions(Media $media, string $conversion): string
+    public function getPathForConversions(Media $media): string
     {
-        return 'custom/conversions/'.$conversion.'/'.$media->file_name;
+        return 'custom/conversions/'.$media->id;
+    }
+
+    public function getPathForDerivedConversions(Media $media): string
+    {
+        return 'custom/conversions/derived/'.$media->id;
     }
 
     public function getPathForResponsiveImages(Media $media): string
     {
-        return 'custom/responsive-images/'.$media->file_name;
+        return dirname($this->getPath($media)).'/responsive-images';
     }
 }
 

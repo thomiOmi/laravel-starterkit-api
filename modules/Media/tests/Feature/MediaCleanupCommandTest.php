@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Console\Commands\MediaCleanupCommand;
 use Modules\Media\Database\Factories\MediaFactory;
+use Modules\Media\Tests\Support\CustomPrefixPathGenerator;
 
 covers(MediaCleanupCommand::class);
 
@@ -137,6 +138,27 @@ describe('media:cleanup', function (): void {
         Storage::disk('public')->assertExists('media/avatars/photo.png');
         Storage::disk('public')->assertMissing('media/avatars/orphan.png');
         Storage::disk('public')->assertExists('media/conversions/derived/'.$media->id.'/w32-abcdef12.webp');
+    });
+
+    it('deletes orphans inside custom conversion directories but keeps the custom derived cache', function (): void {
+        $owner = loginAsUser();
+        config(['media.custom_path_generators' => [
+            $owner->getMorphClass() => CustomPrefixPathGenerator::class,
+        ]]);
+
+        $media = MediaFactory::new()->forModel($owner)->createOne();
+        Storage::disk('public')->put($media->getPath() ?? '', 'original');
+
+        $orphan = 'custom-prefix/default/conversions/'.$media->id.'/orphan.webp';
+        $cached = 'custom-prefix/default/conversions/derived/'.$media->id.'/w32-abcdef12.webp';
+        Storage::disk('public')->put($orphan, 'orphan');
+        Storage::disk('public')->put($cached, 'variant');
+
+        artisanCommand($this, 'media:cleanup', ['--force' => true])->assertSuccessful();
+
+        Storage::disk('public')->assertMissing($orphan);
+        Storage::disk('public')->assertExists($cached);
+        Storage::disk('public')->assertExists($media->getPath() ?? '');
     });
 
     it('logs a structured warning when database records are missing files', function (): void {

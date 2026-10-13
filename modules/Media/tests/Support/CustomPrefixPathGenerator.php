@@ -14,13 +14,18 @@ final class CustomPrefixPathGenerator implements MediaPathGenerator
         return 'custom-prefix/'.$media->collection_name.'/'.$media->file_name;
     }
 
-    public function getPathForConversions(Media $media, string $conversion): string
+    public function getPathForConversions(Media $media): string
     {
-        return 'custom-prefix/'.$media->collection_name.'/conversions/'.$conversion.'/'.$media->file_name;
+        return 'custom-prefix/'.$media->collection_name.'/conversions/'.$media->id;
+    }
+
+    public function getPathForDerivedConversions(Media $media): string
+    {
+        return 'custom-prefix/'.$media->collection_name.'/conversions/derived/'.$media->id;
     }
 
     public function getPathForResponsiveImages(Media $media): string
     {
-        return 'custom-prefix/'.$media->collection_name.'/responsive-images/'.$media->file_name;
+        return dirname($this->getPath($media)).'/responsive-images';
     }
 }

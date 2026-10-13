@@ -98,6 +98,8 @@ return [
     |
     | The class that contains the strategy for determining a media file's
     | path. Swap it for a custom MediaPathGenerator implementation.
+    | It owns the original path plus the derivative directories
+    | (eager conversions, derived cache, responsive images); see ADR-0040.
     |
     */
     'path_generator' => DefaultPathGenerator::class,

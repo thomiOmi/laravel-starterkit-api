@@ -12,6 +12,7 @@ use Modules\Media\Events\MediaDeleted;
 use Modules\Media\Http\Controllers\V1\MediaDeleteController;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
+use Modules\Media\Tests\Support\CustomPrefixPathGenerator;
 
 covers(MediaDeleteController::class);
 
@@ -114,5 +115,33 @@ describe('DELETE /api/v1/media/{media}', function (): void {
         Storage::disk('local')->assertMissing('default/responsive-images/320-photo.png');
         Storage::disk('local')->assertMissing('conversions/'.$media->id.'/thumbnail.webp');
         Storage::disk('local')->assertMissing('conversions/derived/'.$media->id);
+    });
+
+    it('removes custom conversion directories when their media record is deleted', function (): void {
+        $owner = loginAsUser();
+        config(['media.custom_path_generators' => [
+            $owner->getMorphClass() => CustomPrefixPathGenerator::class,
+        ]]);
+
+        $media = MediaFactory::new()->forModel($owner)->createOne(['conversions_disk' => 'local']);
+
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
+        Storage::disk('local')->put('custom-prefix/default/conversions/'.$media->id.'/thumbnail.webp', 'conversion');
+        Storage::disk('local')->put('custom-prefix/default/conversions/derived/'.$media->id.'/w32-abcdef12.webp', 'variant');
+
+        $media->conversions()->create([
+            'name' => 'thumbnail',
+            'disk' => 'local',
+            'path' => 'custom-prefix/default/conversions/'.$media->id.'/thumbnail.webp',
+            'mime_type' => 'image/webp',
+            'size' => 10,
+            'etag' => 'test',
+        ]);
+
+        assertSuccessResponse($this->deleteJson("/api/v1/media/{$media->id}"), 200);
+
+        Storage::disk($media->disk)->assertMissing($media->getPath() ?? '');
+        Storage::disk('local')->assertMissing('custom-prefix/default/conversions/'.$media->id);
+        Storage::disk('local')->assertMissing('custom-prefix/default/conversions/derived/'.$media->id);
     });
 });
