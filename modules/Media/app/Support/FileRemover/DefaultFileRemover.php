@@ -18,7 +18,12 @@ final readonly class DefaultFileRemover implements MediaFileRemover
             $this->removeFile($path, $media->disk);
         }
 
-        foreach ($media->conversions()->get() as $conversion) {
+        // Reuse eager-loaded conversions relation when present to avoid an extra database query during deletion.
+        $conversions = $media->relationLoaded('conversions')
+            ? $media->conversions
+            : $media->conversions()->get();
+
+        foreach ($conversions as $conversion) {
             $this->removeFile($conversion->path, $conversion->disk);
         }
 
