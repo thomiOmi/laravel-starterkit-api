@@ -22,7 +22,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
-    resolve(Filesystem::class)->deleteDirectory(base_path('tests/Fixtures/module-make'));
+    clearFixtureModules('tests/Fixtures/module-make');
 });
 
 describe('module:make command', function (): void {
@@ -143,8 +143,9 @@ describe('module:make command', function (): void {
 
         expect(base_path('tests/Fixtures/module-make/modules/Shop'))->toBeDirectory();
 
-        artisanCommand($this, 'module:delete', ['module' => ['Shop']])
-            ->expectsConfirmation('Are you sure you want to run this command?', 'yes')
+        forgetModuleSingletons();
+
+        artisanCommand($this, 'module:delete', ['module' => ['Shop'], '--force' => true])
             ->assertSuccessful();
 
         expect(base_path('tests/Fixtures/module-make/modules/Shop'))->not->toBeDirectory();
