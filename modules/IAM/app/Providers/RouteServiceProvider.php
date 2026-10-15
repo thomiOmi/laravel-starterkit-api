@@ -36,13 +36,23 @@ class RouteServiceProvider extends ServiceProvider
      * example api.v1.iam.users.index), matching the kit's URL scheme
      * (api/v1/users, not api/v1/iam/users).
      */
+    protected function modulePath(string $subpath = ''): string
+    {
+        $module = $this->app->bound('modules') ? resolve('modules')->find($this->name) : null;
+        if ($module !== null) {
+            return module_path($this->name, $subpath);
+        }
+
+        return dirname(__DIR__, 2).($subpath !== '' ? '/'.$subpath : '');
+    }
+
     protected function mapApiRoutes(): void
     {
         /** @var array<int, string> $versions */
         $versions = config()->array('apiroute.supported_versions', ['V1']);
 
         foreach ($versions as $version) {
-            $routeFile = module_path($this->name, "routes/$version.php");
+            $routeFile = $this->modulePath("routes/$version.php");
 
             if (! file_exists($routeFile)) {
                 continue;
