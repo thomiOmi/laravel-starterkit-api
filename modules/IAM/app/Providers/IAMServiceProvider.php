@@ -46,7 +46,7 @@ class IAMServiceProvider extends ModuleServiceProvider
         parent::register();
 
         $this->mergeConfigFrom(
-            module_path($this->name, 'config/permission.php'),
+            base_path("modules/{$this->name}/config/permission.php"),
             'permission',
         );
     }
