@@ -311,11 +311,22 @@ function writeFixtureModule(string $name, array $requires = [], bool $enabled = 
 }
 
 /**
+ * Restore default module paths and drop cached singletons.
+ */
+function restoreDefaultModulePaths(): void
+{
+    config()->set('modules.paths.modules', base_path('modules'));
+    config()->set('modules.activators.file.statuses-file', base_path('modules_statuses.json'));
+    forgetModuleSingletons();
+}
+
+/**
  * Remove the fixture module root used by module tooling tests.
  */
-function clearFixtureModules(): void
+function clearFixtureModules(string $root = 'tests/Fixtures/dependency-check'): void
 {
-    resolve(Filesystem::class)->deleteDirectory(base_path('tests/Fixtures/dependency-check'));
+    resolve(Filesystem::class)->deleteDirectory(base_path($root));
+    restoreDefaultModulePaths();
 }
 
 /**
@@ -324,6 +335,15 @@ function clearFixtureModules(): void
  */
 function forgetModuleSingletons(): void
 {
+    if (app()->bound(RepositoryInterface::class)) {
+        resolve(RepositoryInterface::class)->resetModules();
+    }
+
+    if (app()->bound('modules')) {
+        resolve('modules')->resetModules();
+    }
+
+    app()->forgetInstance('modules');
     app()->forgetInstance(RepositoryInterface::class);
     app()->forgetInstance(ActivatorInterface::class);
 }
