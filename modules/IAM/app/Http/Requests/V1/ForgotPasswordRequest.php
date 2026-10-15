@@ -17,6 +17,11 @@ final class ForgotPasswordRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeEmail();
+    }
+
     /**
      * @return array<string, array<int, string|Unique>>
      */

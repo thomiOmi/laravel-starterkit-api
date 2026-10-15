@@ -22,6 +22,11 @@ final class LoginRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeEmail();
+    }
+
     /**
      * @return array<string, array<int, string|Password|ValidationRule|Unique>>
      */

@@ -21,6 +21,11 @@ final class ResetPasswordRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeEmail();
+    }
+
     /**
      * @return array<string, array<int, Password|ValidationRule|string|Unique>>
      */

@@ -20,6 +20,16 @@ describe('POST /api/v1/auth/forgot-password', function (): void {
         Notification::assertSentTo($user, ResetPasswordNotification::class);
     });
 
+    it('normalizes email with uppercase and whitespace when requesting reset link', function (): void {
+        Notification::fake();
+        $user = UserFactory::new()->createOne(['email' => 'jane@example.com']);
+
+        $response = $this->postJson('/api/v1/auth/forgot-password', ['email' => '  JANE@EXAMPLE.COM  ']);
+
+        assertSuccessResponse($response, 200);
+        Notification::assertSentTo($user, ResetPasswordNotification::class);
+    });
+
     it('responds identically for unknown emails to prevent enumeration', function (): void {
         Notification::fake();
 
