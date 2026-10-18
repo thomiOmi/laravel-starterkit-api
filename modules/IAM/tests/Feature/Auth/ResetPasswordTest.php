@@ -45,7 +45,7 @@ describe('POST /api/v1/auth/reset-password', function (): void {
     });
 
     it('rejects an invalid token', function (): void {
-        $user = UserFactory::new()->createOne(['email' => 'jane@example.com']);
+        UserFactory::new()->createOne(['email' => 'jane@example.com']);
 
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => 'invalid-token',

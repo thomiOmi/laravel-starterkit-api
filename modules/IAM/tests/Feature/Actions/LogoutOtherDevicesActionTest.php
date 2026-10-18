@@ -11,9 +11,9 @@ describe('LogoutOtherDevicesAction', function (): void {
     it('revokes all tokens except current access token', function (): void {
         $user = UserFactory::new()->createOne();
 
-        $token1 = $user->createToken('device-1');
         $token2 = $user->createToken('device-2');
-        $token3 = $user->createToken('device-3');
+        $user->createToken('device-1');
+        $user->createToken('device-3');
 
         $user->withAccessToken($token2->accessToken);
 
