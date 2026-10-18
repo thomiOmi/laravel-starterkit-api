@@ -9,6 +9,8 @@ use Illuminate\Testing\PendingCommand;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Modules\IAM\Database\Factories\UserFactory;
+use Modules\IAM\Models\Permission;
+use Modules\IAM\Models\Role;
 use Modules\IAM\Models\User;
 use Nwidart\Modules\Contracts\ActivatorInterface;
 use Nwidart\Modules\Contracts\RepositoryInterface;
@@ -98,6 +100,24 @@ function loginAsAdmin(?User $user = null, array $abilities = ['*']): User
 function loginAsUserRole(?User $user = null, array $abilities = ['*']): User
 {
     return loginAsRole(RoleEnum::User, $user, $abilities);
+}
+
+/**
+ * Ensure a permission row exists, without Media tests importing IAM
+ * classes themselves (see the module-requires rule in ArchitectureTest).
+ */
+function ensurePermissionExists(string $permission, string $guard = 'sanctum'): void
+{
+    Permission::query()->firstOrCreate(['name' => $permission, 'guard_name' => $guard]);
+}
+
+/**
+ * Ensure a role row exists, without Media tests importing IAM classes
+ * themselves (see the module-requires rule in ArchitectureTest).
+ */
+function ensureRoleExists(string $role, string $guard = 'sanctum'): void
+{
+    Role::query()->firstOrCreate(['name' => $role, 'guard_name' => $guard]);
 }
 
 /**
@@ -291,11 +311,22 @@ function writeFixtureModule(string $name, array $requires = [], bool $enabled = 
 }
 
 /**
+ * Restore default module paths and drop cached singletons.
+ */
+function restoreDefaultModulePaths(): void
+{
+    config()->set('modules.paths.modules', base_path('modules'));
+    config()->set('modules.activators.file.statuses-file', base_path('modules_statuses.json'));
+    forgetModuleSingletons();
+}
+
+/**
  * Remove the fixture module root used by module tooling tests.
  */
-function clearFixtureModules(): void
+function clearFixtureModules(string $root = 'tests/Fixtures/dependency-check'): void
 {
-    resolve(Filesystem::class)->deleteDirectory(base_path('tests/Fixtures/dependency-check'));
+    resolve(Filesystem::class)->deleteDirectory(base_path($root));
+    restoreDefaultModulePaths();
 }
 
 /**
@@ -304,6 +335,15 @@ function clearFixtureModules(): void
  */
 function forgetModuleSingletons(): void
 {
+    if (app()->bound(RepositoryInterface::class)) {
+        resolve(RepositoryInterface::class)->resetModules();
+    }
+
+    if (app()->bound('modules')) {
+        resolve('modules')->resetModules();
+    }
+
+    app()->forgetInstance('modules');
     app()->forgetInstance(RepositoryInterface::class);
     app()->forgetInstance(ActivatorInterface::class);
 }

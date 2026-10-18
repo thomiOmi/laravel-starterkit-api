@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Media\Models\Media;
 use Modules\Media\Support\MediaConversion;
 
 covers(MediaConversion::class);
@@ -124,14 +125,26 @@ describe('MediaConversion modifiers', function (): void {
     });
 
     it('changes derived path when fit differs', function (): void {
+        $media = new Media;
+        $media->forceFill(['id' => 'm1']);
+
         $modifiers = ['w' => 320, 'fit' => 'cover'];
-        $withCover = MediaConversion::derivedPath('m1', $modifiers, 'abc123456789', 'webp');
+        $withCover = MediaConversion::derivedPath($media, $modifiers, 'abc123456789', 'webp');
 
         $modifiers['fit'] = 'contain';
-        $withContain = MediaConversion::derivedPath('m1', $modifiers, 'abc123456789', 'webp');
+        $withContain = MediaConversion::derivedPath($media, $modifiers, 'abc123456789', 'webp');
 
         expect($withCover)->toContain('fit_cover')
             ->and($withContain)->toContain('fit_contain')
             ->and($withCover)->not->toBe($withContain);
+    });
+
+    it('builds the derived path inside the media derived conversions directory', function (): void {
+        $media = new Media;
+        $media->forceFill(['id' => 'm1']);
+
+        $path = MediaConversion::derivedPath($media, ['w' => 320], 'abc123456789', 'webp');
+
+        expect($path)->toStartWith('conversions/derived/m1/');
     });
 });

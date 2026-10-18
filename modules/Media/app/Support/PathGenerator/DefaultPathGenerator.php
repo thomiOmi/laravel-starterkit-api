@@ -14,17 +14,18 @@ final readonly class DefaultPathGenerator implements MediaPathGenerator
         return MediaPrefix::basePath($media->collection_name, $media->file_name);
     }
 
-    public function getPathForConversions(Media $media, string $conversion): string
+    public function getPathForConversions(Media $media): string
     {
-        $base = $this->getPath($media);
+        return MediaPrefix::join('conversions', (string) $media->id);
+    }
 
-        return dirname($base).'/conversions/'.$conversion.'/'.basename($base);
+    public function getPathForDerivedConversions(Media $media): string
+    {
+        return MediaPrefix::join('conversions/derived', (string) $media->id);
     }
 
     public function getPathForResponsiveImages(Media $media): string
     {
-        $base = $this->getPath($media);
-
-        return dirname($base).'/responsive-images/'.basename($base);
+        return dirname($this->getPath($media)).'/responsive-images';
     }
 }
