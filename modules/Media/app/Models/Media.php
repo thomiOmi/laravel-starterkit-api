@@ -390,7 +390,7 @@ class Media extends Model
             return $url;
         }
 
-        $version = $this->updated_at === null ? time() : $this->updated_at->timestamp;
+        $version = $this->updated_at->timestamp ?? time();
         $separator = str_contains($url, '?') ? '&' : '?';
 
         return $url.$separator.'v='.$version;
