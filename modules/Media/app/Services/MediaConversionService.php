@@ -202,7 +202,6 @@ final readonly class MediaConversionService
         $image->storeAs(dirname($conversionPath), basename($conversionPath), $disk, StorageOptions::forVisibility($media->visibility->value));
 
         $mime = $image->mimeType();
-        $size = null;
 
         try {
             $size = (int) Storage::disk($disk)->size($conversionPath);
