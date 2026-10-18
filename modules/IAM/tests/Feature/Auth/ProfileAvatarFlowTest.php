@@ -35,7 +35,7 @@ describe('avatar end-to-end flow', function (): void {
         Storage::fake('public');
         Storage::fake('local');
 
-        $user = loginAsUser();
+        loginAsUser();
 
         $update = $this->put('/api/v1/auth/me', [
             'avatar' => UploadedFile::fake()->image('me.png', 32, 32),

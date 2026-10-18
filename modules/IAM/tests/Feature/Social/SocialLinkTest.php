@@ -11,7 +11,7 @@ covers(SocialLinkController::class);
 
 describe('GET /api/v1/auth/social/{provider}/link', function (): void {
     it('returns a redirect url carrying a link state for the user', function (): void {
-        $user = loginAsUser();
+        loginAsUser();
         $provider = Mockery::mock(AbstractProvider::class);
         $provider->shouldReceive('stateless->with->redirect->getTargetUrl')
             ->andReturn('https://accounts.google.com/o/oauth2/auth?state=link-state');

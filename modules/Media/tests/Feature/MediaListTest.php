@@ -151,7 +151,7 @@ it('returns null original_name when the column is absent', function (): void {
     $viewer = loginAsUser();
     $viewer->givePermissionTo(PermissionEnum::MediaView->value);
 
-    $media = MediaFactory::new()->forModel($viewer)->createOne(['original_name' => null]);
+    MediaFactory::new()->forModel($viewer)->createOne(['original_name' => null]);
 
     $response = $this->getJson('/api/v1/media');
 

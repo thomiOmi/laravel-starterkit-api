@@ -13,7 +13,6 @@ describe('DELETE /api/v1/auth/devices/{device}', function (): void {
         $user = UserFactory::new()->createOne();
         $current = $user->createToken('current');
         $other = $user->createToken('other-device');
-        $caller = $user->createToken('caller');
 
         $token = $user->createToken('caller');
         $response = $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)
@@ -26,7 +25,6 @@ describe('DELETE /api/v1/auth/devices/{device}', function (): void {
 
     it('allows revoking the current device and invalidates the session', function (): void {
         $user = UserFactory::new()->createOne();
-        $token = $user->createToken('current');
 
         $token = $user->createToken('caller');
 
