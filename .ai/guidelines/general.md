@@ -37,6 +37,8 @@
 
 Area-specific conventions (testing, controllers, actions, models, routes, responses, database) live in `.ai/rules/` and are matched to files by glob. Read the rule files matching your work before editing. When a settled convention is not yet recorded, record it with `record-rule` so the next agent inherits it.
 
+- Only record a rule when the user explicitly asks for one; never record one on your own initiative, as a side effect of a change, or to summarize work you just did.
+
 ## Quality Gates
 
 - After writing PHP code: `composer lint:staged` (pre-commit) or `composer lint` (all files)
