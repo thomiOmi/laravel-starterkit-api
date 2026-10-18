@@ -6,7 +6,6 @@ namespace Modules\Media\Support\FileRemover;
 
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
-use Modules\Media\Support\MediaPrefix;
 
 final readonly class DefaultFileRemover implements MediaFileRemover
 {
@@ -25,8 +24,8 @@ final readonly class DefaultFileRemover implements MediaFileRemover
 
         $this->removeResponsiveImages($media);
 
-        Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory(MediaPrefix::join('conversions/derived', (string) $media->id));
-        Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory(MediaPrefix::join('conversions', (string) $media->id));
+        Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory($media->getDerivedConversionsDirectory());
+        Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory($media->getConversionsDirectory());
     }
 
     #[\Override]

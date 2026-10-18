@@ -23,11 +23,12 @@ final class MediaCleanupCommand extends Command
         $disk = config()->string('media.disk', 'public');
         $storage = Storage::disk($disk);
 
-        $dbSet = $this->knownPaths();
+        $known = $this->knownPathsAndDirectories();
+        $dbSet = $known['paths'];
 
         $orphans = [];
         $ignored = [];
-        $scanDirectories = $this->scanDirectories();
+        $scanDirectories = [...$this->scanDirectories(), ...$known['directories']];
         $scanRoot = MediaPrefix::prefix();
 
         foreach ($storage->allFiles($scanRoot === '' ? '/' : $scanRoot) as $file) {
@@ -41,9 +42,12 @@ final class MediaCleanupCommand extends Command
             }
 
             // Derived on-demand conversions are regenerable cache — exclude from orphan detection (Spatie pattern).
+            // The fixed root covers the default layout (including stray
+            // files without an id level); per-media directories cover
+            // custom path generators.
             $derivedPrefix = MediaPrefix::join('conversions/derived');
 
-            if (str_starts_with($file, $derivedPrefix.'/')) {
+            if (str_starts_with($file, $derivedPrefix.'/') || $this->isUnderScannedDirectories($file, $known['derived'])) {
                 continue;
             }
 
@@ -144,11 +148,18 @@ final class MediaCleanupCommand extends Command
     }
 
     /**
-     * @return array<string, true>
+     * Storage paths the database knows about, plus every derivative
+     * directory the media path generators own. Writers build all three
+     * through the same seams (see Media::getConversionsDirectory()),
+     * so cleanup reads and deletes exactly what they wrote.
+     *
+     * @return array{paths: array<string, true>, directories: array<int, string>, derived: array<int, string>}
      */
-    private function knownPaths(): array
+    private function knownPathsAndDirectories(): array
     {
         $known = [];
+        $directories = [];
+        $derived = [];
 
         foreach (Media::query()->cursor() as $media) {
             $path = $media->getPath();
@@ -156,6 +167,10 @@ final class MediaCleanupCommand extends Command
             if (is_string($path)) {
                 $known[$path] = true;
             }
+
+            $directories[] = $media->getConversionsDirectory();
+            $directories[] = $media->getResponsiveImagesDirectory();
+            $derived[] = $media->getDerivedConversionsDirectory();
 
             $responsive = $media->responsive_images;
 
@@ -176,6 +191,10 @@ final class MediaCleanupCommand extends Command
             }
         }
 
-        return $known;
+        return [
+            'paths' => $known,
+            'directories' => array_values(array_unique($directories)),
+            'derived' => array_values(array_unique($derived)),
+        ];
     }
 }

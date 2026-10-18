@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\WithoutIncrementing;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Contracts\HasMedia;
@@ -21,13 +20,7 @@ describe('Media extension guard', function (): void {
     beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaCreate->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaCreate->value);
     });
 
     it('detects disallowed segments in every part of the file name', function (): void {

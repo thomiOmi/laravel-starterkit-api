@@ -14,7 +14,6 @@ use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\MediaConversion as MediaConversionDefinition;
-use Modules\Media\Support\MediaPrefix;
 use Modules\Media\Support\StorageOptions;
 use Throwable;
 
@@ -197,7 +196,7 @@ final readonly class MediaConversionService
             $baseName .= '.'.$ext;
         }
 
-        $conversionPath = MediaPrefix::join('conversions', (string) $media->id, $baseName);
+        $conversionPath = $media->getConversionsDirectory().'/'.$baseName;
 
         // Store conversion file.
         $image->storeAs(dirname($conversionPath), basename($conversionPath), $disk, StorageOptions::forVisibility($media->visibility->value));

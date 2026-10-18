@@ -52,5 +52,7 @@ pest()->beforeEach(function (): void {
     config(['logging.default' => 'null']);
     app()->forgetInstance('log');
 
+    restoreDefaultModulePaths();
+
     resolve(PermissionRegistrar::class)->forgetCachedPermissions();
 });

@@ -325,6 +325,33 @@ class Media extends Model
     }
 
     /**
+     * Directory for eager named conversions, resolved through the
+     * media path generator (per-model overrides honored).
+     */
+    public function getConversionsDirectory(): string
+    {
+        return $this->resolvePathGenerator()->getPathForConversions($this);
+    }
+
+    /**
+     * Directory for the on-demand derived conversion cache, resolved
+     * through the media path generator (per-model overrides honored).
+     */
+    public function getDerivedConversionsDirectory(): string
+    {
+        return $this->resolvePathGenerator()->getPathForDerivedConversions($this);
+    }
+
+    /**
+     * Directory for responsive image siblings, resolved through the
+     * media path generator (per-model overrides honored).
+     */
+    public function getResponsiveImagesDirectory(): string
+    {
+        return $this->resolvePathGenerator()->getPathForResponsiveImages($this);
+    }
+
+    /**
      * Resolve the path generator, honoring per-model overrides from
      * the media.custom_path_generators config (keyed by model class
      * or morph alias as stored in media.model_type).

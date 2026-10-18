@@ -6,6 +6,8 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Process;
 
 beforeEach(function (): void {
+    clearFixtureModules('tests/Fixtures/modules');
+
     Process::fake();
 
     $files = resolve(Filesystem::class);

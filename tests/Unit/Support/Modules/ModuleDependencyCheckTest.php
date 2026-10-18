@@ -9,6 +9,7 @@ covers(ModuleDependencyCheck::class);
 
 beforeEach(function (): void {
     clearFixtureModules();
+    bindFixtureModulePaths();
 });
 
 afterEach(function (): void {
@@ -17,7 +18,7 @@ afterEach(function (): void {
 
 function dependencyCheck(): ModuleDependencyCheck
 {
-    bindFixtureModulePaths();
+    forgetModuleSingletons();
 
     return new ModuleDependencyCheck(resolve(RepositoryInterface::class));
 }

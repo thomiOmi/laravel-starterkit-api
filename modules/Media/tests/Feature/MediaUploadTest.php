@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Modules\Media\Events\MediaUploaded;
 use Modules\Media\Http\Controllers\V1\MediaUploadController;
 use Modules\Media\Models\Media;
@@ -19,13 +17,7 @@ describe('POST /api/v1/media', function (): void {
     beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
-        DB::table('permissions')->insertOrIgnore([
-            'id' => (string) Str::ulid(),
-            'name' => PermissionEnum::MediaCreate->value,
-            'guard_name' => 'sanctum',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        ensurePermissionExists(PermissionEnum::MediaCreate->value);
     });
 
     it('stores the upload and returns the created media', function (): void {
