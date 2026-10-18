@@ -29,6 +29,21 @@ describe('POST /api/v1/auth/reset-password', function (): void {
         ])->assertOk();
     });
 
+    it('normalizes email with uppercase and whitespace when resetting password', function (): void {
+        $user = UserFactory::new()->createOne(['email' => 'jane@example.com', 'password' => 'old-password']);
+        $token = Password::createToken($user);
+
+        $response = $this->postJson('/api/v1/auth/reset-password', [
+            'token' => $token,
+            'email' => '  JANE@EXAMPLE.COM  ',
+            'password' => 'new-password123',
+            'password_confirmation' => 'new-password123',
+        ]);
+
+        assertSuccessResponse($response, 200);
+        expect($user->fresh()?->password)->not->toBe($user->password);
+    });
+
     it('rejects an invalid token', function (): void {
         $user = UserFactory::new()->createOne(['email' => 'jane@example.com']);
 
