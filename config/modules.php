@@ -26,7 +26,7 @@ return [
     | them, but they must not depend back on business modules.
     |
     */
-    'core' => ['IAM', 'Media', 'Organization'],
+    'core' => ['IAM', 'Media'],
 
     /*
     |--------------------------------------------------------------------------

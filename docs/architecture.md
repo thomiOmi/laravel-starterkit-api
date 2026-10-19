@@ -300,7 +300,7 @@ project/
 | `config` | `config.php` (merged by nWidart base provider) |
 | `database` | factories, migrations, seeders |
 
-**Inactive modules** (not enabled in `modules_statuses.json`) minimally contain `app/Providers`, `tests`. Example: `Organization`. The rest of the structure appears when the module is activated.
+**Inactive modules** (not enabled in `modules_statuses.json`) minimally contain `app/Providers`, `tests`. The rest of the structure appears when the module is activated.
 
 ### 3.3 Inspiration and deviations
 
@@ -593,7 +593,6 @@ User::query()
 3. Module activation through nWidart FileActivator (`modules_statuses.json`); a non-enabled module = provider never boots.
 4. No hidden registrations; middleware aliases registered explicitly, not via magic discovery.
 5. The module alias is lowercase module name (`'Media'` becomes `'media'`); the alias is used for the config key (`config('media.*')`) and the route name prefix (`api.v1.media.`, 5.17).
-6. `OrganizationServiceProvider` is the exception: extends stancl `TenancyServiceProvider` (not the base) because tenancy is opt-in via its own provider lifecycle.
 
 **Forbidden:** module providers extending `ServiceProvider` directly (must extend nWidart base `ModuleServiceProvider`); providers registering routes outside `routes/`; `env()` in providers.
 
@@ -730,8 +729,7 @@ php artisan module:enable Blog    # or module:disable
 ```json
 {
   "iam": true,
-  "media": true,
-  "organization": false
+  "media": true
 }
 ```
 
@@ -773,15 +771,7 @@ The command fails when a declared dependency is not an installed module, is disa
 
 Private module folders are stored on disk + added to `.gitignore` + not enabled in `modules_statuses.json`. Never sent to a public repo.
 
-### 6.6 Special case: Organization (tenancy)
-
-Organization is a minimal inactive module (`app/Providers`, `tests`) wrapping stancl/tenancy (opt-in tenancy option). Deliberate deviations:
-
-- The tenant model uses **UUID** (stancl default), a deviation from the ULID rule, confined to the module.
-- Config `tenancy.php` inside the module.
-- The rest of the structure grows when the module is activated (MVP 2).
-
-### 6.7 Deleting a module
+### 6.6 Deleting a module
 
 `php artisan module:delete {Module} --force` (removes the folder + status in `modules_statuses.json`). The provider is not booted when the module is non-enabled; an absent folder is not fatal. Database data remains (migrations are not auto-rolled back).
 
@@ -801,7 +791,7 @@ flowchart TB
 
 | Level | Mechanism | Timing | Example |
 |---|---|---|---|
-| Module | `modules_statuses.json` (FileActivator, `module:enable`/`disable`) | Build-time | `organization` off = tenancy inert |
+| Module | `modules_statuses.json` (FileActivator, `module:enable`/`disable`) | Build-time | disabled module = fully inert |
 | Feature (static) | `features` array in module `config/config.php` (Fortify-style) | Build-time | Media: upload vs signedUrl |
 | Feature (runtime) | Pennant flags (classes in `app/Features/`) + EnsureFeatureIsActive | Runtime, per-user | beta flag, gradual rollout |
 
