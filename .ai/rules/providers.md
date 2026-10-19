@@ -18,7 +18,6 @@ paths:
 3. Module activation is managed by nwidart (FileActivator + `modules_statuses.json`); a disabled module's provider is never booted
 4. No hidden registration; middleware aliases are explicit, not magic discovery
 5. The module alias is the lowercase module name (nwidart convention); used for config keys (`config('iam.*')`), the `config/{Module}.php` merge, and the route name prefix (see routes rule)
-6. `OrganizationServiceProvider` is the exception: it extends stancl `TenancyServiceProvider` (not the nwidart base) because tenancy is opt-in via its own provider lifecycle
 
 ## Forbidden
 

@@ -1,6 +1,6 @@
 # ADR-0025: Global Users With Organization Membership (Single-DB Data Model)
 
-- Status: Accepted
+- Status: Superseded by ADR-0042
 - Date: 2026-08-11
 
 ## Context

@@ -1,0 +1,29 @@
+# ADR-0042: Tenancy Deferred: Organization Module Removed
+
+- Status: Accepted
+- Date: 2026-10-19
+
+## Context
+
+ADR-0023 made tenancy an opt-in `Organization` module wrapping `stancl/tenancy`, and ADR-0025 defined the global-users / organization-membership data model for it. The module shipped as inactive scaffolding only (`modules/Organization/Config/tenancy.php`, `modules/Organization/Database/Migrations/tenant/`, `modules/Organization/Providers/OrganizationServiceProvider.php`, `modules/Organization/Routes/V1.php`, `modules/Organization/Routes/tenant.php`, and `tests/Feature/OrganizationModuleTest.php`): there was no working organization feature behind it.
+
+Commit `055327b` ("chore: remove custom module system") deleted the module in the same change as the custom module system. The kit now ships two modules, `IAM` and `Media`, both core, and no application code depends on the removed module.
+
+Keeping an empty tenancy module would advertise a capability that does not exist and would keep pointing readers of the README, roadmap, PRD, and architecture docs toward a module that is not maintained.
+
+## Decision
+
+Tenancy is deferred: the starter kit does not ship an `Organization` module, and this decision supersedes ADR-0023 and ADR-0025.
+
+- Only `IAM` and `Media` are core modules; `config/modules.php` lists exactly those.
+- No `Organization` module or organization contract exists in the kit.
+- The `stancl/tenancy` dependency is outside this decision and is handled separately (at the time of writing it is declared in `composer.json` with auto-discovery disabled).
+- Multi-tenancy and organization domain modeling return only when a product vertical needs them; that work requires a new ADR that re-decides the module shape and the data model.
+
+## Consequences
+
+- The repository, README, roadmap, PRD, and architecture docs describe only capabilities that exist: IAM and Media.
+- `stancl/tenancy` is unused by any module. Because auto-discovery is disabled it is inert, but it carries install weight until it is handled separately.
+- Re-introducing tenancy is a re-design, not a re-enable: the previous Organization module, its provider lifecycle, and the ADR-0023/0025 model are no longer in the tree, while their historical context stays in those ADRs and their status pointers.
+- The tenancy-related checks in `tests/Architecture/ArchitectureTest.php` were written for the removed module and are handled together with the dependency decision above.
+- Revisit when a product vertical or an adopter needs multi-tenant data: write a new ADR that supersedes this one, using ADR-0023 and ADR-0025 for historical context, and decide then whether `stancl/tenancy` is adopted, upgraded, or removed.

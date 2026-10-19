@@ -100,14 +100,14 @@ Target: Long-term strategic goals subject to change based on market research.
     * Strategic Goal: Validate the starterkit as the foundation for a provider program serving multiple customer organizations.
 
 * [Backlog] Organization Domain Model and Membership
-    * Description: Introduce the organization domain model, membership relations, and per-organization roles on top of the Organization tenancy module.
+    * Description: Introduce the organization domain model, membership relations, and per-organization roles when tenancy is revisited (ADR-0042).
     * Strategic Goal: Enable multi-organization product scenarios (one identity, membership-based access) that the SaaS vertical depends on.
 
 ## 5. Recent Shipments (Past 2 Quarters)
 
 * [Done] v0.19.1 (Q3 2026): IAM performance improvements with eager loading in user create and update actions.
 * [Done] Phase A: Repository Health (Q3 2026): LICENSE, README overhaul, CONTRIBUTING, SECURITY policy, CODE_OF_CONDUCT, issue and pull request templates, GitHub Projects roadmap, and branch protection on main.
-* [Done] Phase B: Modular Architecture and Tenancy (Q3 2026): Fortify-style module registry (config/modules.php), Organization module wrapping stancl/tenancy v3.10 (single database, disabled by default), ADR-0023 to ADR-0025, and PRD v2.
+* [Done] Phase B: Modular Architecture and Tenancy (Q3 2026): Fortify-style module registry (config/modules.php), Organization module wrapping stancl/tenancy v3.10 (single database, disabled by default), ADR-0023 to ADR-0025, and PRD v2. The Organization module was later removed and tenancy deferred (ADR-0042).
 
 ## 6. Contribution and Feedback
 
