@@ -1,6 +1,6 @@
 # Modularization Architecture: Laravel Starterkit API
 
-Status: **Final**. This document is the restructured, enhanced derivative of the root `ARCHITECTURE.md` (Bahasa Indonesia, source of truth). `ARCHITECTURE.md` and `.ai/rules/` must stay in sync with this file. All decisions are explained directly here.
+Status: **Final**. This document is the single, canonical architecture document for the Laravel Starterkit API. The enforceable rules live in `tests/Architecture/ArchitectureTest.php` and `.ai/rules/` (they take precedence); this document must stay in sync with them. All decisions are explained directly here.
 
 ---
 
@@ -57,7 +57,7 @@ The module folder structure mirrors the built-in `app/` structure, including the
 
 Capabilities are enabled through nWidart FileActivator, **not** environment variables.
 
-- `modules_statuses.json` holds the active status of each module (alias lowercase to boolean), managed via `php artisan module:enable {Module}` / `module:disable`.
+- `modules_statuses.json` holds the active status of each module (TitleCase module name to boolean), managed via `php artisan module:enable {Module}` / `module:disable`.
 - Module metadata (name, alias, priority, providers) lives in the module's own `module.json`.
 - The activation is an **allow-list**: modules not enabled are fully inert, no auto-discovery.
 - Inspiration: Laravel Fortify (`features` array in `config/fortify.php`), nWidart/laravel-modules (FileActivator).
@@ -354,7 +354,7 @@ project/
 2. **Forbidden** to chain migration commands with `&&` or `;` (identical timestamps).
 3. Factory + Seeder for every model.
 4. Schema changes = **review gate** (requires approval).
-5. Module seeders are executed via `php artisan db:seed --class=Modules\{Module}\database\Seeders\{Name}Seeder` or from `database/seeders/DatabaseSeeder`; **forbidden** for a seeder to call another module's seeder (dependencies are seeded sequentially by the caller, example: `MediaSeeder` does not call `IAMSeeder`).
+5. Module seeders are executed via `php artisan db:seed --class=Modules\{Module}\Database\Seeders\{Name}Seeder` or from `database/seeders/DatabaseSeeder`; **forbidden** for a seeder to call another module's seeder (dependencies are seeded sequentially by the caller, example: `MediaSeeder` does not call `IAMSeeder`).
 6. Module migration rollback via `php artisan migrate:rollback --path=modules/{Module}/database/migrations` (without `--path`, rollback only targets the last global batch).
 
 **Forbidden:** editing schema without approval; migrations outside a module.
@@ -382,7 +382,7 @@ project/
 2. **Date format** for all response fields: `Y-m-d H:i:s`.
 3. **`declare(strict_types=1)`** in every PHP file.
 4. **PHP 8 attributes** preferred over properties (model, job, command).
-5. **Route naming** `api.{version}.{module}.{name}`; module lowercase in `modules_statuses.json`.
+5. **Route naming** `api.{version}.{module}.{name}` (module segment = lowercase alias); activation status keys in `modules_statuses.json` use the TitleCase module name.
 6. **Operational classes**: `final readonly`; use constructor property promotion.
 7. **Documents** (docs, rules, roadmap): pure ASCII, no emoji, no em/en dash, no arrows, use hyphens.
 8. **Code and comment language**: English.
@@ -724,12 +724,12 @@ Activation status lives in `modules_statuses.json` (nWidart FileActivator), mana
 php artisan module:enable Blog    # or module:disable
 ```
 
-`module.json` inside the module holds metadata (name, alias, priority, providers). `modules_statuses.json` maps lowercase aliases to booleans:
+`module.json` inside the module holds metadata (name, alias, priority, providers). `modules_statuses.json` maps module names to booleans:
 
 ```json
 {
-  "iam": true,
-  "media": true
+  "IAM": true,
+  "Media": true
 }
 ```
 
@@ -881,7 +881,7 @@ Every wrapper must have a documented native escape hatch:
 - **PersonalAccessTokenBuilder**: Sanctum's default token model remains usable; the builder only adds convenience methods.
 - **Responses**: controllers may still return `response()->json(...)` directly; the exception handler still maps exceptions to problem details.
 - **Middleware**: opt-in middleware (`feature-flag`, `idempotency`, `sunset`) only runs on routes that declare them; routes may skip them when not needed. Global middleware (`AddTraceId`, `AddSecurityHeaders`, `SetLocale`) attaches to the `api` group only.
-- **Module provider**: a module provider may extend `Illuminate\Support\ServiceProvider` directly instead of the nWidart base class.
+- **Module provider**: the nWidart base `ModuleServiceProvider` extends Laravel's native `ServiceProvider`, so standard provider hooks (`register()`, `boot()`, bindings) remain available; extending `Illuminate\Support\ServiceProvider` directly is forbidden (5.11).
 - **Identity contract**: any `Authenticatable` model can replace the `Identity` implementation; the contract only composes native Laravel auth interfaces.
 - **Concerns (FormatDate, HasDefaultBehavior)**: traits are optional; models work without them.
 - **Payloads / validation rule helpers**: native inline validation and native request handling remain valid.
@@ -922,6 +922,7 @@ Every wrapper must have a documented native escape hatch:
 7. **Writing tests**: follow the pest-testing skill: feature-first, factories over manual creation, datasets to avoid duplication, specific assertions, fakes over mocks. See https://github.com/matula/laravel-claude-marketplace/tree/main/pest-testing
 8. **ArchitectureTest** (`tests/Architecture/ArchitectureTest.php`) is the single source of truth for conventions; assertion changes require human approval (report first, do not auto-fix).
 9. **Quality gates**: `composer lint`, `composer rector:dry`, `composer types:check`, `composer test`, `composer test:profanity`, `composer ci:check`.
+10. **Test enforcement**: every code change must have a corresponding test.
 
 ### 8.2 Quality flow (quality gates)
 
@@ -937,7 +938,7 @@ flowchart LR
 
 ## 9. Mapping to Rules
 
-This document is broken down into `.ai/rules/` (standard format: frontmatter paths + Goal + Rules + Forbidden + Example) as an enforced derivative. 25 rule files already exist; the mapping below is a **living mapping** that must stay in sync if this document changes.
+This document is broken down into `.ai/rules/` (standard format: frontmatter paths + Goal + Rules + Forbidden + Example) as an enforced derivative; the mapping below is a **living mapping** that must stay in sync if this document changes.
 
 | Section | Rule file |
 |---|---|
