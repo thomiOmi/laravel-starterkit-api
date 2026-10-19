@@ -1,6 +1,6 @@
 # ADR-0019: Scramble OpenAPI Docs Skipped
 
-- Status: Accepted (skipped)
+- Status: Superseded by ADR-0043
 - Date: 2026-08-10
 
 ## Context

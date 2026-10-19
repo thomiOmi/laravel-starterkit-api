@@ -308,4 +308,4 @@ Coverage: Feature tests per endpoint + Unit for `UserBuilder`, `SocialAccount`, 
 - [Architecture](../../docs/architecture.md) — module anatomy & layer map
 - [Rate Limiting](../../docs/rate-limiting.md) — global tiers (`auth`/`api`/`authenticated`); IAM uses `throttle:auth` on login/register
 - ADRs: [0004 Identity Contract](../../docs/adr/0004-identity-contract.md), [0006 Gate Policy](../../docs/adr/0006-module-policies-gate-policy.md), [0021 Social Auth](../../docs/adr/0021-social-auth-design.md), [0029 nwidart Modules](../../docs/adr/0029-nwidart-laravel-modules.md)
-- Scramble OpenAPI: `http://localhost:8000/docs/api` (auto from routes, `config/scramble.php:23` `api_path='api'`)
+- Scramble OpenAPI: `http://localhost:8000/docs/api` (generated from routes; local environment only, non-local access requires a `viewApiDocs` gate; `config/scramble.php` `api_path='api'`)
