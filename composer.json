@@ -21,7 +21,6 @@
         "laravel/tinker": "^3.0",
         "nwidart/laravel-modules": "^13.0",
         "spatie/laravel-permission": "^8.0",
-        "stancl/tenancy": "^3.10",
         "wikimedia/composer-merge-plugin": "^2.1"
     },
     "require-dev": {
@@ -164,9 +163,7 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": [
-                "stancl/tenancy"
-            ]
+            "dont-discover": []
         },
         "merge-plugin": {
             "include": [
