@@ -53,7 +53,7 @@ php artisan serve
 | IAM | Authentication, RBAC, social auth, feature flags | [README.md](modules/IAM/README.md) |
 | Media | File uploads, image variants, signed URLs | [README.md](modules/Media/README.md) |
 
-Modules are booted by `nwidart/laravel-modules` (see [ADR-0029](docs/adr/0029-nwidart-laravel-modules.md)): live activation status lives in `modules_statuses.json` (e.g. `{"iam": true}`), and a module only loads when its entry is `true` -- a directory under `modules/` that is not enabled is silently ignored (config, migrations, and routes are skipped). This also enables private modules: keep the directory on disk and in `.gitignore` without enabling it for customers. Create new modules with `php artisan module:make` (see [module-generator.md](docs/module-generator.md)).
+Modules are booted by `nwidart/laravel-modules` (see [ADR-0029](docs/adr/0029-nwidart-laravel-modules.md)): live activation status lives in `modules_statuses.json` (e.g. `{"IAM": true}`), and a module only loads when its entry is `true` -- a directory under `modules/` that is not enabled is silently ignored (config, migrations, and routes are skipped). This also enables private modules: keep the directory on disk and in `.gitignore` without enabling it for customers. Create new modules with `php artisan module:make` (see [module-generator.md](docs/module-generator.md)).
 
 ## Architecture
 
