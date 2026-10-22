@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Enums\RoleEnum;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\TestCase;
+use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Testing\PendingCommand;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
@@ -264,15 +266,41 @@ function decodeModuleJson(string $path): array
 }
 
 /**
- * Scaffold a fixture module under tests/Fixtures/dependency-check for
- * module tooling tests. Never touches the real modules/ directory or the
- * real modules_statuses.json.
+ * Directory holding this worker's dependency-check fixtures.
+ *
+ * Under `pest --parallel` every worker process is spawned with unique
+ * TEST_TOKEN and UNIQUE_TEST_TOKEN env vars (paratest's WrapperWorker calls
+ * fillEnvWithTokens), so one root per worker keeps concurrently running test
+ * files from deleting each other's fixtures. Serial runs have no tokens and
+ * fall back to the process id. Roots live in the system temp dir because
+ * nwidart's repository and activator consume the configured absolute paths
+ * and do not require the fixtures to be below base_path.
+ */
+function dependencyCheckFixtureRoot(): string
+{
+    $prefix = sys_get_temp_dir().DIRECTORY_SEPARATOR.'module-dependency-check-';
+
+    $raw = Request::server('UNIQUE_TEST_TOKEN') ?? Env::get('UNIQUE_TEST_TOKEN', Request::server('TEST_TOKEN') ?? Env::get('TEST_TOKEN'));
+
+    $token = preg_replace('/[^A-Za-z0-9_-]/', '', is_scalar($raw) ? (string) $raw : (string) getmypid());
+
+    if ($token === null || $token === '') {
+        return $prefix.getmypid();
+    }
+
+    return $prefix.$token;
+}
+
+/**
+ * Scaffold a fixture module under the per-worker dependency-check fixture
+ * root for module tooling tests. Never touches the real modules/ directory
+ * or the real modules_statuses.json.
  *
  * @param  list<string>  $requires
  */
 function writeFixtureModule(string $name, array $requires = [], bool $enabled = true): string
 {
-    $root = base_path('tests/Fixtures/dependency-check');
+    $root = dependencyCheckFixtureRoot();
     $files = resolve(Filesystem::class);
     $modulePath = "{$root}/modules/{$name}";
 
@@ -321,11 +349,15 @@ function restoreDefaultModulePaths(): void
 }
 
 /**
- * Remove the fixture module root used by module tooling tests.
+ * Remove the fixture module root used by module tooling tests. Omit $root
+ * for the per-worker dependency-check fixture root; pass a base_path
+ * relative path to target another fixture root explicitly.
  */
-function clearFixtureModules(string $root = 'tests/Fixtures/dependency-check'): void
+function clearFixtureModules(?string $root = null): void
 {
-    resolve(Filesystem::class)->deleteDirectory(base_path($root));
+    resolve(Filesystem::class)->deleteDirectory($root === null
+        ? dependencyCheckFixtureRoot()
+        : base_path($root));
     restoreDefaultModulePaths();
 }
 
@@ -351,11 +383,15 @@ function forgetModuleSingletons(): void
 /**
  * Point the nwidart repository and activator at the dependency-check fixture
  * root and drop any already-resolved singletons, so module tooling tests run
- * against fixture state only.
+ * against fixture state only. Omit $root for the per-worker dependency-check
+ * fixture root; pass a base_path relative path to target another fixture
+ * root explicitly.
  */
-function bindFixtureModulePaths(string $root = 'tests/Fixtures/dependency-check'): void
+function bindFixtureModulePaths(?string $root = null): void
 {
-    config()->set('modules.paths.modules', base_path("{$root}/modules"));
-    config()->set('modules.activators.file.statuses-file', base_path("{$root}/statuses.json"));
+    $target = $root === null ? dependencyCheckFixtureRoot() : base_path($root);
+
+    config()->set('modules.paths.modules', "{$target}/modules");
+    config()->set('modules.activators.file.statuses-file', "{$target}/statuses.json");
     forgetModuleSingletons();
 }
