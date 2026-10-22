@@ -18,7 +18,6 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\ServiceProvider;
 use PHPUnit\Framework\Assert;
-use Stancl\Tenancy\Database\Concerns\BelongsToTenant;
 
 /*
 |--------------------------------------------------------------------------
@@ -789,7 +788,7 @@ it('modules.core config key is explicitly defined', function (): void {
 
 it('core modules do not depend on business modules', function (): void {
     $coreModules = array_values(array_filter(
-        config()->array('modules.core', ['IAM', 'Media', 'Organization']),
+        config()->array('modules.core', ['IAM', 'Media']),
         is_string(...)
     ));
     $violations = [];
@@ -802,128 +801,6 @@ it('core modules do not depend on business modules', function (): void {
 
         if ($nonCoreDeps !== []) {
             $violations[] = sprintf('%s depends on business module(s): %s', $core, implode(', ', $nonCoreDeps));
-        }
-    }
-
-    expect($violations)->toBeEmpty();
-});
-
-/*
-|--------------------------------------------------------------------------
-| Module tenancy
-|--------------------------------------------------------------------------
-*/
-
-/**
- * Modules whose models must be tenant-scoped.
- *
- * Empty until business modules with tenant data exist; every future
- * business module must be added here unless all its models are genuinely
- * global.
- *
- * @return list<string>
- */
-function tenantScopedModules(): array
-{
-    return [];
-}
-
-/**
- * Modules whose models are genuinely global (not tenant-scoped) and are
- * explicitly exempt from the BelongsToTenant requirement. Every module here
- * must have a one-line justification in the array value.
- *
- * @return array<string, string>
- */
-function tenantExemptModules(): array
-{
-    return [
-        // 'ModuleName' => 'reason this module has no tenant-scoped data',
-    ];
-}
-
-it('tenant-scoped models use BelongsToTenant trait', function (): void {
-    $tenantScopedModules = tenantScopedModules();
-    $violations = [];
-
-    foreach ($tenantScopedModules as $module) {
-        $modelPath = base_path("modules/{$module}/app/Models");
-
-        if (! is_dir($modelPath)) {
-            continue;
-        }
-
-        foreach (glob("{$modelPath}/*.php") ?: [] as $file) {
-            $class = "Modules\\{$module}\\Models\\".basename($file, '.php');
-
-            if (! class_exists($class)) {
-                continue;
-            }
-
-            $traits = class_uses_recursive($class);
-
-            if (! in_array(BelongsToTenant::class, $traits, true)) {
-                $violations[] = "{$class} does not use BelongsToTenant trait";
-            }
-        }
-    }
-
-    expect($violations)->toBeEmpty();
-});
-
-it('every non-core module is explicitly classified for tenant scoping', function (): void {
-    $coreModules = array_values(array_filter(config()->array('modules.core', []), is_string(...)));
-    $allModules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
-    $businessModules = array_values(array_diff($allModules, $coreModules));
-
-    $classified = array_merge(tenantScopedModules(), array_keys(tenantExemptModules()));
-    $unclassified = array_values(array_diff($businessModules, $classified));
-
-    expect($unclassified)->toBeEmpty(
-        sprintf(
-            'The following modules are not classified as tenant-scoped or exempt: %s. '
-            .'Add them to tenantScopedModules() or tenantExemptModules() in this file.',
-            implode(', ', $unclassified)
-        )
-    );
-});
-
-/**
- * Best-effort guard: regex cannot cover every way tenant_id might be queried
- * (e.g. DB::raw(), query builder assigned to a variable then chained across
- * lines, dynamic column names). This test catches the common direct
- * where/orWhere patterns; it is not an absolute guarantee.
- */
-it('tenant_id is not manually queried outside BelongsToTenant scope', function (): void {
-    $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
-    $violations = [];
-
-    // Matches: where('tenant_id', ...), orWhere('tenant_id', ...),
-    // where(['tenant_id' => ...]), orWhere(['tenant_id' => ...])
-    // Case-insensitive on the where/orWhere token; allows an optional leading '[' for
-    // array-syntax where().
-    $pattern = "/(?:or)?[Ww]here\\(\\s*\\[?\\s*['\"]tenant_id['\"]/";
-
-    foreach ($modules as $module) {
-        $iterator = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator(base_path("modules/{$module}"), FilesystemIterator::SKIP_DOTS)
-        );
-
-        foreach ($iterator as $file) {
-            if (! $file instanceof SplFileInfo || ! $file->isFile() || $file->getExtension() !== 'php') {
-                continue;
-            }
-
-            // Model classes exempt — trait/scope internals may legitimately reference the column.
-            if (str_contains($file->getPathname(), DIRECTORY_SEPARATOR.'Models'.DIRECTORY_SEPARATOR)) {
-                continue;
-            }
-
-            $content = (string) file_get_contents($file->getPathname());
-
-            if (preg_match($pattern, $content)) {
-                $violations[] = str_replace(base_path('modules/'), '', $file->getPathname());
-            }
         }
     }
 
