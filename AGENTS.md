@@ -136,7 +136,7 @@ Area-specific conventions (testing, controllers, actions, models, routes, respon
 - Coverage, mutation, and type-coverage gates are temporarily suspended (scripts removed); re-enable once the suite stabilizes
 - Fix all errors in code (do NOT modify `phpstan.neon`); do NOT use `@phpstan-ignore` — fix the root cause instead
 - Follow existing code conventions — check sibling files and `.ai/rules/` before creating new ones
-- Every change must have a corresponding test
+- Behavior changes must have a corresponding test; pure copy, styling, and layout-only changes do not require new or updated tests.
 
 ## Architecture Test Rules (`tests/Architecture/ArchitectureTest.php`)
 
