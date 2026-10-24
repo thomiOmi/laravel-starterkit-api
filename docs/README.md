@@ -7,10 +7,11 @@ Canonical documentation for the Laravel Starterkit API. This directory is the so
 | Path | Purpose |
 |------|---------|
 | [prd/](prd/README.md) | Product requirements: [starterkit-api.md](prd/starterkit-api.md) (main PRD, v1 scope) |
-| [adr/](adr/README.md) | Architecture Decision Records: 29 decisions with rationale (Nygard format) |
+| [adr/](adr/README.md) | Architecture Decision Records with rationale (Nygard format) |
 | [api-standard.md](api-standard.md) | API response contract and envelope shapes |
 | [architecture.md](architecture.md) | Module structure and architecture patterns |
 | [coding-standards.md](coding-standards.md) | Code style and language conventions |
+| [media-operations.md](media-operations.md) | Media operations runbook: structured logs, queue retries, scheduled cleanup, failure paths |
 | [module-generator.md](module-generator.md) | `module:make` usage and module scaffolding |
 | [rate-limiting.md](rate-limiting.md) | Throttle configuration (global tiers; auth details in `modules/IAM/README.md`) |
 | [testing.md](testing.md) | Testing conventions: helpers, datasets, describe/it/group, TIA, probes |

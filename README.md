@@ -119,7 +119,7 @@ tests/                   # Shared tests / global test helpers
 |----------|---------|
 | [docs/](docs/README.md) | Document map and index |
 | [docs/prd/](docs/prd/README.md) | Product requirements (PRD, v1 scope) |
-| [docs/adr/](docs/adr/README.md) | Architecture Decision Records (29 decisions, Nygard format) |
+| [docs/adr/](docs/adr/README.md) | Architecture Decision Records (Nygard format) |
 | [docs/api-standard.md](docs/api-standard.md) | API response contract and envelope shapes |
 | [docs/architecture.md](docs/architecture.md) | Module structure and architecture patterns |
 | [docs/coding-standards.md](docs/coding-standards.md) | Code style and language conventions |

@@ -1,6 +1,6 @@
 # ADR-0030: Custom Media Module Inspired by Spatie Media Library
 
-- Status: Accepted
+- Status: Superseded by ADR-0036
 - Date: 2026-08-23
 
 ## Context

@@ -34,7 +34,7 @@ Target: Complete the core and infrastructure gate sequence (rules coverage, nati
     * Dependencies: None
 
 * [Done] P1: Rules Coverage (G5)
-    * Description: Cover every file type in the repository with structured rules (23 rule files), record ADR-0026 and revise ADR-0007, align architecture docs, and enforce conventions via ArchitectureTest.
+    * Description: Cover every file type in the repository with structured rules, record ADR-0026 and revise ADR-0007, align architecture docs, and enforce conventions via ArchitectureTest.
     * Issue Reference:
     * Impact: Enforces consistent, reviewable conventions across all modules and reduces friction for contributors and AI-assisted development.
     * Dependencies: P0
@@ -80,7 +80,7 @@ Target: Complete technical documentation and operations, then ship tag v1.0.0.
     * Dependencies: P6
 
 * [Planned] P8: Operations (G8)
-    * Description: Add the health endpoint (module System), the deployment guide, and record the Scramble (OpenAPI) decision.
+    * Description: Add the health endpoint (module System) and the deployment guide. The Scramble (OpenAPI) decision is recorded in ADR-0043.
     * Issue Reference:
     * Impact: Operators can monitor service health and deploy with confidence.
     * Dependencies: P7
