@@ -352,12 +352,12 @@ project/
 
 1. Enum values as column defaults (`->default(StatusEnum::Pending->value)`).
 2. **Forbidden** to chain migration commands with `&&` or `;` (identical timestamps).
-3. Factory + Seeder for every model.
+3. Factories for models used in tests; module seeders for baseline data when needed.
 4. Schema changes = **review gate** (requires approval).
 5. Module seeders are executed via `php artisan db:seed --class=Modules\{Module}\Database\Seeders\{Name}Seeder` or from `database/seeders/DatabaseSeeder`; **forbidden** for a seeder to call another module's seeder (dependencies are seeded sequentially by the caller, example: `MediaSeeder` does not call `IAMSeeder`).
 6. Module migration rollback via `php artisan migrate:rollback --path=modules/{Module}/database/migrations` (without `--path`, rollback only targets the last global batch).
 
-**Forbidden:** editing schema without approval; migrations outside a module.
+**Forbidden:** editing schema without approval; domain migrations outside a module. Core Laravel migrations stay in `database/migrations/`.
 
 ### 4.3 Error handling & exception helpers
 
@@ -403,10 +403,9 @@ Each layer: definition, rules, forbidden, example.
 2. Does **NOT** accept `Request`; the controller extracts data and passes it on.
 3. Does **NOT** write HTTP logic (status codes, redirects, json).
 4. Validation happens in the Request layer, not in the action.
-5. Every action has a unit test in `modules/*/tests/Unit`.
-6. Business errors via `throw_if`/`throw_unless` + domain exceptions (`InvalidArgumentException` mapped to 422, `ModelNotFoundException` to 404 for ownership checks).
-7. Multi-step related writes (2+ writes) **must** be wrapped in `DB::transaction` or equivalent (`saveOrFail`/`deleteOrFail` for instances, `syncOrFail`/`attachOrFail` etc. for pivots); single-model writes use plain `create`/`update`/`save`/`delete`.
-8. **NO** base class/interface for Actions: the structure (`final readonly`, `handle()`) is a convention enforced by ArchitectureTest, not inheritance (principle 1.6); interfaces only for real cross-module polymorphism.
+5. Business errors via `throw_if`/`throw_unless` + domain exceptions (`InvalidArgumentException` mapped to 422, `ModelNotFoundException` to 404 for ownership checks).
+6. Multi-step related writes (2+ writes) **must** be wrapped in `DB::transaction` or equivalent (`saveOrFail`/`deleteOrFail` for instances, `syncOrFail`/`attachOrFail` etc. for pivots); single-model writes use plain `create`/`update`/`save`/`delete`.
+7. **NO** base class/interface for Actions: the structure (`final readonly`, `handle()`) is a convention enforced by ArchitectureTest, not inheritance (principle 1.6); interfaces only for real cross-module polymorphism.
 
 **Forbidden:**
 
@@ -471,8 +470,8 @@ final readonly class RegisterController extends Controller
 4. `#[Table]`, `#[UseResource]`, `#[UseResourceCollection]` only for convention deviations (non-standard table, pivot, non-standard resource naming).
 5. Cast enum columns to enum classes (`'status' => StatusEnum::class`).
 6. `declare(strict_types=1)` in every file.
-7. A factory is required for every model.
-8. The app layer (tests/) accesses module models only through the seam `tests/Helpers.php`, not direct imports.
+7. Factories are required for models used in tests.
+8. The app layer (tests/) may import module classes directly (models, factories, seeders, contracts, enums). `tests/Helpers.php` is a convenience seam for shared helpers, not a hard boundary.
 9. Soft deletes use the `Illuminate\Database\Eloquent\SoftDeletes` trait (the `#[UseSoftDeletes]` attribute does not exist in Laravel 13); `withTrashed`/`onlyTrashed` queries only in actions/builders.
 
 **Forbidden:** UUID primary keys; `$fillable`/`$hidden` properties; cross-module models.
@@ -917,12 +916,12 @@ Every wrapper must have a documented native escape hatch:
    ```
 3. **Supported suites (current)**: `unit`, `feature`, and `profanity`. Coverage, mutation, and type-coverage gates are temporarily suspended (scripts removed); re-enable once the suite stabilizes.
 4. **Composer scripts**: `composer test` (pest, unit + feature) and `composer test:profanity` are the main testing commands. `composer test:quality`, `composer test:mutation` are removed for now.
-5. **Groups**: shared tests are grouped in `tests/Pest.php` (`app`, `feature`, `unit`, `arch`); module tests tag `->group('module:{name}')` per test plus the `feature`/`unit` group from `tests/Pest.php`. Filter with `vendor/bin/pest --group=app` (shared only), `--group=feature` (all feature tests), `--group=module:iam` (IAM only). See https://pestphp.com/docs/grouping-tests
+5. **Groups**: shared tests are grouped in `tests/Pest.php` (`app`, `feature`, `unit`, `arch`); use smoke/slow/integration tags sparingly. Filter with `vendor/bin/pest --group=app` (shared only) or `--group=feature` (all feature tests). See https://pestphp.com/docs/grouping-tests
 6. **Imports**: shared tests MAY import module classes directly (models, factories, seeders, contracts, enums) - ArchitectureTest allows `Tests` to use `Modules\*\*`. `tests/Helpers.php` stays as a convenience seam for shared helpers, not a hard boundary. Module tests stay self-contained in `modules/*/tests/` and may import their own module plus other modules' public API seam (models, contracts).
 7. **Writing tests**: follow the pest-testing skill: feature-first, factories over manual creation, datasets to avoid duplication, specific assertions, fakes over mocks. See https://github.com/matula/laravel-claude-marketplace/tree/main/pest-testing
 8. **ArchitectureTest** (`tests/Architecture/ArchitectureTest.php`) is the single source of truth for conventions; assertion changes require human approval (report first, do not auto-fix).
 9. **Quality gates**: `composer lint`, `composer rector:dry`, `composer types:check`, `composer test`, `composer test:profanity`, `composer ci:check`.
-10. **Test enforcement**: every code change must have a corresponding test.
+10. **Test enforcement**: behavior changes must have a corresponding test. Pure copy, styling, and layout-only changes do not require new or updated tests.
 
 ### 8.2 Quality flow (quality gates)
 
