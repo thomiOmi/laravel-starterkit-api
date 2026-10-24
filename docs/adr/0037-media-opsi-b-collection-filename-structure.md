@@ -1,4 +1,4 @@
-# ADR-0037: Media Opsi B Full Replacement ULID collection/file_name + Structure Cleanup
+# ADR-0037: Media Option B Full Replacement ULID collection/file_name + Structure Cleanup
 
 - Status: Accepted
 - Date: 2026-09-03

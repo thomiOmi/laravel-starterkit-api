@@ -351,6 +351,6 @@ Coverage: `MediaUploadTest` (WebP, single_file avatars upsert, prefix, headers, 
 - [API Standard](../../docs/api-standard.md)
 - [Architecture](../../docs/architecture.md)
 - [Rate Limiting](../../docs/rate-limiting.md)
-- ADRs: [0015 Media Storage](../../docs/adr/0015-media-storage-module.md), [0030 Custom Media](../../docs/adr/0030-custom-media-module.md), [0031 Image Processing](../../docs/adr/0031-first-party-image-processing.md), [0032 Signed+Events+Cache](../../docs/adr/0032-signed-media-events-cached-variants.md), [0036 Media Polymorphic Squash](../../docs/adr/0036-media-polymorphic-squash.md), [0037 Opsi B](../../docs/adr/0037-media-opsi-b-collection-filename-structure.md), [0038 Responsive](../../docs/adr/0038-responsive-images.md)
+- ADRs: [0015 Media Storage](../../docs/adr/0015-media-storage-module.md), [0030 Custom Media](../../docs/adr/0030-custom-media-module.md), [0031 Image Processing](../../docs/adr/0031-first-party-image-processing.md), [0032 Signed+Events+Cache](../../docs/adr/0032-signed-media-events-cached-variants.md), [0036 Media Polymorphic Squash](../../docs/adr/0036-media-polymorphic-squash.md), [0037 Option B](../../docs/adr/0037-media-opsi-b-collection-filename-structure.md), [0038 Responsive](../../docs/adr/0038-responsive-images.md)
 - Scramble OpenAPI: `http://localhost:8000/docs/api`
 
