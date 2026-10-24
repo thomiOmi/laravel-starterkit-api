@@ -60,7 +60,7 @@ return [
     ],
 
     'ui' => [
-        'title' => null,
+        'title' => 'Laravel Starterkit API',
     ],
 
     'renderer' => 'elements',

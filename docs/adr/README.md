@@ -24,7 +24,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0016](0016-accounting-rejected-module.md) | Accounting Rejected as a Module | Accepted | 2026-08-09 |
 | [0017](0017-dead-code-removal.md) | Dead Code Branches Removed | Accepted | 2026-08-08 |
 | [0018](0018-idempotency-opt-in-per-route.md) | Idempotency Keys Opt-In Per Route | Accepted | 2026-08-11 |
-| [0019](0019-scramble-skipped.md) | Scramble OpenAPI Docs Skipped | Accepted (skip) | 2026-08-10 |
+| [0019](0019-scramble-skipped.md) | Scramble OpenAPI Docs Skipped | Superseded by ADR-0043 | 2026-08-10 |
 | [0020](0020-single-iam-seeder.md) | Single IAM Seeder | Accepted | 2026-08-07 |
 | [0021](0021-social-auth-design.md) | Social Auth Design (Pivot, Stateless State, Email Binding) | Accepted | 2026-08-09 |
 | [0022](0022-feature-flag-middleware.md) | Custom EnsureFeatureIsActive over Native Pennant | Accepted | 2026-08-10 |
@@ -46,6 +46,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0040](0040-media-path-generator-owns-derivative-directories.md) | MediaPathGenerator Owns Derivative Directories | Accepted | 2026-10-13 |
 | [0041](0041-upload-original-writes-through-path-generator.md) | Upload Original Writes Resolve Through the Path Generator | Accepted | 2026-10-13 |
 | [0042](0042-tenancy-deferred-organization-module-removed.md) | Tenancy Deferred: Organization Module Removed | Accepted | 2026-10-19 |
+| [0043](0043-scramble-generates-the-openapi-document.md) | Scramble Generates the OpenAPI Document | Accepted | 2026-10-19 |
 
 ## Process
 

@@ -26,7 +26,7 @@ Opinionated Laravel 13 starter kit for building scalable APIs. Modular architect
 | Social Auth | Laravel Socialite (Google, GitHub) |
 | Feature Flags | Laravel Pennant |
 | Testing | Pest 5 |
-| API Docs | Contract docs (`docs/api-standard.md`); no generated OpenAPI (ADR-0019) |
+| API Docs | Contract docs (`docs/api-standard.md`) plus generated OpenAPI at `/docs/api` via Scramble (ADR-0043; local environment only by default) |
 | Static Analysis | PHPStan level max |
 | Code Style | Laravel Pint |
 

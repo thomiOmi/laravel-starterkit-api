@@ -1,7 +1,7 @@
 # PRD: Laravel Starterkit API
 
 - Status: Approved
-- Version: 2.1.0
+- Version: 2.2.0
 - Date: 2026-08-11
 - Related ADRs: see [docs/adr/README.md](../adr/README.md)
 
@@ -84,7 +84,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 | API-02 | Responses use SuccessResponse/ProblemResponse RFC 9457 contract | Done (shipped) |
 | API-03 | Auth routes enforce rate limiting with rate limit headers | Done (shipped) |
 | API-04 | Mutating endpoints support idempotency keys | Done, opt-in per route (ADR-0018) |
-| API-05 | API is documented via Scramble OpenAPI | Skipped (ADR-0019) |
+| API-05 | API is documented via Scramble OpenAPI | Done, local environment only by default (ADR-0043) |
 
 ### Quality (QLTY-01..02)
 
@@ -131,7 +131,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 ## Metrics / Success Criteria
 
 - Full test suite green serial + parallel, `composer ci:check` pass (coverage/mutation/type-coverage gates temporarily suspended)
-- Architecture test suite (46/46) is the single source of truth for conventions; changes require human approval
+- Architecture test suite is the single source of truth for conventions; changes require human approval
 - New project can scaffold a module (`module:make`) and extend IAM patterns without fighting infrastructure
 
 ## Document Relations
@@ -147,3 +147,4 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 | 1.0.0 | 2026-08-11 | Migrated from legacy planning docs into canonical `docs/`; corrected stale stack facts (no Redis); requirement statuses updated to actual shipped state |
 | 2.0.0 | 2026-08-11 | Added v2 scope: module registry allow-list (ORG-01), opt-in `Organization` tenancy module (ORG-02..03, ADR-0023/0024), global users + membership model (ORG-04, ADR-0025); updated Architecture Overview |
 | 2.1.0 | 2026-10-19 | Organization module removed and tenancy deferred (ORG-02..04, ADR-0042); statuses and module overview updated to match the shipped kit |
+| 2.2.0 | 2026-10-23 | API-05 marked Done with ADR-0043 (Scramble OpenAPI, local environment only by default); removed the stale Architecture test suite count |
