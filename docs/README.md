@@ -36,3 +36,4 @@ PRD (what/why the product needs)      ->  docs/prd/
 - New feature with product scope: create `docs/prd/{feature}.md` from `docs/prd/template.md` and link it in the PRD README.
 - New settled decision: create `docs/adr/NNNN-<slug>.md` from `docs/adr/template.md` and add it to the index table.
 - Keep technical docs current when code conventions change; record the rule in `.ai/rules/` via `record-rule` so agents inherit it.
+- Write tracked documentation in English. The bilingual exception applies only to the gitignored root `TASKS.md` tracker; anything committed must be English.
