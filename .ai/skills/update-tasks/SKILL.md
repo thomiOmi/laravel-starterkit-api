@@ -25,8 +25,8 @@ Keep the sections in this order and update them as they change:
 - **Header**: one line stating the file is the operational tracker, not the decision source of truth.
 - **Status snapshot** (`## Status snapshot (YYYY-MM-DD)`): date, branch + HEAD short SHA, one-line summary of project state, and dated bullets of notable changes. Refresh the date and HEAD on every update (`git rev-parse --short HEAD`).
 - **Active focus**: the current work, in priority order. Fill when starting work; empty it when work ends.
-- **Backlog**: deferred items, each with a status word (DITUNDA = deferred / SKIP / DITUTUP = closed) and a date.
-- **Known issues**: open issues; closed ones stay listed with a DITUTUP (closed) date and reopening conditions.
+- **Backlog**: deferred items, each with a status word (DEFERRED / SKIP / CLOSED) and a date.
+- **Known issues**: open issues; closed ones stay listed with a CLOSED date and reopening conditions.
 - **Agent notes**: non-obvious pitfalls and working knowledge that would otherwise be lost between sessions (e.g. queue semantics, auth pitfalls). One or two lines each.
 - **Definition of Done**: the project quality gate (lint, types, coverage, tests).
 - **Document pointer**: the `docs/` map so any session can navigate without re-discovery.
@@ -37,5 +37,5 @@ Keep the sections in this order and update them as they change:
 2. Snapshot line: always update the date and the HEAD SHA — a stale snapshot is worse than none.
 3. Closed/deferred items: annotate with the date and a one-line reason, do not delete — they are the project memory.
 4. Do not keep permanent per-feature `- [ ]` checklists in TASKS.md for implementation breakdowns — use the session's `todowrite` tool for that. If a deferred plan needs enough detail to resume later (like a skipped phase), write that detail inline where it is deferred.
-5. Bilingual is fine: the file mixes Indonesian and English as established — keep new entries in whichever language the surrounding section uses.
+5. Bilingual is fine in this file only: the gitignored root `TASKS.md` mixes Indonesian and English as established - keep new entries in whichever language the surrounding section uses. Every tracked file (docs, rules, READMEs, commit messages, issues, PRs) is English only.
 6. When a decision or convention change surfaces during tracked work, route it: create the ADR (create-adr) or record the rule (`record-rule`), then remove the decision content from TASKS.md and note that it moved.
