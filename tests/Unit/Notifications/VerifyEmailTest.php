@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Notifications\VerifyEmail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Str;
 use Modules\IAM\Database\Factories\UserFactory;
 
@@ -33,6 +34,8 @@ describe('VerifyEmail frontend URL generation', function (): void {
 
         $mail = (new VerifyEmail)->toMail($user);
 
+        throw_unless($mail instanceof MailMessage, RuntimeException::class, 'The verify email notification must return a mail message.');
+
         expect($mail->actionUrl)
             ->toStartWith(config('app.frontend_url').'/verify-email?')
             ->toContain('id='.$user->id)
@@ -51,6 +54,8 @@ describe('VerifyEmail mail content', function (): void {
 
         $mail = (new VerifyEmail)->toMail($user);
 
+        throw_unless($mail instanceof MailMessage, RuntimeException::class, 'The verify email notification must return a mail message.');
+
         expect($mail->subject)->toBe(__('auth.email_verify_subject'))
             ->and($mail->introLines)->toBe([__('auth.email_verify_line')])
             ->and($mail->actionText)->toBe(__('auth.email_verify_action'))
@@ -66,6 +71,8 @@ describe('VerifyEmail mail content', function (): void {
         ]);
 
         $mail = (new VerifyEmail)->toMail($user);
+
+        throw_unless($mail instanceof MailMessage, RuntimeException::class, 'The verify email notification must return a mail message.');
 
         expect($mail->subject)->toBe(__('auth.email_verify_subject'))
             ->and($mail->introLines)->toBe([__('auth.email_verify_line')])
