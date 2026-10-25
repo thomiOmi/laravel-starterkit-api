@@ -166,7 +166,7 @@ Inline datasets are acceptable only when the dataset is used by a single `->with
 
 ### describe()
 
-Every test file must use `describe()` blocks to group logical concerns. Nesting is allowed for sub-grouping.
+`describe()` blocks are optional. Use them to group related concerns when it improves readability; nesting is allowed for sub-grouping.
 
 ```php
 describe('PaginationRequest', function () {
@@ -210,11 +210,10 @@ Predefined groups:
 | `'smoke'` | Critical-path tests for deployment validation |
 | `'slow'` | Tests that take >5 seconds |
 | `'integration'` | Tests that hit external services |
-| `'module:{name}'` | Module-scoped tests (e.g., `module:iam`, `module:billing`) |
 
 Run with: `php artisan test --group=smoke`
 
-Add new groups sparingly. Prefer `describe()` + `--filter` for most filtering needs.
+Add new groups sparingly. Prefer `--filter` for most filtering needs.
 
 ## Snapshot Testing
 
@@ -281,10 +280,10 @@ php artisan test          # always a full run
 | Location | Contains |
 |---|---|
 | `tests/` | App-layer tests (middleware, filters, requests, responses, console commands) and shared suites (`Unit`, `Feature`, `Architecture`) |
-| `modules/*/tests/` | Module-internal tests (controllers, actions, resources). Registered as the `Modules` testsuite in `phpunit.xml`; excluded from PHPStan paths |
+| `modules/*/tests/` | Module-internal tests (actions, builders, models, support, requests). Registered as the `Modules` testsuite in `phpunit.xml` |
 
 Rules:
 
-- App-layer tests may only import the module **User model/factory** (the app's auth model) — and must route it through the `tests/Helpers.php` seam (`loginAsUser()`, `loginAsUnverifiedUser()`, `loginAsRole()`, `loginAsSuperAdmin()`, `loginAsAdmin()`, `loginAsUserRole()`), never through `Modules\*\...` imports directly.
-- Module-internal tests must stay self-contained in their module and must not import other modules.
+- App-layer tests MAY import module classes directly (models, factories, seeders, contracts, enums), matching `docs/architecture.md`. `tests/Helpers.php` remains a convenience seam for shared auth helpers such as `loginAsUser()` and `loginAsRole()`; it is not a hard boundary.
+- Module-internal tests must stay self-contained in their module; they may import their own module plus another module's public API seam (models and contracts).
 - Test fixtures shared across files go in `tests/Helpers.php`; parameterized cases use Datasets (inline when used by a single file, named when reused).
