@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Notifications\ResetPassword;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Modules\IAM\Database\Factories\UserFactory;
 
 covers(ResetPassword::class);
@@ -29,6 +30,8 @@ describe('ResetPassword frontend URL generation', function (): void {
 
         $mail = new ResetPassword('token-123')->toMail($user);
 
+        throw_unless($mail instanceof MailMessage, RuntimeException::class, 'The reset password notification must return a mail message.');
+
         expect($mail->actionUrl)
             ->toStartWith(config('app.frontend_url').'/reset-password?')
             ->toContain('token=token-123')
@@ -41,6 +44,8 @@ describe('ResetPassword mail content', function (): void {
         $user = UserFactory::new()->makeOne(['email' => 'john+reset@example.com']);
 
         $mail = new ResetPassword('token-123')->toMail($user);
+
+        throw_unless($mail instanceof MailMessage, RuntimeException::class, 'The reset password notification must return a mail message.');
 
         expect($mail->subject)->toBe(__('auth.password_reset_subject'))
             ->and($mail->introLines)->toBe([__('auth.password_reset_line')])
@@ -60,6 +65,8 @@ describe('ResetPassword mail content', function (): void {
         $user = UserFactory::new()->makeOne();
 
         $mail = new ResetPassword('token-123')->toMail($user);
+
+        throw_unless($mail instanceof MailMessage, RuntimeException::class, 'The reset password notification must return a mail message.');
 
         expect($mail->subject)->toBe(__('auth.password_reset_subject'))
             ->and($mail->introLines)->toBe([__('auth.password_reset_line')])
