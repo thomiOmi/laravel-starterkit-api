@@ -27,11 +27,13 @@ composer setup:ci
 ## Testing
 
 - This project uses Pest 5. Feature tests are preferred over unit tests.
-- Every change must be programmatically tested. Add or update tests, then run the affected suite:
+- Behavior changes must be programmatically tested. Add or update tests, then run the affected suite:
 
 ```bash
 php artisan test --compact --filter=TestName
 ```
+
+- Pure copy, styling, and layout-only changes do not require new or updated tests.
 
 - Full quality gate before pushing:
 
