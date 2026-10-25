@@ -120,10 +120,10 @@
             "@php vendor/bin/rector"
         ],
         "release": [
-            "npx @grazulex/shipmark release"
+            "npx @grazulex/shipmark@2.1.6 release"
         ],
         "release:dry": [
-            "npx @grazulex/shipmark release --ci auto --dry-run"
+            "npx @grazulex/shipmark@2.1.6 release --ci auto --dry-run"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
