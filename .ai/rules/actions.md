@@ -15,10 +15,9 @@ Single-responsibility business logic: one `final readonly` class performs exactl
 2. Never receive `Request`; controllers extract data and pass it along
 3. No HTTP logic (status codes, redirects, json)
 4. Validation happens in the Request layer, not in actions
-5. Every action has a unit test in `modules/*/tests/Unit` (Pest, `expect()->toThrow` for exceptions, specific expectations over `toBeTrue()`/`toBeFalse()` wrappers)
-6. Business errors via `throw_if`/`throw_unless` + domain exceptions (`InvalidArgumentException` maps to 422, `ModelNotFoundException` to 404 for ownership checks)
-7. Interdependent multi-step writes (2+ writes) must be wrapped in `DB::transaction` or equivalent (`saveOrFail`/`deleteOrFail` for instances, `syncOrFail`/`attachOrFail` for pivots); single-model writes use plain `create`/`update`/`save`/`delete`
-8. No base class/interface for Actions: the structure is a convention enforced by ArchitectureTest, not inheritance; interfaces only for real cross-module polymorphism (see contracts rule)
+5. Business errors via `throw_if`/`throw_unless` + domain exceptions (`InvalidArgumentException` maps to 422, `ModelNotFoundException` to 404 for ownership checks)
+6. Interdependent multi-step writes (2+ writes) must be wrapped in `DB::transaction` or equivalent (`saveOrFail`/`deleteOrFail` for instances, `syncOrFail`/`attachOrFail` for pivots); single-model writes use plain `create`/`update`/`save`/`delete`
+7. No base class/interface for Actions: the structure is a convention enforced by ArchitectureTest, not inheritance; interfaces only for real cross-module polymorphism (see contracts rule)
 
 ## Forbidden
 
@@ -44,4 +43,4 @@ final readonly class CreateUserAction
 Storage::fake('name') disks are not in config('filesystems.disks'), so disk-existence checks against config reject fakes. Validate explicit disks via Storage::disk() resolvability in try/catch instead.
 
 ## Cross-module features via contracts, consumers inject nullable
-A module that depends on another module's capability (e.g. IAM avatar via Media) must not import the other module's classes. Define a contract in app/Contracts (example: AvatarResolver), the owning module implements and binds it in its provider, and the consumer type-hints it as nullable (?AvatarResolver $resolver = null) so the feature degrades gracefully (throws a localized InvalidArgumentException) when the owner module is absent. Laravel's container falls back to the parameter default when an interface has no binding, so no container introspection is needed.
+A module that depends on another module's capability must not import the other module's classes. Define a contract in `app/Contracts/` (the current shared example is `Identity`, implemented by the IAM `User` model), have the owning module implement it and bind it in its provider, and type-hint optional capabilities as nullable (`?Contract $dependency = null`) so the feature degrades gracefully (throws a localized `InvalidArgumentException`) when the owner module is absent. Laravel's container falls back to the parameter default when an interface has no binding, so no container introspection is needed.
