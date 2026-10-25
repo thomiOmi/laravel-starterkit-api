@@ -15,7 +15,7 @@
 ## Architecture
 - Controllers: `final readonly` invokable classes with `__invoke()` -- no business logic
 - Actions: `final readonly` with `handle()` method -- single responsibility
-- Models in `Modules/{Module}/Models/`. Use `HasDefaultBehavior` (ULID, soft deletes, date format)
+- Models in `modules/{Module}/app/Models/`. Use `HasDefaultBehavior` (ULID, soft deletes, date format)
 - No repositories: Use Eloquent directly within actions
 - Payloads: `final readonly` DTOs with `fromRequest()` factory and `toArray()`
 
@@ -47,17 +47,15 @@ Three tiers:
 
 ## Testing
 - Pest 5 with `RefreshDatabase`
-- `beforeEach` seeds roles (web + sanctum), calls `forgetCachedPermissions()`, creates admin with `loginAsUser()`
+- The global `beforeEach` configures null logging, restores default module paths, and clears the permission cache. Seed roles and create users per test via `tests/Helpers.php`; `loginAsRole()` expects the role to exist.
 - Feature tests for each CRUD + auth flow
-- Unit tests for each action class
+- Unit tests for pure logic; feature tests cover action behavior through HTTP
 - Response assertion helpers: `assertSuccessResponse(status)`, `assertProblemResponse(status)`, `assertPaginatedResponse()`
-- Every change must have a corresponding test
+- Behavior changes require tests; pure copy, styling, and layout-only changes do not
 ## Code Quality
 
 - Format: `./vendor/bin/pint --dirty --format agent` (preset `laravel` + `declare_strict_types`, `strict_comparison`, `no_superfluous_elseif`, `no_useless_else`, `array_push`, `backtick_to_shell_exec`, `visibility_required`, `modernize_types_casting`; `config/database.php` excluded via `notPath`)
 - Static analysis: `./vendor/bin/phpstan analyse --memory-limit=512M` (level max, test files included via `pest-plugin-phpstan`; no baseline, no `@phpstan-ignore`)
-- Type coverage: `php artisan test --coverage --type-coverage --min=100 --memory-limit=512M`
-  - `--memory-limit=512M` is required: phpunit runs as a child process that ignores `-d memory_limit`; the type-coverage plugin applies it via `ini_set` in-process
 - Rector dry run: `composer rector:dry` (`PestSetList::CODING_STYLE`, `withComposerBased(laravel: true, phpunit: true)`, PHP 8.4 sets, prepared sets for deadCode/codeQuality/typeDeclarations/privatization/earlyReturn/codingStyle, and Laravel sets incl. `LARAVEL_CODE_QUALITY`/`LARAVEL_COLLECTION`/`LARAVEL_FACTORIES`/`LARAVEL_IF_HELPERS`), part of `composer ci:check`; skips `AddArrowFunctionReturnTypeRector`, `AddHasFactoryToModelsRector`, `CarbonToDateFacadeRector`, `tests/Architecture/ArchitectureTest.php`, and `config/database.php`
 - Clear PHPStan cache with `phpstan clear-result-cache` (prefix `PAO_DISABLE=1` — the `laravel/pao` wrapper breaks non-analyse commands)
 - No `dd()`, `dump()`, `console.log()` in committed code

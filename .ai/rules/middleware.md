@@ -8,7 +8,7 @@ paths:
 
 ## Goal
 
-Module-specific middleware in `modules/{Module}/Http/Middleware/`; global middleware in `app/Http/Middleware/`.
+Module-specific middleware in `modules/{Module}/app/Http/Middleware/`; global middleware in `app/Http/Middleware/`.
 
 ## Rules
 

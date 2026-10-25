@@ -8,7 +8,7 @@ paths:
 
 ## Goal
 
-Notifications in `app/Notifications/` (global) or `modules/{Module}/Notifications/` (module-specific).
+Notifications in `app/Notifications/` (global) or `modules/{Module}/app/Notifications/` (module-specific).
 
 ## Rules
 
