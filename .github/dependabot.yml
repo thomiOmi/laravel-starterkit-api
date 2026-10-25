@@ -12,6 +12,11 @@ updates:
       composer:
         patterns:
           - "*"
+    ignore:
+      # 2.3.2 crashes the analyser on anonymous Model classes in module tests; revisit with the next release.
+      - dependency-name: "phpstan/phpstan"
+        versions:
+          - "2.3.2"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
