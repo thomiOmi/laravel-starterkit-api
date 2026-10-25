@@ -47,6 +47,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0041](0041-upload-original-writes-through-path-generator.md) | Upload Original Writes Resolve Through the Path Generator | Accepted | 2026-10-13 |
 | [0042](0042-tenancy-deferred-organization-module-removed.md) | Tenancy Deferred: Organization Module Removed | Accepted | 2026-10-19 |
 | [0043](0043-scramble-generates-the-openapi-document.md) | Scramble Generates the OpenAPI Document | Accepted | 2026-10-19 |
+| [0044](0044-adopter-target-and-customization-points.md) | Adopter Target and Customization Points | Proposed | 2026-10-26 |
 
 ## Process
 
