@@ -67,6 +67,7 @@ A pre-commit hook runs `composer lint:staged` automatically.
 ## Pull Requests
 
 - Branch from `main` and open a pull request back to `main`.
+- PRs are squash-merged; keep the PR title in conventional-commit form because it becomes the commit title.
 - The `tests` workflow must pass on both PHP 8.4 and 8.5 (pint, rector, phpstan, tests, profanity).
 - Fill out the pull request template, including the type of change and checklist.
 - Review feedback applies to the whole diff, not just the latest commit.
