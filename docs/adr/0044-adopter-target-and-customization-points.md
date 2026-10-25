@@ -31,7 +31,7 @@ ADR-0042 deferred tenancy until a product vertical or an adopter needs multi-ten
 
 - The cost of maintaining the kit stays proportional to one maintainer, and the promise to adopters is small and checkable.
 - Adopters who modify core internals will not get clean upstream updates; this is stated up front instead of discovered later.
-- Contracts and routes in the stable surface cannot change silently within a major version; changes to them need a `CHANGELOG.md` entry, and changes to `tests/Architecture/ArchitectureTest.php` need explicit human approval.
-- Domain event coverage is partial: IAM dispatches `Illuminate\Auth\Events\Registered` on registration, and the Media module dispatches `MediaUploaded`, `MediaCreated`, `MediaProcessed`, and `MediaProcessingFailed`. A user-logged-in event does not exist yet.
-- Async reactions to core behavior are expected to use domain events, so a vertical can react without editing core. This ADR stays Proposed until a user-logged-in event exists.
+- Contracts and routes in the stable surface cannot change silently within a release line; changes to them need a `CHANGELOG.md` entry, and changes to `tests/Architecture/ArchitectureTest.php` need explicit human approval.
+- Domain event coverage is partial: IAM dispatches `Illuminate\Auth\Events\Registered` on registration, and the Media module dispatches `MediaUploaded`, `MediaCreated`, `MediaProcessed`, and `MediaProcessingFailed`. A user-logged-in event does not exist yet; it is a known gap to close when a vertical needs it.
+- Async reactions to core behavior are expected to use domain events, so a vertical can react without editing core.
 - It becomes Accepted when the first vertical module is built against the stable surface without editing core module internals. If that attempt shows the surface must change, this ADR is revised first.
