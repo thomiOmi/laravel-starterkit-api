@@ -11,7 +11,7 @@ Canonical documentation for the Laravel Starterkit API. This directory is the so
 | [api-standard.md](api-standard.md) | API response contract and envelope shapes |
 | [architecture.md](architecture.md) | Module structure and architecture patterns |
 | [coding-standards.md](coding-standards.md) | Code style and language conventions |
-| [media-operations.md](media-operations.md) | Media operations runbook: structured logs, queue retries, scheduled cleanup, failure paths |
+| [../modules/Media/docs/operations.md](../modules/Media/docs/operations.md) | Media operations runbook: structured logs, queue retries, scheduled cleanup, failure paths |
 | [module-generator.md](module-generator.md) | `module:make` usage and module scaffolding |
 | [rate-limiting.md](rate-limiting.md) | Throttle configuration (global tiers; auth details in `modules/IAM/README.md`) |
 | [testing.md](testing.md) | Testing conventions: helpers, datasets, describe/it/group, TIA, probes |
