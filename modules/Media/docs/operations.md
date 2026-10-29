@@ -157,6 +157,6 @@ php artisan schedule:list
 
 ## Related docs
 
-- Module README: `modules/Media/README.md`
-- ADRs: `docs/adr/0030-custom-media-module.md`, `docs/adr/0032-signed-media-events-cached-variants.md`, `docs/adr/0036-media-polymorphic-squash.md`
-- Architecture: `docs/architecture.md`
+- [Media Module README](../README.md)
+- ADRs: [0030 Custom Media Module](../../../docs/adr/0030-custom-media-module.md), [0032 Signed Media Events and Cached Variants](../../../docs/adr/0032-signed-media-events-cached-variants.md), [0036 Media Polymorphic Squash](../../../docs/adr/0036-media-polymorphic-squash.md)
+- [Architecture](../../../docs/architecture.md)

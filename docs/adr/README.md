@@ -54,6 +54,6 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 - A new ADR starts from `template.md`.
 - Number sequentially; do not reuse or reorder numbers (Superseded decisions keep their number and point to the replacement).
 - Status values: `Proposed`, `Accepted`, `Deprecated`, `Superseded by ADR-NNNN`.
-- Known gap: `0033` and `0034` do not exist and were never committed (verified against full history on 2026-10-05). They are not reserved — the next number is the first free number in the index table above.
+- Numbers are assigned sequentially: the next number is the highest number in the index plus one. `0033` and `0034` are a known gap (never committed, verified against full history on 2026-10-05); they are not reserved and must not be reused.
 - Record the decision when it is settled, with the reason ("why") — not just the outcome.
 - Migrated from legacy decision tables on 2026-08-11; those working files are no longer the decision source of truth.
