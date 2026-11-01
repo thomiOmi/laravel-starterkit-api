@@ -17,7 +17,7 @@ final readonly class UserPayload
      *
      * @param  string  $name  The user's name.
      * @param  string  $email  The user's email address.
-     * @param  string|null  $password  The user's password (optional for updates).
+     * @param  string|null  $password  The user's password (creation only).
      * @param  UserStatusEnum|null  $status  The user's account status (optional for updates).
      */
     public function __construct(
@@ -38,7 +38,9 @@ final readonly class UserPayload
         return new self(
             name: $request->safe()->string('name')->trim()->toString(),
             email: $request->safe()->string('email')->trim()->toString(),
-            password: $request->safe()->has('password') ? $request->safe()->string('password')->toString() : null,
+            password: $request->isMethod('POST') && $request->safe()->has('password')
+                ? $request->safe()->string('password')->toString()
+                : null,
             status: $request->safe()->has('status') ? $request->safe()->enum('status', UserStatusEnum::class) : null,
         );
     }

@@ -207,9 +207,11 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 | POST | `/users/bulk/delete` | `api.v1.iam.user.bulk.delete` | `user.delete` | Bulk soft delete |
 | POST | `/users/bulk/restore` | `api.v1.iam.user.bulk.restore` | `user.restore` | Bulk restore |
 | GET | `/users/{user}` | `api.v1.iam.user.show` | - | Show (owner or policy) |
-| PUT | `/users/{user}` | `api.v1.iam.user.update` | - | Update |
+| PUT | `/users/{user}` | `api.v1.iam.user.update` | - | Update (password not accepted; email change re-verifies) |
 | PUT | `/users/{user}/roles` | `api.v1.iam.user.roles.assign` | `user.edit` | Assign roles |
 | DELETE | `/users/{user}` | `api.v1.iam.user.delete` | `user.delete` | Soft delete |
+
+`PUT /users/{user}` rejects a `password` field with `422`; use `POST /auth/change-password` (or the forgot/reset flow) instead. When the normalized email actually changes, `email_verified_at` is cleared and a verification notification is sent without changing the account status.
 
 ### Roles (`/api/v1/roles`)
 
