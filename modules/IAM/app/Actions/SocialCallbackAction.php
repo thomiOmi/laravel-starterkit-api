@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Modules\IAM\Actions;
 
 use App\Enums\RoleEnum;
+use App\Enums\UserStatusEnum;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\AbstractProvider;
@@ -34,6 +36,7 @@ final readonly class SocialCallbackAction
      *
      * @throws InvalidArgumentException When the provider is unsupported or
      *                                  the state cannot be verified.
+     * @throws ValidationException When the resolved account is not allowed to authenticate.
      * @throws Throwable When the account transaction fails.
      */
     public function handle(string $provider, string $state, string $ipAddress, ?string $userAgent): array
@@ -121,7 +124,11 @@ final readonly class SocialCallbackAction
             ->first();
 
         if ($existing !== null) {
-            return $existing->user()->firstOrFail();
+            $user = $existing->user()->firstOrFail();
+
+            $this->ensureCanAuthenticate($user);
+
+            return $user;
         }
 
         $email = $socialUser->getEmail();
@@ -132,6 +139,8 @@ final readonly class SocialCallbackAction
                 ->first();
 
             if ($user !== null) {
+                $this->ensureCanAuthenticate($user);
+
                 // The provider proves ownership of the email, so an existing
                 // unverified account is bound and verified on the spot.
                 if ($user->email_verified_at === null) {
@@ -154,6 +163,7 @@ final readonly class SocialCallbackAction
             'email' => is_string($email) && $email !== '' ? $email : "$provider-$providerId@social.local",
             'password' => null,
             'avatar' => $socialUser->getAvatar(),
+            'status' => UserStatusEnum::Active,
         ]);
 
         $user->forceFill(['email_verified_at' => now()])->save();
@@ -168,5 +178,21 @@ final readonly class SocialCallbackAction
         ]);
 
         return $user;
+    }
+
+    /**
+     * Reject accounts whose status does not allow authentication.
+     *
+     * @throws ValidationException
+     */
+    private function ensureCanAuthenticate(User $user): void
+    {
+        if ($user->status->allowsAuthentication()) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'email' => [__($user->status->blockedMessageKey())],
+        ]);
     }
 }

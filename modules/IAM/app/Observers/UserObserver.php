@@ -14,8 +14,15 @@ final readonly class UserObserver
      */
     public function saved(User $user): void
     {
-        if ($user->wasChanged('email_verified_at') && $user->email_verified_at !== null) {
-            $user->updateQuietly(['status' => UserStatusEnum::Active]);
+        if (! $user->wasChanged('email_verified_at') || $user->email_verified_at === null) {
+            return;
         }
+
+        // Only pending accounts may be promoted; blocked accounts keep their status.
+        if ($user->status !== UserStatusEnum::Pending) {
+            return;
+        }
+
+        $user->updateQuietly(['status' => UserStatusEnum::Active]);
     }
 }
