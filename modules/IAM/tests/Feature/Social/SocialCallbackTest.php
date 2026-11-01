@@ -112,6 +112,45 @@ describe('GET /api/v1/auth/social/{provider}/callback', function (): void {
             ->and($user->tokens()->count())->toBe(0);
     });
 
+    it('rejects a link callback for a user whose status was blocked mid-flow', function (): void {
+        $user = UserFactory::new()->banned()->createOne([
+            'email' => 'banned-link@example.com',
+        ]);
+
+        mockSocialiteUserForCallback('google', 'google-banned-link', 'banned-link@example.com');
+
+        $oauthState = SocialState::create('link', ['user_id' => $user->id]);
+        $response = $this->getJson("/api/v1/auth/social/google/callback?state={$oauthState}");
+
+        assertProblemResponse($response, 422, 'validation');
+
+        $user->refresh();
+
+        expect($response->json('detail'))->toBe(__($user->status->blockedMessageKey()))
+            ->and($user->socialAccounts()->count())->toBe(0)
+            ->and($user->tokens()->count())->toBe(0);
+    });
+
+    it('activates a pending unverified user matched by email', function (): void {
+        $user = UserFactory::new()->pending()->createOne([
+            'email' => 'pending-email-match@example.com',
+        ]);
+
+        mockSocialiteUserForCallback('google', 'google-pending-email-match', $user->email);
+
+        $oauthState = SocialState::create('login');
+        $response = $this->getJson("/api/v1/auth/social/google/callback?state={$oauthState}");
+
+        assertSuccessResponse($response, 200);
+
+        $user->refresh();
+
+        expect($response->json('data.user.status'))->toBe(UserStatusEnum::Active->value)
+            ->and($user->email_verified_at)->not->toBeNull()
+            ->and($user->status)->toBe(UserStatusEnum::Active)
+            ->and($user->socialAccounts()->count())->toBe(1);
+    });
+
     it('rejects invalid state', function (): void {
         $response = $this->getJson('/api/v1/auth/social/google/callback?state=bad');
 

@@ -95,6 +95,9 @@ final readonly class SocialCallbackAction
             throw new InvalidArgumentException(__('validation.social_state_invalid'));
         }
 
+        // The status can change between the redirect and this callback.
+        $this->ensureCanAuthenticate($user);
+
         $existing = SocialAccount::query()
             ->where('provider', $provider)
             ->where('provider_id', $socialUser->getId())
