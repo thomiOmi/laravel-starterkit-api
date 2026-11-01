@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Actions;
 
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -21,11 +22,15 @@ final readonly class ResetPasswordAction
         $status = Password::reset(
             $data,
             function (User $user, string $password): void {
-                $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->setRememberToken(Str::random(60));
+                DB::transaction(function () use ($user, $password): void {
+                    $user->forceFill([
+                        'password' => Hash::make($password),
+                    ])->setRememberToken(Str::random(60));
 
-                $user->save();
+                    $user->save();
+
+                    $user->tokens()->delete();
+                });
 
                 event(new PasswordReset($user));
             },

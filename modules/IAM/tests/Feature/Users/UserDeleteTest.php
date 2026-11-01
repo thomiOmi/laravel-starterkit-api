@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use Illuminate\Contracts\Auth\Factory;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Http\Controllers\V1\UserDeleteController;
 use Modules\IAM\Models\Permission;
@@ -25,6 +26,44 @@ describe('DELETE /api/v1/users/{user}', function (): void {
 
         assertSuccessResponse($this->deleteJson("/api/v1/users/{$target->id}"), 200);
         expect($target->refresh()->deleted_at)->not->toBeNull();
+    });
+
+    it('revokes access tokens when an admin deletes a user and keeps them revoked after restore', function (): void {
+        Permission::query()->firstOrCreate(['name' => PermissionEnum::UserRestore->value, 'guard_name' => 'sanctum']);
+
+        $actor = UserFactory::new()->createOne();
+        $actor->givePermissionTo([
+            PermissionEnum::UserDelete->value,
+            PermissionEnum::UserRestore->value,
+        ]);
+        $actorToken = $actor->createToken('admin-device');
+
+        $target = UserFactory::new()->createOne();
+        $targetToken = $target->createToken('stolen-device');
+
+        $deleteResponse = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->deleteJson("/api/v1/users/{$target->id}");
+
+        assertSuccessResponse($deleteResponse, 200);
+        expect($target->tokens()->count())->toBe(0);
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$targetToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
+
+        $restoreResponse = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->postJson('/api/v1/users/bulk/restore', ['ids' => [$target->id]]);
+
+        assertSuccessResponse($restoreResponse, 200);
+        expect($target->refresh()->deleted_at)->toBeNull();
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$targetToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
     });
 
     it('blocks deleting yourself even with permission', function (): void {

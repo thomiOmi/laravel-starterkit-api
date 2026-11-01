@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use Illuminate\Contracts\Auth\Factory;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Http\Controllers\V1\UserAssignRolesController;
 use Modules\IAM\Http\Controllers\V1\UserBulkDeleteController;
@@ -38,6 +39,42 @@ describe('POST /api/v1/users/bulk/delete', function (): void {
         assertSuccessResponse($response, 200);
         expect($victim->refresh()->deleted_at)->not->toBeNull()
             ->and($superAdmin->refresh()->deleted_at)->toBeNull();
+    });
+
+    it('revokes access tokens on bulk delete and keeps them revoked after bulk restore', function (): void {
+        $actor = UserFactory::new()->createOne();
+        $actor->givePermissionTo([
+            PermissionEnum::UserDelete->value,
+            PermissionEnum::UserRestore->value,
+        ]);
+        $actorToken = $actor->createToken('admin-device');
+
+        $target = UserFactory::new()->createOne();
+        $targetToken = $target->createToken('stolen-device');
+
+        $deleteResponse = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->postJson('/api/v1/users/bulk/delete', ['ids' => [$target->id]]);
+
+        assertSuccessResponse($deleteResponse, 200);
+        expect($target->tokens()->count())->toBe(0);
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$targetToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
+
+        $restoreResponse = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->postJson('/api/v1/users/bulk/restore', ['ids' => [$target->id]]);
+
+        assertSuccessResponse($restoreResponse, 200);
+        expect($target->refresh()->deleted_at)->toBeNull();
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$targetToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
     });
 
     it('validates the ids payload', function (): void {
