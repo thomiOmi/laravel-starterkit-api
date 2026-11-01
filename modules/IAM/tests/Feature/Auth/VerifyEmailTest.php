@@ -26,6 +26,29 @@ describe('GET /api/v1/auth/email/verify/{id}/{hash}', function (): void {
             ->and($user->fresh()?->status)->toBe(UserStatusEnum::Active);
     });
 
+    it('does not reactivate a blocked account when the email is verified', function (UserStatusEnum $status): void {
+        $user = UserFactory::new()->createOne([
+            'status' => $status,
+            'email_verified_at' => null,
+        ]);
+
+        $url = URL::temporarySignedRoute(
+            'api.v1.iam.auth.verification.verify',
+            now()->addMinutes(10),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->actingAs($user, 'sanctum')->getJson($url);
+
+        assertSuccessResponse($response, 200);
+        expect($user->fresh()?->email_verified_at)->not->toBeNull()
+            ->and($user->fresh()?->status)->toBe($status);
+    })->with([
+        'banned' => UserStatusEnum::Banned,
+        'suspended' => UserStatusEnum::Suspended,
+        'inactive' => UserStatusEnum::Inactive,
+    ]);
+
     it('rejects a mismatched hash', function (): void {
         $user = UserFactory::new()->unverified()->createOne();
 
