@@ -6,7 +6,9 @@ use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Enums\UserStatusEnum;
 use App\Notifications\VerifyEmail as VerifyEmailNotification;
+use Illuminate\Contracts\Auth\Factory;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Http\Controllers\V1\UserUpdateController;
 use Modules\IAM\Models\Permission;
@@ -152,5 +154,107 @@ describe('PUT /api/v1/users/{user}', function (): void {
 
         assertProblemResponse($response, 422, 'validation');
         $response->assertJsonValidationErrors(['status']);
+    });
+
+    it('revokes every access token when an admin blocks the account and keeps them revoked after reactivation', function (UserStatusEnum $status): void {
+        $actor = UserFactory::new()->createOne();
+        $actor->givePermissionTo(PermissionEnum::UserEdit->value);
+
+        $actorToken = $actor->createToken('admin-device');
+
+        $target = UserFactory::new()->createOne();
+        $targetToken = $target->createToken('stolen-device');
+
+        $blockResponse = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->putJson("/api/v1/users/{$target->id}", [
+                'name' => $target->name,
+                'email' => $target->email,
+                'status' => $status->value,
+            ]);
+
+        assertSuccessResponse($blockResponse, 200);
+        expect($target->refresh()->status)->toBe($status)
+            ->and($target->tokens()->count())->toBe(0);
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$targetToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
+
+        $reactivateResponse = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->putJson("/api/v1/users/{$target->id}", [
+                'name' => $target->name,
+                'email' => $target->email,
+                'status' => UserStatusEnum::Active->value,
+            ]);
+
+        assertSuccessResponse($reactivateResponse, 200);
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$targetToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
+    })->with([
+        'inactive' => UserStatusEnum::Inactive,
+        'suspended' => UserStatusEnum::Suspended,
+        'banned' => UserStatusEnum::Banned,
+    ]);
+
+    it('keeps access tokens when other fields change without a status change', function (): void {
+        $actor = UserFactory::new()->createOne();
+        $actor->givePermissionTo(PermissionEnum::UserEdit->value);
+
+        $actorToken = $actor->createToken('admin-device');
+
+        $target = UserFactory::new()->createOne();
+        $target->createToken('stolen-device');
+
+        $renameResponse = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->putJson("/api/v1/users/{$target->id}", [
+                'name' => 'Renamed',
+                'email' => $target->email,
+            ]);
+
+        assertSuccessResponse($renameResponse, 200);
+        expect($target->refresh()->name)->toBe('Renamed')
+            ->and($target->tokens()->count())->toBe(1);
+    });
+
+    it('keeps access tokens when a pending account is activated by email verification', function (): void {
+        $user = UserFactory::new()->unverified()->createOne(['status' => UserStatusEnum::Pending]);
+        $token = $user->createToken('phone-device');
+
+        $url = URL::temporarySignedRoute(
+            'api.v1.iam.auth.verification.verify',
+            now()->addMinutes(10),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token->plainTextToken)->getJson($url);
+
+        assertSuccessResponse($response, 200);
+        expect($user->fresh()?->status)->toBe(UserStatusEnum::Active)
+            ->and($user->tokens()->count())->toBe(1);
+    });
+
+    it('transitions between blocked statuses without error', function (): void {
+        $actor = UserFactory::new()->createOne();
+        $actor->givePermissionTo(PermissionEnum::UserEdit->value);
+
+        $actorToken = $actor->createToken('admin-device');
+
+        $target = UserFactory::new()->suspended()->createOne();
+
+        $banResponse = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->putJson("/api/v1/users/{$target->id}", [
+                'name' => $target->name,
+                'email' => $target->email,
+                'status' => UserStatusEnum::Banned->value,
+            ]);
+
+        assertSuccessResponse($banResponse, 200);
+        expect($target->refresh()->status)->toBe(UserStatusEnum::Banned);
     });
 });
