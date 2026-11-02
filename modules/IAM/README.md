@@ -289,7 +289,7 @@ curl -X POST http://localhost:8000/api/v1/auth/logout -H "Authorization: Bearer 
 - **Permissions/Roles:** Add new values to `App\Enums\PermissionEnum` / `RoleEnum`, run `php artisan db:seed` (creates via `IAMSeeder`). Assign via `UserAssignRolesController` or Spatie `givePermissionTo()`.
 - **Policies:** `Modules\IAM\Policies\UserPolicy` registered via `#[UsePolicy]` on `User` model. Add abilities with `Gate` or `#[UsePolicy]`.
 - **Feature flag:** `iam.features.self-registration` in `modules/IAM/config/config.php` — toggle via `config/iam.php` or `Pennant::define()` + middleware `feature-flag:iam.self-registration`.
-- **Observer:** `Modules\IAM\Observers\UserObserver` (`#[ObservedBy]`) promotes a `UserStatusEnum::Pending` user to `Active` when `email_verified_at` is set; `Banned`, `Suspended`, and `Inactive` keep their status.
+- **Observer:** `Modules\IAM\Observers\UserObserver` (`#[ObservedBy]`) promotes a `UserStatusEnum::Pending` user to `Active` when `email_verified_at` is set; `Banned`, `Suspended`, and `Inactive` keep their status. When the status changes to a value that does not allow authentication (`Inactive`, `Suspended`, `Banned`), all of that user's Sanctum access tokens are revoked — reactivating the account does not resurrect previously issued tokens.
 - **Add endpoint:** Create `app/Http/Controllers/V1/{Action}Controller` (invokable `final readonly`), `app/Actions/{Action}`, `app/Http/Requests/V1/{Action}Request`, `app/Http/Resources`, register route in `routes/V1.php` under `api/v1` prefix.
 
 ## Testing
