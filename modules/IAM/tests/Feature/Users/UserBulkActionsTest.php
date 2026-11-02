@@ -77,6 +77,62 @@ describe('POST /api/v1/users/bulk/delete', function (): void {
             ->assertUnauthorized();
     });
 
+    it('revokes tokens only for deletable users and preserves self, super-admin, and bystander tokens', function (): void {
+        $actor = UserFactory::new()->createOne();
+        $actor->givePermissionTo(PermissionEnum::UserDelete->value);
+
+        $actorToken = $actor->createToken('admin-device');
+
+        $regular = UserFactory::new()->createOne();
+        $regularToken = $regular->createToken('regular-device');
+
+        $superAdmin = UserFactory::new()->superAdmin()->createOne();
+        $superAdminToken = $superAdmin->createToken('super-admin-device');
+
+        $bystander = UserFactory::new()->createOne();
+        $bystanderToken = $bystander->createToken('bystander-device');
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->postJson('/api/v1/users/bulk/delete', ['ids' => [
+                $regular->id, $superAdmin->id, $actor->id,
+            ]]);
+
+        assertSuccessResponse($response, 200);
+        expect($response->json('data.count'))->toBe(1)
+            ->and($regular->tokens()->count())->toBe(0)
+            ->and($superAdmin->tokens()->count())->toBe(1)
+            ->and($actor->tokens()->count())->toBe(1)
+            ->and($bystander->tokens()->count())->toBe(1)
+            ->and($regular->refresh()->deleted_at)->not->toBeNull()
+            ->and($superAdmin->refresh()->deleted_at)->toBeNull()
+            ->and($actor->refresh()->deleted_at)->toBeNull()
+            ->and($bystander->refresh()->deleted_at)->toBeNull();
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$regularToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$superAdminToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertOk();
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$actorToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertOk();
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$bystanderToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertOk();
+    });
+
     it('validates the ids payload', function (): void {
         $actor = loginAsUser();
         $actor->givePermissionTo(PermissionEnum::UserDelete->value);

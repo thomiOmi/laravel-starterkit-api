@@ -53,7 +53,6 @@ final readonly class BulkDeleteUsersAction
                 ->whereIn('tokenable_id', $userIds)
                 ->delete();
 
-            // Apply filtering directly on the delete query builder to avoid double database round-trips via pluck().
             /** @var int $count */
             $count = $query->delete();
 
