@@ -50,7 +50,9 @@ describe('trusted hosts', function (): void {
         $check = findCheck((new ProductionSecurityCheck)(), 'TRUSTED_HOSTS');
 
         expect($check['status'])->toBe('fail')
-            ->and($check['detail'])->toContain('example.com');
+            ->and($check['detail'])
+            ->toContain('APP_TRUSTED_HOSTS')
+            ->toContain('example.com');
     });
 
     it('fails when the list is empty', function (): void {

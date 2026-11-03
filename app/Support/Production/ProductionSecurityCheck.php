@@ -125,7 +125,7 @@ final readonly class ProductionSecurityCheck
                 'check' => 'TRUSTED_HOSTS',
                 'status' => 'fail',
                 'detail' => sprintf(
-                    "TRUSTED_HOSTS contains unanchored pattern(s) %s, every entry must start with ^ and end with $, e.g. '^example.com$'",
+                    "TRUSTED_HOSTS contains unanchored pattern(s) %s. APP_TRUSTED_HOSTS must be a comma-separated list of plain hostnames (e.g. app.example.com) that are anchored to '^app\\.example\\.com$' automatically; anchored patterns are only expected when overriding config('app.trusted_hosts') directly",
                     $offending,
                 ),
             ];
