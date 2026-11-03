@@ -106,6 +106,31 @@ final readonly class ProductionSecurityCheck
     {
         $hosts = config()->array('app.trusted_hosts', []);
 
+        // Config values are normally strings, but the check must not choke on
+        // anything else: unanchored means "not an anchored pattern".
+        $unanchored = [];
+        foreach ($hosts as $host) {
+            if (is_string($host) && (! str_starts_with($host, '^') || ! str_ends_with($host, '$'))) {
+                $unanchored[] = $host;
+            }
+        }
+
+        if ($unanchored !== []) {
+            $offending = implode(', ', array_map(
+                fn (string $host): string => "'".$host."'",
+                array_slice($unanchored, 0, 3),
+            ));
+
+            return [
+                'check' => 'TRUSTED_HOSTS',
+                'status' => 'fail',
+                'detail' => sprintf(
+                    "TRUSTED_HOSTS contains unanchored pattern(s) %s, every entry must start with ^ and end with $, e.g. '^example.com$'",
+                    $offending,
+                ),
+            ];
+        }
+
         return [
             'check' => 'TRUSTED_HOSTS',
             'status' => $hosts !== [] ? 'pass' : 'fail',

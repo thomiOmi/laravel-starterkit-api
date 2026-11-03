@@ -11,7 +11,7 @@ beforeEach(function (): void {
     config()->set('app.env', 'production');
     config()->set('app.url', 'https://example.com');
     config()->set('app.frontend_url', 'https://frontend.example.com');
-    config()->set('app.trusted_hosts', ['example.com']);
+    config()->set('app.trusted_hosts', ['^example\.com$']);
     config()->set('cache.default', 'redis');
     config()->set('session.driver', 'redis');
     config()->set('session.secure', true);
@@ -31,6 +31,35 @@ describe('production config', function (): void {
 
         expect($failed)->toBeEmpty()
             ->and($result)->toHaveCount(14);
+    });
+});
+
+describe('trusted hosts', function (): void {
+    it('passes when every entry is anchored', function (): void {
+        config()->set('app.trusted_hosts', ['^example\.com$', '^www\.example\.com$']);
+
+        $check = findCheck((new ProductionSecurityCheck)(), 'TRUSTED_HOSTS');
+
+        expect($check['status'])->toBe('pass')
+            ->and($check['detail'])->toBe('TRUSTED_HOSTS has 2 trusted host(s)');
+    });
+
+    it('fails when an entry is not anchored and names the offending entry', function (): void {
+        config()->set('app.trusted_hosts', ['example.com', '^clean.com$']);
+
+        $check = findCheck((new ProductionSecurityCheck)(), 'TRUSTED_HOSTS');
+
+        expect($check['status'])->toBe('fail')
+            ->and($check['detail'])->toContain('example.com');
+    });
+
+    it('fails when the list is empty', function (): void {
+        config()->set('app.trusted_hosts', []);
+
+        $check = findCheck((new ProductionSecurityCheck)(), 'TRUSTED_HOSTS');
+
+        expect($check['status'])->toBe('fail')
+            ->and($check['detail'])->toContain('TRUSTED_HOSTS is empty');
     });
 });
 
@@ -59,8 +88,8 @@ describe('multiple failures', function (): void {
 });
 
 /**
- * @param  array<int, array{check: string, status: string, detail?: string}>  $results
- * @return array{check: string, status: string, detail?: string}
+ * @param  array<int, array{check: string, status: string, detail: string}>  $results
+ * @return array{check: string, status: string, detail: string}
  */
 function findCheck(array $results, string $name): array
 {
