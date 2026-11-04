@@ -76,3 +76,17 @@ describe('bearer-only api', function (): void {
             ->and($response->headers->getCookies())->toBeEmpty();
     });
 });
+
+describe('sanctum csrf cookie route', function (): void {
+    it('does not expose the sanctum csrf cookie endpoint', function (): void {
+        $response = $this->get('/sanctum/csrf-cookie');
+
+        $response->assertNotFound();
+
+        expect($response->headers->getCookies())->toBeEmpty();
+    });
+
+    it('does not register the sanctum csrf cookie named route', function (): void {
+        expect(resolve(Router::class)->has('sanctum.csrf-cookie'))->toBeFalse();
+    });
+});
