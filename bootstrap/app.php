@@ -12,7 +12,6 @@ use App\Http\Middleware\SetLocale;
 use App\Http\Responses\ProblemResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,7 +22,6 @@ use Illuminate\Routing\Router;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
-use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
@@ -54,11 +52,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'trace-id' => AddTraceId::class,
         ]);
 
-        $middleware->prependToPriorityList(
-            before: AuthenticatesRequests::class,
-            prepend: EnsureFrontendRequestsAreStateful::class,
-        );
-
         $middleware->append(SetLocale::class);
         $middleware->prependToGroup('api', AddTraceId::class);
         $middleware->prependToGroup('api', AddSecurityHeaders::class);
@@ -71,8 +64,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
             return $hosts;
         });
-
-        $middleware->statefulApi();
         // $middleware->throttleApi(); // We will define custom throttle in routes
     })
     ->withExceptions(function (Exceptions $exceptions): void {

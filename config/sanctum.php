@@ -29,6 +29,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Sanctum Routes
+    |--------------------------------------------------------------------------
+    |
+    | This API is bearer-token only, so the GET /sanctum/csrf-cookie route is
+    | not registered. That route runs on the "web" middleware group, starts a
+    | session, and sets session/XSRF cookies that no bearer-token client uses.
+    | Returning false here makes SanctumServiceProvider::defineRoutes() skip
+    | the route entirely.
+    |
+    */
+
+    'routes' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | Sanctum Guards
     |--------------------------------------------------------------------------
     |
