@@ -12,8 +12,9 @@ use Modules\IAM\Http\Controllers\V1\MeController;
 covers([MeController::class, LoginController::class]);
 
 /**
- * Headers that make Sanctum treat the request as coming from a stateful
- * first-party frontend (http://localhost:3000 is in config('sanctum.stateful')).
+ * Headers that mimic a browser request from a first-party frontend.
+ *
+ * They must not change how the API authenticates: bearer tokens only.
  *
  * @return array<string, string>
  */
@@ -37,6 +38,14 @@ describe('bearer-only api', function (): void {
             ->getJson('/api/v1/auth/me');
 
         assertProblemResponse($response, 401);
+    });
+
+    it('does not authenticate api requests through the web guard', function (): void {
+        $user = UserFactory::new()->createOne(['email_verified_at' => now()]);
+
+        $this->actingAs($user, 'web')
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
     });
 
     it('accepts real bearer tokens from stateful origins', function (): void {
@@ -74,6 +83,25 @@ describe('bearer-only api', function (): void {
         expect($response->json('data.access_token'))->not->toBeEmpty()
             ->and($response->json('data.token_type'))->toBe('Bearer')
             ->and($response->headers->getCookies())->toBeEmpty();
+    });
+});
+
+describe('bearer-only cors', function (): void {
+    it('does not allow credentialed preflight requests', function (): void {
+        config(['cors.allowed_origins' => ['http://localhost:5173']]);
+
+        $response = $this->call('OPTIONS', '/api/v1/auth/login', server: [
+            'HTTP_ORIGIN' => 'http://localhost:5173',
+            'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'POST',
+        ]);
+
+        $response->assertNoContent();
+        $response->assertHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+        $response->assertHeaderMissing('Access-Control-Allow-Credentials');
+    });
+
+    it('does not apply cors to the sanctum csrf cookie path', function (): void {
+        expect(config()->array('cors.paths'))->not->toContain('sanctum/csrf-cookie');
     });
 });
 

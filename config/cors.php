@@ -23,12 +23,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | The paths that should be checked for CORS. Requests matching these paths
-    | will have CORS headers applied. The sanctum/csrf-cookie path is needed
-    | for SPA authentication.
+    | will have CORS headers applied. This API is bearer-token only, so the
+    | Sanctum CSRF cookie path is not exposed to browsers.
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*'],
 
     /*
     |--------------------------------------------------------------------------
@@ -48,8 +48,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | The origins that are allowed to make cross-origin requests. You may
-    | use "*" to allow all origins. For SPA authentication, you must
-    | include the frontend URL here.
+    | use "*" to allow all origins. Set CORS_ALLOWED_ORIGINS to the origins
+    | of your separate frontend application.
     |
     */
 
@@ -117,11 +117,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | When set to true, the Access-Control-Allow-Credentials header will be
-    | included in the response. This is required for SPA authentication
-    | with Sanctum and for sending cookies cross-origin.
+    | included in the response. Bearer tokens travel in the Authorization
+    | header instead of cookies, so this API does not allow credentialed
+    | cross-origin requests. Enable it only if clients must send cookies.
     |
     */
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
 ];
