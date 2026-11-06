@@ -298,21 +298,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Choose what laravel-modules will register as custom namespaces.
-    | Setting one to false will require you to register that part
-    | in your own Service Provider class.
-    |--------------------------------------------------------------------------
-    */
-    'register' => [
-        'translations' => true,
-        /**
-         * load files on boot or register method
-         */
-        'files' => 'register',
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Activators
     |--------------------------------------------------------------------------
     |
