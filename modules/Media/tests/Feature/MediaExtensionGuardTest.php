@@ -84,7 +84,7 @@ describe('Media extension guard', function (): void {
             }
         };
 
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
 
         expect(fn (): mixed => $owner->addMedia(UploadedFile::fake()->createWithContent('doc.pdf', "%PDF-1.4\nbody\n%%EOF"))->toMediaCollection('docs'))
@@ -104,7 +104,7 @@ describe('Media extension guard', function (): void {
             }
         };
 
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
 
         $accepted = $owner->addMedia(UploadedFile::fake()->createWithContent('doc.pdf', "%PDF-1.4\nbody\n%%EOF"))
@@ -125,7 +125,7 @@ describe('Media extension guard', function (): void {
             }
         };
 
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
 
         $media = $owner->addMedia(UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf'))->toMediaCollection('docs');

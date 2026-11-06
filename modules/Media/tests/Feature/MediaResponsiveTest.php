@@ -41,7 +41,7 @@ describe('Media responsive images', function (): void {
         };
 
         $ownerId = (string) Str::ulid();
-        $owner->forceFill(['id' => $ownerId]);
+        $owner->setAttribute('id', $ownerId);
         $owner->exists = true;
 
         // The responsive flag is resolved through a fresh model lookup,

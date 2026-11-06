@@ -162,6 +162,16 @@ Area-specific conventions (testing, controllers, actions, models, routes, respon
 | `.ai/skills/` | You (survives `boost:update`) | Edit directly — Boost-managed agent skills |
 | `.agents/` | AI agent's skill/rules system | **DO NOT** edit directly — let the AI agent manage it |
 
+=== .ai/module rules ===
+
+# Laravel Modules
+
+- Laravel Modules is a package for managing large Laravel applications using a modular architecture.
+- Each module is an independent unit with its own controllers, models, views, routes, migrations, and configuration.
+- Use `module:make ModuleName` to scaffold a new module. Modules live in the `Modules/` directory by default.
+- Module namespaces follow the pattern `Modules\ModuleName` (e.g. `Modules\Blog\Http\Controllers\BlogController`).
+- Always place module-specific logic inside the module directory, not in the application's `app/` folder.
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -317,7 +327,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `php artisan test --compact`.
 - Rerun a test after each change to it.
 - Run `vendor/bin/pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
-- After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
 
 === dedoc/scramble/core rules ===
 

@@ -6,7 +6,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Nwidart\Modules\Contracts\RepositoryInterface;
-use Nwidart\Modules\Module;
 
 class DatabaseSeeder extends Seeder
 {
@@ -34,10 +33,6 @@ class DatabaseSeeder extends Seeder
         $seeders = [];
 
         foreach (resolve(RepositoryInterface::class)->allEnabled() as $module) {
-            if (! $module instanceof Module) {
-                continue;
-            }
-
             $studly = $module->getStudlyName();
             $prefix = sprintf('Modules\\%s\\Database\\Seeders\\%s', $studly, $studly);
 

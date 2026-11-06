@@ -8,7 +8,6 @@ use App\Http\Requests\PaginationRequest;
 
 class MediaListRequest extends PaginationRequest
 {
-    #[\Override]
     public function authorize(): bool
     {
         // The listing is scoped to the caller's own media in the

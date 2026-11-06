@@ -261,7 +261,7 @@ return [
     'commands' => ConsoleServiceProvider::defaultCommands()
         ->merge([
             // New commands go here
-        ])->toArray(),
+        ])->all(),
 
     /*
     |--------------------------------------------------------------------------
@@ -294,21 +294,6 @@ return [
             'email' => env('MODULE_AUTHOR_EMAIL', 'thomisyauqi77@gmail.com'),
         ],
         'composer-output' => false,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Choose what laravel-modules will register as custom namespaces.
-    | Setting one to false will require you to register that part
-    | in your own Service Provider class.
-    |--------------------------------------------------------------------------
-    */
-    'register' => [
-        'translations' => true,
-        /**
-         * load files on boot or register method
-         */
-        'files' => 'register',
     ],
 
     /*

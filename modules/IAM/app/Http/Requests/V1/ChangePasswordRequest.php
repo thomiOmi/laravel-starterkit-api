@@ -14,11 +14,6 @@ final class ChangePasswordRequest extends FormRequest
 {
     use PasswordValidationRules;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, array<int, string|Password|ValidationRule>>
      */

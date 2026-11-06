@@ -34,7 +34,7 @@ describe('Media file adder parity', function (): void {
             }
         };
 
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
 
         return $owner;

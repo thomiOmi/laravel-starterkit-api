@@ -73,23 +73,11 @@ final readonly class ModuleDependencyCheck
     }
 
     /**
-     * The repository interface types all() as mixed, so narrow it at our
-     * boundary to a list of module instances.
-     *
      * @return list<Module>
      */
     private function modules(): array
     {
-        $modules = $this->modules->all();
-
-        if (! is_array($modules)) {
-            return [];
-        }
-
-        return array_values(array_filter(
-            $modules,
-            static fn (mixed $module): bool => $module instanceof Module
-        ));
+        return array_values($this->modules->all());
     }
 
     /**

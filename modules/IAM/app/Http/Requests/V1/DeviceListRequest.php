@@ -6,10 +6,4 @@ namespace Modules\IAM\Http\Requests\V1;
 
 use App\Http\Requests\PaginationRequest;
 
-final class DeviceListRequest extends PaginationRequest
-{
-    public function authorize(): bool
-    {
-        return true;
-    }
-}
+final class DeviceListRequest extends PaginationRequest {}

@@ -10,11 +10,6 @@ use Modules\IAM\Payloads\V1\DeleteAccountPayload;
 
 final class DeleteAccountRequest extends FormRequest
 {
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, array<int, string|ValidationRule>>
      */
