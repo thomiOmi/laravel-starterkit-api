@@ -77,7 +77,7 @@ return [
     |
     */
 
-    'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization', 'Accept', 'Origin'],
+    'allowed_headers' => ['Content-Type', 'X-Requested-With', 'Authorization', 'Accept', 'Origin', 'Idempotency-Key'],
 
     /*
     |--------------------------------------------------------------------------

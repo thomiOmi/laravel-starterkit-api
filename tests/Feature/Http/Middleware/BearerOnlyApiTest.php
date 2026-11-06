@@ -100,6 +100,26 @@ describe('bearer-only cors', function (): void {
         $response->assertHeaderMissing('Access-Control-Allow-Credentials');
     });
 
+    it('allows the idempotency key header in preflight responses', function (): void {
+        config(['cors.allowed_origins' => ['http://127.0.0.1:5173']]);
+
+        $response = $this->call('OPTIONS', '/api/v1/auth/login', server: [
+            'HTTP_ORIGIN' => 'http://127.0.0.1:5173',
+            'HTTP_ACCESS_CONTROL_REQUEST_METHOD' => 'POST',
+            'HTTP_ACCESS_CONTROL_REQUEST_HEADERS' => 'idempotency-key',
+        ]);
+
+        $response->assertNoContent();
+        $response->assertHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5173');
+
+        $allowedHeaders = array_map(
+            static fn (string $header): string => strtolower(trim($header)),
+            explode(',', (string) $response->headers->get('Access-Control-Allow-Headers')),
+        );
+
+        expect($allowedHeaders)->toContain('idempotency-key');
+    });
+
     it('does not apply cors to the sanctum csrf cookie path', function (): void {
         expect(config()->array('cors.paths'))->not->toContain('sanctum/csrf-cookie');
     });
