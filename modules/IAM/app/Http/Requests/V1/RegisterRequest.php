@@ -27,11 +27,6 @@ final class RegisterRequest extends FormRequest
     use PasswordValidationRules;
     use ProfileValidationRules;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     /**
      * @return array<string, array<int, Password|Unique|ValidationRule|string>>
      */

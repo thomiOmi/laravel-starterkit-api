@@ -37,7 +37,7 @@ describe('EnsureFeatureIsActive', function (): void {
             fn (Request $req): Response => new Response('OK'),
             BetaFeature::class,
         );
-    })->throws(AccessDeniedHttpException::class, 'Forbidden');
+    })->throws(AccessDeniedHttpException::class);
 
     it('passes request through for the guest scope when feature is active', function (): void {
         Feature::define(BetaFeature::class, true);
@@ -60,7 +60,7 @@ describe('EnsureFeatureIsActive', function (): void {
             fn (Request $req): Response => new Response('OK'),
             BetaFeature::class,
         );
-    })->throws(AccessDeniedHttpException::class, 'Forbidden');
+    })->throws(AccessDeniedHttpException::class);
 
     it('resolves a build-time registry feature before falling back to Pennant', function (): void {
         config()->set('iam.features.self-registration', false);

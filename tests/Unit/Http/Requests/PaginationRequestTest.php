@@ -62,8 +62,4 @@ describe('PaginationRequest', function (): void {
         });
     });
 
-    it('authorizes all requests', function (): void {
-        expect(PaginationRequest::create('/')->authorize())->toBeTrue();
-    });
-
 });

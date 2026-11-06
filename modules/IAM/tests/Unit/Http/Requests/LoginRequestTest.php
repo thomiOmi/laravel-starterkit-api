@@ -8,14 +8,13 @@ use Modules\IAM\Http\Requests\V1\LoginRequest;
 covers(LoginRequest::class);
 
 describe('LoginRequest', function (): void {
-    it('extends FormRequest and authorizes all', function (): void {
+    it('extends FormRequest', function (): void {
         $parent = new ReflectionClass(LoginRequest::class)->getParentClass();
 
         expect($parent)->toBeInstanceOf(ReflectionClass::class);
 
         if ($parent instanceof ReflectionClass) {
-            expect($parent->getName())->toBe(FormRequest::class)
-                ->and((new LoginRequest)->authorize())->toBeTrue();
+            expect($parent->getName())->toBe(FormRequest::class);
         }
     });
 

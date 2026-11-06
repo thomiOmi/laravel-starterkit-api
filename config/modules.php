@@ -261,7 +261,7 @@ return [
     'commands' => ConsoleServiceProvider::defaultCommands()
         ->merge([
             // New commands go here
-        ])->toArray(),
+        ])->all(),
 
     /*
     |--------------------------------------------------------------------------

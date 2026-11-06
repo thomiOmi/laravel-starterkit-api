@@ -23,7 +23,7 @@ describe('Media from helpers', function (): void {
         {
             use InteractsWithMedia;
         };
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
         DB::table('users')->insert([
             'id' => $owner->getKey(),
@@ -45,7 +45,7 @@ describe('Media from helpers', function (): void {
         {
             use InteractsWithMedia;
         };
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
         DB::table('users')->insert([
             'id' => $owner->getKey(),
@@ -75,7 +75,7 @@ describe('Media from helpers', function (): void {
         {
             use InteractsWithMedia;
         };
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
         DB::table('users')->insert([
             'id' => $owner->getKey(),
@@ -104,7 +104,7 @@ describe('Media from helpers', function (): void {
         {
             use InteractsWithMedia;
         };
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
         DB::table('users')->insert([
             'id' => $owner->getKey(),

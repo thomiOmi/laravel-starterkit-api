@@ -12,11 +12,6 @@ final class ForgotPasswordRequest extends FormRequest
 {
     use ProfileValidationRules;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     protected function prepareForValidation(): void
     {
         $this->normalizeEmail();

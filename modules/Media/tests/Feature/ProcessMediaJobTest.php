@@ -57,7 +57,7 @@ describe('ProcessMediaJob', function (): void {
             'updated_at' => now(),
         ]);
 
-        $owner->forceFill(['id' => $ownerId]);
+        $owner->setAttribute('id', $ownerId);
         $owner->exists = true;
 
         return $owner;

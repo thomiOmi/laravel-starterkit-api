@@ -27,7 +27,7 @@ describe('InteractsWithMedia', function (): void {
             use InteractsWithMedia;
         };
 
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
 
         // Create media via factory forModel
@@ -56,7 +56,7 @@ describe('InteractsWithMedia', function (): void {
         };
 
         $ownerId = (string) Str::ulid();
-        $owner->forceFill(['id' => $ownerId]);
+        $owner->setAttribute('id', $ownerId);
         $owner->exists = true;
 
         // Ensure owner exists in DB for FK-like association (users table)
@@ -91,7 +91,7 @@ describe('InteractsWithMedia', function (): void {
             use InteractsWithMedia;
         };
 
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
 
         $public = MediaFactory::new()->forModel($owner, 'avatars')->public()->createOne();
@@ -112,7 +112,7 @@ describe('InteractsWithMedia', function (): void {
             use InteractsWithMedia;
         };
 
-        $owner->forceFill(['id' => (string) Str::ulid()]);
+        $owner->setAttribute('id', (string) Str::ulid());
         $owner->exists = true;
 
         MediaFactory::new()->forModel($owner, 'avatars')->count(2)->create();

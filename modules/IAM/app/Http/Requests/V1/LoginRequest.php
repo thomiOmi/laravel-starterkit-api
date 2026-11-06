@@ -17,11 +17,6 @@ final class LoginRequest extends FormRequest
     use PasswordValidationRules;
     use ProfileValidationRules;
 
-    public function authorize(): bool
-    {
-        return true;
-    }
-
     protected function prepareForValidation(): void
     {
         $this->normalizeEmail();
