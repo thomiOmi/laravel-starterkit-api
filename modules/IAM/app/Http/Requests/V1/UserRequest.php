@@ -84,7 +84,7 @@ final class UserRequest extends FormRequest
 
         return [
             ...$this->profileRules($userId),
-            'password' => $this->passwordRules($this->isMethod('POST')),
+            'password' => $this->isMethod('POST') ? $this->passwordRules() : ['prohibited'],
             'status' => $statusRule,
         ];
     }

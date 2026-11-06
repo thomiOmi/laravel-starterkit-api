@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Modules\IAM\Actions;
 
 use App\Enums\RoleEnum;
+use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Modules\IAM\Models\User;
 use Spatie\Permission\Models\Role;
 
@@ -30,19 +32,31 @@ final readonly class BulkDeleteUsersAction
         /** @var User|null $currentUser */
         $currentUser = $this->auth->user();
 
-        $query = User::query()->whereIn('id', $ids);
+        return DB::transaction(function () use ($ids, $currentUser): int {
+            $query = User::query()->whereIn('id', $ids);
 
-        if ($currentUser === null || ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
-            $query->whereDoesntHave('roles', function (Builder $q): void {
-                /** @var Builder<Role> $q */
-                $q->where('name', RoleEnum::SuperAdmin->value);
-            });
-        }
+            if ($currentUser === null || ! $currentUser->hasRole(RoleEnum::SuperAdmin->value)) {
+                $query->whereDoesntHave('roles', function (Builder $q): void {
+                    /** @var Builder<Role> $q */
+                    $q->where('name', RoleEnum::SuperAdmin->value);
+                });
+            }
 
-        // Apply filtering directly on the delete query builder to avoid double database round-trips via pluck().
-        /** @var int $count */
-        $count = $query->delete();
+            $userIds = $query->pluck('id');
 
-        return $count;
+            if ($userIds->isEmpty()) {
+                return 0;
+            }
+
+            PersonalAccessToken::query()
+                ->where('tokenable_type', (new User)->getMorphClass())
+                ->whereIn('tokenable_id', $userIds)
+                ->delete();
+
+            /** @var int $count */
+            $count = $query->delete();
+
+            return $count;
+        });
     }
 }

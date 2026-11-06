@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Auth\Factory;
 use Illuminate\Support\Facades\Password;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Http\Controllers\V1\ResetPasswordController;
@@ -27,6 +28,28 @@ describe('POST /api/v1/auth/reset-password', function (): void {
             'email' => 'jane@example.com',
             'password' => 'new-password123',
         ])->assertOk();
+    });
+
+    it('revokes all access tokens after a successful password reset', function (): void {
+        $user = UserFactory::new()->createOne(['email' => 'jane@example.com', 'password' => 'old-password']);
+        $accessToken = $user->createToken('stolen-device');
+        $resetToken = Password::createToken($user);
+
+        $response = $this->postJson('/api/v1/auth/reset-password', [
+            'token' => $resetToken,
+            'email' => 'jane@example.com',
+            'password' => 'new-password123',
+            'password_confirmation' => 'new-password123',
+        ]);
+
+        assertSuccessResponse($response, 200);
+        expect($user->tokens()->count())->toBe(0);
+
+        resolve(Factory::class)->forgetGuards();
+
+        $this->withHeader('Authorization', 'Bearer '.$accessToken->plainTextToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertUnauthorized();
     });
 
     it('normalizes email with uppercase and whitespace when resetting password', function (): void {

@@ -112,7 +112,7 @@ flowchart TD
     C --> D["Send VerifyEmail signed URL via APP_FRONTEND_URL"]
     E["GET /auth/email/verify/{id}/{hash}?signature=&expires"] --> F{"Valid signed URL?"}
     F -- "No" --> F1["403"]
-    F -- "Yes" --> G["Mark email_verified_at, UserObserver -> status=Active"]
+    F -- "Yes" --> G["Mark email_verified_at, UserObserver -> only Pending becomes Active"]
     H["POST /auth/login"] --> H1["Validate credentials"]
     H1 --> H2["LoginAction -> Sanctum token abilities='*'"]
     H2 --> H3["Return Bearer token"]
@@ -207,9 +207,11 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 | POST | `/users/bulk/delete` | `api.v1.iam.user.bulk.delete` | `user.delete` | Bulk soft delete |
 | POST | `/users/bulk/restore` | `api.v1.iam.user.bulk.restore` | `user.restore` | Bulk restore |
 | GET | `/users/{user}` | `api.v1.iam.user.show` | - | Show (owner or policy) |
-| PUT | `/users/{user}` | `api.v1.iam.user.update` | - | Update |
+| PUT | `/users/{user}` | `api.v1.iam.user.update` | - | Update (password not accepted; email change re-verifies) |
 | PUT | `/users/{user}/roles` | `api.v1.iam.user.roles.assign` | `user.edit` | Assign roles |
 | DELETE | `/users/{user}` | `api.v1.iam.user.delete` | `user.delete` | Soft delete |
+
+`PUT /users/{user}` rejects a `password` field with `422`; use `POST /auth/change-password` (or the forgot/reset flow) instead. When the normalized email actually changes, `email_verified_at` is cleared and a verification notification is sent without changing the account status.
 
 ### Roles (`/api/v1/roles`)
 
@@ -287,7 +289,7 @@ curl -X POST http://localhost:8000/api/v1/auth/logout -H "Authorization: Bearer 
 - **Permissions/Roles:** Add new values to `App\Enums\PermissionEnum` / `RoleEnum`, run `php artisan db:seed` (creates via `IAMSeeder`). Assign via `UserAssignRolesController` or Spatie `givePermissionTo()`.
 - **Policies:** `Modules\IAM\Policies\UserPolicy` registered via `#[UsePolicy]` on `User` model. Add abilities with `Gate` or `#[UsePolicy]`.
 - **Feature flag:** `iam.features.self-registration` in `modules/IAM/config/config.php` — toggle via `config/iam.php` or `Pennant::define()` + middleware `feature-flag:iam.self-registration`.
-- **Observer:** `Modules\IAM\Observers\UserObserver` (`#[ObservedBy]`) auto-activates user on `email_verified_at` set (`UserStatusEnum::Active`).
+- **Observer:** `Modules\IAM\Observers\UserObserver` (`#[ObservedBy]`) promotes a `UserStatusEnum::Pending` user to `Active` when `email_verified_at` is set; `Banned`, `Suspended`, and `Inactive` keep their status. When the status changes to a value that does not allow authentication (`Inactive`, `Suspended`, `Banned`), all of that user's Sanctum access tokens are revoked — reactivating the account does not resurrect previously issued tokens.
 - **Add endpoint:** Create `app/Http/Controllers/V1/{Action}Controller` (invokable `final readonly`), `app/Actions/{Action}`, `app/Http/Requests/V1/{Action}Request`, `app/Http/Resources`, register route in `routes/V1.php` under `api/v1` prefix.
 
 ## Testing

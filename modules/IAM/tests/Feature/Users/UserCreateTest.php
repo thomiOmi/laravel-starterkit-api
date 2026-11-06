@@ -5,10 +5,12 @@ declare(strict_types=1);
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Enums\UserStatusEnum;
+use Illuminate\Support\Facades\Hash;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Http\Controllers\V1\UserCreateController;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
+use Modules\IAM\Models\User;
 
 covers(UserCreateController::class);
 
@@ -33,6 +35,24 @@ describe('POST /api/v1/users', function (): void {
         expect($response->json('data.email'))->toBe('created@example.com')
             ->and($response->json('data.status'))->toBe(UserStatusEnum::Pending->value);
         // Admin-created users start pending until they verify their email.
+    });
+
+    it('stores a hashed password when creating a user', function (): void {
+        $creator = loginAsUser();
+        $creator->givePermissionTo(PermissionEnum::UserCreate->value);
+
+        $response = $this->postJson('/api/v1/users', [
+            'name' => 'Hashed User',
+            'email' => 'hashed@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        assertSuccessResponse($response, 201);
+
+        $created = User::query()->whereKey($response->json('data.id'))->firstOrFail();
+        expect($created->password)->not->toBe('password123')
+            ->and(Hash::check('password123', $created->password ?? ''))->toBeTrue();
     });
 
     it('rejects duplicate emails', function (): void {
