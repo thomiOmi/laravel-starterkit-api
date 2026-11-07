@@ -1,6 +1,6 @@
 # ADR-0005: app/ Is Shared Vocabulary and Contract
 
-- Status: Accepted
+- Status: Superseded by ADR-0045
 - Date: 2026-08-07
 
 ## Context

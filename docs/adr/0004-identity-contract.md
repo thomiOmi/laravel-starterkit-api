@@ -1,6 +1,6 @@
 # ADR-0004: Identity Contract for User Type-Hinting
 
-- Status: Accepted
+- Status: Superseded by ADR-0045
 - Date: 2026-08-03
 
 ## Context
