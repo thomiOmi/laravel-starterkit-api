@@ -9,8 +9,8 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0001](0001-sanctum-bearer-tokens-over-jwt.md) | Sanctum Bearer Tokens over JWT | Accepted | 2026-08-03 |
 | [0002](0002-ulid-only-primary-keys.md) | ULID-Only Primary Keys | Accepted | 2026-08-03 |
 | [0003](0003-no-ip-user-agent-encryption.md) | No IP / User-Agent Encryption | Accepted | 2026-08-03 |
-| [0004](0004-identity-contract.md) | Identity Contract for User Type-Hinting | Accepted | 2026-08-03 |
-| [0005](0005-app-shared-vocabulary.md) | `app/` Is Shared Vocabulary and Contract | Accepted | 2026-08-07 |
+| [0004](0004-identity-contract.md) | Identity Contract for User Type-Hinting | Superseded by ADR-0045 | 2026-08-03 |
+| [0005](0005-app-shared-vocabulary.md) | `app/` Is Shared Vocabulary and Contract | Superseded by ADR-0045 | 2026-08-07 |
 | [0006](0006-module-policies-gate-policy.md) | Module Policies via `Gate::policy` | Accepted | 2026-08-08 |
 | [0007](0007-iam-enums-in-app.md) | IAM Enums Stay in `app/Enums` | Accepted | 2026-08-07 |
 | [0008](0008-single-route-discovery.md) | Single Route Discovery via RouteServiceProvider | Superseded by ADR-0029 | 2026-08-08 |
@@ -48,6 +48,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0042](0042-tenancy-deferred-organization-module-removed.md) | Tenancy Deferred: Organization Module Removed | Accepted | 2026-10-19 |
 | [0043](0043-scramble-generates-the-openapi-document.md) | Scramble Generates the OpenAPI Document | Accepted | 2026-10-19 |
 | [0044](0044-adopter-target-and-customization-points.md) | Adopter Target and Customization Points | Proposed | 2026-10-26 |
+| [0045](0045-module-boundaries.md) | Module Boundaries | Accepted | 2026-11-07 |
 
 ## Process
 
