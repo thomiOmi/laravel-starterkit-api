@@ -26,10 +26,10 @@ No file under `app/` imports or names the `Modules\IAM` or `Modules\Media` names
 ## Decision
 
 1. A module may depend on another module only when it declares that dependency in `module.json` `requires`, and the resulting graph must be acyclic. Undeclared runtime coupling is a defect.
-2. A cross-module reference is allowed only into four public seams: `Contracts`, `Models`, `Traits`, and `Rules`. Every other layer is internal to its module. Only the six internal layers listed above are enforced by tests today; the remaining layers are convention, not a test gate.
+2. A cross-module reference is allowed only into four public seams: `Contracts`, `Models`, `Traits`, and `Rules`. The seams are the layers a consumer needs in order to integrate (a contract, a model, a trait, a validation rule); the other layers hold implementation that may change freely. Every other layer is internal to its module. Only the six internal layers listed above are enforced by tests today; the remaining layers are convention, not a test gate.
 3. Media must not import IAM. The dependency direction is Media <- IAM (IAM depends on Media), which matches the manifests.
-4. `App\Contracts\Identity` stays in `app/` so a module can type-hint the authenticated user without importing the IAM model. It is used at runtime by `App\Providers\AppServiceProvider` (`Gate::before`, `VerifyEmail::createUrlUsing`, and the password-reset URL builder), `App\Features\BetaFeature::resolve`, the Media controllers through `#[CurrentUser]`, and `MediaPolicy`. IAM form requests reference it in docblocks only.
-5. A type belongs in `app/` only when it is used by two or more modules, or referenced by root wiring (bootstrap, service providers, root migrations, global middleware). Otherwise it belongs to its owning module. Production code never depends from `app/` to a module; modules depend on `app/`.
+4. `App\Contracts\Identity` stays in `app/` so a module can type-hint the authenticated user without importing the IAM model. It is type-hinted by `App\Providers\AppServiceProvider` (`Gate::before`, `VerifyEmail::createUrlUsing`, and the password-reset URL builder), `App\Features\BetaFeature::resolve` (used by tests only), the Media controllers through `#[CurrentUser]`, and `MediaPolicy`. IAM form requests reference it in docblocks only.
+5. A type belongs in `app/` only when it is used by two or more modules, or referenced by root wiring (bootstrap, service providers, root migrations, global middleware). Otherwise it belongs to its owning module. Production code in `app/` does not currently depend on a module, and modules depend on `app/`. This is not enforced: the isolation test explicitly allows `App\Providers`, `App\Console`, and `App\Builders` to use modules.
 
 ## Consequences
 
