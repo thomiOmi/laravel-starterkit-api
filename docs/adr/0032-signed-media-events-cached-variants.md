@@ -62,3 +62,7 @@ Un-defer all three capabilities using framework primitives only.
   the existing file-first delete order.
 - Signed links bypass per-request authorization by design; short TTLs
   (default guidance 15 minutes) bound exposure.
+
+## Corrections
+
+- 2026-11-07: `App\Contracts\MediaUrlResolver` no longer exists and signed URLs are not produced by a `MediaUrlResolver::signed()` method; `Media::signedUrl()` builds them with `URL::temporarySignedRoute` for the `api.v1.media.file` route. (Original text above is kept as written.)

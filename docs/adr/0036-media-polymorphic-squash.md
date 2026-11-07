@@ -58,3 +58,8 @@ Config `phpstan.neon` adds `modules/Media/config` to `configDirectories`.
 - `Media` table no longer has FK to `users`; `uploaded_by` is morph without constraint, `model` is polymorphic without FK.
 - `IAM` now depends on `Media`; `Media` tests must not import `Modules\IAM\` directly (use `DB`/`Spatie`).
 - Variant on-the-fly `GET /variant?w=` remains (not yet replaced by IPX `s/...`), `conversions` are stored under `conversions/{id}/{name}.webp` separate from `variants`.
+
+## Corrections
+
+- 2026-11-07: `UpdateProfileAction` does not use `DB::table('media')`; it calls `$user->addMedia(...)->toMediaCollection('avatars')` and reads the URL from `$media->url()`. IAM now imports Media's public seams directly; see ADR-0045. (Original text above is kept as written.)
+- 2026-11-07: `MediaUrlGeneratorService` does not exist; URLs are built by `Modules\Media\Support\UrlGenerator\MediaUrlGenerator`, used by `Media::url()` and `Media::getTemporaryUrl()`.

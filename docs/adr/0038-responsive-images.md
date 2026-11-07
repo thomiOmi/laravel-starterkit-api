@@ -22,3 +22,7 @@ The `media.responsive_images` JSON column exists (migration `2026_08_23_024502`,
 ## Implementation (PR feat/media-responsive)
 
 - `GenerateResponsiveImagesAction` (+ static `wantsResponsive()` gate shared by upload and job paths), `MediaCollection::withResponsiveImages()` opt-in flag, `media.responsive.widths` config, `Media::getSrcset()`, `srcset` resource field, `ProcessMediaJob` runs responsive after conversions, `UploadMediaAction` dispatches job-or-inline honoring `media.queue`.
+
+## Corrections
+
+- 2026-11-07: the responsive-images directory is no longer built inline; `GenerateResponsiveImagesAction` resolves it through `Media::getResponsiveImagesDirectory()` (ADR-0040). (Original text above is kept as written.)

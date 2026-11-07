@@ -1,6 +1,6 @@
 # ADR-0039: MediaPathGenerator Owns Only the Original Path, MediaPrefix Owns Every Path
 
-- Status: Accepted
+- Status: Superseded by ADR-0040
 - Date: 2026-10-05
 
 ## Context
