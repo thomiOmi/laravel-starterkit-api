@@ -13,7 +13,7 @@ Module route files in `modules/{Module}/routes/` (e.g. `V1.php`), loaded by the 
 ## Rules
 
 1. Base prefix `api/v1/{path}` (no module segment in the URL); route name `api.{version}.{module}.{name}` (e.g. `api.v1.iam.auth.register`)
-2. Keep middleware explicit on the route group (auth:sanctum, throttle, permission, feature.flag) - no hidden middleware in service providers
+2. Keep middleware explicit on the route group (auth:sanctum, throttle, permission, feature-flag) - no hidden middleware in service providers
 3. Route files only load if the module is active (FileActivator)
 4. Versioned files follow `V{number}.php` casing (V1.php, V2.php); new scaffold modules generate `routes/V1.php` directly (see console-commands rule)
 
@@ -24,12 +24,12 @@ Module route files in `modules/{Module}/routes/` (e.g. `V1.php`), loaded by the 
 
 ## Example
 
-Route files in `modules/{Module}/routes/V1.php` are relative: the module's `RouteServiceProvider` wraps them with `prefix('api/{version}')`, `middleware(['api'])`, and `name('api.{version}.{alias}.')`. Add module-specific middleware (auth, throttle, feature.flag) on the route group or route inside the file, then the base prefix completes the URL.
+Route files in `modules/{Module}/routes/V1.php` are relative: the module's `RouteServiceProvider` wraps them with `prefix('api/{version}')`, `middleware(['api'])`, and `name('api.{version}.{alias}.')`. Add module-specific middleware (auth, throttle, feature-flag) on the route group or route inside the file, then the base prefix completes the URL.
 
 ```php
 Route::prefix('auth')->name('auth.')->group(function (): void {
     Route::post('/register', RegisterController::class)
-        ->middleware('feature.flag:iam.self-registration')
+        ->middleware('feature-flag:iam.self-registration')
         ->name('register');
 });
 ```
