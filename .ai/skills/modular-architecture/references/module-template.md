@@ -21,7 +21,7 @@ Concrete file examples from the `IAM` module. Use these as templates when creati
 }
 ```
 
-List inter-module dependencies (TitleCase folder names) in `requires`, e.g. `["IAM"]`; the core module (IAM) declares none. Validate declarations with `php artisan module:check-dependencies`.
+List inter-module dependencies (TitleCase folder names) in `requires`, e.g. `["IAM"]`; IAM (core) requires Media (core), and core-to-core dependencies are allowed because both are listed in `config/modules.php` `core`. Validate declarations with `php artisan module:check-dependencies`.
 
 ## Service Provider
 

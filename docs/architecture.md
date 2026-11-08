@@ -349,8 +349,7 @@ Database rules and forbidden items: see [.ai/rules/database.md](../.ai/rules/dat
 4. **PHP 8 attributes** preferred over properties (model, job, command).
 5. **Route naming** `api.{version}.{module}.{name}` (module segment = lowercase alias); activation status keys in `modules_statuses.json` use the TitleCase module name.
 6. **Operational classes**: `final readonly`; use constructor property promotion.
-7. **Documents** (docs, rules, roadmap): pure ASCII, no emoji, no em/en dash, no arrows, use hyphens.
-8. **Code and comment language**: English.
+7. **Documents and language:** see [.ai/guidelines/general.md](../.ai/guidelines/general.md).
 
 ---
 
@@ -450,15 +449,7 @@ User::query()
 
 **Definition:** one FormRequest per endpoint in `modules/{Module}/app/Http/Requests/V1/`. Cross-module requests (pagination, bulk action) live in `app/Http/Requests/` (shared).
 
-**Rules:**
-
-1. One FormRequest per endpoint/action; the only exceptions are shared requests in `app/Http/Requests/` (`PaginationRequest`, `BulkActionRequest`) used across endpoints.
-2. Validation in the `rules()` method; authorization via `authorize()` or policy/permission.
-3. No inline validation in controllers.
-4. List endpoints **must** type-hint `{Resource}ListRequest` in the module extending `App\Http\Requests\PaginationRequest` (not PaginationRequest directly): the place for `authorize()` permission and extra filter/sort/search rules; an empty subclass is allowed when only pagination is needed (existing pattern: `UserListRequest`, `RoleListRequest`, `PermissionListRequest`, `DeviceListRequest` in `modules/IAM/Requests/V1/`).
-5. Request naming follows the controller: `{Resource}ListRequest` for `{Resource}ListController`.
-
-**Forbidden:** long validation arrays in controllers; Requests calling models directly; list controllers type-hinting `PaginationRequest` directly from app.
+**Rules and forbidden items:** see [.ai/rules/requests.md](../.ai/rules/requests.md).
 
 ### 5.9 Resources
 
@@ -476,27 +467,13 @@ User::query()
 
 **Definition:** `modules/{Module}/app/Providers/{Module}ServiceProvider.php` wires the module to the framework. Every module provider extends the nWidart base `Nwidart\Modules\Support\ModuleServiceProvider`; the nWidart loader boots providers of **ACTIVE** modules (from `module.json` + `modules_statuses.json`).
 
-**Rules:**
-
-1. The nWidart base class provides loading boilerplate: merge `config/config.php`, load migrations, load factories, register providers from the `$providers` array (EventServiceProvider, RouteServiceProvider). No `withCommands` in `bootstrap/app.php`; module commands are registered via the base's `registerCommands`.
-2. Module providers only declare: `$name`, `$nameLower`, the `$providers` array, and the `boot()` hook for middleware aliases, Pennant features, bindings (policies via `#[UsePolicy]` on models).
-3. Module activation through nWidart FileActivator (`modules_statuses.json`); a non-enabled module = provider never boots.
-4. No hidden registrations; middleware aliases registered explicitly, not via magic discovery.
-5. The module alias is lowercase module name (`'Media'` becomes `'media'`); the alias is used for the config key (`config('media.*')`) and the route name prefix (`api.v1.media.`, 5.17).
-
-**Forbidden:** module providers extending `ServiceProvider` directly (must extend nWidart base `ModuleServiceProvider`); providers registering routes outside `routes/`; `env()` in providers.
+**Rules and forbidden items:** see [.ai/rules/providers.md](../.ai/rules/providers.md).
 
 ### 5.12 Middleware
 
 **Definition:** module-specific middleware in `modules/{Module}/app/Http/Middleware/`; global middleware in `app/Http/Middleware/`.
 
-**Rules:**
-
-1. Middleware used only by specific module routes lives in the module.
-2. Global middleware (auth, throttle, security headers) lives in app.
-3. Middleware aliases registered explicitly, not via magic discovery.
-
-**Forbidden:** global middleware inside modules; middleware without aliases.
+**Rules and forbidden items:** see [.ai/rules/middleware.md](../.ai/rules/middleware.md).
 
 ### 5.13 Enums
 
@@ -538,14 +515,7 @@ User::query()
 
 **Definition:** module feature flags. **Build-time toggle**: `features` array in the module's `config/config.php` (merged into `config('{alias}.features')`). **Runtime per-user**: Pennant classes in `modules/{Module}/app/Features/` (used by 2+ modules: `app/Features/`), checked via `EnsureFeatureIsActive`.
 
-**Rules:**
-
-1. Build-time: boolean values in the module config; merged by the nWidart base provider into `config('{alias}.features')`.
-2. Runtime: `final class {Feature} extends Feature`, `resolve()` holds per-user logic.
-3. Naming: `{module}.{feature}` (e.g. `iam.self-registration`).
-4. Unregistered features are considered off (default false).
-
-**Forbidden:** `env()` for feature toggles; two sources of truth (config vs Pennant for the same thing).
+**Rules and forbidden items:** see [.ai/rules/features.md](../.ai/rules/features.md).
 
 ### 5.19 Bulk actions
 
@@ -711,7 +681,7 @@ Features that need a runtime decision (per user, gradual rollout) are defined as
 
 ```php
 // modules/Media/app/Features/MediaUpload.php
-final class MediaUpload extends Feature
+final class MediaUpload
 {
     public function resolve(User $user): bool
     {

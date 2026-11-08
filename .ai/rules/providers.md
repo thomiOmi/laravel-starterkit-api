@@ -13,11 +13,12 @@ paths:
 
 ## Rules
 
-1. The nwidart base class provides loading boilerplate: merges `config/{Module}.php`, loads `database/migrations` and `database/factories`, registers the module's providers (`EventServiceProvider`, `RouteServiceProvider`) from the generated provider list
-2. Module providers are declaration-only: `$this->loadMigrationsFrom()`, `boot()` hook for middleware aliases, Pennant features, bindings (policies via `#[UsePolicy]` on models)
-3. Module activation is managed by nwidart (FileActivator + `modules_statuses.json`); a disabled module's provider is never booted
-4. No hidden registration; middleware aliases are explicit, not magic discovery
-5. The module alias is the lowercase module name (nwidart convention); used for config keys (`config('iam.*')`), the `config/{Module}.php` merge, and the route name prefix (see routes rule)
+1. The nwidart base class provides loading boilerplate: merges `config/config.php` into `config('{alias}.*')`, loads `database/migrations`, registers the module's providers (`EventServiceProvider`, `RouteServiceProvider`) from the `$providers` array
+2. Module providers declare `$name`, `$nameLower`, `$providers`, and optional `$commands`; they may override `register()`/`boot()` for config merge, bindings, and middleware aliases (policies via `#[UsePolicy]` on models)
+3. Module commands are listed in the `$commands` array; the base `registerCommands()` calls `$this->commands($this->commands)` during `boot()`, so `bootstrap/app.php` needs no `withCommands`
+4. Module activation is managed by nwidart (FileActivator + `modules_statuses.json`); a disabled module's provider is never booted
+5. No hidden registration; middleware aliases are explicit, not magic discovery
+6. The module alias is the lowercase module name (nwidart convention); used for config keys (`config('iam.*')`), the `config/config.php` merge, and the route name prefix (see routes rule)
 
 ## Forbidden
 

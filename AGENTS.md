@@ -109,6 +109,12 @@ Use the `skill` tool to load a skill when the task matches its description. List
 | **Explicit over magic** | Route middleware, authorization, and validation should be visible in the route definition and Form Request, not hidden in service providers or auto-discovery. |
 | **Maintainability over cleverness** | Favor flat structures, final readonly classes, and explicit type hints. Code is written once and read many times. |
 
+## Documentation and Language
+
+- Documents (docs, rules, roadmap): pure ASCII, no emoji, no en/em dash, no arrows, use hyphens.
+- Code and comment language: English.
+- This project uses the lowercase `modules/` directory; it overrides package guidelines that mention `Modules/`.
+
 ## API Convention
 
 | Aspect | Detail |

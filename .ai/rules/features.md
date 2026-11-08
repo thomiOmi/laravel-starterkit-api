@@ -10,13 +10,13 @@ paths:
 
 ## Goal
 
-Module feature flags. Build-time toggle: the `features` array in the central registry (`config/modules.php`). Runtime per-user: Pennant classes in `modules/{Module}/Features/` (used by 2+ modules: `app/Features/`), checked via `EnsureFeatureIsActive`.
+Module feature flags. Build-time toggle: the `features` array in the module's `config/config.php` (merged into `config('{alias}.features')`). Runtime per-user: Pennant classes in `modules/{Module}/app/Features/` (used by 2+ modules: `app/Features/`), checked via `EnsureFeatureIsActive`.
 
 ## Rules
 
-1. Build-time: boolean values in the registry; merged by the base provider into `config('{alias}.features')`
+1. Build-time: boolean values in the module's `config/config.php`; merged by the base provider into `config('{alias}.features')`
 2. Runtime: `final class {Feature}` (no parent class — `Laravel\Pennant\Feature` is the facade, class features stand alone), `resolve()` contains per-user logic
-3. Generate app-level features with `php artisan pennant:feature {Name}` — the command renders `stubs/feature.stub` (kit convention: `declare(strict_types=1)`, final class, `resolve(mixed $scope): bool`). Module-only features are hand-created in `modules/{Module}/Features/` following the same shape.
+3. Generate app-level features with `php artisan pennant:feature {Name}` - the command renders `stubs/feature.stub` (kit convention: `declare(strict_types=1)`, final class, `resolve(mixed $scope): bool`). Module-only features are hand-created in `modules/{Module}/app/Features/` following the same shape.
 4. Reference class features by `::class` (e.g. `BetaFeature::class`), never by a string name
 5. Naming: `{module}.{feature}` (e.g. `iam.self-registration`)
 6. Unregistered features are considered off (default false)
