@@ -55,7 +55,7 @@ A pre-commit hook runs `composer lint:staged` automatically.
 
 - Create a module with `php artisan module:make`; see `docs/module-generator.md`.
 - Modules are self-contained under `modules/{Module}/` and activated via `php artisan module:enable` (status in `modules_statuses.json`). Do not register module routes, models, or migrations in the shared `app/` or `routes/` areas.
-- Modules communicate through contracts, not direct imports. Keep the core (IAM) minimal and let feature modules extend it.
+- A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal. Media must not import IAM. Today IAM requires Media.
 - Read `.ai/rules/` before creating or editing module code; conventions are settled there.
 
 ## Documentation

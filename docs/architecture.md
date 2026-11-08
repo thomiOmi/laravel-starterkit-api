@@ -79,7 +79,7 @@ Capabilities are enabled through nWidart FileActivator, **not** environment vari
 ### 1.5 Shared vocabulary lives in app
 
 - Contracts used across modules (interfaces, shared enums, response contract) live in `app/`.
-- Modules do **not** import each other directly; they communicate through contracts.
+- A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal. Tests enforce that the layers Actions, Services, Payloads, Support, Builders, and Enums are not referenced across modules, and that dependencies are declared; the seam list itself is a convention. Media must not import IAM. Today IAM requires Media.
 - Inspiration: `shared/` in Nuxt Layers.
 
 ### 1.6 No per-module overhead
@@ -167,7 +167,7 @@ flowchart LR
 ```mermaid
 flowchart TB
     A["Module A"] --> S["1. Shared vocabulary in app/ (enum, contract, request, response)"]
-    A --> P["2. Public API seam: import model + contract of another module"]
+    A --> P["2. Public API seam: import contracts, models, traits, rules"]
     A --> I["3. Interface in app/Contracts/ + binding in provider"]
     A --> E["4. Event pub/sub in app/Events/"]
     E --> L["Listener in module, registered explicitly in boot()"]
@@ -251,7 +251,7 @@ project/
     ├── Architecture/            # Architecture tests (conventions)
     ├── Feature/                 # Infrastructure tests (middleware, responses, etc.)
     ├── Unit/                    # App unit tests
-    └── Helpers.php              # Seam for accessing module models (not direct imports)
+    └── Helpers.php              # Shared helper seam (module models may be imported directly)
 ```
 
 **Mirror principle (1.1):** `modules/{Module}/app/` is a mirror of the built-in `app/` skeleton; the container folders `Http/` and `Console/` host HTTP/CLI layers exactly like `app/Http` and `app/Console`.
@@ -328,15 +328,15 @@ project/
 
 **Mandatory rules:**
 
-1. Modules communicate through **contracts or the public API seam**, not imports of another module's internal classes.
+1. A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal. Tests enforce that the layers Actions, Services, Payloads, Support, Builders, and Enums are not referenced across modules, and that dependencies are declared; the seam list itself is a convention. Media must not import IAM. Today IAM requires Media.
 2. `app/Contracts` is only for interfaces used by **2+ modules** or core.
-3. Eloquent models and contracts = the module's **public API seam**: they may be imported directly by other modules (existing example: Media module imports `Modules\IAM\Models\User`, `Role`, `Permission`).
+3. Eloquent models, contracts, traits, and rules = the module's **public API seam**: they may be imported directly by other modules. Today IAM imports `Modules\Media\Contracts\HasMedia`, `Modules\Media\Models\Media`, `Modules\Media\Traits\InteractsWithMedia`, and `Modules\Media\Rules\AllowedFileName`.
 4. Internal classes (Actions, Services, Payloads, Support, Builders, Enums) **must not** be imported across modules.
 
 **Four inter-module communication paths (most preferred first):**
 
 1. **Shared vocabulary in `app/`**: shared enums, contracts, shared requests, response contract used by 2+ modules without cross-module imports.
-2. **Public API seam**: models + contracts of another module may be imported directly - Eloquent data + relations (example: `Media::uploadedBy()` imports `Modules\IAM\Models\User`), authorization (`MediaPolicy` type-hints `User` + `App\Enums\PermissionEnum`), seeders (`MediaSeeder` firstOrCreate `Role`/`Permission` from IAM).
+2. **Public API seam**: contracts, models, traits, and rules of another module may be imported directly - Eloquent data + relations (example: `Modules\IAM\Models\User` implements `Modules\Media\Contracts\HasMedia` and uses `Modules\Media\Traits\InteractsWithMedia`), validation (`Modules\IAM\Http\Requests\V1\UpdateProfileRequest` uses `Modules\Media\Rules\AllowedFileName`).
 3. **Contract for cross-module behavior**: interface in `app/Contracts/` implemented by the owning module and bound in the provider (example: `Identity` abstracts the auth actor).
 4. **Event pub/sub for loose coupling**: shared event classes in `app/Events/` (module A dispatches), listeners in the listening module registered explicitly in `boot()`; global listeners in `app/Listeners` are auto-discovered.
 
@@ -474,7 +474,7 @@ final readonly class RegisterController extends Controller
 8. The app layer (tests/) may import module classes directly (models, factories, seeders, contracts, enums). `tests/Helpers.php` is a convenience seam for shared helpers, not a hard boundary.
 9. Soft deletes use the `Illuminate\Database\Eloquent\SoftDeletes` trait (the `#[UseSoftDeletes]` attribute does not exist in Laravel 13); `withTrashed`/`onlyTrashed` queries only in actions/builders.
 
-**Forbidden:** UUID primary keys; `$fillable`/`$hidden` properties; cross-module models.
+**Forbidden:** UUID primary keys; `$fillable`/`$hidden` properties; cross-module internal layers (Actions, Services, Payloads, Support, Builders, Enums).
 
 ### 5.4 Services
 
@@ -614,10 +614,11 @@ User::query()
 **Rules:**
 
 1. 1 module call-site only: in the module. 2+ modules: in app.
-2. TitleCase values; native labels via methods (no label library dependency).
+2. Case names are TitleCase; backing values are the stored strings (lowercase, kebab-case, or dotted). Native labels via methods (no label library dependency).
 3. Cast models to enum classes.
+4. An enum referenced by root wiring (bootstrap, providers, root migrations, global middleware) stays in `app/Enums` (ADR-0007, ADR-0045).
 
-**Forbidden:** module-specific enums living in `app/Enums`; shared enums living in a module.
+**Forbidden:** module-specific enums living in `app/Enums` unless referenced by root wiring; shared enums living in a module.
 
 ### 5.14 Config
 
@@ -750,15 +751,15 @@ php artisan module:enable Blog    # or module:disable
 
 ```json
 {
-    "name": "Media",
-    "alias": "media",
+    "name": "IAM",
+    "alias": "iam",
     "priority": 0,
-    "requires": ["IAM"],
-    "providers": ["Modules\\Media\\Providers\\MediaServiceProvider"]
+    "requires": ["Media"],
+    "providers": ["Modules\\IAM\\Providers\\IAMServiceProvider"]
 }
 ```
 
-The core module (IAM) declares none. Validate the declarations with:
+IAM (core) requires Media (core). The architecture test allows core-to-core dependencies because both are listed in `config/modules.php` `core`. Validate the declarations with:
 
 ```bash
 php artisan module:check-dependencies
