@@ -49,8 +49,7 @@ subgraph Kernel["Kernel (app/)"]
 
 The module folder structure mirrors the built-in `app/` structure, including the container folders `Http/` (Controllers, Middleware, Requests, Resources) and `Console/` (Commands) that host HTTP/CLI layers exactly like `app/Http` and `app/Console`.
 
-- **Module-scoped** things live inside the module.
-- **Shared** things live in `app/`.
+- Rules and forbidden items: see [.ai/rules/modules-structure.md](../.ai/rules/modules-structure.md).
 - Inspiration: Nuxt Layers ("the layers structure is almost identical to a standard Nuxt application"), official Laravel package structure, nWidart/laravel-modules.
 
 ### 1.2 Config-driven activation, no env
@@ -79,7 +78,7 @@ Capabilities are enabled through nWidart FileActivator, **not** environment vari
 ### 1.5 Shared vocabulary lives in app
 
 - Contracts used across modules (interfaces, shared enums, response contract) live in `app/`.
-- A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal. Tests enforce that the layers Actions, Services, Payloads, Support, Builders, and Enums are not referenced across modules, and that dependencies are declared; the seam list itself is a convention. Media must not import IAM. Today IAM requires Media.
+- Rules and forbidden items: see [.ai/rules/contracts.md](../.ai/rules/contracts.md).
 - Inspiration: `shared/` in Nuxt Layers.
 
 ### 1.6 No per-module overhead
@@ -143,7 +142,7 @@ sequenceDiagram
     P-->>Client: 4xx/5xx JSON
 ```
 
-**Key rule:** the controller **never** writes error responses manually; all errors go through exceptions that the handler maps to `ProblemResponse`.
+**Key rule:** errors go through exceptions that the handler maps to `ProblemResponse`; rules: see [.ai/rules/error-handling.md](../.ai/rules/error-handling.md).
 
 ### 2.3 Module boot lifecycle
 
@@ -256,8 +255,7 @@ project/
 
 **Mirror principle (1.1):** `modules/{Module}/app/` is a mirror of the built-in `app/` skeleton; the container folders `Http/` and `Console/` host HTTP/CLI layers exactly like `app/Http` and `app/Console`.
 
-- Only 3 folders are **required** on an ACTIVE module: `app/Providers`, `routes`, `tests` (+ nWidart metadata `module.json`, `composer.json`).
-- The rest are **optional**, created when needed.
+- Rules and forbidden items: see [.ai/rules/modules-structure.md](../.ai/rules/modules-structure.md).
 - Kit-specific layers without a skeleton counterpart: Actions, Services, Payloads, Builders, Features, config, database, routes, tests, Lang.
 - `app/Http/Responses` is a global contract and is **not mirrored** into modules.
 
@@ -326,38 +324,11 @@ project/
 
 ### 4.1 Module isolation & dependencies
 
-**Mandatory rules:**
-
-1. A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal. Tests enforce that the layers Actions, Services, Payloads, Support, Builders, and Enums are not referenced across modules, and that dependencies are declared; the seam list itself is a convention. Media must not import IAM. Today IAM requires Media.
-2. `app/Contracts` is only for interfaces used by **2+ modules** or core.
-3. Eloquent models, contracts, traits, and rules = the module's **public API seam**: they may be imported directly by other modules. Today IAM imports `Modules\Media\Contracts\HasMedia`, `Modules\Media\Models\Media`, `Modules\Media\Traits\InteractsWithMedia`, and `Modules\Media\Rules\AllowedFileName`.
-4. Internal classes (Actions, Services, Payloads, Support, Builders, Enums) **must not** be imported across modules.
-
-**Four inter-module communication paths (most preferred first):**
-
-1. **Shared vocabulary in `app/`**: shared enums, contracts, shared requests, response contract used by 2+ modules without cross-module imports.
-2. **Public API seam**: contracts, models, traits, and rules of another module may be imported directly - Eloquent data + relations (example: `Modules\IAM\Models\User` implements `Modules\Media\Contracts\HasMedia` and uses `Modules\Media\Traits\InteractsWithMedia`), validation (`Modules\IAM\Http\Requests\V1\UpdateProfileRequest` uses `Modules\Media\Rules\AllowedFileName`).
-3. **Contract for cross-module behavior**: interface in `app/Contracts/` implemented by the owning module and bound in the provider (example: `Identity` abstracts the auth actor).
-4. **Event pub/sub for loose coupling**: shared event classes in `app/Events/` (module A dispatches), listeners in the listening module registered explicitly in `boot()`; global listeners in `app/Listeners` are auto-discovered.
-
-**Direct model vs interface:**
-
-- Eloquent data + relations: **direct model** (Eloquent needs a concrete class, `belongsTo(User::class)`); interfaces cannot be used for relations.
-- Behavior/decoupling/2+ possible implementations: **interface** in `app/Contracts/` (example: `Identity`).
-- Exactly 1 implementation, guaranteed not to become 2+: **direct model** is enough; an interface is YAGNI.
-
-**Base class/interface rule of thumb per layer:** only if (1) there is logic executed together, (2) real polymorphism/decoupling is needed, (3) it is a cross-module contract, (4) container binding. Forbidden for the sake of "consistency" alone; structural conventions are enforced by ArchitectureTest, not inheritance.
+Cross-module references use the public seams, with a direct model for Eloquent data and an interface for behavior that needs decoupling; rules and forbidden items: see [.ai/rules/contracts.md](../.ai/rules/contracts.md).
 
 ### 4.2 Database rules
 
-1. Enum values as column defaults (`->default(StatusEnum::Pending->value)`).
-2. **Forbidden** to chain migration commands with `&&` or `;` (identical timestamps).
-3. Factories for models used in tests; module seeders for baseline data when needed.
-4. Schema changes = **review gate** (requires approval).
-5. Module seeders are executed via `php artisan db:seed --class=Modules\{Module}\Database\Seeders\{Name}Seeder` or from `database/seeders/DatabaseSeeder`; **forbidden** for a seeder to call another module's seeder (dependencies are seeded sequentially by the caller, example: `MediaSeeder` does not call `IAMSeeder`).
-6. Module migration rollback via `php artisan migrate:rollback --path=modules/{Module}/database/migrations` (without `--path`, rollback only targets the last global batch).
-
-**Forbidden:** editing schema without approval; domain migrations outside a module. Core Laravel migrations stay in `database/migrations/`.
+Database rules and forbidden items: see [.ai/rules/database.md](../.ai/rules/database.md).
 
 ### 4.3 Error handling & exception helpers
 
@@ -368,13 +339,7 @@ project/
 | HTTP (controller, middleware, request) | `abort`/`abort_if`/`abort_unless` | HTTP conditions (403, 404, 409) |
 | Domain (Action, Payload, Support) | `throw_if`/`throw_unless` | `InvalidArgumentException` (422), `ModelNotFoundException` (404, ownership checks), custom exceptions in `Exceptions/` when a specific status/type is needed |
 
-**Rules:**
-
-1. Exception-to-`ProblemResponse` mapping happens only in the handler; the controller **never** writes error responses manually.
-2. Error messages via translation keys `__()`, not hardcoded strings.
-3. Lookups that must exist use `findOrFail`/`firstOrFail`/`valueOrFail` (throws `ModelNotFoundException` to 404); **do not** use `updateOrFail`/`deleteOrFail`/`saveOrFail` as lookup substitutes (they all silently return false when the model does not exist).
-
-**Forbidden:** `abort*` in the domain layer; try/catch in controllers to map errors; hardcoded error messages in throws.
+**Rules and forbidden items:** see [.ai/rules/error-handling.md](../.ai/rules/error-handling.md).
 
 ### 4.4 Cross-module conventions
 
@@ -397,23 +362,7 @@ Each layer: definition, rules, forbidden, example.
 
 **Definition:** `final readonly` classes performing ONE business operation, called by controllers, other actions, or services. Inspiration: Fortify Actions.
 
-**Rules:**
-
-1. `final readonly`, one public `handle()` method, explicit parameter types.
-2. Does **NOT** accept `Request`; the controller extracts data and passes it on.
-3. Does **NOT** write HTTP logic (status codes, redirects, json).
-4. Validation happens in the Request layer, not in the action.
-5. Business errors via `throw_if`/`throw_unless` + domain exceptions (`InvalidArgumentException` mapped to 422, `ModelNotFoundException` to 404 for ownership checks).
-6. Multi-step related writes (2+ writes) **must** be wrapped in `DB::transaction` or equivalent (`saveOrFail`/`deleteOrFail` for instances, `syncOrFail`/`attachOrFail` etc. for pivots); single-model writes use plain `create`/`update`/`save`/`delete`.
-7. **NO** base class/interface for Actions: the structure (`final readonly`, `handle()`) is a convention enforced by ArchitectureTest, not inheritance (principle 1.6); interfaces only for real cross-module polymorphism.
-
-**Forbidden:**
-
-- Public methods other than `handle()`.
-- HTTP dependencies (Request, Response).
-- Eloquent queries with inline domain conditions in controllers; queries live in actions or builders. Pure queries (paginate + filter/search/sort whitelist BaseQueryBuilder, no domain conditions) are allowed directly in controllers.
-- HTTP helpers (`abort`, `abort_if`, `abort_unless`) in actions.
-- `createOrFail` (does not exist in the framework) and `updateOrFail`/`deleteOrFail` as lookups (silently return false when the model does not exist).
+**Rules and forbidden items:** see [.ai/rules/actions.md](../.ai/rules/actions.md).
 
 **Example:**
 
@@ -431,15 +380,7 @@ final readonly class CreateUserAction
 
 **Definition:** `final readonly` invokable single-action classes in `modules/{Module}/app/Http/Controllers/V1/`. They only handle HTTP concerns: parse the request, call the action, return the response.
 
-**Rules:**
-
-1. `final readonly`, extend the base `Controller`, one `__invoke(Request|FormRequest $request): SuccessResponse` method; the parameter may type-hint a FormRequest subclass (example: `RegisterController`); errors are not returned by the controller but thrown as exceptions mapped by the handler to `ProblemResponse`.
-2. Delegate logic to an Action via `->handle()`.
-3. Pure queries (paginate + filter/search/sort whitelist BaseQueryBuilder, no domain conditions) are allowed directly in the controller.
-4. Return type-hint `SuccessResponse` (all existing controllers are consistent, 0 uses of `JsonResponse`); `ProblemResponse` is only written by the handler.
-5. Follow the structure of existing sibling controllers.
-
-**Forbidden:** queries with domain conditions in controllers (must go through Actions); business logic; non-contract responses.
+**Rules and forbidden items:** see [.ai/rules/controllers.md](../.ai/rules/controllers.md).
 
 **Example:**
 
@@ -462,32 +403,13 @@ final readonly class RegisterController extends Controller
 
 **Definition:** Eloquent models in `modules/{Module}/app/Models/`. Data access belongs to the module.
 
-**Rules:**
-
-1. ULID primary key via `HasDefaultBehavior` (HasUlids + serializeDate `Y-m-d H:i:s`).
-2. Attributes via PHP 8 attributes: `#[Fillable]`, `#[Hidden]`, `#[UseFactory]`, `#[UseEloquentBuilder]`.
-3. Model-related registrations via attributes: `#[UsePolicy]` (policy), `#[ObservedBy]` (observer), `#[ScopedBy]` (global scope).
-4. `#[Table]`, `#[UseResource]`, `#[UseResourceCollection]` only for convention deviations (non-standard table, pivot, non-standard resource naming).
-5. Cast enum columns to enum classes (`'status' => StatusEnum::class`).
-6. `declare(strict_types=1)` in every file.
-7. Factories are required for models used in tests.
-8. The app layer (tests/) may import module classes directly (models, factories, seeders, contracts, enums). `tests/Helpers.php` is a convenience seam for shared helpers, not a hard boundary.
-9. Soft deletes use the `Illuminate\Database\Eloquent\SoftDeletes` trait (the `#[UseSoftDeletes]` attribute does not exist in Laravel 13); `withTrashed`/`onlyTrashed` queries only in actions/builders.
-
-**Forbidden:** UUID primary keys; `$fillable`/`$hidden` properties; cross-module internal layers (Actions, Services, Payloads, Support, Builders, Enums).
+**Rules and forbidden items:** see [.ai/rules/models.md](../.ai/rules/models.md).
 
 ### 5.4 Services
 
 **Definition:** business logic used by 2+ call-sites or orchestrating complex flows across use cases. Difference from Action: **Action = 1 use case; Service = shared logic.**
 
-**Rules:**
-
-1. `final readonly`, dependencies injected via constructor.
-2. Does NOT accept `Request`.
-3. May call Actions and models.
-4. Minimum 2 call-sites or a complex flow; a 1 call-site service must be converted to an Action.
-
-**Forbidden:** services for 1 call-site; services calling controllers/HTTP layer.
+**Rules and forbidden items:** see [.ai/rules/services.md](../.ai/rules/services.md).
 
 **Example:** `UserAuthorizationService` (determines token abilities and creates the access token, used by login and register).
 
@@ -495,13 +417,7 @@ final readonly class RegisterController extends Controller
 
 **Definition:** pure technical utilities, self-contained, no business state and no Eloquent dependency.
 
-**Rules:**
-
-1. Static or `final readonly`, purely technical (crypt, format, technical validation).
-2. If it has business logic, it is a Service; if 1 use case, it is an Action.
-3. Not called directly from controllers (via Service/Action).
-
-**Forbidden:** Eloquent dependencies; domain business logic.
+**Rules and forbidden items:** see [.ai/rules/support.md](../.ai/rules/support.md).
 
 **Example:** `SocialState` (creates and verifies OAuth state tokens with expiry).
 
@@ -509,14 +425,7 @@ final readonly class RegisterController extends Controller
 
 **Definition:** custom Eloquent query builders registered via `#[UseEloquentBuilder]`.
 
-**Rules:**
-
-1. `BaseQueryBuilder` is the single mechanism for filter, search, sort, include whitelists.
-2. Whitelist methods: `allowedSearch`, `allowedFilters`, `allowedSorts`, `allowedFields`, `allowedIncludes`.
-3. Models register the builder via attribute, not `newBuilder()`.
-4. Native Eloquent (`where`, `orderBy`, scopes) remains valid in actions/builders.
-
-**Forbidden:** query-string parsing in controllers; bypassing whitelists with arbitrary parameters.
+**Rules and forbidden items:** see [.ai/rules/builders.md](../.ai/rules/builders.md).
 
 **Example:**
 
@@ -535,13 +444,7 @@ User::query()
 
 **Definition:** immutable `final readonly` DTOs with constructor promotion, input for actions.
 
-**Rules:**
-
-1. `final readonly`, typed properties, constructor promotion.
-2. Validation stays in Requests; Payloads do not validate.
-3. Used for data across layers (Request to Action, queue jobs, CLI).
-
-**Forbidden:** payloads with validation logic; mutable payloads.
+**Rules and forbidden items:** see [.ai/rules/payloads.md](../.ai/rules/payloads.md).
 
 ### 5.8 Requests
 
@@ -561,25 +464,13 @@ User::query()
 
 **Definition:** API resource transformers in `modules/{Module}/app/Http/Resources/`.
 
-**Rules:**
-
-1. `extends JsonResource`, contract envelope via SuccessResponse.
-2. Date format `Y-m-d H:i:s`.
-3. Resources belong to the module; the app-wide shape is global.
-
-**Forbidden:** resources changing the global envelope structure.
+**Rules and forbidden items:** see [.ai/rules/resources.md](../.ai/rules/resources.md).
 
 ### 5.10 Policies
 
 **Definition:** per-module authorization policies, registered via `#[UsePolicy]` on the model (single source of truth, no hidden registration in providers); manual `Gate::policy` in providers is **NOT** used for modules.
 
-**Rules:**
-
-1. One policy per model when resource authorization exists.
-2. Registration via the `#[UsePolicy(Policy::class)]` attribute on the model.
-3. Use Spatie permissions inside policies.
-
-**Forbidden:** `Gate::policy` in module service providers; hidden authorization inside controllers; two sources of truth at once (Spatie permission OR Sanctum abilities, pick one per route).
+**Rules and forbidden items:** see [.ai/rules/policies.md](../.ai/rules/policies.md).
 
 ### 5.11 Providers
 
@@ -611,46 +502,25 @@ User::query()
 
 **Definition:** module-specific enums in `modules/{Module}/app/Enums/`; shared vocabulary enums (used by 2+ modules) in `app/Enums/`.
 
-**Rules:**
-
-1. 1 module call-site only: in the module. 2+ modules: in app.
-2. Case names are TitleCase; backing values are the stored strings (lowercase, kebab-case, or dotted). Native labels via methods (no label library dependency).
-3. Cast models to enum classes.
-4. An enum referenced by root wiring (bootstrap, providers, root migrations, global middleware) stays in `app/Enums` (ADR-0007, ADR-0045).
-
-**Forbidden:** module-specific enums living in `app/Enums` unless referenced by root wiring; shared enums living in a module.
+**Rules and forbidden items:** see [.ai/rules/enums.md](../.ai/rules/enums.md).
 
 ### 5.14 Config
 
 **Definition:** global config in `config/`; module config in `modules/{Module}/config/config.php` (merged by the nWidart base provider, accessed via lowercase alias `config('iam.*')`).
 
-**Rules:**
-
-1. Module config is merged by the provider when the module is active.
-2. Access config via typed helpers (`config()->integer(...)`) to preserve types.
-3. Fortify-style features array.
-
-**Forbidden:** `env()` outside config files; module config loaded while the module is inactive.
+**Rules and forbidden items:** see [.ai/rules/config.md](../.ai/rules/config.md).
 
 ### 5.15 Notifications
 
 **Definition:** notifications in `app/Notifications/` (global) or `modules/{Module}/app/Notifications/` (module-specific).
 
-**Rules:** queue-able via `ShouldQueue`; descriptive naming (VerifyEmail, ResetPassword).
-
-**Forbidden:** notifications called directly in controllers (via action/service).
+**Rules and forbidden items:** see [.ai/rules/notifications.md](../.ai/rules/notifications.md).
 
 ### 5.16 Commands
 
 **Definition:** Artisan commands in `app/Console/Commands/` (global) or `modules/{Module}/app/Console/Commands/` (module-specific).
 
-**Rules:**
-
-1. PHP 8 attributes: `#[Signature]`, `#[Description]`, `#[Help]`, `#[Usage]`.
-2. `handle(): int` with exit code.
-3. Module commands are registered by adding the command class to the `$commands` array in the module's `{Module}ServiceProvider` (the nWidart base `ModuleServiceProvider` registers whatever is listed there; it does not auto-discover the folder); global commands in `app/Console/Commands` are auto-discovered
-
-**Forbidden:** commands without attribute signatures.
+**Rules and forbidden items:** see [.ai/rules/commands.md](../.ai/rules/commands.md).
 
 ### 5.17 Routes
 
@@ -681,28 +551,13 @@ User::query()
 
 **Definition:** mass mutation endpoints (delete, restore) processing many ids at once. Shared request `App\Http\Requests\BulkActionRequest` (validates `ids` max 50 + `action`); the controller delegates to an Action; the Action executes one bulk query.
 
-**Rules:**
-
-1. `BulkActionRequest` (shared) required for all bulk endpoints; per-action authorization via `authorize()` based on route name.
-2. Bulk Action = one `whereIn` query (delete/restore), returns count.
-3. `Bus::bulk`/`Bus::batch` is **NOT** used for synchronous mutations; only for heavy per-item processing needing a queue (no use case yet; rule added when one appears).
-4. Routing: `POST /{resource}/bulk/{action}`, route name `api.{version}.{module}.{resource}.bulk.{action}`.
-5. Note: bulk queries do not trigger model events/observers per row (deliberate trade-off).
-
-**Forbidden:** dispatching one job per item for simple delete/restore; query loops in controllers (loops, when needed, only in Actions).
+**Rules and forbidden items:** see [.ai/rules/bulk-actions.md](../.ai/rules/bulk-actions.md).
 
 ### 5.20 On-demand layers (Jobs, Events, Listeners, Mail, Rules, Exceptions, Lang, Observers, Scopes)
 
 **Definition:** optional folders that live in the module when needed, following Laravel conventions: Jobs (queue jobs), Events + Listeners (event bus), Mail (email), Rules (custom validation rules), Exceptions (module-specific exception classes), `lang/{locale}` (module translations), Observers (model observers via `#[ObservedBy]`), Scopes (global scopes via `#[ScopedBy]`).
 
-**Rules:**
-
-1. Created only if they contain at least 1 file (empty folders forbidden).
-2. `lang/` is loaded by the nWidart base `ModuleServiceProvider` when the module is active.
-3. Detailed rules simply follow Laravel conventions; no separate rule file per folder.
-4. Module listeners are NOT auto-discovered (bootstrap only scans `app/Listeners`); register listeners explicitly in `boot()` via `Event::listen`/`Event::subscribe`.
-
-**Forbidden:** empty folders as placeholders.
+**Rules and forbidden items:** see [.ai/rules/modules-structure.md](../.ai/rules/modules-structure.md).
 
 ---
 
@@ -759,13 +614,13 @@ php artisan module:enable Blog    # or module:disable
 }
 ```
 
-IAM (core) requires Media (core). The architecture test allows core-to-core dependencies because both are listed in `config/modules.php` `core`. Validate the declarations with:
+IAM (core) requires Media (core); dependency rules: see [.ai/rules/modules-structure.md](../.ai/rules/modules-structure.md). Validate the declarations with:
 
 ```bash
 php artisan module:check-dependencies
 ```
 
-The command fails when a declared dependency is not an installed module, is disabled, or when the `requires` graph contains a cycle. A module must not declare a dependency on a module that is not registered in the `config/modules.php` allow-list. New modules are scaffolded with an empty `"requires": []` by the generator.
+See [.ai/rules/modules-structure.md](../.ai/rules/modules-structure.md) for the validation rules and the generator default.
 
 ### 6.5 Private modules
 
@@ -895,8 +750,9 @@ Every wrapper must have a documented native escape hatch:
 
 ### 8.1 Testing rules
 
-1. **Placement**: module tests in `modules/*/tests/` (Feature, Unit); shared app tests in `tests/` (Feature, Unit, Architecture).
-2. **Test folder structure** - module tests:
+Rules, quality gates, and test-writing conventions: see [.ai/rules/tests.md](../.ai/rules/tests.md).
+
+**Test folder structure** - module tests:
    ```text
    modules/{Module}/tests/
    ├── Feature/                  # HTTP feature tests (controllers, policies, middleware)
@@ -915,14 +771,6 @@ Every wrapper must have a documented native escape hatch:
    ├── Pest.php                  # groups, RefreshDatabase, beforeEach
    └── TestCase.php              # base test case
    ```
-3. **Supported suites (current)**: `unit`, `feature`, and `profanity`. Coverage, mutation, and type-coverage gates are temporarily suspended (scripts removed); re-enable once the suite stabilizes.
-4. **Composer scripts**: `composer test` (pest, unit + feature) and `composer test:profanity` are the main testing commands. `composer test:quality`, `composer test:mutation` are removed for now.
-5. **Groups**: shared tests are grouped in `tests/Pest.php` (`app`, `feature`, `unit`, `arch`); use smoke/slow/integration tags sparingly. Filter with `vendor/bin/pest --group=app` (shared only) or `--group=feature` (all feature tests). See https://pestphp.com/docs/grouping-tests
-6. **Imports**: shared tests MAY import module classes directly (models, factories, seeders, contracts, enums) - ArchitectureTest allows `Tests` to use `Modules\*\*`. `tests/Helpers.php` stays as a convenience seam for shared helpers, not a hard boundary. Module tests stay self-contained in `modules/*/tests/` and may import their own module plus other modules' public API seam (models, contracts).
-7. **Writing tests**: follow the pest-testing skill: feature-first, factories over manual creation, datasets to avoid duplication, specific assertions, fakes over mocks. See https://github.com/matula/laravel-claude-marketplace/tree/main/pest-testing
-8. **ArchitectureTest** (`tests/Architecture/ArchitectureTest.php`) is the single source of truth for conventions; assertion changes require human approval (report first, do not auto-fix).
-9. **Quality gates**: `composer lint`, `composer rector:dry`, `composer types:check`, `composer test`, `composer test:profanity`, `composer ci:check`.
-10. **Test enforcement**: behavior changes must have a corresponding test. Pure copy, styling, and layout-only changes do not require new or updated tests.
 
 ### 8.2 Quality flow (quality gates)
 
