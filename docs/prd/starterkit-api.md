@@ -112,7 +112,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 
 ## Architecture Overview
 
-- **Modules**: nWidart/laravel-modules; activation via `modules_statuses.json` (FileActivator, `module:enable`/`disable`, ADR-0024, ADR-0029). `IAM` (core) + `Media` (first feature module) ship enabled. Modules communicate through contracts (`App\Contracts\Identity`), never direct imports (ADR-0004, ADR-0005).
+- **Modules**: nWidart/laravel-modules; activation via `modules_statuses.json` (FileActivator, `module:enable`/`disable`, ADR-0024, ADR-0029). `IAM` (core) + `Media` (first feature module) ship enabled. A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal. Media must not import IAM. Today IAM requires Media.
 - **Routing**: per-module `RouteServiceProvider` loads `routes/V1.php` with prefix `api/v1`; names `api.{version}.{module}.{name}` (ADR-0029).
 - **Controllers**: plain `abstract readonly Controller` base; invokable `final readonly` controllers (ADR-0009).
 - **Responses**: `SuccessResponse` / `ProblemResponse` (RFC 9457), no `success` boolean.

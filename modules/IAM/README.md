@@ -1,6 +1,6 @@
 # IAM Module — Identity & Access Management
 
-> Core module for authentication, authorization (RBAC), user profiles, device/session management, and social login. Enabled by default (`modules_statuses.json: {"IAM": true}`); required by `Media` (`module.json: requires ["IAM"]`).
+> Core module for authentication, authorization (RBAC), user profiles, device/session management, and social login. Enabled by default (`modules_statuses.json: {"IAM": true}`); requires `Media` (`module.json: requires ["Media"]`). `User` implements `HasMedia` and uses `InteractsWithMedia`.
 
 ## Setup
 

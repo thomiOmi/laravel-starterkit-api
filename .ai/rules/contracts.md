@@ -8,18 +8,18 @@ paths:
 
 ## Goal
 
-Module contracts in `modules/{Module}/app/Contracts/`; cross-module contracts (shared vocabulary) in `app/Contracts/`. Modules communicate through contracts or public API seams, not by importing other modules' internal classes.
+Module contracts in `modules/{Module}/app/Contracts/`; cross-module contracts (shared vocabulary) in `app/Contracts/`. A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal.
 
 ## Rules
 
-1. Modules communicate through contracts or public API seams, not by importing other modules' internal classes
+1. A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal. Tests enforce that the layers Actions, Services, Payloads, Support, Builders, and Enums are not referenced across modules, and that dependencies are declared; the seam list itself is a convention. Media must not import IAM. Today IAM requires Media.
 2. `app/Contracts` is only for interfaces used by 2+ modules or by core
-3. Eloquent models and contracts are a module's public API seam: they may be imported directly by other modules (existing example: the Media module imports `Modules\IAM\Models\User`, `Role`, `Permission`); internal classes (Actions, Services, Payloads, Support, Builders, Enums) are forbidden
+3. Eloquent models, contracts, traits, and rules are a module's public API seam: they may be imported directly by other modules. Today IAM imports `Modules\Media\Contracts\HasMedia`, `Modules\Media\Models\Media`, `Modules\Media\Traits\InteractsWithMedia`, and `Modules\Media\Rules\AllowedFileName`; internal classes (Actions, Services, Payloads, Support, Builders, Enums) are forbidden
 
 Communication paths between modules (4 paths, most preferred first):
 
 1. Shared vocabulary in `app/`: shared enums, contracts, shared requests, response contracts used by 2+ modules without cross-module imports
-2. Public API seam: other modules' models + contracts may be imported directly - data + Eloquent relations (example: `Media::uploadedBy()` imports `Modules\IAM\Models\User`), authorization (`MediaPolicy` type-hints `User` + `App\Enums\PermissionEnum`), seeding (`MediaSeeder` firstOrCreate IAM `Role`/`Permission`)
+2. Public API seam: other modules' contracts, models, traits, and rules may be imported directly - data + Eloquent relations (example: `Modules\IAM\Models\User` implements `Modules\Media\Contracts\HasMedia` and uses `Modules\Media\Traits\InteractsWithMedia`), validation (`Modules\IAM\Http\Requests\V1\UpdateProfileRequest` uses `Modules\Media\Rules\AllowedFileName`)
 3. Contracts for cross-module behavior: interfaces in `app/Contracts/` implemented by the owning module and bound in its provider (example: `Identity` abstracts the auth actor)
 4. Event pub/sub for loose coupling: shared event classes in `app/Events/` (module A dispatches), listeners in the listening module registered explicitly in `bootModule()` (see modules-structure); global listeners in `app/Listeners` are auto-discovered
 
@@ -33,7 +33,7 @@ Rule of thumb for base class/interface per layer: only if (1) there is logic exe
 
 ## Forbidden
 
-- No importing internal classes across modules (Actions, Services, Payloads, Support, Builders, Enums); model + contract imports are allowed (public API seam, rule 3)
+- No importing internal classes across modules (Actions, Services, Payloads, Support, Builders, Enums); contract, model, trait, and rule imports are allowed (public API seam, rule 3)
 - No base class/interface for mere "consistency" (structure conventions are enforced by ArchitectureTest, not inheritance)
 
 ## Cross-module ports: capability contracts in the shared kernel

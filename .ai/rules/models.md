@@ -26,7 +26,7 @@ Module-owned Eloquent models in `modules/{Module}/app/Models/`. Data access belo
 
 - No UUID primary keys
 - No `$fillable`/`$hidden` properties
-- No cross-module models
+- No importing internal module layers across modules (Actions, Services, Payloads, Support, Builders, Enums); models, contracts, traits, and rules are public seams and may be imported
 
 ## Example
 
