@@ -20,3 +20,8 @@ Keep the custom `EnsureFeatureIsActive` instead of adopting the native Pennant m
 - Feature classes (Pennant class-based features) are not forced; closure definitions suffice for runtime flags.
 - Route gating stays explicit in route definitions: `feature-flag:iam.self-registration`.
 - A build-time flag is a code decision in `config/modules.php`; it is not overridable at runtime via `Feature::activate()`/`deactivate()`. Runtime per-user flags that must change at runtime belong in Pennant (`app/Features/` or `modules/*/Features/`).
+
+## Corrections
+
+- 2026-11-09: the build-time `features` registry is not in `config/modules.php`; each module declares it in `modules/{Module}/config/config.php` (for example `modules/IAM/config/config.php`), and the base `Nwidart\Modules\Support\ModuleServiceProvider` merges that file under the module's lowercase name, so the middleware reads `config('{alias}.features.{feature}')`. (Original text above is kept as written.)
+- 2026-11-09: there is currently no `modules/*/Features/` directory or module feature class; runtime features live in `app/Features/` (for example `BetaFeature`). (Original text above is kept as written.)

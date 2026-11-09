@@ -34,7 +34,7 @@ This section is maintained by the tests automatically; the part to read carefull
 | [App middleware define handle and carry no Middleware suffix](../.ai/rules/middleware.md) | `app http middleware should have handle method`, `app http middleware should not have Middleware suffix` | - |
 | [App responses implement Responsable](../.ai/rules/responses.md) | `app http responses should implement Responsable` | - |
 | [Modules follow the required folder layout and name](../.ai/rules/modules-structure.md) | `module scaffolds follow the kit folder structure`, `module folder name matches module.json name field exactly` | [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
-| [Module dependencies are declared and valid](../.ai/rules/modules-structure.md) | `module dependencies are declared in module.json`, `module dependencies pass validation (installed, enabled, acyclic)`, `modules.core config key is explicitly defined` | [ADR-0045](adr/0045-module-boundaries.md), [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
+| [Module dependencies are declared and valid](../.ai/rules/modules-structure.md) | `module dependencies are declared in module.json`, `module dependencies pass validation (installed, enabled, acyclic)`, `modules.core config key is explicitly defined` | [ADR-0045](adr/0045-module-boundaries.md) |
 | [Core modules do not depend on business modules](../.ai/rules/modules-structure.md) | `core modules do not depend on business modules` | - |
 | [Unit tests do not use the database and tests do not use PHPUnit assertions](../.ai/rules/tests.md) | `unit tests do not use the database`, `tests should not use PHPUnit assertions` | - |
 | [Used translation keys exist](../.ai/rules/lang.md) | `phpstan` | - |
@@ -52,7 +52,7 @@ Selected with one criterion: violating the rule causes a bug, a security hole, o
 | [Exception mapping to ProblemResponse happens only in the handler](../.ai/rules/error-handling.md) | convention (not enforced) | - |
 | [Module providers extend the nwidart ModuleServiceProvider](../.ai/rules/providers.md) | convention (not enforced) | [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
 | [Route middleware stays explicit on the route group](../.ai/rules/routes.md) | convention (not enforced) | - |
-| [Every endpoint authorizes via authorize(), a policy, or permission middleware](../.ai/rules/requests.md) | convention (not enforced) | - |
+| [Authorization is declared per endpoint via authorize(), a policy, or permission middleware](../.ai/rules/requests.md) | convention (not enforced) | - |
 | [Each feature flag has one source of truth: config or Pennant, not both](../.ai/rules/features.md) | convention (not enforced) | [ADR-0022](adr/0022-feature-flag-middleware.md) |
 
 Many other rules are enforced directly by `tests/Architecture/ArchitectureTest.php` without rule text (strict types and equality, forbidden functions, App layer placement and suffixes); read the tests.
