@@ -94,8 +94,9 @@ final class MediaCleanupCommand extends Command
 
         foreach (Media::query()->cursor() as $media) {
             $path = $media->getPath();
+            $recordDisk = $media->disk !== '' ? $media->disk : $disk;
 
-            if (! is_string($path) || ! $storage->exists($path)) {
+            if (! is_string($path) || ! Storage::disk($recordDisk)->exists($path)) {
                 $missing++;
                 $missingIds[] = (string) $media->id;
                 $this->warn(sprintf('Missing file for media %s: %s', $media->id, $path ?? 'null'));
