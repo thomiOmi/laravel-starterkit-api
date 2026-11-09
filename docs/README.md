@@ -14,6 +14,7 @@ Canonical documentation for the Laravel Starterkit API. This directory is the so
 | [../modules/Media/docs/operations.md](../modules/Media/docs/operations.md) | Media operations runbook: structured logs, queue retries, scheduled cleanup, failure paths |
 | [module-generator.md](module-generator.md) | `module:make` usage and module scaffolding |
 | [rate-limiting.md](rate-limiting.md) | Throttle configuration (global tiers; auth details in `modules/IAM/README.md`) |
+| [rules.md](rules.md) | Core rules mapped to the tests and tools that enforce them |
 | [testing.md](testing.md) | Testing conventions: helpers, datasets, describe/it/group, TIA, probes |
 | [../modules/IAM/README.md](../modules/IAM/README.md) | IAM: authentication, RBAC, social login, devices (migrated from `docs/auth.md` + `docs/rbac.md`) |
 | [../modules/Media/README.md](../modules/Media/README.md) | Media: uploads, image variants, signed URLs |
