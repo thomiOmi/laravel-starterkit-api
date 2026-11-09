@@ -12,9 +12,9 @@ Module contracts in `modules/{Module}/app/Contracts/`; cross-module contracts (s
 
 ## Rules
 
-1. A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every other layer is internal. Tests enforce that the layers Actions, Services, Payloads, Support, Builders, and Enums are not referenced across modules, and that dependencies are declared; the seam list itself is a convention. Media must not import IAM. Today IAM requires Media.
+1. A module may depend on another module only when it declares the dependency in `module.json` `requires`, and the graph must be acyclic (ADR-0045). Cross-module references are allowed only to the public seams `Contracts`, `Models`, `Traits`, and `Rules`; every layer other than those public seams is internal. Tests enforce that allow-list and that dependencies are declared in `tests/Architecture/ArchitectureTest.php`. Media must not import IAM. Today IAM requires Media.
 2. `app/Contracts` is only for interfaces used by 2+ modules or by core
-3. Eloquent models, contracts, traits, and rules are a module's public API seam: they may be imported directly by other modules. Today IAM imports `Modules\Media\Contracts\HasMedia`, `Modules\Media\Models\Media`, `Modules\Media\Traits\InteractsWithMedia`, and `Modules\Media\Rules\AllowedFileName`; internal classes (Actions, Services, Payloads, Support, Builders, Enums) are forbidden
+3. Eloquent models, contracts, traits, and rules are a module's public API seam: they may be imported directly by other modules. Today IAM imports `Modules\Media\Contracts\HasMedia`, `Modules\Media\Models\Media`, `Modules\Media\Traits\InteractsWithMedia`, and `Modules\Media\Rules\AllowedFileName`; classes from every layer other than those public seams are internal and forbidden (enforced by `tests/Architecture/ArchitectureTest.php`)
 
 Communication paths between modules (4 paths, most preferred first):
 
@@ -33,7 +33,7 @@ Rule of thumb for base class/interface per layer: only if (1) there is logic exe
 
 ## Forbidden
 
-- No importing internal classes across modules (Actions, Services, Payloads, Support, Builders, Enums); contract, model, trait, and rule imports are allowed (public API seam, rule 3)
+- No importing internal classes across modules (every layer other than the public seams, enforced by `tests/Architecture/ArchitectureTest.php`); contract, model, trait, and rule imports are allowed (public API seam, rule 3)
 - No base class/interface for mere "consistency" (structure conventions are enforced by ArchitectureTest, not inheritance)
 
 ## Cross-module ports: capability contracts in the shared kernel

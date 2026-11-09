@@ -26,7 +26,7 @@ Module-owned Eloquent models in `modules/{Module}/app/Models/`. Data access belo
 
 - No UUID primary keys
 - No `$fillable`/`$hidden` properties
-- No importing internal module layers across modules (Actions, Services, Payloads, Support, Builders, Enums); models, contracts, traits, and rules are public seams and may be imported
+- No importing internal module layers across modules (every layer other than the public seams, enforced by `tests/Architecture/ArchitectureTest.php`); models, contracts, traits, and rules are public seams and may be imported
 
 ## Example
 
