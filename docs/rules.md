@@ -6,6 +6,8 @@ Layers: tests and tools are the enforcement truth, `.ai/rules/*` holds the rule 
 
 ## Enforced
 
+This section is maintained by the tests automatically; the part to read carefully is Convention only.
+
 | Rule | Enforced by | Why (ADR) |
 |---|---|---|
 | [Module boundaries: cross-module references only through the public seams](../.ai/rules/contracts.md) | `modules should be isolated`, `modules only reference other modules through public layers` | [ADR-0045](adr/0045-module-boundaries.md) |
@@ -24,7 +26,7 @@ Layers: tests and tools are the enforcement truth, `.ai/rules/*` holds the rule 
 | [Providers extend ServiceProvider and are suffixed ServiceProvider](../.ai/rules/providers.md) | `app providers should extend ServiceProvider`, `module providers should extend ServiceProvider`, `app providers should have ServiceProvider suffix` | [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
 | [Commands extend Command, are suffixed Command, and define handle](../.ai/rules/commands.md) | `app commands should extend Command and have handle`, `app commands should have Command suffix` | - |
 | [Notifications extend Notification](../.ai/rules/notifications.md) | `app notifications should extend Notification` | - |
-| [Seeders define run and never call another module's seeder](../.ai/rules/database.md) | `seeders should have run method`, `module seeders should have run method`, `module seeders do not call seeders from other modules` | [ADR-0020](adr/0020-single-iam-seeder.md) |
+| [Seeders define run and never call another module's seeder](../.ai/rules/database.md) | `seeders should have run method`, `module seeders should have run method`, `module seeders do not call seeders from other modules` | - |
 | [Factories extend Factory and define definition](../.ai/rules/database.md) | `module factories should extend Factory`, `module factories should have definition method` | - |
 | [Enums live only in Enums namespaces](../.ai/rules/enums.md) | `app enums should be enums`, `app classes should not be enums outside App\Enums` | [ADR-0007](adr/0007-iam-enums-in-app.md) |
 | [App concerns are traits](../.ai/rules/concerns.md) | `app concerns should be traits` | - |
@@ -33,7 +35,7 @@ Layers: tests and tools are the enforcement truth, `.ai/rules/*` holds the rule 
 | [App responses implement Responsable](../.ai/rules/responses.md) | `app http responses should implement Responsable` | - |
 | [Modules follow the required folder layout and name](../.ai/rules/modules-structure.md) | `module scaffolds follow the kit folder structure`, `module folder name matches module.json name field exactly` | [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
 | [Module dependencies are declared and valid](../.ai/rules/modules-structure.md) | `module dependencies are declared in module.json`, `module dependencies pass validation (installed, enabled, acyclic)`, `modules.core config key is explicitly defined` | [ADR-0045](adr/0045-module-boundaries.md), [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
-| [Core modules do not depend on business modules](../.ai/rules/modules-structure.md) | `core modules do not depend on business modules` | [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
+| [Core modules do not depend on business modules](../.ai/rules/modules-structure.md) | `core modules do not depend on business modules` | - |
 | [Unit tests do not use the database and tests do not use PHPUnit assertions](../.ai/rules/tests.md) | `unit tests do not use the database`, `tests should not use PHPUnit assertions` | - |
 | [Used translation keys exist](../.ai/rules/lang.md) | `phpstan` | - |
 
@@ -48,8 +50,9 @@ Selected with one criterion: violating the rule causes a bug, a security hole, o
 | [Cross-module behaviour uses contracts in app/Contracts](../.ai/rules/contracts.md) | convention (not enforced) | [ADR-0045](adr/0045-module-boundaries.md) |
 | [lang/en and lang/id keep the same key set](../.ai/rules/lang.md) | convention (not enforced) | - |
 | [Exception mapping to ProblemResponse happens only in the handler](../.ai/rules/error-handling.md) | convention (not enforced) | - |
-| [Bulk endpoints use BulkActionRequest](../.ai/rules/bulk-actions.md) | convention (not enforced) | - |
 | [Module providers extend the nwidart ModuleServiceProvider](../.ai/rules/providers.md) | convention (not enforced) | [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
-| [Module activation is driven by modules_statuses.json](../.ai/rules/config.md) | convention (not enforced) | [ADR-0029](adr/0029-nwidart-laravel-modules.md) |
 | [Route middleware stays explicit on the route group](../.ai/rules/routes.md) | convention (not enforced) | - |
-| [Feature flags come from config or Pennant, never env](../.ai/rules/features.md) | convention (not enforced) | [ADR-0022](adr/0022-feature-flag-middleware.md) |
+| [Every endpoint authorizes via authorize(), a policy, or permission middleware](../.ai/rules/requests.md) | convention (not enforced) | - |
+| [Each feature flag has one source of truth: config or Pennant, not both](../.ai/rules/features.md) | convention (not enforced) | [ADR-0022](adr/0022-feature-flag-middleware.md) |
+
+Many other rules are enforced directly by `tests/Architecture/ArchitectureTest.php` without rule text (strict types and equality, forbidden functions, App layer placement and suffixes); read the tests.
