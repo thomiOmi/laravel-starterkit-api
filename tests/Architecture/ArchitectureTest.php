@@ -632,7 +632,7 @@ function moduleCrossReferences(string $path, string $source): array
     $useBuffer = '';
     $useLine = 0;
 
-    foreach ($tokens as $token) {
+    foreach ($tokens as $index => $token) {
         if (is_string($token)) {
             if ($expectNamespace && in_array($token, [';', '{'], true)) {
                 $expectNamespace = false;
@@ -661,6 +661,18 @@ function moduleCrossReferences(string $path, string $source): array
         }
 
         if ($id === T_USE) {
+            $next = $index + 1;
+
+            while (isset($tokens[$next]) && is_array($tokens[$next]) && in_array($tokens[$next][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+                $next++;
+            }
+
+            // A closure `use (...)` clause is not an import and must not
+            // swallow the tokens that follow it.
+            if (($tokens[$next] ?? null) === '(') {
+                continue;
+            }
+
             $expectUse = true;
             $useBuffer = '';
             $useLine = $line;
@@ -706,6 +718,9 @@ function moduleCrossReferences(string $path, string $source): array
  */
 function moduleReferencesFromText(string $text, string $source, int $line): array
 {
+    $text = preg_replace('/^(?:function|const)\s+/i', '', $text) ?? $text;
+    $text = ltrim($text, '\\');
+
     if (preg_match('/^Modules\\\\([A-Za-z0-9_]+)\\\\/', $text, $matches) !== 1) {
         return [];
     }
