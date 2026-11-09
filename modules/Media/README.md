@@ -77,9 +77,9 @@ Permissions are `media.view`, `media.create`, `media.delete` (`app/Enums/Permiss
 ## Known gaps
 
 1. The `active` middleware alias is registered by IAM (`modules/IAM/app/Providers/IAMServiceProvider.php:61`) but used by Media routes (`modules/Media/routes/V1.php:22`), and Media declares no dependency (`modules/Media/module.json:7`). Enabling Media without IAM leaves the alias undefined.
-2. `media.delete` is seeded (`modules/IAM/database/seeders/IAMSeeder.php:55-57`) but not granted to the `user` role (`:65-69`); for regular users deletion depends on ownership (`app/Policies/MediaPolicy.php:47-58`).
+2. Media permissions and role grants are seeded by IAM, not by Media: `IAMSeeder` creates every `PermissionEnum` case (`modules/IAM/database/seeders/IAMSeeder.php:55-57`) and grants the `user` role view and create (`modules/IAM/database/seeders/IAMSeeder.php:64-69`); Media's own seeder has an empty `run()` (`modules/Media/database/seeders/MediaSeeder.php:14-17`). Separately, `media.delete` (`app/Enums/PermissionEnum.php:27`) is not granted to `user` (`modules/IAM/database/seeders/IAMSeeder.php:64-69`), so for a regular user deletion rests on ownership: `MediaPolicy::delete()` allows the owning model or the uploader before checking the permission (`app/Policies/MediaPolicy.php:47-58`).
 3. `Media::getTemporaryUrl()` ignores the conversion argument and always signs the original file route (`app/Models/Media.php:296-305`).
-4. `media:cleanup` scans only `media.disk`; files on `media.private_disk` are neither reported nor removed (`app/Console/Commands/MediaCleanupCommand.php:23-24`).
+4. `media:cleanup` scans only `media.disk` (`app/Console/Commands/MediaCleanupCommand.php:23-24`), so files on `media.private_disk` are neither reported nor removed. Its "DB record without file" check also resolves every record through that single disk: `$storage = Storage::disk($disk)` (`:24`) backs `$storage->exists($path)` inside the media loop (`:95-99`). It has not been verified whether private media stored on `media.private_disk` is therefore falsely reported as missing.
 
 ## Related ADRs
 
