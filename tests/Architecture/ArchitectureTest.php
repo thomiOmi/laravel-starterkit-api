@@ -614,12 +614,135 @@ arch('modules should be isolated')
 |--------------------------------------------------------------------------
 */
 
-it('module internal layers are not referenced by other modules', function (): void {
-    $internalLayers = ['Actions', 'Services', 'Payloads', 'Support', 'Builders', 'Enums'];
+/**
+ * Extract cross-module references from a PHP file.
+ *
+ * The PHP tokenizer ignores comments, docblocks, and string literals, so only
+ * `use` imports and fully qualified class names in executable code count.
+ *
+ * @return list<array{target: string, layer: string, line: int, reference: string}>
+ */
+function moduleCrossReferences(string $path, string $source): array
+{
+    $code = (string) file_get_contents($path);
+    $tokens = token_get_all($code);
+    $references = [];
+    $expectNamespace = false;
+    $expectUse = false;
+    $useBuffer = '';
+    $useLine = 0;
+
+    foreach ($tokens as $index => $token) {
+        if (is_string($token)) {
+            if ($expectNamespace && in_array($token, [';', '{'], true)) {
+                $expectNamespace = false;
+
+                continue;
+            }
+
+            if ($expectUse) {
+                $useBuffer .= $token;
+
+                if ($token === ';') {
+                    $expectUse = false;
+                    $references = array_merge($references, moduleReferencesFromText(trim($useBuffer, "; \t\n\r\0\x0B"), $source, $useLine));
+                }
+            }
+
+            continue;
+        }
+
+        [$id, $text, $line] = $token;
+
+        if ($id === T_NAMESPACE) {
+            $expectNamespace = true;
+
+            continue;
+        }
+
+        if ($id === T_USE) {
+            $next = $index + 1;
+
+            while (isset($tokens[$next]) && is_array($tokens[$next]) && in_array($tokens[$next][0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)) {
+                $next++;
+            }
+
+            // A closure `use (...)` clause is not an import and must not
+            // swallow the tokens that follow it.
+            if (($tokens[$next] ?? null) === '(') {
+                continue;
+            }
+
+            $expectUse = true;
+            $useBuffer = '';
+            $useLine = $line;
+
+            continue;
+        }
+
+        if ($expectNamespace) {
+            if ($text === ';') {
+                $expectNamespace = false;
+            }
+
+            continue;
+        }
+
+        if ($expectUse) {
+            if (in_array($id, [T_COMMENT, T_DOC_COMMENT], true)) {
+                continue;
+            }
+
+            $useBuffer .= $text;
+
+            if ($text === ';') {
+                $expectUse = false;
+                $references = array_merge($references, moduleReferencesFromText(trim($useBuffer, "; \t\n\r\0\x0B"), $source, $useLine));
+            }
+
+            continue;
+        }
+
+        if (in_array($id, [T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true) && str_contains($text, 'Modules\\')) {
+            $references = array_merge($references, moduleReferencesFromText($text, $source, $line));
+        }
+    }
+
+    return $references;
+}
+
+/**
+ * Parse a single reference into a target module and layer.
+ *
+ * @return list<array{target: string, layer: string, line: int, reference: string}>
+ */
+function moduleReferencesFromText(string $text, string $source, int $line): array
+{
+    $text = preg_replace('/^(?:function|const)\s+/i', '', $text) ?? $text;
+    $text = ltrim($text, '\\');
+
+    if (preg_match('/^Modules\\\\([A-Za-z0-9_]+)\\\\/', $text, $matches) !== 1) {
+        return [];
+    }
+
+    $target = $matches[1];
+
+    if ($target === $source) {
+        return [];
+    }
+
+    $rest = substr($text, strlen('Modules\\'.$target.'\\'));
+    $layer = explode('\\', $rest)[0];
+
+    return [['target' => $target, 'layer' => $layer, 'line' => $line, 'reference' => $text]];
+}
+
+it('modules only reference other modules through public layers', function (): void {
+    $publicLayers = ['Contracts', 'Models', 'Traits', 'Rules'];
 
     $modules = array_map(basename(...), glob(base_path('modules/*'), GLOB_ONLYDIR) ?: []);
 
-    $crossReferences = [];
+    $violations = [];
 
     foreach ($modules as $source) {
         $iterator = new RecursiveIteratorIterator(
@@ -631,28 +754,24 @@ it('module internal layers are not referenced by other modules', function (): vo
                 continue;
             }
 
-            $content = (string) file_get_contents($file->getPathname());
-
-            foreach ($modules as $target) {
-                if ($source === $target) {
+            foreach (moduleCrossReferences($file->getPathname(), $source) as $reference) {
+                if (in_array($reference['layer'], $publicLayers, true)) {
                     continue;
                 }
 
-                foreach ($internalLayers as $layer) {
-                    if (str_contains($content, "Modules\\{$target}\\{$layer}\\")) {
-                        $crossReferences[] = sprintf(
-                            '%s references Modules\%s\%s',
-                            str_replace(base_path('modules/'), '', $file->getPathname()),
-                            $target,
-                            $layer
-                        );
-                    }
-                }
+                $violations[] = sprintf(
+                    '%s:%d references Modules\%s\%s (allowed layers: %s)',
+                    str_replace(base_path('modules/'), '', $file->getPathname()),
+                    $reference['line'],
+                    $reference['target'],
+                    $reference['layer'],
+                    implode(', ', $publicLayers)
+                );
             }
         }
     }
 
-    expect($crossReferences)->toBeEmpty();
+    expect($violations)->toBeEmpty();
 });
 
 it('module seeders do not call seeders from other modules', function (): void {
@@ -749,21 +868,18 @@ it('module dependencies are declared in module.json', function (): void {
                 continue;
             }
 
-            $content = (string) file_get_contents($file->getPathname());
-
-            foreach ($modules as $target) {
-                if ($source === $target || in_array($target, $declared, true)) {
+            foreach (moduleCrossReferences($file->getPathname(), $source) as $reference) {
+                if (in_array($reference['target'], $declared, true)) {
                     continue;
                 }
 
-                if (str_contains($content, "Modules\\{$target}\\")) {
-                    $violations[] = sprintf(
-                        '%s uses Modules\%s but %s/module.json does not declare it in "requires"',
-                        str_replace(base_path('modules/'), '', $file->getPathname()),
-                        $target,
-                        $source
-                    );
-                }
+                $violations[] = sprintf(
+                    '%s:%d uses Modules\%s but %s/module.json does not declare it in "requires"',
+                    str_replace(base_path('modules/'), '', $file->getPathname()),
+                    $reference['line'],
+                    $reference['target'],
+                    $source
+                );
             }
         }
     }
