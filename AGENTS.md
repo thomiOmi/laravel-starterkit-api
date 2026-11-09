@@ -131,6 +131,7 @@ Use the `skill` tool to load a skill when the task matches its description. List
 Area-specific conventions (testing, controllers, actions, models, routes, responses, database) live in `.ai/rules/` and are matched to files by glob. Read the rule files matching your work before editing. When the user asks you to record a settled convention, use `record-rule` so the next agent inherits it.
 
 - Only record a rule when the user explicitly asks for one; never record one on your own initiative, as a side effect of a change, or to summarize work you just did.
+- Core rules and their enforcement: [docs/rules.md](docs/rules.md).
 
 ## Quality Gates
 

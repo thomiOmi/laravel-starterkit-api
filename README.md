@@ -125,6 +125,7 @@ tests/                   # Shared tests / global test helpers
 | [docs/coding-standards.md](docs/coding-standards.md) | Code style and language conventions |
 | [docs/module-generator.md](docs/module-generator.md) | `module:make` usage and module scaffolding |
 | [docs/rate-limiting.md](docs/rate-limiting.md) | Throttle configuration (global tiers; auth details in `modules/IAM/README.md`) |
+| [docs/rules.md](docs/rules.md) | Core rules mapped to the tests and tools that enforce them |
 | [docs/testing.md](docs/testing.md) | Testing conventions: helpers, datasets, describe/it/group, TIA, probes |
 | [modules/IAM/README.md](modules/IAM/README.md) | IAM: authentication, RBAC, social login, devices |
 | [modules/Media/README.md](modules/Media/README.md) | Media: uploads, image variants, signed URLs |
