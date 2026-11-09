@@ -48,3 +48,7 @@ No file under `app/` imports or names the `Modules\IAM` or `Modules\Media` names
 - ADR-0004: `App\Contracts\Identity` remains the user type-hint abstraction in `app/`, it extends `MustVerifyEmail`, and roles continue to be eager-loaded narrowly as `roles:id,name,guard_name` by the IAM controllers.
 - ADR-0005: `app/` remains the shared vocabulary and contract layer; cross-cutting contracts, enums, and concerns have a single home there.
 - This ADR supersedes ADR-0004 and ADR-0005. Their module-isolation claims are replaced by the rules above; the identity contract and shared-vocabulary decisions remain.
+
+## Corrections
+
+- 2026-11-09: The test `module internal layers are not referenced by other modules` was replaced by `modules only reference other modules through public layers`, which enforces an allow-list of `Contracts`, `Models`, `Traits`, and `Rules` over every other layer using the PHP tokenizer. The test `module dependencies are declared in module.json` now uses the same tokenizer-based detection. Enforcing the four public seams as an explicit allow-list is therefore no longer a separate decision (PR #396). (Original text above is kept as written.)

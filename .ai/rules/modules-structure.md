@@ -42,3 +42,5 @@ On-demand layers (Jobs, Events, Listeners, Mail, Rules, Exceptions, Lang, Observ
 
 ## Declare inter-module dependencies in module.json requires
 module.json carries an optional "requires" array listing dependency module names (TitleCase folder names, e.g. {"requires": ["Media"]}). Validate with `php artisan module:check-dependencies` (app/Console/Commands/ModuleDependencyCheckCommand.php): it fails when a dependency is not an installed/enabled module or when the graph has a cycle. IAM (core) requires Media (core). The architecture test allows core-to-core dependencies because both are listed in `config/modules.php` `core`. New modules get an empty "requires": [] scaffolded by the generator stub (stubs/module-generator/json.stub). Do not add requires for a module that is not registered in the config/modules.php allow-list.
+
+Enforcement lives in `tests/Architecture/ArchitectureTest.php`: `modules only reference other modules through public layers` (allow-list `Contracts`, `Models`, `Traits`, `Rules`) and `module dependencies are declared in module.json`. Read those tests as the source of truth; this rule only explains the intent.
