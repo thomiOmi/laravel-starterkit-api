@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\IAM\Providers;
 
-use Illuminate\Support\Facades\Route;
-use Modules\IAM\Http\Middleware\EnsureUserIsActive;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 /**
@@ -13,8 +11,8 @@ use Nwidart\Modules\Support\ModuleServiceProvider;
  *
  * The nWidart base class handles module config merge, migrations, views,
  * and translations. This provider declares the module name, merges the
- * IAM-owned Spatie permission config under the `permission` key, registers
- * the module route provider, and registers IAM-specific middleware aliases.
+ * IAM-owned Spatie permission config under the `permission` key and registers
+ * the module route provider.
  */
 class IAMServiceProvider extends ModuleServiceProvider
 {
@@ -49,15 +47,5 @@ class IAMServiceProvider extends ModuleServiceProvider
             module_path($this->name, 'config/permission.php'),
             'permission',
         );
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-        parent::boot();
-
-        Route::aliasMiddleware('active', EnsureUserIsActive::class);
     }
 }
