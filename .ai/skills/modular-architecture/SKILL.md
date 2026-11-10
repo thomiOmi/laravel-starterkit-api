@@ -322,7 +322,7 @@ class {Module}ServiceProvider extends ModuleServiceProvider
     {
         parent::boot();
 
-        Route::aliasMiddleware('active', EnsureUserIsActive::class);
+        Route::aliasMiddleware('billing', EnsureBillingIsEnabled::class);
     }
 }
 ```
