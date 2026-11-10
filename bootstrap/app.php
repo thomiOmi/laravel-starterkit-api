@@ -7,6 +7,7 @@ use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\AddTraceId;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureFeatureIsActive;
+use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleIdempotentRequests;
 use App\Http\Middleware\SetLocale;
 use App\Http\Responses\ProblemResponse;
@@ -41,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'verified' => EnsureEmailIsVerified::class,
+            'active' => EnsureUserIsActive::class,
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
             'role' => RoleMiddleware::class,
