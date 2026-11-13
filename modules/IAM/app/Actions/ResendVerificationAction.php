@@ -11,11 +11,11 @@ final readonly class ResendVerificationAction
     public function handle(User $user): string
     {
         if ($user->hasVerifiedEmail()) {
-            return __('auth.email_verified');
+            return __('iam::auth.email_verified');
         }
 
         $user->sendEmailVerificationNotification();
 
-        return __('auth.email_verification_sent');
+        return __('iam::auth.email_verification_sent');
     }
 }

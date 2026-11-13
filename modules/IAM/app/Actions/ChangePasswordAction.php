@@ -19,7 +19,7 @@ final readonly class ChangePasswordAction
     {
         if (! is_string($user->password) || ! Hash::check($payload->currentPassword, $user->password)) {
             throw ValidationException::withMessages([
-                'current_password' => [__('auth.password_invalid')],
+                'current_password' => [__('iam::auth.password_invalid')],
             ]);
         }
 

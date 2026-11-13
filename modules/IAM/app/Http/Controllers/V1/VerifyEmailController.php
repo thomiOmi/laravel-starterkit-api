@@ -20,7 +20,7 @@ final readonly class VerifyEmailController extends Controller
         return new SuccessResponse(
             data: ['verified' => true],
             title: 'OK',
-            detail: __('auth.email_verified'),
+            detail: __('iam::auth.email_verified'),
         );
     }
 }

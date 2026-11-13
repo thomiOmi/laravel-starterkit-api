@@ -36,7 +36,7 @@ final readonly class RegisterController extends Controller
                 'token_type' => $result['token_type'],
             ],
             title: 'Created',
-            detail: __('auth.register_success'),
+            detail: __('iam::auth.register_success'),
             status: Response::HTTP_CREATED,
         );
     }

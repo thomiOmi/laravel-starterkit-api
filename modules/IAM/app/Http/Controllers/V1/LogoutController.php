@@ -27,7 +27,7 @@ final readonly class LogoutController extends Controller
 
         return new SuccessResponse(
             title: 'OK',
-            detail: __('auth.logout_success'),
+            detail: __('iam::auth.logout_success'),
         );
     }
 }

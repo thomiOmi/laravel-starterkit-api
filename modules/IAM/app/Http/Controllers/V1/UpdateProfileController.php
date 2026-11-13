@@ -35,8 +35,8 @@ final readonly class UpdateProfileController extends Controller
             ],
             title: 'OK',
             detail: $result['verification_required']
-                ? __('auth.email_change_verify')
-                : __('auth.profile_updated'),
+                ? __('iam::auth.email_change_verify')
+                : __('iam::auth.profile_updated'),
         );
     }
 }

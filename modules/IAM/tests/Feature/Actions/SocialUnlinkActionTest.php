@@ -62,6 +62,6 @@ describe('SocialUnlinkAction', function (): void {
         $action = resolve(SocialUnlinkAction::class);
 
         expect(fn () => $action->handle($user, 'github'))
-            ->toThrow(InvalidArgumentException::class, __('auth.social_unlink_blocked'));
+            ->toThrow(InvalidArgumentException::class, __('iam::auth.social_unlink_blocked'));
     });
 });

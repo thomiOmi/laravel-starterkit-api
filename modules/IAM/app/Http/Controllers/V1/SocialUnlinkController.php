@@ -25,7 +25,7 @@ final readonly class SocialUnlinkController extends Controller
 
         return new SuccessResponse(
             title: 'OK',
-            detail: __('auth.social_unlink_success'),
+            detail: __('iam::auth.social_unlink_success'),
         );
     }
 }

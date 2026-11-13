@@ -36,7 +36,7 @@ final readonly class SocialCallbackController extends Controller
                 'token_type' => $result['token_type'],
             ],
             title: 'OK',
-            detail: __('auth.social_login_success'),
+            detail: __('iam::auth.social_login_success'),
         );
     }
 }

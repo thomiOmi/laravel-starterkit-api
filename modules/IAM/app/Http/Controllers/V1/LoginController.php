@@ -44,7 +44,7 @@ final readonly class LoginController extends Controller
                 'expires_in' => $result['expires_in'],
             ],
             title: 'OK',
-            detail: __('auth.login_success'),
+            detail: __('iam::auth.login_success'),
         );
     }
 }
