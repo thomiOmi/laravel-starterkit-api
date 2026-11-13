@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Illuminate\Support\Uri;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Sanctum\Sanctum;
@@ -143,9 +144,13 @@ class AppServiceProvider extends ServiceProvider
             $perEmail = config()->integer('rate-limiting.auth.limit_per_email');
             $perIp = config()->integer('rate-limiting.auth.limit_per_ip');
 
-            // Guard against array input: the key must be a string.
+            // Guard against array input: the key must be a string. Normalize it
+            // the same way LoginRequest does, so case and whitespace variants
+            // share one per-email bucket instead of bypassing the limit.
             $email = $request->input('email');
-            $emailKey = is_string($email) && $email !== '' ? $email : ($request->ip() ?? 'unknown');
+            $emailKey = is_string($email) && trim($email) !== ''
+                ? Str::lower(trim($email))
+                : ($request->ip() ?? 'unknown');
 
             return [
                 Limit::perMinute($perEmail)

@@ -6,9 +6,11 @@ Tiered rate limiting configured in `config/rate-limiting.php` and `AppServicePro
 
 | Limiter | Default Limit | Applied To | Key |
 |---------|--------------|------------|-----|
-| `auth` | 5/min per email + 10/min per IP | Register, Login, Forgot/Reset Password | Composite (email AND IP) |
+| `auth` | 5/min per email + 10/min per IP | Register, Login, Forgot/Reset Password | Separate per-email (trimmed + lowercased) and per-IP buckets; both must pass |
 | `authenticated` | 120/min | Authenticated routes (me, devices, logout) | User ID or IP |
 | `api` | 60/min | General API (CRUD, verify email, social) | User ID or IP |
+
+The `auth` limiter normalizes the email key with trim + lowercase, so case and whitespace variants of one address share a single per-email bucket.
 
 ## Configuration (.env)
 
