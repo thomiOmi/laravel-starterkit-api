@@ -71,7 +71,7 @@ describe('translation resolution', function (): void {
         expect($keys)->not->toBeEmpty();
 
         foreach ($keys as $key) {
-            expect(__($key))->not->toBe($key, "Translation key [{$key}] is missing for locale [{$locale}].");
+            expect(trans()->hasForLocale($key, $locale))->toBeTrue("Translation key [{$key}] is missing for locale [{$locale}].");
         }
     })->with(['en', 'id']);
 
@@ -100,7 +100,7 @@ describe('translation resolution', function (): void {
         ];
 
         foreach ($keys as $key) {
-            expect(__($key))->not->toBe($key, "Translation key [{$key}] is missing for locale [{$locale}].");
+            expect(trans()->hasForLocale($key, $locale))->toBeTrue("Translation key [{$key}] is missing for locale [{$locale}].");
         }
     })->with(['en', 'id']);
 
