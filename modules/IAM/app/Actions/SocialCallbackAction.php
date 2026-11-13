@@ -54,7 +54,7 @@ final readonly class SocialCallbackAction
             /** @var SocialiteUser $socialUser */
             $socialUser = $driver->stateless()->user();
         } catch (InvalidStateException) {
-            throw new InvalidArgumentException(__('auth.social_denied'));
+            throw new InvalidArgumentException(__('iam::auth.social_denied'));
         }
 
         $user = DB::transaction(function () use ($provider, $socialUser, $payload): User {

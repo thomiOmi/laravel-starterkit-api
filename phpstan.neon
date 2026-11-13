@@ -39,10 +39,14 @@ parameters:
         - modules/Media/config
 
     # Translation files (Laravel 13 uses lang/, not resources/lang/)
-    # Note: larastan does NOT glob-expand these paths; list module lang dirs literally
+    # Note: larastan does NOT glob-expand these paths, so paths are listed literally.
+    # Do not register module lang dirs here: larastan treats them as the default
+    # namespace, so unnamespaced module keys pass static analysis and return raw
+    # keys at runtime. Larastan also skips namespaced keys such as iam::auth.*
+    # (NoMissingTranslationsRule), so module keys are covered by the runtime guard
+    # test in tests/Feature/Localization instead.
     translationDirectories:
         - lang
-        - modules/IAM/lang
 
     # Cache parsed migrations between runs
     enableMigrationCache: true

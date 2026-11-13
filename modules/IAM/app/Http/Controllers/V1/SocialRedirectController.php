@@ -24,7 +24,7 @@ final readonly class SocialRedirectController extends Controller
         return new SuccessResponse(
             data: ['url' => $url],
             title: 'OK',
-            detail: __('auth.social_login_success'),
+            detail: __('iam::auth.social_login_success'),
         );
     }
 }

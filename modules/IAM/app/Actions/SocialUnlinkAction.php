@@ -19,7 +19,7 @@ final readonly class SocialUnlinkAction
 
         // Check if user has other social accounts via EXISTS query instead of full count aggregation.
         if (! $user->hasPassword() && ! $user->socialAccounts()->where('id', '!=', $account->id)->exists()) {
-            throw new InvalidArgumentException(__('auth.social_unlink_blocked'));
+            throw new InvalidArgumentException(__('iam::auth.social_unlink_blocked'));
         }
 
         $account->delete();

@@ -16,7 +16,7 @@ describe('POST /api/v1/auth/email/verification-notification', function (): void 
         $response = $this->postJson('/api/v1/auth/email/verification-notification');
 
         assertSuccessResponse($response, 200);
-        expect($response->json('detail'))->toContain(__('auth.email_verification_sent'));
+        expect($response->json('detail'))->toContain(__('iam::auth.email_verification_sent'));
 
         Notification::assertSentTo($user, VerifyEmailNotification::class);
     });
@@ -28,7 +28,7 @@ describe('POST /api/v1/auth/email/verification-notification', function (): void 
         $response = $this->postJson('/api/v1/auth/email/verification-notification');
 
         assertSuccessResponse($response, 200);
-        expect($response->json('detail'))->toContain(__('auth.email_verified'));
+        expect($response->json('detail'))->toContain(__('iam::auth.email_verified'));
 
         Notification::assertNothingSent();
     });

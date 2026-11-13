@@ -30,7 +30,7 @@ describe('DELETE /api/v1/auth/social/{provider}', function (): void {
         $response = $this->deleteJson('/api/v1/auth/social/google');
 
         assertProblemResponse($response, 400);
-        expect($response->json('detail'))->toContain(__('auth.social_unlink_blocked'))
+        expect($response->json('detail'))->toContain(__('iam::auth.social_unlink_blocked'))
             ->and($user->socialAccounts()->count())->toBe(1);
     });
 

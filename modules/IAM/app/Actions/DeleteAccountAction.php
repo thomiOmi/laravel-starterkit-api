@@ -23,7 +23,7 @@ final readonly class DeleteAccountAction
     {
         if (! is_string($user->password) || ! Hash::check($payload->password, $user->password)) {
             throw ValidationException::withMessages([
-                'password' => [__('auth.password_invalid')],
+                'password' => [__('iam::auth.password_invalid')],
             ]);
         }
 
