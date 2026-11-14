@@ -15,7 +15,7 @@ Modules mirror the stock Laravel `app/` skeleton (mirror principle): `modules/{M
 1. Module root layout: `app/` (mirrors Laravel app), `config/`, `database/` (factories, migrations, seeders), `routes/` (V1.php), `tests/` (Feature, Unit), `module.json`, `composer.json`
 2. Module provider `app/Providers/{Module}ServiceProvider.php` extends `Nwidart\Modules\Support\ModuleServiceProvider` (see providers rule); `app/Providers/RouteServiceProvider.php` loads `routes/` files (see routes rule)
 3. Required on ACTIVE modules: `app/Providers`, `routes`, `tests`; the rest are optional and created when needed
-4. Optional folders (only created if they contain at least 1 file, empty folders forbidden): Http (Controllers, Middleware, Requests, Resources), Console (Commands), Exceptions, Features (Pennant class-based features), Jobs, Mail, Rules, Events, Listeners, Lang ({locale}/), Models (with `Scopes/` inside it - global scopes live in `app/Models/Scopes`), Observers, Policies, Notifications, Actions, Builders, Services, Payloads, Support, Contracts, Enums, Config ({alias}.php), Database (Migrations, Factories, Seeders)
+4. Optional folders (only created if they contain at least 1 file, empty folders forbidden): Http (Controllers, Middleware, Requests, Resources), Console (Commands), Exceptions, Features (Pennant class-based features), Jobs, Mail, Rules, Events, Listeners, lang ({locale}/), Models (with `Scopes/` inside it - global scopes live in `app/Models/Scopes`), Observers, Policies, Notifications, Actions, Builders, Services, Payloads, Support, Contracts, Enums, Config ({alias}.php), Database (Migrations, Factories, Seeders)
 5. Kit-specific layers without a skeleton counterpart: Actions, Services, Payloads, Builders, Features, Config, Routes, Database, Tests, Lang
 6. `app/Http/Responses` is a global contract and is not mirrored into modules
 7. Module alias is the lowercase module name (`iam`), not the TitleCase folder name; used for config keys, `config/{Module}.php`, and the route name prefix (`api.v1.iam.`)
@@ -23,7 +23,7 @@ Modules mirror the stock Laravel `app/` skeleton (mirror principle): `modules/{M
 On-demand layers (Jobs, Events, Listeners, Mail, Rules, Exceptions, Lang, Observers, Scopes):
 
 1. Created only if they contain at least 1 file (empty folders forbidden)
-2. `Lang/` is loaded by the nwidart base `ModuleServiceProvider` while the module is active
+2. `lang/` at the module root is loaded by the nwidart base `ModuleServiceProvider` while the module is active
 3. Detailed rules just follow Laravel conventions; no separate rule file per folder
 4. Module listeners are NOT auto-discovered (bootstrap only scans `app/Listeners`); register listeners explicitly in `boot()` via `Event::listen`/`Event::subscribe`
 

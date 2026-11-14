@@ -34,8 +34,8 @@ Seeded roles: `super-admin` (Gate::before bypass), `admin` (full CRUD), `user` (
 | Key | Default | Env | Description |
 |-----|---------|-----|-------------|
 | `iam.features.self-registration` | `true` | - | Allow `POST /auth/register` (feature-flag `iam.self-registration`) |
-| `auth.verification.expire` | `60` | - | Signed email-verify URL lifetime (minutes) |
-| `auth.default_password` | `null` | `AUTH_DEFAULT_PASSWORD` | Password for `php artisan db:seed` users; if empty, random |
+| `auth.verification.expire` | `60` | `AUTH_VERIFICATION_EXPIRE` | Signed email-verify URL lifetime (minutes) |
+| `auth.default_password` | `null` | `DEFAULT_USER_PASSWORD` | Password for `php artisan db:seed` users; if empty, random |
 | `socialite` (Google/GitHub) | - | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `*_REDIRECT_URI` | OAuth creds per provider |
 
 ### Social Auth Setup
@@ -72,7 +72,7 @@ erDiagram
         string name
         string email UK
         string password "nullable"
-        string avatar_url "nullable"
+        string avatar "nullable"
         enum status
         datetime email_verified_at "nullable"
         datetime deleted_at "nullable"
@@ -86,21 +86,26 @@ erDiagram
     }
     roles {
         ulid id PK
-        string name UK
+        string name "unique with guard_name"
         string guard_name
+        text description "nullable"
     }
     permissions {
         ulid id PK
-        string name UK
+        string name "unique with guard_name"
         string guard_name
+        text description "nullable"
     }
     personal_access_tokens {
         ulid id PK
+        string tokenable_type
         ulid tokenable_id
         string token
         text abilities
     }
 ```
+
+Simplified: omits timestamps and some metadata columns.
 
 ### Flowchart — Authentication
 
@@ -151,8 +156,7 @@ classDiagram
         +UploadedFile avatarFile
     }
     class UpdateProfileAction {
-        +handle(Payload, User) User
-        +resolveAvatarUrl() String
+        +handle(User, UpdateProfilePayload) array
     }
     class UserResource {
         +toArray() Array
@@ -184,19 +188,19 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 | POST | `/auth/forgot-password` | `api.v1.iam.auth.password.forgot` | `throttle:auth` | Send reset link |
 | POST | `/auth/reset-password` | `api.v1.iam.auth.password.reset` | `throttle:auth` | Reset with token |
 | GET | `/auth/email/verify/{id}/{hash}` | `api.v1.iam.auth.verification.verify` | `auth:sanctum`, `signed`, `throttle:api` | Verify email (signed URL) |
-| POST | `/auth/email/verification-notification` | `api.v1.iam.auth.verification.send` | `auth:sanctum`, `active`, `ability:users:write` | Re-send verification |
-| POST | `/auth/change-password` | `api.v1.iam.auth.password.change` | `auth:sanctum`, `active` | Change password |
-| POST | `/auth/logout` | `api.v1.iam.auth.logout` | `auth:sanctum`, `active`, `ability:auth:manage` | Revoke current token |
-| DELETE | `/auth/account` | `api.v1.iam.auth.account.delete` | `auth:sanctum`, `active` | Delete own account |
-| GET | `/auth/me` | `api.v1.iam.auth.me` | `auth:sanctum`, `active`, `ability:users:read` | Get authenticated user |
-| PUT | `/auth/me` | `api.v1.iam.auth.me.update` | `auth:sanctum`, `active`, `verified` | Update profile (name, email, avatar file upload to avatars collection) |
+| POST | `/auth/email/verification-notification` | `api.v1.iam.auth.verification.send` | `auth:sanctum`, `active`, `throttle:authenticated`, `ability:users:write` | Re-send verification |
+| POST | `/auth/change-password` | `api.v1.iam.auth.password.change` | `auth:sanctum`, `active`, `throttle:authenticated` | Change password |
+| POST | `/auth/logout` | `api.v1.iam.auth.logout` | `auth:sanctum`, `active`, `throttle:authenticated`, `ability:auth:manage` | Revoke current token |
+| DELETE | `/auth/account` | `api.v1.iam.auth.account.delete` | `auth:sanctum`, `active`, `throttle:authenticated` | Delete own account |
+| GET | `/auth/me` | `api.v1.iam.auth.me` | `auth:sanctum`, `active`, `throttle:authenticated`, `ability:users:read` | Get authenticated user |
+| PUT | `/auth/me` | `api.v1.iam.auth.me.update` | `auth:sanctum`, `active`, `throttle:authenticated`, `verified` | Update profile (name, email, avatar file upload to avatars collection) |
 | GET | `/auth/social/{provider}/redirect` | `api.v1.iam.auth.social.redirect` | `throttle:api` | Get OAuth provider URL |
 | GET | `/auth/social/{provider}/callback` | `api.v1.iam.auth.social.callback` | `throttle:api` | Handle OAuth callback |
-| GET | `/auth/social/{provider}/link` | `api.v1.iam.auth.social.link` | `auth:sanctum`, `active`, `verified` | Link provider to current user |
-| DELETE | `/auth/social/{provider}` | `api.v1.iam.auth.social.unlink` | `auth:sanctum`, `active`, `verified` | Unlink provider |
-| GET | `/auth/devices` | `api.v1.iam.auth.devices.index` | `auth:sanctum`, `active`, `verified`, `ability:auth:manage` | List active tokens/devices |
-| DELETE | `/auth/devices/{device}` | `api.v1.iam.auth.devices.delete` | `auth:sanctum`, `active`, `verified`, `ability:auth:manage` | Revoke device token |
-| POST | `/auth/devices/logout-others` | `api.v1.iam.auth.devices.logout-others` | `auth:sanctum`, `active`, `verified`, `ability:auth:manage` | Revoke other tokens |
+| GET | `/auth/social/{provider}/link` | `api.v1.iam.auth.social.link` | `auth:sanctum`, `active`, `throttle:authenticated`, `verified` | Link provider to current user |
+| DELETE | `/auth/social/{provider}` | `api.v1.iam.auth.social.unlink` | `auth:sanctum`, `active`, `throttle:authenticated`, `verified` | Unlink provider |
+| GET | `/auth/devices` | `api.v1.iam.auth.devices.index` | `auth:sanctum`, `active`, `throttle:authenticated`, `verified`, `ability:auth:manage` | List active tokens/devices |
+| DELETE | `/auth/devices/{device}` | `api.v1.iam.auth.devices.delete` | `auth:sanctum`, `active`, `throttle:authenticated`, `verified`, `ability:auth:manage` | Revoke device token |
+| POST | `/auth/devices/logout-others` | `api.v1.iam.auth.devices.logout-others` | `auth:sanctum`, `active`, `throttle:authenticated`, `verified`, `ability:auth:manage` | Revoke other tokens |
 
 ### Users (`/api/v1/users`) — `auth:sanctum`, `active`, `verified`, `throttle:api` + ULID constraint
 
@@ -213,7 +217,7 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 
 `PUT /users/{user}` rejects a `password` field with `422`; use `POST /auth/change-password` (or the forgot/reset flow) instead. When the normalized email actually changes, `email_verified_at` is cleared and a verification notification is sent without changing the account status.
 
-### Roles (`/api/v1/roles`)
+### Roles (`/api/v1/roles`) — `auth:sanctum`, `active`, `verified`, `throttle:api` + ULID constraint
 
 | Method | Path | Name | Permission |
 |--------|------|------|------------|
@@ -224,7 +228,7 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 | PUT | `/roles/{role}` | `api.v1.iam.role.update` | `role.edit` |
 | DELETE | `/roles/{role}` | `api.v1.iam.role.delete` | `role.delete` |
 
-### Permissions (`/api/v1/permissions`)
+### Permissions (`/api/v1/permissions`) — `auth:sanctum`, `active`, `verified`, `throttle:api` + ULID constraint
 
 | Method | Path | Name | Permission |
 |--------|------|------|------------|
@@ -288,7 +292,7 @@ curl -X POST http://localhost:8000/api/v1/auth/logout -H "Authorization: Bearer 
 
 - **Permissions/Roles:** Add new values to `App\Enums\PermissionEnum` / `RoleEnum`, run `php artisan db:seed` (creates via `IAMSeeder`). Assign via `UserAssignRolesController` or Spatie `givePermissionTo()`.
 - **Policies:** `Modules\IAM\Policies\UserPolicy` registered via `#[UsePolicy]` on `User` model. Add abilities with `Gate` or `#[UsePolicy]`.
-- **Feature flag:** `iam.features.self-registration` in `modules/IAM/config/config.php` — toggle via `config/iam.php` or `Pennant::define()` + middleware `feature-flag:iam.self-registration`.
+- **Feature flag:** `iam.features.self-registration` in `modules/IAM/config/config.php` (merged into `config('iam.features')`) — build-time toggle (edit the config value); middleware `feature-flag:iam.self-registration` reads the merged config, falling back to Pennant only for names the registry does not define.
 - **Observer:** `Modules\IAM\Observers\UserObserver` (`#[ObservedBy]`) promotes a `UserStatusEnum::Pending` user to `Active` when `email_verified_at` is set; `Banned`, `Suspended`, and `Inactive` keep their status. When the status changes to a value that does not allow authentication (`Inactive`, `Suspended`, `Banned`), all of that user's Sanctum access tokens are revoked — reactivating the account does not resurrect previously issued tokens.
 - **Add endpoint:** Create `app/Http/Controllers/V1/{Action}Controller` (invokable `final readonly`), `app/Actions/{Action}`, `app/Http/Requests/V1/{Action}Request`, `app/Http/Resources`, register route in `routes/V1.php` under `api/v1` prefix.
 
