@@ -5,11 +5,17 @@ declare(strict_types=1);
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Schema;
 use Modules\IAM\Actions\RegisterAction;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
+use Modules\IAM\Models\User;
 use Modules\IAM\Payloads\V1\RegisterPayload;
+use Spatie\Permission\Exceptions\RoleDoesNotExist;
 
 covers(RegisterAction::class);
 
@@ -32,9 +38,48 @@ describe('RegisterAction', function (): void {
         expect($result['user']->email)->toBe('jane@example.com')
             ->and($result['user']->hasRole(RoleEnum::User->value))->toBeTrue()
             ->and($result['access_token'])->not->toBeEmpty()
-            ->and($result['token_type'])->toBe('Bearer');
+            ->and($result['token_type'])->toBe('Bearer')
+            ->and($result)->toHaveKeys(['user', 'access_token', 'token_type', 'expires_at', 'expires_in']);
 
         Event::assertDispatched(Registered::class, fn (Registered $event) => $event->user->is($result['user']));
+        Event::assertDispatchedTimes(Registered::class, 1);
+    });
+
+    it('fires Registered after the transaction has been committed', function (): void {
+        Notification::fake();
+
+        $baselineTransactionLevel = DB::transactionLevel();
+        $observed = null;
+
+        Event::listen(Registered::class, function (Registered $event) use (&$observed): void {
+            $observed = [
+                'transaction_level' => DB::transactionLevel(),
+                'user_is_committed' => User::query()->whereKey($event->user->getKey())->exists(),
+            ];
+        });
+
+        $payload = new RegisterPayload(name: 'Order Check', email: 'order-check@example.com', password: 'password123');
+
+        resolve(RegisterAction::class)->handle($payload);
+
+        expect($observed)->toBe([
+            'transaction_level' => $baselineTransactionLevel,
+            'user_is_committed' => true,
+        ]);
+    });
+
+    it('rolls back the user when access token creation fails', function (): void {
+        Event::fake([Registered::class]);
+
+        Schema::drop('personal_access_tokens');
+
+        $payload = new RegisterPayload(name: 'Token Failure', email: 'token-failure@example.com', password: 'password123');
+
+        expect(fn () => resolve(RegisterAction::class)->handle($payload))
+            ->toThrow(QueryException::class)
+            ->and(User::query()->where('email', 'token-failure@example.com')->exists())->toBeFalse();
+
+        Event::assertNotDispatched(Registered::class);
     });
 
     it('handles payload without device name', function (): void {
@@ -44,5 +89,19 @@ describe('RegisterAction', function (): void {
 
         expect($result['user']->email)->toBe('john2@example.com')
             ->and($result['access_token'])->not->toBeEmpty();
+    });
+});
+
+describe('RegisterAction without the User role', function (): void {
+    it('rolls back the user when role assignment fails', function (): void {
+        Event::fake([Registered::class]);
+
+        $payload = new RegisterPayload(name: 'No Role', email: 'no-role@example.com', password: 'password123');
+
+        expect(fn () => resolve(RegisterAction::class)->handle($payload))
+            ->toThrow(RoleDoesNotExist::class)
+            ->and(User::query()->where('email', 'no-role@example.com')->exists())->toBeFalse();
+
+        Event::assertNotDispatched(Registered::class);
     });
 });

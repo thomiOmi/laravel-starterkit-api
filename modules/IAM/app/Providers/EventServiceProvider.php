@@ -23,10 +23,13 @@ class EventServiceProvider extends ServiceProvider
     protected static $shouldDiscoverEvents = true;
 
     /**
-     * Suppress the framework's global Registered ->
-     * SendEmailVerificationNotification listener: this module sends
-     * verification mails explicitly through its own actions, keeping
-     * delivery deterministic.
+     * Keep the framework's email verification listener.
+     *
+     * Laravel registers the global Registered ->
+     * SendEmailVerificationNotification listener from the auto-registered
+     * Illuminate\Foundation\Support\Providers\EventServiceProvider, so
+     * overriding this hook on a module provider does not remove it
+     * (confirmed with `php artisan event:list`).
      */
     #[\Override]
     protected function configureEmailVerification(): void {}
