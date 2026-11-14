@@ -265,7 +265,7 @@ project/
 
 | Folder | Contents |
 |---|---|
-| `app/Providers` | `{Module}ServiceProvider` extends nWidart base `ModuleServiceProvider`, plus `EventServiceProvider` (verification auto-listener suppressed via empty `configureEmailVerification`) and `RouteServiceProvider` |
+| `app/Providers` | `{Module}ServiceProvider` extends nWidart base `ModuleServiceProvider`, plus `EventServiceProvider` (empty `configureEmailVerification` override; the framework's Registered -> SendEmailVerificationNotification listener stays active, see the provider docblock) and `RouteServiceProvider` |
 | `routes` | Route file (`V1.php`) |
 | `tests` | Feature and unit tests |
 
