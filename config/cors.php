@@ -49,11 +49,15 @@ return [
     |
     | The origins that are allowed to make cross-origin requests. You may
     | use "*" to allow all origins. Set CORS_ALLOWED_ORIGINS to the origins
-    | of your separate frontend application.
+    | of your separate frontend application as a comma-separated list;
+    | surrounding spaces are trimmed and empty entries are discarded.
     |
     */
 
-    'allowed_origins' => explode(',', (string) env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173,http://localhost:8080')),
+    'allowed_origins' => array_values(array_filter(
+        array_map(trim(...), explode(',', (string) env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173,http://localhost:8080'))),
+        fn (string $origin): bool => $origin !== ''
+    )),
 
     /*
     |--------------------------------------------------------------------------
