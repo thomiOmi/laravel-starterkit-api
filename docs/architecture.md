@@ -224,7 +224,6 @@ project/
 │       │   ├── Rules/           # Module-specific custom validation rules
 │       │   ├── Events/          # Module-specific events
 │       │   ├── Listeners/       # Module-specific listeners
-│       │   ├── Lang/            # {locale}/ (module translations, loaded when active)
 │       │   ├── Models/          # Module Eloquent models
 │       │   │   └── Scopes/      # Global scopes (registered via #[ScopedBy])
 │       │   ├── Observers/       # Model observers (registered via #[ObservedBy])
@@ -240,6 +239,7 @@ project/
 │       │   └── Enums/           # Kit-specific: module-specific enums
 │       ├── config/              # Kit-specific: config.php (merged by base provider)
 │       ├── database/            # Kit-specific: factories, migrations, seeders
+│       ├── lang/                # {locale}/ (module translations, loaded when active)
 │       ├── routes/              # (required) V1.php, V2.php (loaded by module RouteServiceProvider)
 │       └── tests/               # (required) Module feature and unit tests
 ├── routes/
