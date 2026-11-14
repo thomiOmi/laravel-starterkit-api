@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
+use App\Models\Sanctum\PersonalAccessToken;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Schema;
 use Modules\IAM\Actions\RegisterAction;
 use Modules\IAM\Models\Permission;
 use Modules\IAM\Models\Role;
@@ -71,15 +70,21 @@ describe('RegisterAction', function (): void {
     it('rolls back the user when access token creation fails', function (): void {
         Event::fake([Registered::class]);
 
-        Schema::drop('personal_access_tokens');
+        PersonalAccessToken::creating(function (): void {
+            throw new RuntimeException('Simulated token persistence failure.');
+        });
 
-        $payload = new RegisterPayload(name: 'Token Failure', email: 'token-failure@example.com', password: 'password123');
+        try {
+            $payload = new RegisterPayload(name: 'Token Failure', email: 'token-failure@example.com', password: 'password123');
 
-        expect(fn () => resolve(RegisterAction::class)->handle($payload))
-            ->toThrow(QueryException::class)
-            ->and(User::query()->where('email', 'token-failure@example.com')->exists())->toBeFalse();
+            expect(fn () => resolve(RegisterAction::class)->handle($payload))
+                ->toThrow(RuntimeException::class)
+                ->and(User::query()->where('email', 'token-failure@example.com')->exists())->toBeFalse();
 
-        Event::assertNotDispatched(Registered::class);
+            Event::assertNotDispatched(Registered::class);
+        } finally {
+            PersonalAccessToken::flushEventListeners();
+        }
     });
 
     it('handles payload without device name', function (): void {
