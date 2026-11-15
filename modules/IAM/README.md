@@ -219,6 +219,13 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 
 By default a regular `user`-role account cannot list users or read another account's profile: `user.view` is not seeded for that role, and self access flows through the `UserPolicy` self branches. Adopters that need a user directory can either grant `user.view` to a role with one `givePermissionTo(PermissionEnum::UserView->value)` line in `IAMSeeder`, or add a separate directory endpoint and resource with minimal fields (no email, status, or roles) plus pagination and rate limiting.
 
+**Upgrading:** `IAMSeeder` is additive (`firstOrCreate` + `givePermissionTo`), so databases seeded before this change keep `user.view` and `media.view` on the `user` role. Revoke them once per environment in interactive tinker; `revokePermissionTo` already flushes the Spatie permission cache for roles. Do not use `tinker --execute` with nested quotes because it breaks in Windows PowerShell.
+
+```text
+php artisan tinker
+>>> Modules\IAM\Models\Role::findByName('user', 'sanctum')->revokePermissionTo(['user.view', 'media.view']);
+```
+
 ### Roles (`/api/v1/roles`) — `auth:sanctum`, `active`, `verified`, `throttle:api` + ULID constraint
 
 | Method | Path | Name | Permission |
