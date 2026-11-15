@@ -63,3 +63,4 @@ Config `phpstan.neon` adds `modules/Media/config` to `configDirectories`.
 
 - 2026-11-07: `UpdateProfileAction` does not use `DB::table('media')`; it calls `$user->addMedia(...)->toMediaCollection('avatars')` and reads the URL from `$media->url()`. IAM now imports Media's public seams directly; see ADR-0045. (Original text above is kept as written.)
 - 2026-11-07: `MediaUrlGeneratorService` does not exist; URLs are built by `Modules\Media\Support\UrlGenerator\MediaUrlGenerator`, used by `Media::url()` and `Media::getTemporaryUrl()`.
+- 2026-11-15: The `MediaPolicy` branches described above still hold, but the seeded `user` role no longer receives `media.view`; see the correction in ADR-0030. Regular users are seeded with `media.create` only.

@@ -62,11 +62,11 @@ class IAMSeeder extends Seeder
         $admin->givePermissionTo(PermissionEnum::cases());
 
         $user = Role::query()->firstOrCreate(['name' => RoleEnum::User->value, 'guard_name' => 'sanctum']);
-        $user->givePermissionTo([
-            PermissionEnum::UserView->value,
-            PermissionEnum::MediaView->value,
-            PermissionEnum::MediaCreate->value,
-        ]);
+
+        // Least privilege: a regular account may upload media, but must not
+        // browse other accounts or other owners' private media. Self access
+        // is granted by the UserPolicy and MediaPolicy owner branches.
+        $user->givePermissionTo(PermissionEnum::MediaCreate->value);
     }
 
     /**
