@@ -49,3 +49,7 @@ the IAM profile flow works with zero changes on the consumer side.
   requires are rejected by design by the cycle detector.
 - Enums shared across modules live in `App\Enums`
   (`MediaCollection`, `MediaVisibilityEnum`).
+
+## Corrections
+
+- 2026-11-15: "V1 is owner-scoped" and "Regular users gain `media.view/create`" no longer describe the seeded RBAC. `IAMSeeder` now grants the `user` role `media.create` only: the seeded `media.view` let any regular account read other owners' private media and mint signed URLs for it. Owner/uploader branches in `MediaPolicy` and self branches in `UserPolicy` keep own-data flows working, and public media stays readable. (Original text above is kept as written.)

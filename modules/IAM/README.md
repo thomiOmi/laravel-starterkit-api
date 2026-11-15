@@ -27,7 +27,7 @@ php artisan db:seed
 # Password for seeded users from config('auth.default_password') or random 32 chars
 ```
 
-Seeded roles: `super-admin` (Gate::before bypass), `admin` (full CRUD), `user` (limited read). Permissions from `PermissionEnum` + `Media` permissions via `IAMSeeder`.
+Seeded roles: `super-admin` (Gate::before bypass), `admin` (full CRUD), `user` (`media.create` only; reading and updating their own account is granted by policy, not by permission). Permissions from `PermissionEnum` + `Media` permissions via `IAMSeeder`.
 
 ### Configuration
 
@@ -210,12 +210,21 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 | POST | `/users` | `api.v1.iam.user.create` | `user.create` | Create user |
 | POST | `/users/bulk/delete` | `api.v1.iam.user.bulk.delete` | `user.delete` | Bulk soft delete |
 | POST | `/users/bulk/restore` | `api.v1.iam.user.bulk.restore` | `user.restore` | Bulk restore |
-| GET | `/users/{user}` | `api.v1.iam.user.show` | - | Show (owner or policy) |
+| GET | `/users/{user}` | `api.v1.iam.user.show` | - | Show (self, or another user with `user.view` via policy) |
 | PUT | `/users/{user}` | `api.v1.iam.user.update` | - | Update (password not accepted; email change re-verifies) |
 | PUT | `/users/{user}/roles` | `api.v1.iam.user.roles.assign` | `user.edit` | Assign roles |
 | DELETE | `/users/{user}` | `api.v1.iam.user.delete` | `user.delete` | Soft delete |
 
 `PUT /users/{user}` rejects a `password` field with `422`; use `POST /auth/change-password` (or the forgot/reset flow) instead. When the normalized email actually changes, `email_verified_at` is cleared and a verification notification is sent without changing the account status.
+
+By default a regular `user`-role account cannot list users or read another account's profile: `user.view` is not seeded for that role, and self access flows through the `UserPolicy` self branches. Adopters that need a user directory can either grant `user.view` to a role with one `givePermissionTo(PermissionEnum::UserView->value)` line in `IAMSeeder`, or add a separate directory endpoint and resource with minimal fields (no email, status, or roles) plus pagination and rate limiting.
+
+**Upgrading:** `IAMSeeder` is additive (`firstOrCreate` + `givePermissionTo`), so databases seeded before this change keep `user.view` and `media.view` on the `user` role. Revoke them once per environment in interactive tinker; `revokePermissionTo` already flushes the Spatie permission cache for roles. Do not use `tinker --execute` with nested quotes because it breaks in Windows PowerShell.
+
+```text
+php artisan tinker
+>>> Modules\IAM\Models\Role::findByName('user', 'sanctum')->revokePermissionTo(['user.view', 'media.view']);
+```
 
 ### Roles (`/api/v1/roles`) — `auth:sanctum`, `active`, `verified`, `throttle:api` + ULID constraint
 
