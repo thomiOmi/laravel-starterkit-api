@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Support\DisallowedExtensions;
-use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Tests\Support\EvilPhpFileNamer;
 use Modules\Media\Traits\InteractsWithMedia;
 
 covers(DisallowedExtensions::class);
@@ -148,21 +148,3 @@ describe('Media extension guard', function (): void {
         Storage::disk('public')->assertMissing('default/evil.php');
     });
 });
-
-final class EvilPhpFileNamer implements MediaFileNamer
-{
-    public function originalFileName(string $fileName): string
-    {
-        return 'evil.php';
-    }
-
-    public function conversionFileName(string $fileName, string $conversion): string
-    {
-        return 'evil-'.$conversion.'.php';
-    }
-
-    public function responsiveFileName(string $fileName): string
-    {
-        return $fileName;
-    }
-}

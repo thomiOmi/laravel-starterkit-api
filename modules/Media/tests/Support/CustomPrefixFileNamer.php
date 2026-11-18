@@ -15,7 +15,12 @@ final class CustomPrefixFileNamer implements MediaFileNamer
 
     public function conversionFileName(string $fileName, string $conversion): string
     {
-        return 'custom-'.$conversion.'.webp';
+        $name = pathinfo($fileName, PATHINFO_FILENAME);
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+
+        $converted = 'custom-'.$name.'-'.$conversion;
+
+        return $extension !== '' ? $converted.'.'.$extension : $converted;
     }
 
     public function responsiveFileName(string $fileName): string

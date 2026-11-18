@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Media\Events\MediaUploaded;
 use Modules\Media\Http\Controllers\V1\MediaUploadController;
 use Modules\Media\Models\Media;
-use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Tests\Support\ConstantFileNamer;
 
 covers(MediaUploadController::class);
 
@@ -234,21 +234,3 @@ describe('POST /api/v1/media', function (): void {
         assertProblemResponse($response, 403);
     });
 });
-
-final class ConstantFileNamer implements MediaFileNamer
-{
-    public function originalFileName(string $fileName): string
-    {
-        return 'fixed.pdf';
-    }
-
-    public function conversionFileName(string $fileName, string $conversion): string
-    {
-        return 'fixed-'.$conversion.'.pdf';
-    }
-
-    public function responsiveFileName(string $fileName): string
-    {
-        return $fileName;
-    }
-}

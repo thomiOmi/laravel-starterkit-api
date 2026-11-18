@@ -8,10 +8,11 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Media\Database\Factories\MediaFactory;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\PathGenerator\DefaultPathGenerator;
-use Modules\Media\Support\PathGenerator\MediaPathGenerator;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
 use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
 use Modules\Media\Tests\Support\CustomPrefixPathGenerator as SupportCustomPrefixPathGenerator;
+use Modules\Media\Tests\Support\FixedUrlGenerator;
+use Modules\Media\Tests\Support\FlatCustomPathGenerator;
 
 covers(DefaultPathGenerator::class);
 covers(DefaultUrlGenerator::class);
@@ -23,7 +24,7 @@ describe('Media generators config', function (): void {
     });
 
     it('uses a custom path generator from config', function (): void {
-        config(['media.path_generator' => CustomPrefixPathGenerator::class]);
+        config(['media.path_generator' => FlatCustomPathGenerator::class]);
 
         $media = MediaFactory::new()->public()->createOne();
 
@@ -33,7 +34,7 @@ describe('Media generators config', function (): void {
     it('uses a custom path generator only for the configured model', function (): void {
         $owner = loginAsUser();
         config(['media.custom_path_generators' => [
-            $owner->getMorphClass() => CustomPrefixPathGenerator::class,
+            $owner->getMorphClass() => FlatCustomPathGenerator::class,
         ]]);
 
         $owned = MediaFactory::new()->forModel($owner)->createOne();
@@ -189,44 +190,3 @@ describe('Media generators config', function (): void {
             ->and($expires)->toBeLessThanOrEqual(now()->addMinutes(61)->timestamp);
     });
 });
-
-final class CustomPrefixPathGenerator implements MediaPathGenerator
-{
-    public function getPath(Media $media): string
-    {
-        return 'custom/'.$media->file_name;
-    }
-
-    public function getPathForConversions(Media $media): string
-    {
-        return 'custom/conversions/'.$media->id;
-    }
-
-    public function getPathForDerivedConversions(Media $media): string
-    {
-        return 'custom/conversions/derived/'.$media->id;
-    }
-
-    public function getPathForResponsiveImages(Media $media): string
-    {
-        return dirname($this->getPath($media)).'/responsive-images';
-    }
-}
-
-final class FixedUrlGenerator implements MediaUrlGenerator
-{
-    public function getUrl(Media $media): string
-    {
-        return 'https://cdn.example.test/'.$media->file_name;
-    }
-
-    public function getTemporaryUrl(Media $media, DateTimeInterface $expiration): string
-    {
-        return 'https://cdn.example.test/'.$media->file_name.'?expires='.$expiration->getTimestamp();
-    }
-
-    public function getTemporaryUrlForMinutes(Media $media, int $ttlMinutes): string
-    {
-        return $this->getTemporaryUrl($media, now()->addMinutes($ttlMinutes));
-    }
-}
