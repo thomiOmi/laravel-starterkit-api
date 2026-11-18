@@ -25,7 +25,6 @@
         "create-prd",
         "laravel-attributes",
         "laravel-modules-development",
-        "modular-architecture",
-        "update-tasks"
+        "modular-architecture"
     ]
 }

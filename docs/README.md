@@ -24,11 +24,12 @@ Canonical documentation for the Laravel Starterkit API. This directory is the so
 ```text
 PRD (what/why the product needs)      ->  docs/prd/
    decision rationale                 ->  docs/adr/ (why a convention exists)
-   execution status                   ->  TASKS.md (phase tracking, not committed decisions)
+   execution status                   ->  GitHub issues (cross-PR work and open decisions)
    technical detail                   ->  docs/*.md (how to use/extend)
 ```
 
-- Requirements in the PRD carry IDs (AUTH-01, IAM-01, ...). Their shipped status is tracked in the PRD tables and the execution tracker.
+- Requirements in the PRD carry IDs (AUTH-01, IAM-01, ...). Their shipped status is tracked in the PRD tables and the linked GitHub issues.
+- Work tracking lives on GitHub: open an issue when work spans multiple pull requests or needs a decision, while a clear single change can go straight to a pull request.
 - ADRs are the answer to "why is the code like this?" — read them before changing a settled convention.
 - `docs/*.md` are the "how" documents — implementation conventions and usage guides.
 
@@ -37,4 +38,4 @@ PRD (what/why the product needs)      ->  docs/prd/
 - New feature with product scope: create `docs/prd/{feature}.md` from `docs/prd/template.md` and link it in the PRD README.
 - New settled decision: create `docs/adr/NNNN-<slug>.md` from `docs/adr/template.md` and add it to the index table.
 - Keep technical docs current when code conventions change; record the rule in `.ai/rules/` via `record-rule` so agents inherit it.
-- Write tracked documentation in English. The bilingual exception applies only to the gitignored root `TASKS.md` tracker; anything committed must be English.
+- Write tracked documentation in English.

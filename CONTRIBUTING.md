@@ -63,7 +63,7 @@ A pre-commit hook runs `composer lint:staged` automatically.
 - `docs/` is the canonical documentation: PRD for what/why, ADRs for settled decisions, `docs/*.md` for how-to.
 - New settled decision: write an ADR from `docs/adr/template.md` and add it to the index.
 - Core rules and their enforcement: [docs/rules.md](docs/rules.md).
-- `TASKS.md` is an untracked execution tracker; never commit it.
+- Work tracking lives on GitHub, not in the repository: open an issue when work spans multiple pull requests or needs a decision, and record settled decisions as ADRs in `docs/adr/`. A clear single change can go straight to a pull request without an issue.
 
 ## Pull Requests
 

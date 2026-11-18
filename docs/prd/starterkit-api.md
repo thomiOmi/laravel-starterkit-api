@@ -103,7 +103,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 | UserRepository / repositories | Eloquent ORM is the repository |
 | Entity-level providers | Module-level ServiceProvider only |
 | DTOs/Payloads for standard HTTP flows | Only for queue jobs, CLI, cross-module consistency |
-| Health endpoint (OBS-01) | Deferred — see `TASKS.md` Phase 7 (plan recorded, not executed) |
+| Health endpoint (OBS-01) | Deferred - see issue #227 (plan recorded, not executed) |
 | Laravel Pulse (OBS-02) | Skipped — web dashboard not relevant for API-only kit |
 | Accounting module | Domain-specific, cannot be generalized (ADR-0016) |
 | Image processing | Deferred — 10MB free-typed limit; intervention/image recipe documented (ADR-0015) |
@@ -137,7 +137,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 ## Document Relations
 
 - **Decisions**: [docs/adr/](../adr/README.md) — why each convention exists
-- **Execution status**: [TASKS.md](../../TASKS.md) — phase-by-phase tracking
+- **Execution status**: tracked in GitHub issues - phase-by-phase work and open decisions live there, not in the repository
 - **Technical details**: [docs/](../README.md) — api-standard, architecture, auth, testing, rbac, etc.
 
 ## Revision History

@@ -24,7 +24,7 @@
 
 ## Documentation and Language
 
-- Documents (docs, rules, roadmap): pure ASCII, no emoji, no en/em dash, no arrows, use hyphens.
+- Documents (docs, rules): pure ASCII, no emoji, no en/em dash, no arrows, use hyphens.
 - Code and comment language: English.
 - This project uses the lowercase `modules/` directory; it overrides package guidelines that mention `Modules/`.
 
