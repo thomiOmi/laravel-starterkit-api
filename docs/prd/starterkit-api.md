@@ -117,7 +117,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 - **Controllers**: plain `abstract readonly Controller` base; invokable `final readonly` controllers (ADR-0009).
 - **Responses**: `SuccessResponse` / `ProblemResponse` (RFC 9457), no `success` boolean.
 - **Testing**: Pest 5, `describe()`/`it()`, typed helpers in `tests/Helpers.php`, module groups `module:{name}` — see [docs/testing.md](../testing.md).
-- **Quality gates**: `composer lint` → `rector:dry` → `types:check` → `test` (unit + feature) → `test:profanity`; `composer ci:check` before push. Coverage/mutation/type-coverage gates temporarily suspended.
+- **Quality gates**: `composer rector` -> `composer lint` -> `composer types:check` -> `composer test` (unit + feature) -> `composer test:profanity`; `composer ci:check` before push. Coverage/mutation/type-coverage gates temporarily suspended.
 
 ## Constraints
 

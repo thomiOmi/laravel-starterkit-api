@@ -107,8 +107,8 @@
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
-            "@lint:check",
             "@rector:dry",
+            "@lint:check",
             "@types:check",
             "@test",
             "@test:profanity"

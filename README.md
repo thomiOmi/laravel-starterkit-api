@@ -139,7 +139,7 @@ composer dev
 # Full suite (unit + feature tests)
 composer test
 
-# Quality gate (lint + rector + static analysis + tests + profanity)
+# Quality gate (rector + lint + static analysis + tests + profanity)
 composer ci:check
 
 # Profanity check

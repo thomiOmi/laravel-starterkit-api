@@ -6,6 +6,7 @@
 |---|---|---|
 | `composer setup` | Install dependencies and prepare the application |
 | `composer setup:ci` | Prepare the application for CI (copy .env, key:generate, sqlite, migrate) |
+| `composer rector` | Apply Rector refactors (`@php vendor/bin/rector`) |
 | `composer lint` | Auto-fix code style (`@php vendor/bin/pint --parallel`) |
 | `composer lint:staged` | Auto-fix code style for staged files only (`@php vendor/bin/pint --parallel --dirty`) |
 | `composer lint:check` | Check code style without modifications |
@@ -13,7 +14,7 @@
 | `composer test` | Run the test suite in two phases: `vendor/bin/pest --parallel --testsuite=Unit,Feature,Modules`, then `vendor/bin/pest --testsuite=Architecture` |
 | `composer test:profanity` | Run profanity checks on test files |
 | `composer test:profile` | Run the suite and report the slowest tests (`vendor/bin/pest --profile`) |
-| `composer ci:check` | Full CI pipeline - runs `lint:check`, `rector:dry`, `types:check`, `test`, then `test:profanity` |
+| `composer ci:check` | Full CI pipeline - runs `rector:dry`, `lint:check`, `types:check`, `test`, then `test:profanity` |
 
 ### Tooling notes
 
@@ -26,8 +27,10 @@
 The recommended pre-push workflow:
 
 ```bash
-composer lint          # fix code style
-composer test          # unit + feature tests
+composer rector          # apply Rector refactors
+composer lint            # format the result
+composer types:check     # static analysis
+composer test            # unit + feature tests
 composer test:profanity  # profanity checks
 ```
 
