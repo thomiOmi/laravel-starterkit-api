@@ -79,7 +79,6 @@ Run `php artisan boost:update --discover` to install Boost-provided guidelines a
 | `modular-architecture` | `.ai/skills/modular-architecture/` | Module DDD structure: Actions, Builders, Controllers, Payloads, Requests, Resources |
 | `create-prd` | `.ai/skills/create-prd/` | PRD creation from `docs/prd/template.md` with clarifying questions |
 | `create-adr` | `.ai/skills/create-adr/` | Architecture Decision Records in Nygard format from `docs/adr/template.md` |
-| `update-tasks` | `.ai/skills/update-tasks/` | TASKS.md operational tracker maintenance |
 
 Use the `skill` tool to load a skill when the task matches its description. List all available skills with the `available_skills` list in the system prompt.
 
@@ -111,7 +110,7 @@ Use the `skill` tool to load a skill when the task matches its description. List
 
 ## Documentation and Language
 
-- Documents (docs, rules, roadmap): pure ASCII, no emoji, no en/em dash, no arrows, use hyphens.
+- Documents (docs, rules): pure ASCII, no emoji, no en/em dash, no arrows, use hyphens.
 - Code and comment language: English.
 - This project uses the lowercase `modules/` directory; it overrides package guidelines that mention `Modules/`.
 

@@ -7,7 +7,7 @@ description: >
   from a past decision", or a decision needs a written rationale before coding -
   also when reviewing existing ADRs or deciding whether a convention change
   needs one. If the request is about product requirements instead, use the
-  create-prd skill; for tracking work use update-tasks.
+  create-prd skill.
 metadata:
   version: "1.0"
 ---
@@ -43,9 +43,8 @@ Do not create ADRs for: bug fixes, implementation details, or anything inferable
 5. **Write in English.** One file per decision. Keep it focused — several paragraphs, not a book.
 6. **Update the index**: add a row to the table in `docs/adr/README.md` (ID, short Decision, Status, Date).
 7. **Link from the PRD**: add the ADR number to the Related ADRs field of every PRD it affects (`docs/prd/*.md`).
-8. **Keep trackers consistent**: if the decision came out of TASKS.md work, move it out of the tracker via the `update-tasks` skill — the ADR is now the source of truth.
 
 ## Do not
 
 - Do not edit or renumber existing ADRs retroactively; record new decisions as new ADRs.
-- Do not record transient state (what is in progress, who decided) — that belongs in TASKS.md.
+- Do not record transient state (what is in progress, who decided) - that belongs in the GitHub issue or pull request that carries the work.
