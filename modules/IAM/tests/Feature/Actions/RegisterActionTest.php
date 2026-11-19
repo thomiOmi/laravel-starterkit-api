@@ -40,7 +40,7 @@ describe('RegisterAction', function (): void {
             ->and($result['token_type'])->toBe('Bearer')
             ->and($result)->toHaveKeys(['user', 'access_token', 'token_type', 'expires_at', 'expires_in']);
 
-        Event::assertDispatched(Registered::class, fn (Registered $event) => $event->user->is($result['user']));
+        Event::assertDispatched(fn (Registered $event) => $event->user->is($result['user']));
         Event::assertDispatchedTimes(Registered::class, 1);
     });
 

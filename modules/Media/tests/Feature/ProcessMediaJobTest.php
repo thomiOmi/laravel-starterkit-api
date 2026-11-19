@@ -85,7 +85,7 @@ describe('ProcessMediaJob', function (): void {
             resolve(GenerateResponsiveImagesAction::class)
         );
 
-        Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'info'
+        Event::assertDispatched(fn (MessageLogged $event): bool => $event->level === 'info'
             && str_contains((string) $event->message, 'Media processing completed.')
             && ($event->context['media_id'] ?? null) === $media->id
             && isset($event->context['duration_ms'])
@@ -113,7 +113,7 @@ describe('ProcessMediaJob', function (): void {
             );
         })->toThrow(RuntimeException::class);
 
-        Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'error'
+        Event::assertDispatched(fn (MessageLogged $event): bool => $event->level === 'error'
             && str_contains((string) $event->message, 'Media processing failed.')
             && ($event->context['media_id'] ?? null) === $media->id
             && ($event->context['error'] ?? null) === 'The source media file is missing.'
@@ -126,7 +126,7 @@ describe('ProcessMediaJob', function (): void {
             resolve(GenerateResponsiveImagesAction::class)
         );
 
-        Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'info'
+        Event::assertDispatched(fn (MessageLogged $event): bool => $event->level === 'info'
             && str_contains((string) $event->message, 'Media processing skipped: media not found.')
             && ($event->context['media_id'] ?? null) === '01MISSING');
     });
@@ -141,7 +141,7 @@ describe('ProcessMediaJob', function (): void {
             resolve(GenerateResponsiveImagesAction::class)
         );
 
-        Event::assertDispatched(MediaProcessed::class, fn (MediaProcessed $event): bool => $event->media->is($media));
+        Event::assertDispatched(fn (MediaProcessed $event): bool => $event->media->is($media));
     });
 
     it('dispatches MediaProcessingFailed with the failure reason', function (): void {
@@ -164,7 +164,7 @@ describe('ProcessMediaJob', function (): void {
             );
         })->toThrow(RuntimeException::class);
 
-        Event::assertDispatched(MediaProcessingFailed::class, fn (MediaProcessingFailed $event): bool => $event->media->is($media)
+        Event::assertDispatched(fn (MediaProcessingFailed $event): bool => $event->media->is($media)
             && $event->reason === 'The source media file is missing.');
     });
 
@@ -231,7 +231,7 @@ describe('ProcessMediaJob', function (): void {
             ->and($processed->processing_status->value)->toBe('processed')
             ->and($processed->responsive_images)->not->toBe([]);
 
-        Event::assertDispatched(MediaProcessed::class, fn (MediaProcessed $event): bool => $event->media->is($media));
+        Event::assertDispatched(fn (MediaProcessed $event): bool => $event->media->is($media));
     });
 
     it('releases a failing job with backoff until the attribute tries run out', function (): void {
@@ -265,7 +265,7 @@ describe('ProcessMediaJob', function (): void {
         expect($failed->processing_status->value)->toBe('failed')
             ->and($failed->processing_error)->toBe('The source media file is missing.');
 
-        Event::assertDispatched(MediaProcessingFailed::class, fn (MediaProcessingFailed $event): bool => $event->media->is($media)
+        Event::assertDispatched(fn (MediaProcessingFailed $event): bool => $event->media->is($media)
             && $event->reason === 'The source media file is missing.');
     });
 });

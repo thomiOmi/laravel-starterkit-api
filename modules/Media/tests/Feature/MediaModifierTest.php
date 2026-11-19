@@ -178,7 +178,7 @@ describe('GET /api/v1/media/{media}/s/{modifiers}', function (): void {
 
         $second = $this->getJson("/api/v1/media/{$media->id}/s/48", ['If-None-Match' => $etag]);
 
-        $second->assertStatus(304);
+        $second->assertNotModified();
         expect($second->headers->get('ETag'))->toBe($etag)
             ->and((string) $second->getContent())->toBeEmpty();
     });

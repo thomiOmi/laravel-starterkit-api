@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support\Downloaders;
 
+use InvalidArgumentException;
+
 interface MediaDownloader
 {
     /**
@@ -12,7 +14,7 @@ interface MediaDownloader
      * @param  array<string, string>  $headers
      * @return array{content: string, filename: string}
      *
-     * @throws \InvalidArgumentException When the file cannot be fetched.
+     * @throws InvalidArgumentException When the file cannot be fetched.
      */
     public function download(string $url, array $headers = []): array;
 }

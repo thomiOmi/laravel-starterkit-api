@@ -51,7 +51,7 @@ describe('POST /api/v1/media', function (): void {
             ->and($meta['height'] ?? 0)->toBeGreaterThan(0);
 
         Storage::disk($media->disk)->assertExists($media->getPath() ?? '');
-        Event::assertDispatched(MediaUploaded::class, fn (MediaUploaded $event): bool => $event->media->is($media));
+        Event::assertDispatched(fn (MediaUploaded $event): bool => $event->media->is($media));
     });
 
     it('normalizes decodable images to webp regardless of source format', function (): void {

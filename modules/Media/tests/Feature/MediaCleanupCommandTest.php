@@ -86,7 +86,7 @@ describe('media:cleanup', function (): void {
 
         artisanCommand($this, 'media:cleanup')->assertSuccessful();
 
-        Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'warning'
+        Event::assertDispatched(fn (MessageLogged $event): bool => $event->level === 'warning'
             && str_contains((string) $event->message, 'Media orphan files detected.')
             && ($event->context['count'] ?? null) === 1
             && ($event->context['destructive'] ?? null) === false
@@ -166,7 +166,7 @@ describe('media:cleanup', function (): void {
 
         artisanCommand($this, 'media:cleanup')->assertSuccessful();
 
-        Event::assertDispatched(MessageLogged::class, fn (MessageLogged $event): bool => $event->level === 'warning'
+        Event::assertDispatched(fn (MessageLogged $event): bool => $event->level === 'warning'
             && str_contains((string) $event->message, 'Media records with missing files.')
             && ($event->context['count'] ?? null) === 1
             && ($event->context['media_ids'] ?? null) === [(string) $media->id]);

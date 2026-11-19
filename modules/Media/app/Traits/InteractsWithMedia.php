@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Http\UploadedFile;
+use InvalidArgumentException;
+use LogicException;
 use Modules\Media\Actions\DeleteMediaAction;
 use Modules\Media\Actions\ReorderMediaAction;
 use Modules\Media\Models\Media;
@@ -35,7 +37,7 @@ trait InteractsWithMedia
 
     private function getModelForMedia(): Model
     {
-        throw_unless($this instanceof Model, \LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
+        throw_unless($this instanceof Model, LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
 
         return $this;
     }
@@ -45,7 +47,7 @@ trait InteractsWithMedia
      */
     public function addMedia(UploadedFile $file): FileAdder
     {
-        throw_unless($this instanceof Model, \LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
+        throw_unless($this instanceof Model, LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
 
         return new FileAdder($this, $file);
     }
@@ -54,7 +56,7 @@ trait InteractsWithMedia
     {
         $file = request()->file($key);
 
-        throw_unless($file instanceof UploadedFile, \InvalidArgumentException::class, "File not found for key {$key}.");
+        throw_unless($file instanceof UploadedFile, InvalidArgumentException::class, "File not found for key {$key}.");
 
         return $this->addMedia($file);
     }
@@ -239,7 +241,7 @@ trait InteractsWithMedia
      */
     public function reorderMedia(string $collection, array $orderedIds): void
     {
-        throw_unless($this instanceof Model, \LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
+        throw_unless($this instanceof Model, LogicException::class, 'InteractsWithMedia can only be used on Eloquent models.');
 
         resolve(ReorderMediaAction::class)->handle($this, $collection, $orderedIds);
     }

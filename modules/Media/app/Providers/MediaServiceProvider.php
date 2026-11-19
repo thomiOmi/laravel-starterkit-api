@@ -20,6 +20,7 @@ use Modules\Media\Support\Scanners\NullScanner;
 use Modules\Media\Support\UrlGenerator\DefaultUrlGenerator;
 use Modules\Media\Support\UrlGenerator\MediaUrlGenerator;
 use Nwidart\Modules\Support\ModuleServiceProvider;
+use Override;
 
 class MediaServiceProvider extends ModuleServiceProvider
 {
@@ -56,7 +57,7 @@ class MediaServiceProvider extends ModuleServiceProvider
     /**
      * Register any application services.
      */
-    #[\Override]
+    #[Override]
     public function register(): void
     {
         parent::register();

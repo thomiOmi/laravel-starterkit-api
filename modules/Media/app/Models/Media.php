@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Media\Models;
 
 use App\Concerns\HasDefaultBehavior;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -192,8 +193,8 @@ class Media extends Model
     /**
      * Scope a query to ordered media.
      *
-     * @param  Builder<Media>  $query
-     * @return Builder<Media>
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     #[Scope]
     protected function ordered($query): Builder
@@ -293,7 +294,7 @@ class Media extends Model
         );
     }
 
-    public function getTemporaryUrl(\DateTimeInterface $expiration, ?string $conversion = null): string
+    public function getTemporaryUrl(DateTimeInterface $expiration, ?string $conversion = null): string
     {
         if ($conversion !== null && $conversion !== '') {
             // The signed file route currently serves the original media only.

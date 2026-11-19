@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Modules\Media\Database\Factories\MediaFactory;
-use Modules\Media\Models\Media;
 use Modules\Media\Traits\InteractsWithMedia;
 
 covers(InteractsWithMedia::class);
