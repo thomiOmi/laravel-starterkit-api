@@ -7,7 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
 use Modules\Media\Support\FileNamer\DefaultFileNamer;
-use Modules\Media\Support\FileNamer\MediaFileNamer;
+use Modules\Media\Tests\Support\CustomPrefixFileNamer;
 
 covers(DefaultFileNamer::class);
 
@@ -82,26 +82,3 @@ describe('Media file namer', function (): void {
             ->and($media->file_name)->toStartWith('custom-');
     });
 });
-
-final class CustomPrefixFileNamer implements MediaFileNamer
-{
-    public function originalFileName(string $fileName): string
-    {
-        return 'custom-'.$fileName;
-    }
-
-    public function conversionFileName(string $fileName, string $conversion): string
-    {
-        $name = pathinfo($fileName, PATHINFO_FILENAME);
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
-
-        $converted = 'custom-'.$name.'-'.$conversion;
-
-        return $extension !== '' ? $converted.'.'.$extension : $converted;
-    }
-
-    public function responsiveFileName(string $fileName): string
-    {
-        return $fileName;
-    }
-}

@@ -7,9 +7,11 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Actions\UploadMediaAction;
 use Modules\Media\Models\Media;
-use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\Scanners\MediaScanner;
 use Modules\Media\Support\StorageOptions;
+use Modules\Media\Tests\Support\EvilPhpFileNamer;
+use Modules\Media\Tests\Support\RejectingMediaScanner;
+use Modules\Media\Tests\Support\TakenNameFileNamer;
 
 covers(UploadMediaAction::class);
 
@@ -179,7 +181,7 @@ describe('Media hardening', function (): void {
         });
 
         it('removes the raw file when the database write fails validation after storing', function (): void {
-            config(['media.file_namer' => HardeningEvilFileNamer::class]);
+            config(['media.file_namer' => EvilPhpFileNamer::class]);
             config(['media.allowed_extensions' => ['txt']]);
             $user = loginAsUser();
             $user->givePermissionTo(PermissionEnum::MediaCreate->value);
@@ -194,47 +196,3 @@ describe('Media hardening', function (): void {
         });
     });
 });
-
-final class RejectingMediaScanner implements MediaScanner
-{
-    public function scan(string $realPath): void
-    {
-        throw new InvalidArgumentException(__('validation.media_malware_detected'));
-    }
-}
-
-final class TakenNameFileNamer implements MediaFileNamer
-{
-    public function originalFileName(string $fileName): string
-    {
-        return 'taken.webp';
-    }
-
-    public function conversionFileName(string $fileName, string $conversion): string
-    {
-        return 'taken-'.$conversion.'.webp';
-    }
-
-    public function responsiveFileName(string $fileName): string
-    {
-        return $fileName;
-    }
-}
-
-final class HardeningEvilFileNamer implements MediaFileNamer
-{
-    public function originalFileName(string $fileName): string
-    {
-        return 'evil.php';
-    }
-
-    public function conversionFileName(string $fileName, string $conversion): string
-    {
-        return 'evil-'.$conversion.'.php';
-    }
-
-    public function responsiveFileName(string $fileName): string
-    {
-        return $fileName;
-    }
-}

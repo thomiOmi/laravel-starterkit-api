@@ -12,16 +12,16 @@ final class FixedUrlGenerator implements MediaUrlGenerator
 {
     public function getUrl(Media $media): string
     {
-        return 'https://custom.example.com/'.$media->getPath();
+        return 'https://cdn.example.test/'.$media->file_name;
     }
 
     public function getTemporaryUrl(Media $media, DateTimeInterface $expiration): string
     {
-        return 'https://custom.example.com/signed/'.$media->id.'?expires='.$expiration->getTimestamp();
+        return 'https://cdn.example.test/'.$media->file_name.'?expires='.$expiration->getTimestamp();
     }
 
     public function getTemporaryUrlForMinutes(Media $media, int $ttlMinutes): string
     {
-        return 'https://custom.example.com/signed/'.$media->id.'?expires='.(time() + $ttlMinutes * 60);
+        return $this->getTemporaryUrl($media, now()->addMinutes($ttlMinutes));
     }
 }
