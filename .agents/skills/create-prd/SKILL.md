@@ -7,7 +7,7 @@ description: >
   "feature specification", or wants to capture product scope before coding -
   even when they just describe an idea or say "write this feature up". If the
   request is about an architecture or design decision instead, use the
-  create-adr skill; if it is about tracking work, use update-tasks.
+  create-adr skill.
 metadata:
   version: "1.0"
 ---
@@ -36,7 +36,7 @@ The PRD captures WHAT the product needs and WHY, before any code is written. It 
 - Save as `docs/prd/{feature-slug}.md` (e.g. `docs/prd/social-auth.md`). Only create a dedicated PRD file when the feature has product-level scope beyond a single module — otherwise a section in the main PRD suffices.
 - Add the document to the index table in `docs/prd/README.md`.
 - If the feature belongs in the main PRD: add the requirements there and link the new PRD.
-- Record the pending work in `TASKS.md` (Active focus) via the `update-tasks` skill so the next session knows it is queued.
+- Record the pending work as a GitHub issue when it spans multiple pull requests or needs a decision.
 
 ## Do not
 
