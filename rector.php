@@ -63,8 +63,6 @@ return RectorConfig::configure()
         AddArrowFunctionReturnTypeRector::class,
         AddHasFactoryToModelsRector::class,
         CarbonToDateFacadeRector::class,
-        '*/modules/*/resources/*',
-        '*/modules/*/node_modules/*',
         __DIR__.'/tests/Architecture/ArchitectureTest.php',
         __DIR__.'/config/database.php',
     ]);

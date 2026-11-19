@@ -48,8 +48,8 @@ Area-specific conventions (testing, controllers, actions, models, routes, respon
 
 ## Quality Gates
 
-- After writing PHP code: `composer lint:staged` (pre-commit) or `composer lint` (all files)
-- Then: `composer rector:dry`
+- Local order: `composer rector` -> `composer lint` -> `composer types:check` -> `composer test` -> `composer test:profanity` (Rector refactors first, Pint formats the result, then PHPStan and Pest validate)
+- After writing PHP code: `composer rector` (apply refactors), then `composer lint` (all files) or `composer lint:staged` (pre-commit)
 - Then: `composer types:check` (phpstan)
 - Run tests: `composer test` (pest, unit + feature) and `composer test:profanity`
 - Before pushing: `composer ci:check` (runs lint:check -> rector:dry -> types:check -> test -> test:profanity in order)
