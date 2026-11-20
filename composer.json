@@ -120,7 +120,7 @@
             "@test:profanity"
         ],
         "rector:dry": [
-            "@php vendor/bin/rector --dry-run --no-progress-bar"
+            "@php vendor/bin/rector --dry-run"
         ],
         "rector": [
             "@php vendor/bin/rector"
