@@ -18,8 +18,7 @@
 
 ### Tooling notes
 
-- Test scripts run `vendor/bin/pest` directly (not `php artisan test`), so the process runs in a single PHP context: `--memory-limit=` is consumed by the type-coverage plugin (a plugin flag, not part of the Pest CLI API reference), and `--configuration` can point at any XML file without Collision overriding it.
-- The baseline is declared in `phpunit.xml` via `<source baseline="phpunit.baseline.xml">`, so it applies to every Pest run (including `test:snapshot` and `test:profanity`). It whitelists known deprecations/notices so they do not fail the run; only **new** deprecations/notices fail. Regenerate it with `vendor/bin/pest --no-tia --generate-baseline=phpunit.baseline.xml` after a `composer update` brings in vendor deprecations (or when you intentionally fix/accept them). The file is committed.
+- Test scripts run `vendor/bin/pest` directly (not `php artisan test`), so the process runs in a single PHP context, and `--configuration` can point at any XML file without Collision overriding it.
 - `phpunit.xml` is strict: `failOnDeprecation`, `failOnNotice`, `failOnPhpunitDeprecation`, `failOnPhpunitNotice`, `failOnEmptyTestSuite`, `failOnWarning`, `failOnRisky`, and `beStrictAbout*` are all enabled. `database/` and `modules/*/Database` stay excluded from the coverage `<source>` (migration `down()` methods and unused seeders/factory states are not exercised by tests; revisit when module tests land).
 - PHPStan output is wrapped by `laravel/pao` in a JSON envelope when an AI agent is detected. Set `PAO_DISABLE=1` to see raw output; use `phpstan clear-result-cache` (with `PAO_DISABLE=1`) to clear the result cache.
 | `composer dev` | Run all dev processes concurrently (server, queue, logs) |
@@ -46,7 +45,7 @@ composer test:profanity  # profanity checks
 
 ```text
 tests/
-├── .pest/                    # Pest snapshot storage + shard state (generated, do not edit)
+├── .pest/                    # Pest snapshot storage (generated, do not edit)
 ├── Architecture/
 │   └── ArchitectureTest.php  # arch() suite - source of truth for code conventions
 ├── Datasets/                 # Named datasets for ->with('name') used in 2+ tests
@@ -64,14 +63,13 @@ tests/
 ├── Helpers.php               # Typed assertion helpers (assertSuccessResponse, etc.)
 ├── Pest.php                  # TestCase binding per directory + global beforeEach
 └── TestCase.php              # Base test case (abstract)
-phpunit.xml                   # Strict PHPUnit configuration + coverage baseline
-phpunit.baseline.xml          # Whitelisted deprecations/notices
+phpunit.xml                   # Strict PHPUnit configuration and coverage source
 ```
 
 Notes:
 
 - `Pest.php` also registers module test paths: `modules/*/tests/{Feature,Unit}`. Module tests live inside each active module (for example, `modules/IAM/tests/` and `modules/Media/tests/`).
-- `phpunit.xml` is strict (`failOnDeprecation`, `failOnNotice`, etc.) and declares the baseline — see Tooling notes above.
+- `phpunit.xml` is strict (`failOnDeprecation`, `failOnNotice`, etc.) — see Tooling notes above.
 
 ## Expectations (`tests/Expectations.php`)
 
@@ -272,7 +270,7 @@ php artisan test          # always a full run
 ```
 
 - The first run records the dependency graph and requires a coverage driver: `XDEBUG_MODE=coverage vendor/bin/pest --tia` (about 2x slower than a normal run). The graph is stored in `~/.pest/tia/{project}`
-- Subsequent runs replay cached results: the 310-test suite drops from ~50s to ~3s
+- Subsequent runs replay cached results, so only affected tests execute and the rest return from the cache
 - After a large refactor, re-record the graph with `vendor/bin/pest --tia --fresh`
 - `ci:check` never uses TIA — CI always runs the full suite
 
@@ -284,7 +282,6 @@ php artisan test          # always a full run
 - **Verify the split adds no coverage gap**: `Unit,Feature,Modules` plus `Architecture` must total the full suite count.
 - **Compact printer**: `--compact` is used only in CI (`composer ci:check` via `test`), not in `tests/Pest.php`, so local runs keep the full per-test output. It prints only failures and reduces I/O.
 - **Profiling**: `composer test:profile` runs `vendor/bin/pest --profile` to list the slowest tests — use it before optimizing specific tests.
-- **Sharding**: `vendor/bin/pest --parallel --update-shards` records per-class timings into `tests/.pest/shards.json` (committed). CI jobs can then run `vendor/bin/pest --ci --shard=N/TOTAL` with time-balanced distribution. Re-run `--update-shards` after adding or renaming test files, and commit the refreshed file.
 
 ## Test Placement & Isolation
 

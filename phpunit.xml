@@ -29,7 +29,7 @@
             <directory suffix="Test.php">./modules/*/tests/Unit</directory>
         </testsuite>
     </testsuites>
-    <source baseline="phpunit.baseline.xml">
+    <source>
         <include>
             <directory suffix=".php">app</directory>
             <directory suffix=".php">modules</directory>
@@ -37,6 +37,7 @@
         <exclude>
             <directory>app/Providers</directory>
             <directory>database</directory>
+            <directory>modules/*/app/Providers</directory>
             <directory>modules/*/config</directory>
             <directory>modules/*/database</directory>
             <directory>modules/*/resources</directory>

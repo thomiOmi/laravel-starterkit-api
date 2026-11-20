@@ -40,7 +40,6 @@
         "pestphp/pest-plugin-phpstan": "^5.0",
         "pestphp/pest-plugin-profanity": "^5.0",
         "pestphp/pest-plugin-rector": "^5.0",
-        "pestphp/pest-plugin-type-coverage": "^5.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.3, !=2.3.2",
         "phpstan/phpstan-deprecation-rules": "^2.0",
@@ -89,6 +88,7 @@
             "@php vendor/bin/phpstan analyse --memory-limit=512M"
         ],
         "test": [
+            "Composer\\Config::disableProcessTimeout",
             "@putenv XDEBUG_MODE=off",
             "@php artisan config:clear --ansi",
             "@php vendor/bin/pest --parallel --testsuite=Unit,Feature,Modules",
@@ -165,7 +165,7 @@
         "test:profile": "Run the test suite and report the slowest tests",
         "test:snapshot": "Update stored snapshots (tests/.pest/snapshots)",
         "test:tia": "Re-run only tests affected by your changes (test impact analysis); also enabled automatically on local machines",
-        "ci:check": "Run the full CI pipeline: pint, rector, phpstan, tests, and profanity",
+        "ci:check": "Run the full CI pipeline: rector, pint, phpstan, tests, and profanity",
         "release": "Create a new release changelog",
         "release:dry": "Preview the next release changelog without committing"
     },

@@ -56,4 +56,6 @@ parameters:
         minimumNumberOfJobsPerProcess: 4
         jobSize: 20
 
-    phpVersion: 80400
+    phpVersion:
+        min: 80401
+        max: 80599
