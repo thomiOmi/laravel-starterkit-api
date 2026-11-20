@@ -117,7 +117,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 - **Controllers**: plain `abstract readonly Controller` base; invokable `final readonly` controllers (ADR-0009).
 - **Responses**: `SuccessResponse` / `ProblemResponse` (RFC 9457), no `success` boolean.
 - **Testing**: Pest 5, `describe()`/`it()`, typed helpers in `tests/Helpers.php`, module groups `module:{name}` — see [docs/testing.md](../testing.md).
-- **Quality gates**: `composer rector` -> `composer lint` -> `composer types:check` -> `composer test` (unit + feature) -> `composer test:profanity`; `composer ci:check` before push. Coverage/mutation/type-coverage gates temporarily suspended.
+- **Quality gates**: `composer rector` -> `composer lint` -> `composer types:check` -> `composer test` (unit + feature) -> `composer test:profanity`; `composer ci:check` before push. Coverage runs locally via `composer test:coverage`; CI has no coverage, mutation, or type-coverage gates.
 
 ## Constraints
 
@@ -130,7 +130,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 
 ## Metrics / Success Criteria
 
-- Full test suite green serial + parallel, `composer ci:check` pass (coverage/mutation/type-coverage gates temporarily suspended)
+- Full test suite green serial + parallel, `composer ci:check` pass (coverage runs locally via `composer test:coverage`; CI has no coverage, mutation, or type-coverage gates)
 - Architecture test suite is the single source of truth for conventions; changes require human approval
 - New project can scaffold a module (`module:make`) and extend IAM patterns without fighting infrastructure
 

@@ -21,7 +21,7 @@ composer setup:ci
 
 - Run `vendor/bin/pint --format agent` after editing PHP files.
 - Run `composer types:check` (PHPStan level max). Fix the root cause of every error; never add `@phpstan-ignore` and never edit `phpstan.neon` to silence checks.
-- Run `composer test` before finishing: unit and feature tests must pass (coverage/mutation/type-coverage gates are temporarily suspended).
+- Run `composer test` before finishing: unit and feature tests must pass. Coverage runs locally via `composer test:coverage`; CI has no coverage, mutation, or type-coverage gates.
 - Do not change `tests/Architecture/ArchitectureTest.php` unless explicitly approved. Architecture tests are the source of truth for conventions.
 
 ## Testing
