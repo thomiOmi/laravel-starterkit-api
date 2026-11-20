@@ -8,10 +8,12 @@ use DateTimeInterface;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Modules\Media\Models\Media;
+use Override;
+use Throwable;
 
 final readonly class DefaultUrlGenerator implements MediaUrlGenerator
 {
-    #[\Override]
+    #[Override]
     public function getUrl(Media $media): ?string
     {
         if (! $media->isPublic()) {
@@ -23,7 +25,7 @@ final readonly class DefaultUrlGenerator implements MediaUrlGenerator
         return is_string($path) ? Storage::disk($media->disk)->url($path) : null;
     }
 
-    #[\Override]
+    #[Override]
     public function getTemporaryUrl(Media $media, DateTimeInterface $expiration): string
     {
         $disk = Storage::disk($media->disk);
@@ -32,7 +34,7 @@ final readonly class DefaultUrlGenerator implements MediaUrlGenerator
         if (is_string($path)) {
             try {
                 return $disk->temporaryUrl($path, $expiration);
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // Fall back to signed route for local disks.
             }
         }
@@ -44,7 +46,7 @@ final readonly class DefaultUrlGenerator implements MediaUrlGenerator
         );
     }
 
-    #[\Override]
+    #[Override]
     public function getTemporaryUrlForMinutes(Media $media, int $ttlMinutes): string
     {
         return $this->getTemporaryUrl($media, now()->addMinutes($ttlMinutes));

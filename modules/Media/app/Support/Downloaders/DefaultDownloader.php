@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use Modules\Media\Support\MediaMimeType;
+use Override;
 use Throwable;
 
 final readonly class DefaultDownloader implements MediaDownloader
 {
-    #[\Override]
+    #[Override]
     public function download(string $url, array $headers = []): array
     {
         $this->guardUrl($url);

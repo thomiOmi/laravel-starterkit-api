@@ -746,7 +746,7 @@ Rules, quality gates, and test-writing conventions: see [.ai/rules/tests.md](../
 
 ```mermaid
 flowchart LR
-    A["composer lint (pint)"] --> B["composer rector:dry (rector)"]
+    A["composer rector (rector)"] --> B["composer lint (pint)"]
     B --> C["composer types:check (phpstan)"]
     C --> D["composer test (pest: unit + feature)"]
     D --> E["composer test:profanity"]

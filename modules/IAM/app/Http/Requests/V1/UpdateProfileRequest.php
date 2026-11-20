@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Dimensions;
 use Illuminate\Validation\Rules\Unique;
 use Modules\Media\Rules\AllowedFileName;
+use Override;
 
 /**
  * @phpstan-type UpdateProfileRules array<string, array<int, ValidationRule|Unique|Dimensions|string>>
@@ -31,7 +32,7 @@ class UpdateProfileRequest extends FormRequest
      * Normalize the email before validation so the unique rule compares
      * case-insensitively across database drivers.
      */
-    #[\Override]
+    #[Override]
     protected function prepareForValidation(): void
     {
         $this->normalizeEmail();

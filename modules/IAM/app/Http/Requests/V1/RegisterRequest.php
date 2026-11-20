@@ -11,6 +11,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
 use Modules\IAM\Payloads\V1\RegisterPayload;
+use Override;
 
 final class RegisterRequest extends FormRequest
 {
@@ -18,7 +19,7 @@ final class RegisterRequest extends FormRequest
      * Normalize the email before validation so the unique rule compares
      * case-insensitively across database drivers.
      */
-    #[\Override]
+    #[Override]
     protected function prepareForValidation(): void
     {
         $this->normalizeEmail();

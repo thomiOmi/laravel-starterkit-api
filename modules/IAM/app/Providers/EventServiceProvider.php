@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\IAM\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
+use Override;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -31,6 +32,6 @@ class EventServiceProvider extends ServiceProvider
      * overriding this hook on a module provider does not remove it
      * (confirmed with `php artisan event:list`).
      */
-    #[\Override]
+    #[Override]
     protected function configureEmailVerification(): void {}
 }

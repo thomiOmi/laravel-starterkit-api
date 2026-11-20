@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support\Scanners;
 
+use InvalidArgumentException;
+
 /**
  * Malware scanning hook for uploads.
  *
@@ -15,7 +17,7 @@ namespace Modules\Media\Support\Scanners;
 interface MediaScanner
 {
     /**
-     * @throws \InvalidArgumentException When the file looks malicious.
+     * @throws InvalidArgumentException When the file looks malicious.
      */
     public function scan(string $realPath): void;
 }

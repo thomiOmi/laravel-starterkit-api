@@ -12,7 +12,7 @@
 
 ## Checklist
 
-- [ ] `composer ci:check` passes (pint, rector, phpstan, tests, profanity)
+- [ ] `composer ci:check` passes (rector, pint, phpstan, tests, profanity)
 - [ ] Tests added or updated for the change
 - [ ] Architecture tests (`tests/Architecture/`) still pass; no rule changes without explicit approval
 - [ ] ADR added or updated if a settled convention changed

@@ -5,7 +5,9 @@ declare(strict_types=1);
 use Pest\Rector\Set\PestSetList;
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\ArrowFunction\AddArrowFunctionReturnTypeRector;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
+use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
 use RectorLaravel\Rector\StaticCall\CarbonToDateFacadeRector;
 use RectorLaravel\Set\LaravelSetList;
 
@@ -13,6 +15,7 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/app',
         __DIR__.'/bootstrap/app.php',
+        __DIR__.'/bootstrap/providers.php',
         __DIR__.'/routes',
         __DIR__.'/config',
         __DIR__.'/tests',
@@ -25,16 +28,23 @@ return RectorConfig::configure()
         __DIR__.'/modules/*/database',
         __DIR__.'/modules/*/lang',
     ])
-    ->withPhpSets(php84: true)
+    ->withPhpSets()
     ->withComposerBased(laravel: true, phpunit: true)
+    // phpstan.neon is auto-loaded; extensions are ignored on purpose.
+    // Do not pass it to withPHPStanConfigs(): Larastan's extension parameters
+    // are not registered in Rector's PHPStan container and abort the run.
+    ->withImportNames(removeUnusedImports: true)
     ->withPreparedSets(
         deadCode: true,
         codeQuality: true,
         typeDeclarations: true,
         privatization: true,
-        earlyReturn: true,
         codingStyle: true,
     )
+    ->withConfiguredRule(RemoveDumpDataDeadCodeRector::class, ['dd', 'dump', 'ray'])
+    ->withRules([
+        SafeDeclareStrictTypesRector::class,
+    ])
     ->withSets([
         PestSetList::CODING_STYLE,
         LaravelSetList::LARAVEL_ARRAYACCESS_TO_METHOD_CALL,
@@ -44,10 +54,11 @@ return RectorConfig::configure()
         LaravelSetList::LARAVEL_CONTAINER_STRING_TO_FULLY_QUALIFIED_NAME,
         LaravelSetList::LARAVEL_ELOQUENT_MAGIC_METHOD_TO_QUERY_BUILDER,
         LaravelSetList::LARAVEL_FACADE_ALIASES_TO_FULL_NAMES,
-        LaravelSetList::LARAVEL_FACTORIES,
         LaravelSetList::LARAVEL_IF_HELPERS,
-        LaravelSetList::LARAVEL_LEGACY_FACTORIES_TO_CLASSES,
+        LaravelSetList::LARAVEL_TESTING,
+        LaravelSetList::LARAVEL_TYPE_DECLARATIONS,
     ])
+    ->withParallel(maxNumberOfProcess: 4)
     ->withSkip([
         AddArrowFunctionReturnTypeRector::class,
         AddHasFactoryToModelsRector::class,

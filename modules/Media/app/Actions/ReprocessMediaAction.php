@@ -9,6 +9,7 @@ use Modules\Media\Jobs\ProcessMediaJob;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
 use Modules\Media\Services\MediaConversionService;
+use Throwable;
 
 /**
  * Re-generate conversions for a media item, either synchronously or queued.
@@ -26,7 +27,7 @@ final readonly class ReprocessMediaAction
 
             try {
                 $generated = $this->conversionService->generateNamed($media, $conversion);
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 $media->markProcessingFailed($exception->getMessage());
 
                 throw $exception;
@@ -56,7 +57,7 @@ final readonly class ReprocessMediaAction
         try {
             $this->conversionService->generate($media);
             $media->markProcessed();
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             $media->markProcessingFailed($throwable->getMessage());
 
             throw $throwable;

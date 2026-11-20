@@ -12,6 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
+use Override;
 
 /**
  * @property Media $resource
@@ -42,7 +43,7 @@ class MediaResource extends JsonResource
      *
      * @return array{id: string, name: string, file_name: string, collection_name: string, mime_type: string, size: int, visibility: string, url: string|null, original_name: string|null, original_extension: string|null, sha256: string|null, custom_properties: array<string, mixed>|null, processing_status: string, processing_error: string|null, processed_at: ?string, order_column: int, uploaded_by_type: string|null, uploaded_by_id: string|null, model_type: string|null, model_id: string|null, conversions: array<string, string|null>, srcset: string|null, fallback_url: string|null, fallback_path: string|null, created_at: ?string}
      */
-    #[\Override]
+    #[Override]
     public function toArray(Request $request): array
     {
         /** @var Media $media */

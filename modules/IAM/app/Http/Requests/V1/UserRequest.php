@@ -17,6 +17,7 @@ use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
 use Modules\IAM\Payloads\V1\UserPayload;
+use Override;
 
 /**
  * User Request
@@ -32,7 +33,7 @@ final class UserRequest extends FormRequest
      * Normalize the email before validation so the unique rule compares
      * case-insensitively across database drivers.
      */
-    #[\Override]
+    #[Override]
     protected function prepareForValidation(): void
     {
         $this->normalizeEmail();

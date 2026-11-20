@@ -6,10 +6,11 @@ namespace Modules\Media\Support\FileRemover;
 
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
+use Override;
 
 final readonly class DefaultFileRemover implements MediaFileRemover
 {
-    #[\Override]
+    #[Override]
     public function removeAllFiles(Media $media): void
     {
         $path = $media->getPath();
@@ -28,7 +29,7 @@ final readonly class DefaultFileRemover implements MediaFileRemover
         Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory($media->getConversionsDirectory());
     }
 
-    #[\Override]
+    #[Override]
     public function removeResponsiveImages(Media $media): void
     {
         $responsive = $media->responsive_images;
@@ -46,7 +47,7 @@ final readonly class DefaultFileRemover implements MediaFileRemover
         }
     }
 
-    #[\Override]
+    #[Override]
     public function removeFile(string $path, string $disk): void
     {
         Storage::disk($disk)->delete($path);

@@ -48,11 +48,11 @@ Area-specific conventions (testing, controllers, actions, models, routes, respon
 
 ## Quality Gates
 
-- After writing PHP code: `composer lint:staged` (pre-commit) or `composer lint` (all files)
-- Then: `composer rector:dry`
+- Local order: `composer rector` -> `composer lint` -> `composer types:check` -> `composer test` -> `composer test:profanity` (Rector refactors first, Pint formats the result, then PHPStan and Pest validate)
+- After writing PHP code: `composer rector` (apply refactors), then `composer lint` (all files) or `composer lint:staged` (pre-commit)
 - Then: `composer types:check` (phpstan)
 - Run tests: `composer test` (pest, unit + feature) and `composer test:profanity`
-- Before pushing: `composer ci:check` (runs lint:check -> rector:dry -> types:check -> test -> test:profanity in order)
+- Before pushing: `composer ci:check` (runs rector:dry -> lint:check -> types:check -> test -> test:profanity in order)
 - Coverage, mutation, and type-coverage gates are temporarily suspended (scripts removed); re-enable once the suite stabilizes
 - Fix all errors in code (do NOT modify `phpstan.neon`); do NOT use `@phpstan-ignore` — fix the root cause instead
 - Follow existing code conventions — check sibling files and `.ai/rules/` before creating new ones

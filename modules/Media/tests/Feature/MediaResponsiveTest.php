@@ -140,7 +140,7 @@ describe('Media responsive images', function (): void {
 
         $queuedMedia = Media::query()->where('collection_name', 'gallery')->sole();
 
-        Bus::assertDispatched(ProcessMediaJob::class, fn (ProcessMediaJob $job): bool => $job->mediaId === $queuedMedia->id);
+        Bus::assertDispatched(fn (ProcessMediaJob $job): bool => $job->mediaId === $queuedMedia->id);
         expect($queuedMedia->processing_status->value)->toBe('pending');
     });
 

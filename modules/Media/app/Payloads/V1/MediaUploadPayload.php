@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Media\Payloads\V1;
 
 use Illuminate\Http\UploadedFile;
+use InvalidArgumentException;
 use Modules\Media\Http\Requests\V1\MediaUploadRequest;
 
 /**
@@ -37,7 +38,7 @@ final readonly class MediaUploadPayload
         } elseif (is_array($file) && isset($file[0])) {
             $resolved = $file[0];
         } else {
-            throw new \InvalidArgumentException('File is required.');
+            throw new InvalidArgumentException('File is required.');
         }
 
         return new self(

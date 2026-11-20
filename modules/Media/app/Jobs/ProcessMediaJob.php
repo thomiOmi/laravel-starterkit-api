@@ -16,6 +16,7 @@ use Modules\Media\Events\MediaProcessed;
 use Modules\Media\Events\MediaProcessingFailed;
 use Modules\Media\Models\Media;
 use Modules\Media\Services\MediaConversionService;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -53,7 +54,7 @@ final class ProcessMediaJob implements ShouldQueue
         try {
             $path = $media->getPath();
 
-            throw_if(! is_string($path) || ! Storage::disk($media->disk)->exists($path), \RuntimeException::class, 'The source media file is missing.');
+            throw_if(! is_string($path) || ! Storage::disk($media->disk)->exists($path), RuntimeException::class, 'The source media file is missing.');
 
             $media->markProcessing();
             $service->generate($media);

@@ -15,6 +15,7 @@ use Modules\Media\Models\MediaConversion;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\MediaConversion as MediaConversionDefinition;
 use Modules\Media\Support\StorageOptions;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -171,7 +172,7 @@ final readonly class MediaConversionService
 
         $path = $media->getPath();
 
-        throw_unless(is_string($path), \RuntimeException::class, 'Media path is missing.');
+        throw_unless(is_string($path), RuntimeException::class, 'Media path is missing.');
 
         $image = Image::fromStorage($path, $sourceDisk)->orient();
 
