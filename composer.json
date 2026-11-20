@@ -89,9 +89,15 @@
             "@php vendor/bin/phpstan analyse --memory-limit=512M"
         ],
         "test": [
+            "@putenv XDEBUG_MODE=off",
             "@php artisan config:clear --ansi",
             "@php vendor/bin/pest --parallel --testsuite=Unit,Feature,Modules",
             "@php vendor/bin/pest --testsuite=Architecture"
+        ],
+        "test:coverage": [
+            "Composer\\Config::disableProcessTimeout",
+            "@putenv XDEBUG_MODE=coverage",
+            "@php vendor/bin/pest --parallel --coverage"
         ],
         "test:profanity": [
             "@php vendor/bin/pest --profanity"
@@ -154,6 +160,7 @@
         "lint:check": "Check code style without modifications",
         "types:check": "Run PHPStan static analysis",
         "test": "Run the test suite (unit and feature tests)",
+        "test:coverage": "Run the test suite with Xdebug coverage enabled",
         "test:profanity": "Check tests for prohibited words",
         "test:profile": "Run the test suite and report the slowest tests",
         "test:snapshot": "Update stored snapshots (tests/.pest/snapshots)",

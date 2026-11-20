@@ -241,6 +241,8 @@ describe('conflict detection', function (): void {
 
         Cache::lock("{$cacheKey}:lock", 30)->block(5);
 
+        config()->set('idempotency.wait_timeout', 1);
+
         expect(fn () => $this->middleware->handle($request, fn (): ResponseFactory|Response => response('ok')))
             ->toThrow(ConflictHttpException::class);
     });

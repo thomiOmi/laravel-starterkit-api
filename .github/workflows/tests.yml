@@ -34,11 +34,9 @@ jobs:
       with:
         php-version: ${{ matrix.php-versions }}
         extensions: mbstring, dom, fileinfo, pdo_sqlite, xml, curl, zip, pcntl
-        coverage: xdebug
+        coverage: none
         ini-values: |
           memory_limit=-1
-          xdebug.mode=coverage
-          xdebug.start_with_request=yes
 
     - name: Get Composer Cache Directory
       id: composer-cache

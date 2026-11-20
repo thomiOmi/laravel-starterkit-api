@@ -34,6 +34,14 @@ composer test            # unit + feature tests
 composer test:profanity  # profanity checks
 ```
 
+## Xdebug and Coverage
+
+`composer test` runs with `XDEBUG_MODE=off`, so the suite is not slowed down by Xdebug.
+
+- Step-by-step debugging: run `vendor/bin/pest` directly with Xdebug active (for example `vendor/bin/pest tests/Unit/SomeTest.php`).
+- Local coverage: run `composer test:coverage`, which sets `XDEBUG_MODE=coverage` and passes `--coverage` to Pest.
+- CI does not enable a coverage driver; coverage is a local concern.
+
 ## Directory Structure
 
 ```text
