@@ -48,20 +48,17 @@ describe('PUT /api/v1/auth/me', function (): void {
         expect($response->json('data.user.email'))->toBe('renamed@example.com');
     });
 
-    it('rejects non-ASCII emails', function (string $email): void {
+    it('rejects mixed-script homograph emails', function (): void {
         $user = loginAsUser();
 
         $response = $this->putJson('/api/v1/auth/me', [
-            'email' => $email,
+            'email' => "\u{0430}dmin@example.com",
         ]);
 
         assertProblemResponse($response, 422, 'validation');
         $response->assertJsonValidationErrors(['email']);
-        expect($user->refresh()->email)->not->toBe($email);
-    })->with([
-        'accented latin' => ["jan\u{e9}@example.com"],
-        'cyrillic lookalike' => ["\u{0430}dmin@example.com"],
-    ]);
+        expect($user->refresh()->email)->not->toBe("\u{0430}dmin@example.com");
+    });
 
     it('rejects unverified user', function (): void {
         loginAsUnverifiedUser();

@@ -13,6 +13,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
@@ -71,7 +72,7 @@ final class UserRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<int, ValidationRule|Password|Unique|Enum|string>> The validation rules.
+     * @return array<string, array<int, Email|ValidationRule|Password|Unique|Enum|string>> The validation rules.
      */
     public function rules(): array
     {

@@ -50,20 +50,38 @@ describe('POST /api/v1/auth/register', function (): void {
         $response->assertJsonValidationErrors(['email']);
     });
 
-    it('rejects non-ASCII emails', function (string $email): void {
+    it('rejects mixed-script homograph emails', function (): void {
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Jane Doe',
-            'email' => $email,
+            'email' => "\u{0430}dmin@example.com",
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
 
         assertProblemResponse($response, 422, 'validation');
         $response->assertJsonValidationErrors(['email']);
-    })->with([
-        'accented latin' => ["jan\u{e9}@example.com"],
-        'cyrillic lookalike' => ["\u{0430}dmin@example.com"],
-    ]);
+    });
+
+    it('rejects a Unicode case variant of an existing email', function (): void {
+        $first = $this->postJson('/api/v1/auth/register', [
+            'name' => 'Emile',
+            'email' => "\u{00C9}mile@example.com",
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        assertSuccessResponse($first, 201);
+
+        $second = $this->postJson('/api/v1/auth/register', [
+            'name' => 'Emile Clone',
+            'email' => "\u{00E9}mile@example.com",
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        assertProblemResponse($second, 422, 'validation');
+        $second->assertJsonValidationErrors(['email']);
+    });
 
     it('is disabled when the feature flag is off', function (): void {
         config()->set('iam.features.self-registration', false);

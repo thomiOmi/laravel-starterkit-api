@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\Unique;
 
 trait ProfileValidationRules
@@ -14,7 +16,7 @@ trait ProfileValidationRules
      *
      * @param  string|null  $userId  The user ID to ignore for unique validation.
      * @param  bool  $unique  Whether the email should be unique.
-     * @return array<string, array<int, string|Unique>>
+     * @return array<string, array<int, Email|string|Unique>>
      */
     protected function profileRules(?string $userId = null, bool $unique = true): array
     {
@@ -39,17 +41,16 @@ trait ProfileValidationRules
      *
      * @param  string|null  $userId  The user ID to ignore for unique validation.
      * @param  bool  $unique  Whether the email should be unique.
-     * @return array<int, string|Unique>
+     * @return array<int, Email|string|Unique>
      */
     protected function emailRules(?string $userId = null, bool $unique = true): array
     {
         $rules = ['required', 'string'];
 
-        if ($unique) {
-            $rules[] = 'ascii';
-        }
+        $rules[] = $unique
+            ? Rule::email()->rfcCompliant()->preventSpoofing()
+            : 'email';
 
-        $rules[] = 'email';
         $rules[] = 'max:255';
 
         if ($unique) {
@@ -64,8 +65,8 @@ trait ProfileValidationRules
     }
 
     /**
-     * Normalize the email input (trim + lowercase) so the unique rule
-     * compares case-insensitively across database drivers.
+     * Normalize the email input (trim + Unicode-aware lowercase) so the
+     * unique rule compares case-insensitively across database drivers.
      *
      * Call this from `prepareForValidation()` in form requests that carry
      * an email field. Validation rules run on raw input, and the
@@ -75,7 +76,7 @@ trait ProfileValidationRules
     protected function normalizeEmail(): void
     {
         if (is_string($email = $this->input('email'))) {
-            $this->merge(['email' => strtolower(trim($email))]);
+            $this->merge(['email' => Str::of($email)->trim()->lower()->value()]);
         }
     }
 }

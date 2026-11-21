@@ -8,6 +8,7 @@ use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
 use Modules\IAM\Payloads\V1\RegisterPayload;
@@ -29,7 +30,7 @@ final class RegisterRequest extends FormRequest
     use ProfileValidationRules;
 
     /**
-     * @return array<string, array<int, Password|Unique|ValidationRule|string>>
+     * @return array<string, array<int, Email|Password|Unique|ValidationRule|string>>
      */
     public function rules(): array
     {

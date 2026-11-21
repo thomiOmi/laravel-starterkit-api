@@ -8,6 +8,7 @@ use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
 use Modules\IAM\Payloads\V1\LoginPayload;
@@ -23,7 +24,7 @@ final class LoginRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string|Password|ValidationRule|Unique>>
+     * @return array<string, array<int, Email|string|Password|ValidationRule|Unique>>
      */
     public function rules(): array
     {
