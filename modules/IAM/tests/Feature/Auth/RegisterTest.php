@@ -50,6 +50,21 @@ describe('POST /api/v1/auth/register', function (): void {
         $response->assertJsonValidationErrors(['email']);
     });
 
+    it('rejects non-ASCII emails', function (string $email): void {
+        $response = $this->postJson('/api/v1/auth/register', [
+            'name' => 'Jane Doe',
+            'email' => $email,
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['email']);
+    })->with([
+        'accented latin' => ["jan\u{e9}@example.com"],
+        'cyrillic lookalike' => ["\u{0430}dmin@example.com"],
+    ]);
+
     it('is disabled when the feature flag is off', function (): void {
         config()->set('iam.features.self-registration', false);
 

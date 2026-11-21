@@ -71,6 +71,24 @@ describe('POST /api/v1/users', function (): void {
         $response->assertJsonValidationErrors(['email']);
     });
 
+    it('rejects non-ASCII emails', function (string $email): void {
+        $creator = loginAsUser();
+        $creator->givePermissionTo(PermissionEnum::UserCreate->value);
+
+        $response = $this->postJson('/api/v1/users', [
+            'name' => 'Non ASCII',
+            'email' => $email,
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['email']);
+    })->with([
+        'accented latin' => ["jan\u{e9}@example.com"],
+        'cyrillic lookalike' => ["\u{0430}dmin@example.com"],
+    ]);
+
     it('rejects users without the create permission', function (): void {
         loginAsUser();
 
