@@ -215,7 +215,7 @@ Base URL: `http://localhost:8000` — all routes prefixed `api/v1` via `RouteSer
 | PUT | `/users/{user}/roles` | `api.v1.iam.user.roles.assign` | `user.edit` | Assign roles |
 | DELETE | `/users/{user}` | `api.v1.iam.user.delete` | `user.delete` | Soft delete |
 
-`PUT /users/{user}` rejects a `password` field with `422`; use `POST /auth/change-password` (or the forgot/reset flow) instead. When the normalized email actually changes, `email_verified_at` is cleared and a verification notification is sent without changing the account status.
+`PUT /users/{user}` rejects a `password` field with `422`; use `POST /auth/change-password` (or the forgot/reset flow) instead. When the normalized email actually changes, `email_verified_at` is cleared and a verification notification is sent without changing the account status. Email input on registration and on profile or user updates is limited to ASCII: the unique rule compares bytes and normalization lowercases ASCII only, so accented or lookalike characters could otherwise create separate accounts.
 
 By default a regular `user`-role account cannot list users or read another account's profile: `user.view` is not seeded for that role, and self access flows through the `UserPolicy` self branches. Adopters that need a user directory can either grant `user.view` to a role with one `givePermissionTo(PermissionEnum::UserView->value)` line in `IAMSeeder`, or add a separate directory endpoint and resource with minimal fields (no email, status, or roles) plus pagination and rate limiting.
 

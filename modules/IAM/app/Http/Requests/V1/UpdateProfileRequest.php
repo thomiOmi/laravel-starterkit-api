@@ -49,7 +49,7 @@ class UpdateProfileRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'string', 'email', 'max:255', $this->uniqueEmailRule($model)],
+            'email' => ['sometimes', 'string', 'ascii', 'email', 'max:255', $this->uniqueEmailRule($model)],
             'avatar' => [
                 'sometimes',
                 'nullable',

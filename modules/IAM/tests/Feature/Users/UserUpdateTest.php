@@ -123,6 +123,25 @@ describe('PUT /api/v1/users/{user}', function (): void {
         Notification::assertNothingSent();
     });
 
+    it('rejects non-ASCII emails', function (string $email): void {
+        $editor = loginAsUser();
+        $editor->givePermissionTo(PermissionEnum::UserEdit->value);
+
+        $target = UserFactory::new()->createOne();
+
+        $response = $this->putJson("/api/v1/users/{$target->id}", [
+            'name' => $target->name,
+            'email' => $email,
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['email']);
+        expect($target->refresh()->email)->not->toBe($email);
+    })->with([
+        'accented latin' => ["jan\u{e9}@example.com"],
+        'cyrillic lookalike' => ["\u{0430}dmin@example.com"],
+    ]);
+
     it('permits editors to update others', function (): void {
         $editor = loginAsUser();
         $editor->givePermissionTo(PermissionEnum::UserEdit->value);
