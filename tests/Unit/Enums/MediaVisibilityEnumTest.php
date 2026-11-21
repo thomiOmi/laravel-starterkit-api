@@ -3,12 +3,13 @@
 declare(strict_types=1);
 
 use Modules\Media\Enums\MediaVisibilityEnum;
+use Pest\Mixins\Expectation;
 
 covers(MediaVisibilityEnum::class);
 
 describe('MediaVisibilityEnum', function (): void {
-    it('has the public visibility', fn () => expect(MediaVisibilityEnum::Public->value)->toBe('public'));
-    it('has the private visibility', fn () => expect(MediaVisibilityEnum::Private->value)->toBe('private'));
+    it('has the public visibility', fn (): Expectation => expect(MediaVisibilityEnum::Public->value)->toBe('public'));
+    it('has the private visibility', fn (): Expectation => expect(MediaVisibilityEnum::Private->value)->toBe('private'));
 
     describe('label', function (): void {
         it('returns the English label by default', function (): void {

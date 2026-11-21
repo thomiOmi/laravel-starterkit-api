@@ -10,8 +10,6 @@ use Nwidart\Modules\Commands\Make\ModuleMakeCommand;
 covers(ModuleMakeCommand::class);
 
 beforeEach(function (): void {
-    Process::fake();
-
     $root = base_path('tests/Fixtures/module-make');
     $files = resolve(Filesystem::class);
 
@@ -27,9 +25,13 @@ afterEach(function (): void {
 
 describe('module:make command', function (): void {
     it('scaffolds a backend-only module following the kit structure', function (): void {
+        Process::fake();
+
         artisanCommand($this, 'module:make', ['name' => ['Blog'], '--disabled' => true])
             ->expectsOutputToContain('Module [Blog] created successfully.')
             ->assertSuccessful();
+
+        Process::assertRan('composer dump-autoload');
 
         $modulePath = base_path('tests/Fixtures/module-make/modules/Blog');
 
@@ -111,6 +113,8 @@ describe('module:make command', function (): void {
     });
 
     it('creates a plain module without providers, routes and controllers', function (): void {
+        Process::fake();
+
         artisanCommand($this, 'module:make', ['name' => ['Gadget'], '--plain' => true, '--disabled' => true])
             ->expectsOutputToContain('Module [Gadget] created successfully.')
             ->assertSuccessful();
@@ -138,6 +142,8 @@ describe('module:make command', function (): void {
     });
 
     it('can delete a generated module', function (): void {
+        Process::fake();
+
         artisanCommand($this, 'module:make', ['name' => ['Shop'], '--disabled' => true])
             ->assertSuccessful();
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\HandleIdempotentRequests;
+use Illuminate\Cache\ArrayStore;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
@@ -12,9 +13,59 @@ use Symfony\Component\HttpFoundation\Response;
 
 covers(HandleIdempotentRequests::class);
 
-beforeEach(function (): void {
-    loginAsUser();
+/**
+ * Array-backed cache store that records every key written to it.
+ *
+ * The middleware derives a private hashed cache key, so tests learn the real
+ * key from the store instead of duplicating the key derivation formula.
+ */
+final class RecordingArrayStore extends ArrayStore
+{
+    /** @var list<string> */
+    public array $writtenKeys = [];
 
+    /**
+     * Store an item and remember the key it was stored under.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @param  int  $seconds
+     * @return bool
+     */
+    public function put($key, $value, $seconds)
+    {
+        $this->writtenKeys[] = $key;
+
+        return parent::put($key, $value, $seconds);
+    }
+}
+
+/**
+ * Make the recording store the default cache for the current test.
+ */
+function useRecordingCacheStore(): RecordingArrayStore
+{
+    $store = new RecordingArrayStore;
+
+    config()->set('cache.stores.recording', ['driver' => 'recording']);
+    config()->set('cache.default', 'recording');
+
+    Cache::extend('recording', fn (): RecordingArrayStore => $store);
+
+    return $store;
+}
+
+/**
+ * Return the first cache key recorded by the store.
+ *
+ * @throws LogicException When the middleware stored nothing.
+ */
+function firstRecordedCacheKey(RecordingArrayStore $store): string
+{
+    return $store->writtenKeys[0] ?? throw new LogicException('The middleware did not cache the response.');
+}
+
+beforeEach(function (): void {
     Route::middleware(['auth:sanctum', 'idempotency'])->post('/_test/idempotency', fn (): JsonResponse => response()->json([
         'timestamp' => now()->toDateTimeString(),
         'random' => random_int(1, 999999),
@@ -23,6 +74,8 @@ beforeEach(function (): void {
 
 describe('replay behavior', function (): void {
     it('stores and replays with correct headers and identical body', function (): void {
+        loginAsUser();
+
         $key = (string) Str::uuid();
 
         $first = $this->postJson('/_test/idempotency', [], ['Idempotency-Key' => $key]);
@@ -43,6 +96,8 @@ describe('replay behavior', function (): void {
     });
 
     it('returns 409 when key reused with different body', function (): void {
+        loginAsUser();
+
         $key = (string) Str::uuid();
 
         $this->postJson('/_test/idempotency', ['foo' => 'bar'], ['Idempotency-Key' => $key])
@@ -58,6 +113,8 @@ describe('replay behavior', function (): void {
     });
 
     it('does not cache failed responses so retry succeeds', function (): void {
+        loginAsUser();
+
         Route::middleware(['auth:sanctum', 'idempotency'])->post('/_test/idempotency-fail', function (): JsonResponse {
             if (request('fail')) {
                 return response()->json(['error' => 'bad'], 422);
@@ -79,6 +136,8 @@ describe('replay behavior', function (): void {
     });
 
     it('stores and replays 201 created responses', function (): void {
+        loginAsUser();
+
         Route::middleware(['auth:sanctum', 'idempotency'])->post('/_test/idempotency-create', fn (): JsonResponse => response()->json(['created' => true], 201));
 
         $key = (string) Str::uuid();
@@ -97,16 +156,16 @@ describe('replay behavior', function (): void {
     });
 
     it('forgets a corrupt cached entry and executes the request fresh', function (): void {
+        loginAsUser();
+
+        $store = useRecordingCacheStore();
         $key = (string) Str::uuid();
 
-        $cacheKey = 'idempotency:'.hash('sha256', implode('|', [
-            'POST',
-            '_test/idempotency',
-            (string) auth()->id(),
-            Str::lower($key),
-        ]));
+        $this->postJson('/_test/idempotency', [], ['Idempotency-Key' => $key])->assertOk();
 
-        Cache::put($cacheKey, [
+        $cacheKey = firstRecordedCacheKey($store);
+
+        $store->put($cacheKey, [
             'status' => 'not-an-int',
             'body' => '{}',
             'content_type' => 'application/json',
@@ -119,7 +178,7 @@ describe('replay behavior', function (): void {
             ->assertHeaderMissing('Idempotency-Replayed')
             ->assertJsonPath('timestamp', fn ($ts): bool => filled($ts));
 
-        $replaced = Cache::get($cacheKey);
+        $replaced = $store->get($cacheKey);
         $status = is_array($replaced) ? $replaced['status'] : null;
 
         expect($replaced)->toBeArray()
@@ -127,16 +186,16 @@ describe('replay behavior', function (): void {
     });
 
     it('does not replay entries whose status is outside the cached 2xx/3xx range', function (): void {
+        loginAsUser();
+
+        $store = useRecordingCacheStore();
         $key = (string) Str::uuid();
 
-        $cacheKey = 'idempotency:'.hash('sha256', implode('|', [
-            'POST',
-            '_test/idempotency',
-            (string) auth()->id(),
-            Str::lower($key),
-        ]));
+        $this->postJson('/_test/idempotency', [], ['Idempotency-Key' => $key])->assertOk();
 
-        Cache::put($cacheKey, [
+        $cacheKey = firstRecordedCacheKey($store);
+
+        $store->put($cacheKey, [
             'status' => 500,
             'body' => '{"error":"stale"}',
             'content_type' => 'application/json',
@@ -153,6 +212,8 @@ describe('replay behavior', function (): void {
 
 describe('user scope isolation', function (): void {
     it('prevents cross-user replay with the same key', function (): void {
+        loginAsUser();
+
         $key = (string) Str::uuid();
 
         $this->postJson('/_test/idempotency', [], ['Idempotency-Key' => $key])->assertOk();

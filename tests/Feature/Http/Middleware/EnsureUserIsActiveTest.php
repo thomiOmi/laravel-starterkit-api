@@ -30,24 +30,17 @@ describe('active middleware', function (): void {
         $this->getJson('/_test/active-only')->assertOk();
     });
 
-    it('blocks blocked statuses with the matching message key', function (string $state): void {
-        $factory = match ($state) {
-            'banned' => UserFactory::new()->banned(),
-            'suspended' => UserFactory::new()->suspended(),
-            'inactive' => UserFactory::new()->inactive(),
-            default => throw new InvalidArgumentException("Unknown state [{$state}]."),
-        };
-
+    it('blocks :dataset users with the matching message', function (UserFactory $factory, string $messageKey): void {
         $user = $factory->createOne(['email_verified_at' => now()]);
         loginAsUser($user);
 
         $response = $this->getJson('/_test/active-only');
 
         assertProblemResponse($response, 403);
-        expect($response->json('detail'))->toContain(__($user->status->blockedMessageKey()));
+        expect($response->json('detail'))->toContain(__($messageKey));
     })->with([
-        'banned',
-        'suspended',
-        'inactive',
+        'banned' => [UserFactory::new()->banned(), 'auth.account_banned'],
+        'suspended' => [UserFactory::new()->suspended(), 'auth.account_suspended'],
+        'inactive' => [UserFactory::new()->inactive(), 'auth.account_inactive'],
     ]);
 });

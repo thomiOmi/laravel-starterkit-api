@@ -26,4 +26,12 @@ describe('security:check command', function (): void {
             ->expectsOutputToContain('All production security checks passed')
             ->assertSuccessful();
     })->group('smoke');
+
+    it('fails when the production configuration is unsafe', function (): void {
+        config()->set('app.debug', true);
+
+        artisanCommand($this, 'security:check')
+            ->expectsOutputToContain('APP_DEBUG must be false in production')
+            ->assertFailed();
+    })->group('smoke');
 });

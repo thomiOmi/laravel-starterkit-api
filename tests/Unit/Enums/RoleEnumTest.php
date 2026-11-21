@@ -3,14 +3,15 @@
 declare(strict_types=1);
 
 use App\Enums\RoleEnum;
+use Pest\Mixins\Expectation;
 
 covers(RoleEnum::class);
 
 describe('RoleEnum', function (): void {
 
-    it('has SuperAdmin', fn () => expect(RoleEnum::SuperAdmin->value)->toBe('super-admin'));
-    it('has Admin', fn () => expect(RoleEnum::Admin->value)->toBe('admin'));
-    it('has User', fn () => expect(RoleEnum::User->value)->toBe('user'));
+    it('has SuperAdmin', fn (): Expectation => expect(RoleEnum::SuperAdmin->value)->toBe('super-admin'));
+    it('has Admin', fn (): Expectation => expect(RoleEnum::Admin->value)->toBe('admin'));
+    it('has User', fn (): Expectation => expect(RoleEnum::User->value)->toBe('user'));
 
     describe('label', function (): void {
         it('returns the English label by default', function (): void {

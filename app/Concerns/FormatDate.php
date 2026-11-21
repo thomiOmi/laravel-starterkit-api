@@ -6,7 +6,7 @@ namespace App\Concerns;
 
 use Carbon\Exceptions\InvalidFormatException;
 use DateTimeInterface;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 
 trait FormatDate
 {
@@ -18,7 +18,7 @@ trait FormatDate
             }
 
             try {
-                $date = Carbon::parse($date);
+                $date = Date::parse($date);
             } catch (InvalidFormatException) {
                 return null;
             }

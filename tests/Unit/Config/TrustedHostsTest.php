@@ -59,7 +59,7 @@ describe('host header validation with configured patterns', function (): void {
 
         $request = Request::create('/', server: ['HTTP_HOST' => 'example.com.attacker.org']);
 
-        expect(fn () => $request->getHost())->toThrow(SuspiciousOperationException::class);
+        expect(fn (): string => $request->getHost())->toThrow(SuspiciousOperationException::class);
     });
 
     it('rejects a prefixed lookalike of the listed host', function (): void {
@@ -67,7 +67,7 @@ describe('host header validation with configured patterns', function (): void {
 
         $request = Request::create('/', server: ['HTTP_HOST' => 'evil-example.com']);
 
-        expect(fn () => $request->getHost())->toThrow(SuspiciousOperationException::class);
+        expect(fn (): string => $request->getHost())->toThrow(SuspiciousOperationException::class);
     });
 
     it('rejects a subdomain when only the apex is listed', function (): void {
@@ -75,7 +75,7 @@ describe('host header validation with configured patterns', function (): void {
 
         $request = Request::create('/', server: ['HTTP_HOST' => 'sub.example.com']);
 
-        expect(fn () => $request->getHost())->toThrow(SuspiciousOperationException::class);
+        expect(fn (): string => $request->getHost())->toThrow(SuspiciousOperationException::class);
     });
 });
 

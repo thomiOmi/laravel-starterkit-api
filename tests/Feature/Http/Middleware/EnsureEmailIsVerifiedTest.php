@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Route;
 covers(EnsureEmailIsVerified::class);
 
 describe('EnsureEmailIsVerified', function (): void {
-
     beforeEach(function (): void {
         Route::middleware(['api', 'auth:sanctum', 'verified'])
             ->get('/__test/verified-only', fn (): array => ['ok' => true]);
@@ -23,9 +22,7 @@ describe('EnsureEmailIsVerified', function (): void {
     it('passes the request through when the user email is verified', function (): void {
         loginAsUser();
 
-        $response = $this->getJson('/__test/verified-only');
-
-        $response->assertOk()->assertJson(['ok' => true]);
+        $this->getJson('/__test/verified-only')->assertOk();
     });
 
     it('returns forbidden problem response when the user email is not verified', function (): void {

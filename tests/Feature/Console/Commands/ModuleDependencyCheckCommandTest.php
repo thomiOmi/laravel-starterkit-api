@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\ModuleDependencyCheckCommand;
+
+covers(ModuleDependencyCheckCommand::class);
+
 beforeEach(function (): void {
     clearFixtureModules();
 });
@@ -10,15 +14,10 @@ afterEach(function (): void {
     clearFixtureModules();
 });
 
-function bindDependencyCheck(): void
-{
-    bindFixtureModulePaths();
-}
-
 it('reports success when dependencies are valid', function (): void {
     writeFixtureModule('A', requires: ['B']);
     writeFixtureModule('B');
-    bindDependencyCheck();
+    bindFixtureModulePaths();
 
     artisanCommand($this, 'module:check-dependencies')
         ->expectsOutputToContain('All module dependency checks passed.')
@@ -27,7 +26,7 @@ it('reports success when dependencies are valid', function (): void {
 
 it('reports failure for a missing dependency', function (): void {
     writeFixtureModule('A', requires: ['Ghost']);
-    bindDependencyCheck();
+    bindFixtureModulePaths();
 
     artisanCommand($this, 'module:check-dependencies')
         ->expectsOutputToContain('Ghost is not an installed module')
@@ -37,7 +36,7 @@ it('reports failure for a missing dependency', function (): void {
 it('reports failure for a disabled dependency', function (): void {
     writeFixtureModule('A', requires: ['B']);
     writeFixtureModule('B', enabled: false);
-    bindDependencyCheck();
+    bindFixtureModulePaths();
 
     artisanCommand($this, 'module:check-dependencies')
         ->expectsOutputToContain('B is disabled')
@@ -47,7 +46,7 @@ it('reports failure for a disabled dependency', function (): void {
 it('reports failure for a circular dependency', function (): void {
     writeFixtureModule('A', requires: ['B']);
     writeFixtureModule('B', requires: ['A']);
-    bindDependencyCheck();
+    bindFixtureModulePaths();
 
     artisanCommand($this, 'module:check-dependencies')
         ->expectsOutputToContain('A -> B -> A')

@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
                 $seeder = $prefix.$suffix;
 
                 if (class_exists($seeder) && is_subclass_of($seeder, Seeder::class)) {
+                    /** @var class-string<Seeder> $seeder */
                     $seeders[] = $seeder;
 
                     break;
