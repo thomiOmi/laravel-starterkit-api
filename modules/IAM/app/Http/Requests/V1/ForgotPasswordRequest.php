@@ -6,6 +6,7 @@ namespace Modules\IAM\Http\Requests\V1;
 
 use App\Concerns\ProfileValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\Unique;
 
 final class ForgotPasswordRequest extends FormRequest
@@ -18,7 +19,7 @@ final class ForgotPasswordRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string|Unique>>
+     * @return array<string, array<int, Email|string|Unique>>
      */
     public function rules(): array
     {

@@ -9,12 +9,13 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Dimensions;
+use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\Unique;
 use Modules\Media\Rules\AllowedFileName;
 use Override;
 
 /**
- * @phpstan-type UpdateProfileRules array<string, array<int, ValidationRule|Unique|Dimensions|string>>
+ * @phpstan-type UpdateProfileRules array<string, array<int, Email|ValidationRule|Unique|Dimensions|string>>
  */
 class UpdateProfileRequest extends FormRequest
 {
@@ -49,7 +50,7 @@ class UpdateProfileRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'string', 'ascii', 'email', 'max:255', $this->uniqueEmailRule($model)],
+            'email' => ['sometimes', 'string', Rule::email()->rfcCompliant()->preventSpoofing(), 'max:255', $this->uniqueEmailRule($model)],
             'avatar' => [
                 'sometimes',
                 'nullable',

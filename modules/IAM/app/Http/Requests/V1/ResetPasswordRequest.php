@@ -8,6 +8,7 @@ use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rules\Unique;
 
@@ -22,7 +23,7 @@ final class ResetPasswordRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, Password|ValidationRule|string|Unique>>
+     * @return array<string, array<int, Email|Password|ValidationRule|string|Unique>>
      */
     public function rules(): array
     {
