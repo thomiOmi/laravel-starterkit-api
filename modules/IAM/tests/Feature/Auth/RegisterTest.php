@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use App\Enums\RoleEnum;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Modules\IAM\Database\Factories\UserFactory;
 use Modules\IAM\Http\Controllers\V1\RegisterController;
 use Modules\IAM\Models\Role;
@@ -81,6 +83,101 @@ describe('POST /api/v1/auth/register', function (): void {
 
         assertProblemResponse($second, 422, 'validation');
         $second->assertJsonValidationErrors(['email']);
+    });
+
+    it('does not run the unique query when the email fails a cheap rule', function (string $email): void {
+        $existsQueries = 0;
+
+        DB::listen(function ($query) use (&$existsQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_contains($sql, 'count(') && preg_match('/from [`"]users[`"]/', $sql) === 1) {
+                $existsQueries++;
+            }
+        });
+
+        $response = $this->postJson('/api/v1/auth/register', [
+            'name' => 'Jane Doe',
+            'email' => $email,
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        $response->assertJsonValidationErrors(['email']);
+        expect($existsQueries)->toBe(0);
+    })->with([
+        'malformed' => 'not-an-email',
+        'too long' => str_repeat('a', 250).'@example.com',
+    ]);
+
+    it('reports only the length error for an overlong malformed email', function (): void {
+        $response = $this->postJson('/api/v1/auth/register', [
+            'name' => 'Jane Doe',
+            'email' => str_repeat('a', 300),
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        expect($response->json('errors.email'))
+            ->toHaveCount(1)
+            ->and($response->json('errors.email.0'))->toContain('255');
+    });
+
+    it('runs the unique query for a well-formed email', function (): void {
+        $existsQueries = 0;
+
+        DB::listen(function ($query) use (&$existsQueries): void {
+            $sql = strtolower($query->sql);
+
+            if (str_contains($sql, 'count(') && preg_match('/from [`"]users[`"]/', $sql) === 1) {
+                $existsQueries++;
+            }
+        });
+
+        $response = $this->postJson('/api/v1/auth/register', [
+            'name' => 'Jane Doe',
+            'email' => 'jane@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        assertSuccessResponse($response, 201);
+        expect($existsQueries)->toBe(1);
+    });
+
+    it('skips the compromised password check when the confirmation does not match', function (): void {
+        Http::fake(['api.pwnedpasswords.com/*' => Http::response('', 200)]);
+        app()->detectEnvironment(fn (): string => 'production');
+
+        $response = $this->postJson('/api/v1/auth/register', [
+            'name' => 'Jane Doe',
+            'email' => 'jane@example.com',
+            'password' => 'short',
+            'password_confirmation' => 'different',
+        ]);
+
+        assertProblemResponse($response, 422, 'validation');
+        expect($response->json('errors.password'))
+            ->toHaveCount(1)
+            ->and($response->json('errors.password.0'))->toContain('confirmation');
+        Http::assertNothingSent();
+    });
+
+    it('runs the compromised password check when the confirmation matches', function (): void {
+        Http::fake(['api.pwnedpasswords.com/*' => Http::response('', 200)]);
+        app()->detectEnvironment(fn (): string => 'production');
+
+        $response = $this->postJson('/api/v1/auth/register', [
+            'name' => 'Jane Doe',
+            'email' => 'jane@example.com',
+            'password' => 'Str0ng-Passw0rd!9',
+            'password_confirmation' => 'Str0ng-Passw0rd!9',
+        ]);
+
+        assertSuccessResponse($response, 201);
+        Http::assertSentCount(1);
     });
 
     it('is disabled when the feature flag is off', function (): void {

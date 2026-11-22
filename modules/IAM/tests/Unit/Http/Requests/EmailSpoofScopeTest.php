@@ -11,16 +11,16 @@ covers([LoginRequest::class, ForgotPasswordRequest::class, ResetPasswordRequest:
 describe('non-mutating email rules', function (): void {
     it('keeps the RFC and spoof-check policy out of login requests', function (): void {
         expect((new LoginRequest)->rules()['email'])
-            ->toBe(['required', 'string', 'email', 'max:255']);
+            ->toBe(['bail', 'required', 'string', 'max:255', 'email']);
     });
 
     it('keeps the RFC and spoof-check policy out of forgot password requests', function (): void {
         expect((new ForgotPasswordRequest)->rules()['email'])
-            ->toBe(['required', 'string', 'email', 'max:255']);
+            ->toBe(['bail', 'required', 'string', 'max:255', 'email']);
     });
 
     it('keeps the RFC and spoof-check policy out of reset password requests', function (): void {
         expect((new ResetPasswordRequest)->rules()['email'])
-            ->toBe(['required', 'string', 'email', 'max:255']);
+            ->toBe(['bail', 'required', 'string', 'max:255', 'email']);
     });
 });

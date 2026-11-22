@@ -72,6 +72,18 @@ describe('ProfileValidationRules', function () use ($makeTester): void {
     });
 
     describe('email rules', function () use ($makeTester): void {
+        it('bail first and check length before the email rule', function () use ($makeTester): void {
+            $rules = $makeTester()->runEmailRules();
+            $indexes = array_keys(array_filter(
+                $rules,
+                fn (mixed $rule): bool => $rule instanceof Email || $rule === 'max:255',
+            ));
+
+            expect(array_slice($rules, 0, 4))->toBe(['bail', 'required', 'string', 'max:255'])
+                ->and($rules[$indexes[0] ?? -1])->toBe('max:255')
+                ->and($rules[$indexes[1] ?? -1])->toBeInstanceOf(Email::class);
+        });
+
         it('uses an RFC and spoof-check rule when unique is true', function () use ($makeTester): void {
             $rules = $makeTester()->runEmailRules();
             $emailRule = array_find($rules, fn ($rule) => $rule instanceof Email);
@@ -81,8 +93,7 @@ describe('ProfileValidationRules', function () use ($makeTester): void {
                 ->and($emailRule?->preventSpoofing)->toBeTrue()
                 ->and($emailRule?->validateMxRecord)->toBeFalse()
                 ->and($rules)->not->toContain('ascii')
-                ->and($rules)->not->toContain('email')
-                ->and($rules)->toContain('required', 'string', 'max:255');
+                ->and($rules)->not->toContain('email');
         });
 
         it('include unique rule when unique is true', function () use ($makeTester): void {
@@ -100,7 +111,7 @@ describe('ProfileValidationRules', function () use ($makeTester): void {
         it('keeps plain email rules when unique is false', function () use ($makeTester): void {
             $rules = $makeTester()->runEmailRules(userId: '01ARZ3NDEKTSV4RRFFQ69G5FAV', unique: false);
 
-            expect($rules)->toBe(['required', 'string', 'email', 'max:255']);
+            expect($rules)->toBe(['bail', 'required', 'string', 'max:255', 'email']);
         });
     });
 });
