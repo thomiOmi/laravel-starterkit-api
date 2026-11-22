@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Media\Enums\MediaVisibilityEnum;
-use Pest\Mixins\Expectation;
+use Pest\Expectation;
 
 covers(MediaVisibilityEnum::class);
 

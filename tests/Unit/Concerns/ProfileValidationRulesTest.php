@@ -86,7 +86,7 @@ describe('ProfileValidationRules', function () use ($makeTester): void {
 
         it('uses an RFC and spoof-check rule when unique is true', function () use ($makeTester): void {
             $rules = $makeTester()->runEmailRules();
-            $emailRule = array_find($rules, fn ($rule) => $rule instanceof Email);
+            $emailRule = array_find($rules, fn ($rule): bool => $rule instanceof Email);
 
             expect($emailRule)->toBeInstanceOf(Email::class)
                 ->and($emailRule?->rfcCompliant)->toBeTrue()

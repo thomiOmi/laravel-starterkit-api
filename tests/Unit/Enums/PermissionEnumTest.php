@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\PermissionEnum;
-use Pest\Mixins\Expectation;
+use Pest\Expectation;
 
 covers(PermissionEnum::class);
 

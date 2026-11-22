@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\UserStatusEnum;
-use Pest\Mixins\Expectation;
+use Pest\Expectation;
 
 covers(UserStatusEnum::class);
 

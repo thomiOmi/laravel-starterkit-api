@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Pest\Rector\Set\PestSetList;
 use Rector\Config\RectorConfig;
+use RectorLaravel\Rector\StaticCall\CarbonToDateFacadeRector;
 use RectorLaravel\Set\LaravelSetList;
 
 return RectorConfig::configure()
@@ -53,7 +54,7 @@ return RectorConfig::configure()
     ->withSkip([
         // AddArrowFunctionReturnTypeRector::class,
         // AddHasFactoryToModelsRector::class,
-        // CarbonToDateFacadeRector::class,
+        CarbonToDateFacadeRector::class => [__DIR__.'/app/Concerns/FormatDate.php'],
         __DIR__.'/tests/Architecture/ArchitectureTest.php',
         __DIR__.'/config/database.php',
     ]);
