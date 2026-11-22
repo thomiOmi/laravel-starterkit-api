@@ -98,7 +98,7 @@ describe('POST /api/v1/auth/register', function (): void {
 
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Jane Doe',
-            'email' => "\u{0430}dmin@example.com",
+            'email' => $email,
             'password' => 'password123',
             'password_confirmation' => 'password123',
         ]);
