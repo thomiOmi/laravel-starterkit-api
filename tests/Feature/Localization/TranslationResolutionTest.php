@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Lang;
+
 /**
  * Load a translation file and ensure it returns an array.
  *
@@ -44,7 +46,6 @@ function flattenTranslationKeys(array $lines, string $prefix = ''): array
 }
 
 describe('translation resolution', function (): void {
-
     it('resolves every root and IAM translation key', function (string $locale): void {
         app()->setLocale($locale);
 
@@ -71,7 +72,7 @@ describe('translation resolution', function (): void {
         expect($keys)->not->toBeEmpty();
 
         foreach ($keys as $key) {
-            expect(trans()->hasForLocale($key, $locale))->toBeTrue("Translation key [{$key}] is missing for locale [{$locale}].");
+            expect(Lang::hasForLocale($key, $locale))->toBeTrue("Translation key [{$key}] is missing for locale [{$locale}].");
         }
     })->with(['en', 'id']);
 
@@ -100,8 +101,7 @@ describe('translation resolution', function (): void {
         ];
 
         foreach ($keys as $key) {
-            expect(trans()->hasForLocale($key, $locale))->toBeTrue("Translation key [{$key}] is missing for locale [{$locale}].");
+            expect(Lang::hasForLocale($key, $locale))->toBeTrue("Translation key [{$key}] is missing for locale [{$locale}].");
         }
     })->with(['en', 'id']);
-
 });

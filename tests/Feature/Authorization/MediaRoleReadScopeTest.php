@@ -25,36 +25,37 @@ covers([
     MediaDeleteController::class,
 ]);
 
+/**
+ * Persist a media row with real decodable bytes so the modifier route can
+ * be exercised instead of failing on a missing file.
+ */
+function seedOwnedImageMedia(User $owner, bool $public = false): Media
+{
+    $factory = MediaFactory::new()->forModel($owner)->uploadedBy($owner);
+
+    if ($public) {
+        $factory = $factory->public();
+    }
+
+    /** @var Media $media */
+    $media = $factory->createOne(['mime_type' => 'image/jpeg']);
+
+    $path = $media->getPath() ?? throw new RuntimeException('The seeded media has no storage path.');
+
+    $file = UploadedFile::fake()->image('owned.jpg', 200, 100);
+    Storage::disk($media->disk)->put($path, (string) $file->getContent());
+
+    return $media;
+}
+
 describe('seeded user role media read scope', function (): void {
     beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
-
-        $this->seed(IAMSeeder::class);
     });
 
-    /**
-     * Persist a media row with real decodable bytes so the modifier route can
-     * be exercised instead of failing on a missing file.
-     */
-    function seedOwnedImageMedia(User $owner, bool $public = false): Media
-    {
-        $factory = MediaFactory::new()->forModel($owner)->uploadedBy($owner);
-
-        if ($public) {
-            $factory = $factory->public();
-        }
-
-        /** @var Media $media */
-        $media = $factory->createOne(['mime_type' => 'image/jpeg']);
-
-        $file = UploadedFile::fake()->image('owned.jpg', 200, 100);
-        Storage::disk($media->disk)->put($media->getPath() ?? '', (string) $file->getContent());
-
-        return $media;
-    }
-
     it('rejects showing another users private media', function (): void {
+        $this->seed(IAMSeeder::class);
         $owner = loginAsUserRole();
         $media = seedOwnedImageMedia($owner);
 
@@ -64,6 +65,7 @@ describe('seeded user role media read scope', function (): void {
     });
 
     it('does not mint a signed url for another users private media', function (): void {
+        $this->seed(IAMSeeder::class);
         $owner = loginAsUserRole();
         $media = seedOwnedImageMedia($owner);
 
@@ -76,6 +78,7 @@ describe('seeded user role media read scope', function (): void {
     });
 
     it('rejects on-demand conversions of another users private media', function (): void {
+        $this->seed(IAMSeeder::class);
         $owner = loginAsUserRole();
         $media = seedOwnedImageMedia($owner);
 
@@ -85,6 +88,7 @@ describe('seeded user role media read scope', function (): void {
     });
 
     it('keeps another users media out of the list', function (): void {
+        $this->seed(IAMSeeder::class);
         $owner = loginAsUserRole();
         $foreign = seedOwnedImageMedia($owner);
 
@@ -103,10 +107,17 @@ describe('seeded user role media read scope', function (): void {
     });
 
     it('keeps owner access to their own private media', function (): void {
+        $this->seed(IAMSeeder::class);
         $owner = loginAsUserRole();
         $media = seedOwnedImageMedia($owner);
 
         assertSuccessResponse($this->getJson("/api/v1/media/{$media->id}"), 200);
+    });
+
+    it('lets the owner delete their own private media', function (): void {
+        $this->seed(IAMSeeder::class);
+        $owner = loginAsUserRole();
+        $media = seedOwnedImageMedia($owner);
 
         $delete = $this->deleteJson("/api/v1/media/{$media->id}");
 
@@ -115,6 +126,7 @@ describe('seeded user role media read scope', function (): void {
     });
 
     it('keeps public media readable by other users', function (): void {
+        $this->seed(IAMSeeder::class);
         $owner = loginAsUserRole();
         $media = seedOwnedImageMedia($owner, public: true);
 
@@ -124,6 +136,7 @@ describe('seeded user role media read scope', function (): void {
     });
 
     it('keeps admin access to another users private media', function (): void {
+        $this->seed(IAMSeeder::class);
         $owner = loginAsUserRole();
         $media = seedOwnedImageMedia($owner);
 

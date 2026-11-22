@@ -3,12 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Facades\Process;
 
 beforeEach(function (): void {
     clearFixtureModules('tests/Fixtures/modules');
-
-    Process::fake();
 
     $files = resolve(Filesystem::class);
     $modulePath = base_path('tests/Fixtures/modules/Widget');

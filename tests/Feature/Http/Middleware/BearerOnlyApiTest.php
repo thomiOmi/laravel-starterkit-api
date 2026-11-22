@@ -120,8 +120,9 @@ describe('bearer-only cors', function (): void {
         expect($allowedHeaders)->toContain('idempotency-key');
     });
 
-    it('does not apply cors to the sanctum csrf cookie path', function (): void {
-        expect(config()->array('cors.paths'))->not->toContain('sanctum/csrf-cookie');
+    it('does not configure any sanctum csrf cookie surface', function (): void {
+        expect(config()->array('cors.paths'))->not->toContain('sanctum/csrf-cookie')
+            ->and(resolve(Router::class)->has('sanctum.csrf-cookie'))->toBeFalse();
     });
 });
 
@@ -132,9 +133,5 @@ describe('sanctum csrf cookie route', function (): void {
         $response->assertNotFound();
 
         expect($response->headers->getCookies())->toBeEmpty();
-    });
-
-    it('does not register the sanctum csrf cookie named route', function (): void {
-        expect(resolve(Router::class)->has('sanctum.csrf-cookie'))->toBeFalse();
     });
 });

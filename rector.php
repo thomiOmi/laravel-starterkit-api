@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 use Pest\Rector\Set\PestSetList;
 use Rector\Config\RectorConfig;
-use Rector\TypeDeclaration\Rector\ArrowFunction\AddArrowFunctionReturnTypeRector;
-use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
-use RectorLaravel\Rector\Class_\AddHasFactoryToModelsRector;
 use RectorLaravel\Rector\FuncCall\RemoveDumpDataDeadCodeRector;
 use RectorLaravel\Rector\StaticCall\CarbonToDateFacadeRector;
 use RectorLaravel\Set\LaravelSetList;
@@ -42,9 +39,6 @@ return RectorConfig::configure()
         codingStyle: true,
     )
     ->withConfiguredRule(RemoveDumpDataDeadCodeRector::class, ['dd', 'dump', 'ray'])
-    ->withRules([
-        SafeDeclareStrictTypesRector::class,
-    ])
     ->withSets([
         PestSetList::CODING_STYLE,
         LaravelSetList::LARAVEL_ARRAYACCESS_TO_METHOD_CALL,
@@ -60,9 +54,7 @@ return RectorConfig::configure()
     ])
     ->withParallel(maxNumberOfProcess: 4)
     ->withSkip([
-        AddArrowFunctionReturnTypeRector::class,
-        AddHasFactoryToModelsRector::class,
-        CarbonToDateFacadeRector::class,
+        CarbonToDateFacadeRector::class => [__DIR__.'/app/Concerns/FormatDate.php'],
         __DIR__.'/tests/Architecture/ArchitectureTest.php',
         __DIR__.'/config/database.php',
     ]);
