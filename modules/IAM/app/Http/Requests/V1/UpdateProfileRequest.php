@@ -50,7 +50,7 @@ class UpdateProfileRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'string', Rule::email()->rfcCompliant()->preventSpoofing(), 'max:255', $this->uniqueEmailRule($model)],
+            'email' => ['sometimes', 'bail', 'string', 'max:255', Rule::email()->rfcCompliant()->preventSpoofing(), $this->uniqueEmailRule($model)],
             'avatar' => [
                 'sometimes',
                 'nullable',
