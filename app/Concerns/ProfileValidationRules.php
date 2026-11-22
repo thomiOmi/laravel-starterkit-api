@@ -45,13 +45,11 @@ trait ProfileValidationRules
      */
     protected function emailRules(?string $userId = null, bool $unique = true): array
     {
-        $rules = ['required', 'string'];
+        $rules = ['bail', 'required', 'string', 'max:255'];
 
         $rules[] = $unique
             ? Rule::email()->rfcCompliant()->preventSpoofing()
             : 'email';
-
-        $rules[] = 'max:255';
 
         if ($unique) {
             $model = config()->string('auth.providers.users.model');

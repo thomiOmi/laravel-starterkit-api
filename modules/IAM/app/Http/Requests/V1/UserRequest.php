@@ -12,7 +12,10 @@ use App\Enums\UserStatusEnum;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\ConditionalRules;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Confirmed;
+use Illuminate\Validation\Rules\CurrentPassword;
 use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rules\Password;
@@ -72,7 +75,7 @@ final class UserRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, array<int, Email|ValidationRule|Password|Unique|Enum|string>> The validation rules.
+     * @return array<string, array<int, ConditionalRules|Confirmed|CurrentPassword|Email|Enum|Password|Unique|ValidationRule|string>> The validation rules.
      */
     public function rules(): array
     {
