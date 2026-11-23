@@ -55,7 +55,7 @@ return [
             'routes/V1' => 'routes/V1.php',
             'scaffold/config' => 'config/config.php',
             'composer' => 'composer.json',
-            // TODO: support frontend
+            // Frontend stubs are intentionally disabled: the kit is backend-only.
             // 'views/index' => 'resources/views/index.blade.php',
             // 'views/master' => 'resources/views/components/layouts/master.blade.php',
             // 'assets/js/app' => 'resources/assets/js/app.js',

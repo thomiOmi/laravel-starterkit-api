@@ -114,6 +114,12 @@ Use the `skill` tool to load a skill when the task matches its description. List
 - Code and comment language: English.
 - This project uses the lowercase `modules/` directory; it overrides package guidelines that mention `Modules/`.
 
+## Code Comments
+
+- A TODO or FIXME comment in committed code must reference an open GitHub issue: `// TODO(#123): short description`. A bare TODO or FIXME without an issue number is not allowed.
+- Agents do not create issues. When work must be deferred, ask the owner for the issue number, or leave the marker out and report the deferred item in the pull request description.
+- Write a plain comment (not a TODO) to explain an intentional limitation.
+
 ## API Convention
 
 | Aspect | Detail |
