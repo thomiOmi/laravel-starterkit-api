@@ -3,15 +3,17 @@
 ## Composer Scripts
 
 | Command | Description |
-|---|---|---|
+|---|---|
 | `composer setup` | Install dependencies and prepare the application |
 | `composer setup:ci` | Prepare the application for CI (copy .env, key:generate, sqlite, migrate) |
+| `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 | `composer rector` | Apply Rector refactors (`@php vendor/bin/rector`) |
 | `composer lint` | Auto-fix code style (`@php vendor/bin/pint --parallel`) |
 | `composer lint:staged` | Auto-fix code style for staged files only (`@php vendor/bin/pint --parallel --dirty`) |
 | `composer lint:check` | Check code style without modifications |
 | `composer types:check` | Run PHPStan static analysis (level max, includes test files via `pest-plugin-phpstan`) |
 | `composer test` | Run the test suite in two phases: `vendor/bin/pest --parallel --testsuite=Unit,Feature,Modules`, then `vendor/bin/pest --testsuite=Architecture` |
+| `composer test:coverage` | Run the test suite with Xdebug coverage enabled |
 | `composer test:profanity` | Run profanity checks on test files |
 | `composer test:profile` | Run the suite and report the slowest tests (`vendor/bin/pest --profile`) |
 | `composer ci:check` | Full CI pipeline - runs `rector:dry`, `lint:check`, `types:check`, `test`, then `test:profanity` |
@@ -21,7 +23,6 @@
 - Test scripts run `vendor/bin/pest` directly (not `php artisan test`), so the process runs in a single PHP context, and `--configuration` can point at any XML file without Collision overriding it.
 - `phpunit.xml` is strict: `failOnDeprecation`, `failOnNotice`, `failOnPhpunitDeprecation`, `failOnPhpunitNotice`, `failOnEmptyTestSuite`, `failOnWarning`, `failOnRisky`, and `beStrictAbout*` are all enabled. `database/` and `modules/*/Database` stay excluded from the coverage `<source>` (migration `down()` methods and unused seeders/factory states are not exercised by tests; revisit when module tests land).
 - PHPStan output is wrapped by `laravel/pao` in a JSON envelope when an AI agent is detected. Set `PAO_DISABLE=1` to see raw output; use `phpstan clear-result-cache` (with `PAO_DISABLE=1`) to clear the result cache.
-| `composer dev` | Run all dev processes concurrently (server, queue, logs) |
 
 The recommended pre-push workflow:
 
@@ -39,6 +40,7 @@ composer test:profanity  # profanity checks
 
 - Step-by-step debugging: run `vendor/bin/pest` directly with Xdebug active (for example `vendor/bin/pest tests/Unit/SomeTest.php`).
 - Local coverage: run `composer test:coverage`, which sets `XDEBUG_MODE=coverage` and passes `--coverage` to Pest.
+- Coverage status: `composer test:coverage` currently exits 1 even though all tests pass, because tests whose `covers()` is narrower than the code they execute are reported as risky and `failOnRisky` is enabled; this is not a regression and the command is not part of `ci:check`. The risky coverage metadata is a known limitation that has not been fixed.
 - CI does not enable a coverage driver; coverage is a local concern.
 
 ## Directory Structure
