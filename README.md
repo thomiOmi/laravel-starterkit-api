@@ -97,7 +97,7 @@ app/                     # Shared application code
 ├── Http/
 │   ├── Middleware/      # Sunset, TraceId, SetLocale, PlanFeature, SecurityHeaders
 │   └── Responses/       # SuccessResponse, ProblemResponse (RFC 9457)
-├── Providers/           # AppServiceProvider, RouteServiceProvider
+├── Providers/           # AppServiceProvider
 └── Notifications/       # Shared notifications (VerifyEmail, ResetPassword)
 config/
 database/

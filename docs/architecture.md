@@ -198,7 +198,7 @@ project/
 │   ├── Models/                  # Shared models (Sanctum PersonalAccessToken)
 │   ├── Notifications/           # Shared notifications (VerifyEmail, ResetPassword)
 │   ├── Payloads/                # Shared DTOs (IdempotencyPayload)
-│   ├── Providers/               # AppServiceProvider, RouteServiceProvider
+│   ├── Providers/               # AppServiceProvider
 │   └── Support/                 # Global technical utilities (ProductionSecurityCheck)
 ├── config/                      # Global config (apiroute.php = supported API versions)
 ├── database/

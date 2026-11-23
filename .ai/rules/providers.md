@@ -2,14 +2,13 @@
 paths:
   - 'modules/*/app/Providers/**'
   - 'app/Providers/AppServiceProvider.php'
-  - 'app/Providers/RouteServiceProvider.php'
 ---
 
 # Providers
 
 ## Goal
 
-`modules/{Module}/app/Providers/{Module}ServiceProvider.php` wires the module into the framework. Every module provider extends `Nwidart\Modules\Support\ModuleServiceProvider` (auto-discovered by nwidart via `module.json` + `modules_statuses.json`); the nwidart base merges `config/config.php`, loads `database/migrations` and `database/factories`, and registers the module's providers from the `$providers` array (e.g. `RouteServiceProvider`). `app/Providers` hosts framework wiring only (`AppServiceProvider` for env-driven defaults, `RouteServiceProvider` for web routes); module behavior never lives in app providers.
+`modules/{Module}/app/Providers/{Module}ServiceProvider.php` wires the module into the framework. Every module provider extends `Nwidart\Modules\Support\ModuleServiceProvider` (auto-discovered by nwidart via `module.json` + `modules_statuses.json`); the nwidart base merges `config/config.php`, loads `database/migrations` and `database/factories`, and registers the module's providers from the `$providers` array (e.g. `RouteServiceProvider`). `app/Providers` hosts framework wiring only (`AppServiceProvider` for env-driven defaults); module behavior never lives in app providers.
 
 ## Rules
 
