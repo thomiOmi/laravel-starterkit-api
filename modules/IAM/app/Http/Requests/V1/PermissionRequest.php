@@ -27,7 +27,7 @@ final class PermissionRequest extends FormRequest
         /** @var Identity $user */
         if ($this->isMethod('POST')) {
             /** @var class-string<Model> $permissionModel */
-            $permissionModel = (string) config('permission.models.permission');
+            $permissionModel = config()->string('permission.models.permission');
 
             return $user->can('create', $permissionModel);
         }
@@ -36,7 +36,7 @@ final class PermissionRequest extends FormRequest
 
         if (is_string($permissionId)) {
             /** @var class-string<Model> $permissionModel */
-            $permissionModel = (string) config('permission.models.permission');
+            $permissionModel = config()->string('permission.models.permission');
             /** @var Model $permission */
             $permission = $permissionModel::query()->findOrFail($permissionId);
 

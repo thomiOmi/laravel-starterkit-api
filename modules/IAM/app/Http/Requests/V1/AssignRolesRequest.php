@@ -48,7 +48,7 @@ final class AssignRolesRequest extends FormRequest
             $targetUser = $userId;
         } elseif (is_string($userId)) {
             /** @var class-string<Model> $model */
-            $model = (string) config('auth.providers.users.model', User::class);
+            $model = config()->string('auth.providers.users.model', User::class);
             /** @var Identity&Model $targetUser */
             $targetUser = $model::query()->findOrFail($userId);
         } else {
