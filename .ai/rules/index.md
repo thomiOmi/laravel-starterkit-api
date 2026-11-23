@@ -25,7 +25,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | modules/*/app/Notifications/**, app/Notifications/** | .ai/rules/notifications.md |
 | modules/*/app/Payloads/**, app/Payloads/** | .ai/rules/payloads.md |
 | modules/*/app/Policies/** | .ai/rules/policies.md |
-| modules/*/app/Providers/**, app/Providers/AppServiceProvider.php, app/Providers/RouteServiceProvider.php | .ai/rules/providers.md |
+| modules/*/app/Providers/**, app/Providers/AppServiceProvider.php | .ai/rules/providers.md |
 | modules/*/app/Http/Requests/**, modules/*/app/Http/Requests/**, app/Http/Requests/** | .ai/rules/requests.md |
 | modules/*/app/Http/Resources/**, modules/*/app/Http/Resources/** | .ai/rules/resources.md |
 | app/Http/Responses/** | .ai/rules/responses.md |

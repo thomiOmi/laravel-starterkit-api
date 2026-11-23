@@ -76,7 +76,7 @@ Module registration is handled by `nwidart/laravel-modules`:
 1. Each module has a `module.json` manifest; `config/modules.php` configures nWidart (FileActivator, paths, cache)
 2. Live activation state lives in `modules_statuses.json` (e.g. `{"IAM": true}`); a module only boots when its entry is `true`
 3. The module's `app/Providers/{ModuleName}ServiceProvider.php` extends `Nwidart\Modules\Support\ModuleServiceProvider`, which auto-merges `config/config.php`, loads `database/migrations` + `database/factories`, and registers the providers listed in the `$providers` array
-4. Routes are loaded by the module's own `app/Providers/RouteServiceProvider.php` (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`), not the app `RouteServiceProvider`
+4. Routes are loaded by the module's own `app/Providers/RouteServiceProvider.php` (extends `Illuminate\Foundation\Support\Providers\RouteServiceProvider`)
 5. `module.json` carries an optional `requires` array listing dependency module names (TitleCase folder names, e.g. `{"requires": ["Media"]}`); IAM (core) requires Media (core). The architecture test allows core-to-core dependencies because both are listed in `config/modules.php` `core`. Validate declarations with `php artisan module:check-dependencies` (fails on missing/disabled dependency or a cycle). New modules are scaffolded with an empty `"requires": []`
 
 You do NOT need to register modules in `config/app.php`.
