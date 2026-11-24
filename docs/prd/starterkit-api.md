@@ -18,7 +18,7 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 | Persona | Needs |
 |---------|-------|
 | API consumer (frontend/mobile) | Stable versioned API, predictable envelope, documented conventions, per-device auth |
-| Application owner (admin) | Manage users, roles, permissions, feature flags |
+| Application owner (admin) | Manage users, roles, permissions |
 | Kit adopter (developer) | Copy the kit and build a vertical product without fighting infrastructure concerns |
 
 ## In Scope (v1)
@@ -64,8 +64,10 @@ A modular, maintainable Laravel API starterkit that gives new projects a product
 
 | ID | Requirement | Status |
 |----|-------------|--------|
-| FLAG-01 | Admin can create/update/delete feature flags | Done (Phase 5) |
-| FLAG-02 | Authenticated user can query feature flag state | Done (Phase 5) |
+| FLAG-01 | Admin can create/update/delete feature flags | Deferred - out of scope for 1.0.0 (ADR-0022) |
+| FLAG-02 | Authenticated user can query feature flag state | Deferred - out of scope for 1.0.0 (ADR-0022) |
+
+Reason: build-time flags are code decisions in module config and runtime flags use Pennant (ADR-0022); the kit does not expose a flag-management or flag-query API.
 
 ### Tenancy (ORG-01..04) - v2 scope
 
