@@ -95,4 +95,48 @@ describe('EnsureFeatureIsActive', function (): void {
 
         expect($response->getStatusCode())->toBe(Response::HTTP_OK);
     });
+
+    it('denies an unregistered two-segment feature that Pennant resolves to false', function (): void {
+        Feature::define('audit.runtime-denied', false);
+
+        expect(fn (): Response => (new EnsureFeatureIsActive)->handle(
+            new Request,
+            fn (Request $req): Response => new Response('OK'),
+            'audit.runtime-denied',
+        ))->toThrow(AccessDeniedHttpException::class);
+    });
+
+    it('denies feature names that were never defined', function (): void {
+        foreach (['audit.never-registered', 'neverRegisteredFlag'] as $feature) {
+            expect(fn (): Response => (new EnsureFeatureIsActive)->handle(
+                new Request,
+                fn (Request $req): Response => new Response('OK'),
+                $feature,
+            ))->toThrow(AccessDeniedHttpException::class);
+        }
+    });
+
+    it('lets the registry win when a disabled registry feature is active in Pennant', function (): void {
+        config()->set('iam.features.registry-wins-false', false);
+        Feature::define('iam.registry-wins-false', true);
+
+        expect(fn (): Response => (new EnsureFeatureIsActive)->handle(
+            new Request,
+            fn (Request $req): Response => new Response('OK'),
+            'iam.registry-wins-false',
+        ))->toThrow(AccessDeniedHttpException::class);
+    });
+
+    it('lets the registry win when an enabled registry feature is inactive in Pennant', function (): void {
+        config()->set('iam.features.registry-wins-true', true);
+        Feature::define('iam.registry-wins-true', false);
+
+        $response = (new EnsureFeatureIsActive)->handle(
+            new Request,
+            fn (Request $req): Response => new Response('OK'),
+            'iam.registry-wins-true',
+        );
+
+        expect($response->getStatusCode())->toBe(Response::HTTP_OK);
+    });
 });
