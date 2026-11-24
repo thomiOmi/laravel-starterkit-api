@@ -8,7 +8,7 @@ paths:
 
 ## Goal
 
-Module-specific enums in `modules/{Module}/Enums/`; shared vocabulary enums (used by 2+ modules) in `app/Enums/`.
+Module-specific enums in `modules/{Module}/app/Enums/`; shared vocabulary enums (used by 2+ modules) in `app/Enums/`.
 
 ## Rules
 
