@@ -159,4 +159,23 @@ describe('module:make command', function (): void {
         $statuses = decodeModuleJson(base_path('tests/Fixtures/module-make/statuses.json'));
         expect($statuses)->not->toHaveKey('Shop');
     });
+
+    it('generates a trait into the public Traits seam', function (): void {
+        Process::fake();
+
+        artisanCommand($this, 'module:make', ['name' => ['Widget'], '--disabled' => true])
+            ->assertSuccessful();
+
+        forgetModuleSingletons();
+
+        artisanCommand($this, 'module:make-trait', ['name' => 'HasSlug', 'module' => 'Widget'])
+            ->assertSuccessful();
+
+        $traitPath = base_path('tests/Fixtures/module-make/modules/Widget/app/Traits/HasSlug.php');
+        expect($traitPath)->toBeFile();
+
+        $trait = file_get_contents($traitPath);
+        expect($trait)->toContain('namespace Modules\Widget\Traits;')
+            ->toContain('trait HasSlug {}');
+    });
 });
