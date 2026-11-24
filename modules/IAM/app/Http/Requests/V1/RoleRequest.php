@@ -33,7 +33,7 @@ final class RoleRequest extends FormRequest
         /** @var Identity $user */
         if ($this->isMethod('POST')) {
             /** @var class-string<Model> $roleModel */
-            $roleModel = (string) config('permission.models.role');
+            $roleModel = config()->string('permission.models.role');
 
             return $user->can('create', $roleModel);
         }
@@ -42,7 +42,7 @@ final class RoleRequest extends FormRequest
 
         if (is_string($roleId)) {
             /** @var class-string<Model> $roleModel */
-            $roleModel = (string) config('permission.models.role');
+            $roleModel = config()->string('permission.models.role');
             /** @var Model $role */
             $role = $roleModel::query()->findOrFail($roleId);
 

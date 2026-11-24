@@ -57,7 +57,7 @@ final class UserRequest extends FormRequest
         /** @var Identity $user */
         if ($this->isMethod('POST')) {
             /** @var class-string<Model> $userModel */
-            $userModel = (string) config('auth.providers.users.model');
+            $userModel = config()->string('auth.providers.users.model');
 
             return $user->can('create', $userModel);
         }

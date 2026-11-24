@@ -88,7 +88,7 @@ final readonly class ProductionSecurityCheck
      */
     private function checkFrontendUrl(): array
     {
-        $url = (string) config()->get('app.frontend_url', '');
+        $url = config()->string('app.frontend_url', '');
 
         return [
             'check' => 'FRONTEND_URL',
