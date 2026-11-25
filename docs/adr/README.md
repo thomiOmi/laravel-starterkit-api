@@ -50,6 +50,7 @@ This directory records architecture decisions (ADR) for the Laravel Starterkit A
 | [0044](0044-adopter-target-and-customization-points.md) | Adopter Target and Customization Points | Proposed | 2026-10-26 |
 | [0045](0045-module-boundaries.md) | Module Boundaries | Accepted | 2026-11-07 |
 | [0046](0046-wrapper-classification.md) | First-Party Wrapper Classification (G2) | Accepted | 2026-11-23 |
+| [0047](0047-media-readiness-decisions.md) | Media Readiness Decisions for 1.0.0 | Accepted | 2026-11-25 |
 
 ## Process
 
