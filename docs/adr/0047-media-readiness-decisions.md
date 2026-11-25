@@ -39,7 +39,7 @@ This ADR does not fix any concrete limit. The owner chooses the numbers in the i
 
 `Media::getTemporaryUrl()` will accept only the expiration. The current optional `$conversion` argument is removed because it returns a signed URL for the original file, which is misleading: the original may still carry EXIF data, and there is no signed-conversion route to serve a derivative. `Media::signedUrl()` and the public `api.v1.media.file` route are unchanged.
 
-The alternative of building a signed-conversion route is rejected: no production or test caller passes a conversion argument today, so the route would add public surface without a consumer. This is an intentional breaking change of a module-internal API, accepted because it happens before 1.0.0.
+The alternative of building a signed-conversion route is rejected: no production or test caller passes a conversion argument today, so the route would add public surface without a consumer. `getTemporaryUrl()` is a public method on the `Media` model that adopters may call, so narrowing its signature is an intentional breaking change accepted only because it happens before 1.0.0. Under PHP semantics, an extra positional argument to a userland method is ignored at runtime but reported by PHPStan as `arguments.count`, while an unknown named argument raises an `Error`; neither form occurs in this repository.
 
 ### D4: Delete the row first, then remove files after commit
 
@@ -60,8 +60,8 @@ These are capability limits, not contract defects, and are documented as such be
 
 - `MediaResource` gains a `type` field; existing fields and the response envelope are unchanged.
 - `media.max_size_by_type` is a new optional config key; installs that omit it keep today's behavior. PR-2 sets the actual values after owner approval.
-- `Media::getTemporaryUrl()` has a narrower signature. Consumers compiled against the old two-argument form would break after 1.0.0, which is why the change is made now.
-- Delete may leave an orphan file on a failed or rolled-back transaction; `media:cleanup` already reports orphans and missing sources, and the deployment guide must explain which condition is expected.
+- `Media::getTemporaryUrl()` has a narrower signature on a public model method. After the change, a caller that still passes an extra positional argument does not fail at runtime but is flagged by PHPStan's `arguments.count`; a caller using an unknown named argument raises an `Error`. The change is made before 1.0.0 to remove the misleading contract while those failures are still acceptable.
+- Delete may leave an orphan file on a failed or rolled-back transaction. The current `MediaCleanupCommand` scans only `media.disk` for orphans, so orphan files on `media.private_disk` are neither reported nor removed; its separate "DB record without file" check resolves each record's own `disk`, so private media is not falsely reported as missing. D4 therefore depends on extending orphan scanning to both disks before that ordering is delivered.
 - The database schema, module routes, permissions, event names, and public seams are unchanged by this ADR.
-- Follow-up work: PR-1 adds the enum, mapping, and resource field; PR-2 adds per-type limits and format tests; PR-3 handles the delete ordering and signature cleanup; P7 documents the D5 limitations and the deployment constraints from D2 (PHP `upload_max_filesize`, `post_max_size`, web server body limits, worker memory).
+- Follow-up work: PR-1 adds the enum, mapping, and resource field; PR-2 adds per-type limits and format tests; PR-3 handles the delete ordering and signature cleanup and extends `media:cleanup` orphan scanning to `media.private_disk`, because D4 relies on orphan detection on both disks; P7 documents the D5 limitations and the deployment constraints from D2 (PHP `upload_max_filesize`, `post_max_size`, web server body limits, worker memory).
 - Review this decision when a real need for database filtering by type appears, when a signed conversion URL gains a consumer, when Laravel introduces first-party Range-aware file responses, or when external media binaries become an accepted deployment dependency.
