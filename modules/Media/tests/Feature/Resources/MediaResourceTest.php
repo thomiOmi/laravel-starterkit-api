@@ -160,4 +160,22 @@ describe('MediaResource conversion and fallback mapping', function (): void {
             ->and($data['fallback_path'])->toBeNull()
             ->and($data['url'])->toBeNull();
     });
+
+    it('exposes a type derived from the mime type for images and documents', function (string $mime, string $expected): void {
+        $media = MediaFactory::new()->createOne([
+            'file_name' => 'document.pdf',
+            'mime_type' => $mime,
+        ]);
+
+        $data = new MediaResource($media)->resolve(new Request);
+
+        expect($data['type'])->toBe($expected)
+            ->and($data['mime_type'])->toBe($mime)
+            ->and($data['id'])->toBe($media->id)
+            ->and($data['file_name'])->toBe('document.pdf')
+            ->and($data)->toHaveKeys(['name', 'size', 'visibility', 'url', 'created_at']);
+    })->with([
+        'image' => ['image/png', 'image'],
+        'document' => ['application/pdf', 'document'],
+    ]);
 });
