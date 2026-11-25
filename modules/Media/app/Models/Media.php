@@ -294,17 +294,13 @@ class Media extends Model
         );
     }
 
-    public function getTemporaryUrl(DateTimeInterface $expiration, ?string $conversion = null): string
+    /**
+     * Get a temporary signed URL for the original media file.
+     *
+     * The configured MediaUrlGenerator builds the URL, which expires at the given moment.
+     */
+    public function getTemporaryUrl(DateTimeInterface $expiration): string
     {
-        if ($conversion !== null && $conversion !== '') {
-            // The signed file route currently serves the original media only.
-            return (string) URL::temporarySignedRoute(
-                'api.v1.media.file',
-                $expiration,
-                ['media' => $this->getKey()],
-            );
-        }
-
         return resolve(MediaUrlGenerator::class)->getTemporaryUrl($this, $expiration);
     }
 
