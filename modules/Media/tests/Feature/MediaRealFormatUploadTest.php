@@ -81,11 +81,24 @@ function mediaRealFormatBytes(string $filename): string
         'notes.txt' => "plain text body\n",
         'rows.csv' => "a,b,c\n1,2,3\n",
         'clip.mp4' => "\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2".str_repeat("\x00", 64),
-        'clip.webm' => "\x1A\x45\xDF\xA3\x9F\x42\x86\x81\x01\x42\xF7\x81\x01\x42\xF2\x81\x04webm".str_repeat("\x00", 64),
+        'clip.webm' => "\x1A\x45\xDF\xA3\x81\x1F"
+            ."\x42\x86\x81\x01\x42\xF7\x81\x01\x42\xF2\x81\x04\x42\xF3\x81\x08"
+            ."\x42\x82\x84webm\x42\x87\x81\x02\x42\x85\x81\x02"
+            ."\x18\x53\x80\x67\x81\x00",
         'clip.mov' => "\x00\x00\x00\x14ftypqt  \x00\x00\x02\x00qt  ".str_repeat("\x00", 64),
         'tone.mp3' => 'ID3'.chr(4).chr(0).chr(0).chr(0).chr(0).chr(0).chr(0).str_repeat("\xFF\xFB\x90\x00", 32),
         'tone.wav' => 'RIFF'.pack('V', 100).'WAVEfmt '.pack('V', 16).pack('v', 1).pack('v', 1).pack('V', 8000).pack('V', 16000).pack('v', 1).pack('v', 8).'data'.pack('V', 64).str_repeat(chr(128), 64),
-        'tone.ogg' => "OggS\x00\x02".str_repeat("\x00", 25)."\x01\x1Evorbis".str_repeat("\x00", 64),
+        'tone.ogg' => 'OggS'
+            .chr(0).chr(0x02)
+            .str_repeat(chr(0), 8)
+            .pack('V', 0x12345678)
+            .pack('V', 0)
+            .pack('V', 0)
+            .chr(1).chr(0x1E)
+            ."\x01vorbis"
+            .pack('V', 0).chr(2).pack('V', 44100)
+            .pack('V', 0).pack('V', 128000).pack('V', 0)
+            .chr(0xB8).chr(0x01),
         'still.avif' => "\x00\x00\x00\x18ftypavif\x00\x00\x00\x00avifmif1".str_repeat("\x00", 64),
         'still.heic' => "\x00\x00\x00\x18ftypheic\x00\x00\x00\x00heicmif1".str_repeat("\x00", 64),
         default => throw new InvalidArgumentException("Unknown format {$filename}"),
@@ -130,10 +143,10 @@ describe('real format uploads', function (): void {
         'csv' => ['rows.csv', true],
         'mp4' => ['clip.mp4', true],
         'mov' => ['clip.mov', true],
-        'webm' => ['clip.webm', false],
+        'webm' => ['clip.webm', true],
         'mp3' => ['tone.mp3', true],
         'wav' => ['tone.wav', true],
-        'ogg' => ['tone.ogg', false],
+        'ogg' => ['tone.ogg', true],
         'avif' => ['still.avif', true],
         'heic' => ['still.heic', true],
     ]);

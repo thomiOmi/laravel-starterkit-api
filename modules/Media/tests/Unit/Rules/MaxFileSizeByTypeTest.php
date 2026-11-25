@@ -11,7 +11,7 @@ covers(MaxFileSizeByType::class);
 /**
  * Build an uploaded file whose content sniffing yields the given MIME prefix.
  */
-function sizedUpload(string $name, string $header, int $kilobytes): UploadedFile
+function maxSizeByTypeUpload(string $name, string $header, int $kilobytes): UploadedFile
 {
     $content = $header.str_repeat('x', max(0, ($kilobytes * 1024) - strlen($header)));
 
@@ -21,7 +21,7 @@ function sizedUpload(string $name, string $header, int $kilobytes): UploadedFile
 /**
  * @return list<string>
  */
-function failuresFor(UploadedFile $file): array
+function maxSizeByTypeFailures(UploadedFile $file): array
 {
     $messages = Validator::make(['file' => $file], ['file' => [new MaxFileSizeByType]])
         ->errors()
@@ -65,15 +65,15 @@ describe('MaxFileSizeByType', function (): void {
     });
 
     it('uses the per-type limit instead of the global default', function (): void {
-        $file = sizedUpload('clip.mp4', "\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2", 3000);
+        $file = maxSizeByTypeUpload('clip.mp4', "\x00\x00\x00\x18ftypisom\x00\x00\x02\x00isomiso2", 3000);
 
-        expect(failuresFor($file))->toBeEmpty();
+        expect(maxSizeByTypeFailures($file))->toBeEmpty();
     });
 
     it('falls back to the global limit for a type without an entry', function (): void {
-        $file = sizedUpload('bundle.bin', str_repeat("\x00", 16), 3000);
+        $file = maxSizeByTypeUpload('bundle.bin', str_repeat("\x00", 16), 3000);
 
-        expect(failuresFor($file))->not->toBeEmpty();
+        expect(maxSizeByTypeFailures($file))->not->toBeEmpty();
     });
 
     it('falls back to the global limit when detection fails', function (): void {
@@ -82,28 +82,38 @@ describe('MaxFileSizeByType', function (): void {
         $file->shouldReceive('getRealPath')->once()->andReturn(false);
         $file->shouldReceive('getSize')->once()->andReturn(3000 * 1024);
 
-        expect(failuresFor($file))->not->toBeEmpty();
+        expect(maxSizeByTypeFailures($file))->not->toBeEmpty();
     });
 
-    it('ignores invalid config values without throwing', function (mixed $byType, mixed $global): void {
+    it('ignores invalid per-type values and uses the global limit', function (mixed $byType): void {
         config()->set('media.max_size_by_type', $byType);
-        config()->set('media.max_size', $global);
 
-        $file = sizedUpload('photo.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg=='), 10);
+        $file = maxSizeByTypeUpload('photo.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg=='), 3000);
 
-        expect(failuresFor($file))->toBeEmpty();
+        expect(maxSizeByTypeFailures($file))->not->toBeEmpty();
     })->with([
-        'map is not an array' => ['nope', 2048],
-        'per-type value is negative' => [['image' => -5], 2048],
-        'global value is a string' => [['image' => 2048], 'nope'],
+        'map is not an array' => 'nope',
+        'per-type value is negative' => [['image' => -5]],
+    ]);
+
+    it('throws when the global limit is invalid and no per-type limit applies', function (mixed $invalid): void {
+        config()->set('media.max_size_by_type', []);
+        config()->set('media.max_size', $invalid);
+
+        $file = maxSizeByTypeUpload('bundle.bin', str_repeat("\x00", 16), 10);
+
+        expect(fn (): array => maxSizeByTypeFailures($file))->toThrow(InvalidArgumentException::class);
+    })->with([
+        'non-numeric' => 'nope',
+        'numeric string from env' => '2048',
     ]);
 
     it('accepts exactly the limit and rejects one kilobyte over with the built-in message', function (): void {
         $header = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==');
 
-        expect(failuresFor(sizedUpload('photo.png', $header, 2048)))->toBeEmpty();
+        expect(maxSizeByTypeFailures(maxSizeByTypeUpload('photo.png', $header, 2048)))->toBeEmpty();
 
-        $failures = failuresFor(sizedUpload('photo.png', $header, 2049));
+        $failures = maxSizeByTypeFailures(maxSizeByTypeUpload('photo.png', $header, 2049));
 
         expect($failures)->toHaveCount(1)
             ->and($failures[0])->toBe(__('validation.max.file', [

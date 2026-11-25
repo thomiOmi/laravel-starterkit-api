@@ -37,11 +37,6 @@ final class MaxFileSizeByType implements ValidationRule
 
         $limit = $this->resolveLimit($type);
 
-        // An invalid global limit is ignored (ADR-0010) rather than throwing.
-        if ($limit === null) {
-            return;
-        }
-
         // Laravel's `max` rule compares getSize() / 1024 for uploaded files.
         if ($value->getSize() / 1024 > $limit) {
             $fail(__('validation.max.file', [
@@ -51,7 +46,7 @@ final class MaxFileSizeByType implements ValidationRule
         }
     }
 
-    private function resolveLimit(?MediaType $type): ?int
+    private function resolveLimit(?MediaType $type): int
     {
         $configured = config('media.max_size_by_type');
 
@@ -63,8 +58,9 @@ final class MaxFileSizeByType implements ValidationRule
             }
         }
 
-        $global = config('media.max_size');
-
-        return is_int($global) && $global > 0 ? $global : null;
+        // Read the global default only when no valid per-type limit exists.
+        // config()->integer() throws on a malformed value, matching the
+        // behaviour of the original 'max:' rule before this package change.
+        return config()->integer('media.max_size');
     }
 }
