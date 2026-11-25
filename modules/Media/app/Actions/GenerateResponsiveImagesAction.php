@@ -6,6 +6,7 @@ namespace Modules\Media\Actions;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Image;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
@@ -75,7 +76,9 @@ final readonly class GenerateResponsiveImagesAction
 
         try {
             $sourceWidth = Image::fromStorage($path, $sourceDisk)->width();
-        } catch (Throwable) {
+        } catch (Throwable $throwable) {
+            $this->reportFailure($media, 'source', $throwable);
+
             return [];
         }
 
@@ -90,7 +93,9 @@ final readonly class GenerateResponsiveImagesAction
         foreach ($widths as $width) {
             try {
                 $results[$width] = $this->generateOne($media, $sourceDisk, $conversionDisk, $path, $width);
-            } catch (Throwable) {
+            } catch (Throwable $throwable) {
+                $this->reportFailure($media, (string) $width, $throwable);
+
                 continue;
             }
         }
@@ -146,6 +151,22 @@ final readonly class GenerateResponsiveImagesAction
         }
 
         return ['path' => $responsivePath, 'size' => $size];
+    }
+
+    /**
+     * Keep a failed sibling visible without failing the whole conversion job.
+     *
+     * Responsive siblings are optional, and MediaConversionService already
+     * logs and skips failed named conversions, so matching that behavior
+     * avoids turning a partial image failure into a failed media record.
+     */
+    private function reportFailure(Media $media, string $conversion, Throwable $throwable): void
+    {
+        Log::warning('Media responsive image generation failed.', [
+            'media_id' => $media->id,
+            'conversion' => $conversion,
+            'error' => $throwable->getMessage(),
+        ]);
     }
 
     private function responsiveFormat(Media $media): string
