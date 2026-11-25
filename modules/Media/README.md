@@ -77,8 +77,6 @@ Permissions are `media.view`, `media.create`, `media.delete` (`app/Enums/Permiss
 ## Known gaps
 
 1. Media permissions and role grants are seeded by IAM, not by Media: `IAMSeeder` creates every `PermissionEnum` case (`modules/IAM/database/seeders/IAMSeeder.php:55-57`) and grants the `user` role view and create (`modules/IAM/database/seeders/IAMSeeder.php:64-69`); Media's own seeder has an empty `run()` (`modules/Media/database/seeders/MediaSeeder.php:14-17`). Separately, `media.delete` (`app/Enums/PermissionEnum.php:27`) is not granted to `user` (`modules/IAM/database/seeders/IAMSeeder.php:64-69`), so for a regular user deletion rests on ownership: `MediaPolicy::delete()` allows the owning model or the uploader before checking the permission (`app/Policies/MediaPolicy.php:47-58`).
-2. `media:cleanup` orphan scanning covers only `media.disk` (`app/Console/Commands/MediaCleanupCommand.php:23-24`), so orphan files on `media.private_disk` are neither reported nor removed. The "DB record without file" check resolves each record through its own `disk` column, falling back to `media.disk` when that column is empty (`app/Console/Commands/MediaCleanupCommand.php:97-99`), so private media stored on `media.private_disk` is no longer falsely reported as missing.
-
 ## Related ADRs
 
 - [ADR-0031: First-party image processing](../../docs/adr/0031-first-party-image-processing.md)
