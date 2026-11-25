@@ -4,29 +4,38 @@ declare(strict_types=1);
 
 namespace Modules\Media\Support\FileRemover;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Modules\Media\Models\Media;
 use Override;
+use Throwable;
 
 final readonly class DefaultFileRemover implements MediaFileRemover
 {
     #[Override]
     public function removeAllFiles(Media $media): void
     {
-        $path = $media->getPath();
+        $this->removeCapturedFiles(MediaFilesSnapshot::capture($media));
+    }
 
-        if (is_string($path)) {
-            $this->removeFile($path, $media->disk);
+    #[Override]
+    public function removeCapturedFiles(MediaFilesSnapshot $snapshot): void
+    {
+        foreach ($snapshot->files as $file) {
+            try {
+                $this->removeFile($file['path'], $file['disk']);
+            } catch (Throwable $throwable) {
+                $this->reportFailure($snapshot->mediaId, $file['path'], $file['disk'], $throwable);
+            }
         }
 
-        foreach ($media->conversions()->get() as $conversion) {
-            $this->removeFile($conversion->path, $conversion->disk);
+        foreach ($snapshot->directories as $directory) {
+            try {
+                Storage::disk($directory['disk'])->deleteDirectory($directory['directory']);
+            } catch (Throwable $throwable) {
+                $this->reportFailure($snapshot->mediaId, $directory['directory'], $directory['disk'], $throwable);
+            }
         }
-
-        $this->removeResponsiveImages($media);
-
-        Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory($media->getDerivedConversionsDirectory());
-        Storage::disk($media->conversions_disk ?? $media->disk)->deleteDirectory($media->getConversionsDirectory());
     }
 
     #[Override]
@@ -51,5 +60,18 @@ final readonly class DefaultFileRemover implements MediaFileRemover
     public function removeFile(string $path, string $disk): void
     {
         Storage::disk($disk)->delete($path);
+    }
+
+    /**
+     * Storage failures leave an orphan, never a failed request or a silent miss.
+     */
+    private function reportFailure(string $mediaId, string $path, string $disk, Throwable $throwable): void
+    {
+        Log::warning('Media file deletion failed.', [
+            'media_id' => $mediaId,
+            'path' => $path,
+            'disk' => $disk,
+            'error' => $throwable->getMessage(),
+        ]);
     }
 }
