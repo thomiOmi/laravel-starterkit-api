@@ -49,6 +49,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Upload limits by type
+    |--------------------------------------------------------------------------
+    |
+    | Optional kilobyte limits keyed by MediaType value. A type without an
+    | entry falls back to max_size above; invalid values are ignored. PHP
+    | upload_max_filesize, post_max_size and web server body limits also
+    | apply before validation, so these values cannot raise those ceilings.
+    |
+    */
+    'max_size_by_type' => [
+        'image' => 2048,
+        'document' => 10240,
+        'audio' => 20480,
+        'video' => 51200,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Image dimension limits
     |--------------------------------------------------------------------------
     |

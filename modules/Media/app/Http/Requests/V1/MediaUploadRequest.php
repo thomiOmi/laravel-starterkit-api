@@ -10,6 +10,7 @@ use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Modules\Media\Rules\AllowedFileName;
 use Modules\Media\Rules\DetectedMimeType;
 use Modules\Media\Rules\ImageDimensionLimits;
+use Modules\Media\Rules\MaxFileSizeByType;
 
 class MediaUploadRequest extends FormRequest
 {
@@ -39,7 +40,7 @@ class MediaUploadRequest extends FormRequest
         $fileRules = [
             'required',
             'file',
-            'max:'.config()->integer('media.max_size'),
+            new MaxFileSizeByType,
             new AllowedFileName,
             new DetectedMimeType,
             new ImageDimensionLimits,
