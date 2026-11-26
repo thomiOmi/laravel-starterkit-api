@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -15,10 +16,28 @@ use Modules\Media\Tests\Support\ThrowingFileRemover;
 
 covers(MediaObserver::class);
 
+/**
+ * Shared flag for the one permanent deleting listener registered below.
+ * Passing null reads it; passing a bool sets it. Default is false.
+ */
+function mediaDeleteAfterCommitCancelDeleting(?bool $value = null): bool
+{
+    static $cancel = false;
+
+    if ($value !== null) {
+        $cancel = $value;
+    }
+
+    return $cancel;
+}
+
 describe('media delete after commit', function (): void {
     beforeEach(function (): void {
         Storage::fake('public');
         Storage::fake('local');
+
+        // A null result lets the observer's deleting handler run; only false halts the chain.
+        Media::deleting(static fn (): ?bool => mediaDeleteAfterCommitCancelDeleting() ? false : null);
     });
 
     it('removes the file after delete without an explicit transaction', function (): void {
@@ -184,13 +203,7 @@ describe('media delete after commit', function (): void {
             'etag' => 'test',
         ]);
 
-        Media::observe(new class
-        {
-            public function deleting(Media $media): bool
-            {
-                return false;
-            }
-        });
+        mediaDeleteAfterCommitCancelDeleting(true);
 
         try {
             expect($media->delete())->toBeFalse()
@@ -201,9 +214,16 @@ describe('media delete after commit', function (): void {
             Storage::disk('local')->assertExists($responsive);
             Storage::disk('local')->assertExists($derived);
         } finally {
-            Media::flushEventListeners();
-            Media::observe(new MediaObserver);
+            mediaDeleteAfterCommitCancelDeleting(false);
         }
+    });
+
+    it('keeps the built-in creating listener after the cancellation test', function (): void {
+        $media = MediaFactory::new()->createOne(['name' => '', 'file_name' => 'photo.png']);
+        $creating = 'eloquent.creating: '.Media::class;
+
+        expect($media->name)->toBe('photo')
+            ->and(resolve(Dispatcher::class)->hasListeners($creating))->toBeTrue();
     });
 
     it('waits for commit when deleting inside a transaction', function (): void {
