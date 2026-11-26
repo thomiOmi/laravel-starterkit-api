@@ -20,8 +20,10 @@ final class MediaCleanupCommand extends Command
     public function handle(): int
     {
         $destructive = (bool) $this->option('force') && ! (bool) $this->option('dry-run');
-        $disk = config()->string('media.disk', 'public');
-        $storage = Storage::disk($disk);
+        $disks = array_values(array_unique(array_filter([
+            config()->string('media.disk', 'public'),
+            config()->string('media.private_disk', 'local'),
+        ], static fn (string $disk): bool => $disk !== '')));
 
         $known = $this->knownPathsAndDirectories();
         $dbSet = $known['paths'];
@@ -30,31 +32,34 @@ final class MediaCleanupCommand extends Command
         $ignored = [];
         $scanDirectories = [...$this->scanDirectories(), ...$known['directories']];
         $scanRoot = MediaPrefix::prefix();
+        $derivedPrefix = MediaPrefix::join('conversions/derived');
 
-        foreach ($storage->allFiles($scanRoot === '' ? '/' : $scanRoot) as $file) {
-            // Skip .gitignore and hidden files.
-            if (basename($file) === '.gitignore' || str_starts_with(basename($file), '.')) {
-                continue;
-            }
+        // Scan both configured disks once; an orphan is kept with its disk so
+        // deletion never touches the wrong storage.
+        foreach ($disks as $disk) {
+            foreach (Storage::disk($disk)->allFiles($scanRoot === '' ? '/' : $scanRoot) as $file) {
+                // Skip .gitignore and hidden files.
+                if (basename($file) === '.gitignore' || str_starts_with(basename($file), '.')) {
+                    continue;
+                }
 
-            if (isset($dbSet[$file])) {
-                continue;
-            }
+                if (isset($dbSet[$file])) {
+                    continue;
+                }
 
-            // Derived on-demand conversions are regenerable cache — exclude from orphan detection (Spatie pattern).
-            // The fixed root covers the default layout (including stray
-            // files without an id level); per-media directories cover
-            // custom path generators.
-            $derivedPrefix = MediaPrefix::join('conversions/derived');
+                // Derived on-demand conversions are regenerable cache — exclude from orphan detection (Spatie pattern).
+                // The fixed root covers the default layout (including stray
+                // files without an id level); per-media directories cover
+                // custom path generators.
+                if (str_starts_with($file, $derivedPrefix.'/') || $this->isUnderScannedDirectories($file, $known['derived'])) {
+                    continue;
+                }
 
-            if (str_starts_with($file, $derivedPrefix.'/') || $this->isUnderScannedDirectories($file, $known['derived'])) {
-                continue;
-            }
-
-            if ($this->isUnderScannedDirectories($file, $scanDirectories)) {
-                $orphans[] = $file;
-            } else {
-                $ignored[] = $file;
+                if ($this->isUnderScannedDirectories($file, $scanDirectories)) {
+                    $orphans[] = ['disk' => $disk, 'path' => $file];
+                } else {
+                    $ignored[] = $file;
+                }
             }
         }
 
@@ -68,10 +73,10 @@ final class MediaCleanupCommand extends Command
             $this->info(sprintf('Found %d orphan file(s):', count($orphans)));
 
             foreach ($orphans as $orphan) {
-                $this->line(' - '.$orphan);
+                $this->line(' - '.$orphan['path'].' ('.$orphan['disk'].')');
 
                 if ($destructive) {
-                    $storage->delete($orphan);
+                    Storage::disk($orphan['disk'])->delete($orphan['path']);
                 }
             }
 
@@ -84,7 +89,8 @@ final class MediaCleanupCommand extends Command
             Log::warning('Media orphan files detected.', [
                 'count' => count($orphans),
                 'destructive' => $destructive,
-                'files' => $orphans,
+                'files' => array_column($orphans, 'path'),
+                'disks' => array_values(array_unique(array_column($orphans, 'disk'))),
             ]);
         }
 
@@ -94,7 +100,7 @@ final class MediaCleanupCommand extends Command
 
         foreach (Media::query()->cursor() as $media) {
             $path = $media->getPath();
-            $recordDisk = $media->disk !== '' ? $media->disk : $disk;
+            $recordDisk = $media->disk !== '' ? $media->disk : ($disks[0] ?? 'public');
 
             if (! is_string($path) || ! Storage::disk($recordDisk)->exists($path)) {
                 $missing++;

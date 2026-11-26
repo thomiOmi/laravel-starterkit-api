@@ -6,6 +6,7 @@ namespace Modules\Media\Tests\Support;
 
 use Modules\Media\Models\Media;
 use Modules\Media\Support\FileRemover\MediaFileRemover;
+use Modules\Media\Support\FileRemover\MediaFilesSnapshot;
 
 final class RecordingFileRemover implements MediaFileRemover
 {
@@ -15,6 +16,11 @@ final class RecordingFileRemover implements MediaFileRemover
     public function removeAllFiles(Media $media): void
     {
         self::$removed[] = (string) $media->id;
+    }
+
+    public function removeCapturedFiles(MediaFilesSnapshot $snapshot): void
+    {
+        self::$removed[] = $snapshot->mediaId;
     }
 
     public function removeResponsiveImages(Media $media): void

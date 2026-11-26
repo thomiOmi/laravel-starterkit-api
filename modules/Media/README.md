@@ -15,7 +15,7 @@ Polymorphic media library: one `media` table stores files for any owning model, 
 | Http | 10 | 6 V1 controllers, 3 V1 form requests, 1 API resource |
 | Jobs | 1 | `ProcessMediaJob` |
 | Models | 2 | `Media`, `MediaConversion` |
-| Observers | 1 | storage cleanup on delete (`app/Observers/MediaObserver.php:12-16`) |
+| Observers | 1 | snapshot captured in `deleting`, files removed in the after-commit `deleted` handler (`app/Observers/MediaObserver.php:15-53`) |
 | Payloads | 1 | `MediaUploadPayload` |
 | Policies | 1 | `MediaPolicy` |
 | Providers | 3 | module, route, event wiring |
@@ -67,18 +67,16 @@ Permissions are `media.view`, `media.create`, `media.delete` (`app/Enums/Permiss
 
 ## Commands and queue
 
-- `media:cleanup` (`app/Console/Commands/MediaCleanupCommand.php:16`): dry-run by default, deletes only with `--force` (`:22`); derived on-demand conversions are excluded from orphan detection (`:44-51`); it scans `media.disk` only (`:23-24`).
+- `media:cleanup` (`app/Console/Commands/MediaCleanupCommand.php:16`): dry-run by default, deletes only with `--force` (`:22`); derived on-demand conversions are excluded from orphan detection (`:44-51`); it scans `media.disk` and `media.private_disk`, and `--force` deletes orphans on both, including when `private_disk` is a shared disk such as `local` (`:23-26`).
 - `media:reprocess` (`app/Console/Commands/MediaReprocessCommand.php:14`): filters by `--id`, `--collection`, `--conversion`; `--conversion` is ignored with `--queued` and a warning is printed (`:37-41`).
 - Both commands are registered by the module provider (`app/Providers/MediaServiceProvider.php:51-54`).
 - `ProcessMediaJob` implements `ShouldQueue` (`app/Jobs/ProcessMediaJob.php:32`) with backoff 10/30, 60 second timeout, and 3 tries (`:29-31`). It marks the media processing, generates conversions, builds responsive images when wanted, then marks it processed (`:58-66`).
 - Queueing happens when a queue name is resolved from the upload payload or `media.queue` (`app/Actions/UploadMediaAction.php:129-137`); `media.queue` defaults to false (`modules/Media/config/config.php:80`).
-- Deletion removes files in the observer hook (`app/Observers/MediaObserver.php:12-16`), which calls `DefaultFileRemover::removeAllFiles()` for the original, each conversion, responsive images, and both conversion directories (`app/Support/FileRemover/DefaultFileRemover.php:13-29`). Conversion rows cascade with the media row (`modules/Media/database/migrations/2026_08_30_000001_create_media_conversions_table.php:15`).
+- Deletion captures the original, conversion, responsive, and directory paths with their disks in `deleting` (`app/Observers/MediaObserver.php:25-29`), then removes them in `deleted` (`:32-52`): the dispatcher defers that handler until commit when a transaction is active and runs it immediately after the row is gone otherwise. Conversion rows cascade with the media row (`modules/Media/database/migrations/2026_08_30_000001_create_media_conversions_table.php:15`). Storage failures are logged with media id, path, disk, and error (`app/Support/FileRemover/DefaultFileRemover.php:68-75`); an orphan left by a failed storage delete is accepted.
 
 ## Known gaps
 
 1. Media permissions and role grants are seeded by IAM, not by Media: `IAMSeeder` creates every `PermissionEnum` case (`modules/IAM/database/seeders/IAMSeeder.php:55-57`) and grants the `user` role view and create (`modules/IAM/database/seeders/IAMSeeder.php:64-69`); Media's own seeder has an empty `run()` (`modules/Media/database/seeders/MediaSeeder.php:14-17`). Separately, `media.delete` (`app/Enums/PermissionEnum.php:27`) is not granted to `user` (`modules/IAM/database/seeders/IAMSeeder.php:64-69`), so for a regular user deletion rests on ownership: `MediaPolicy::delete()` allows the owning model or the uploader before checking the permission (`app/Policies/MediaPolicy.php:47-58`).
-2. `media:cleanup` orphan scanning covers only `media.disk` (`app/Console/Commands/MediaCleanupCommand.php:23-24`), so orphan files on `media.private_disk` are neither reported nor removed. The "DB record without file" check resolves each record through its own `disk` column, falling back to `media.disk` when that column is empty (`app/Console/Commands/MediaCleanupCommand.php:97-99`), so private media stored on `media.private_disk` is no longer falsely reported as missing.
-
 ## Related ADRs
 
 - [ADR-0031: First-party image processing](../../docs/adr/0031-first-party-image-processing.md)

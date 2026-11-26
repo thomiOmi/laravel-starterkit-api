@@ -106,20 +106,37 @@ describe('media:cleanup', function (): void {
         Storage::disk('public')->assertExists($keeper->getPath() ?? '');
     });
 
-    it('scans only the configured media disk', function (): void {
-        config(['media.disk' => 'public']);
+    it('scans the media disk and the private disk', function (): void {
+        config(['media.disk' => 'public', 'media.private_disk' => 'local']);
 
         $keeper = MediaFactory::new()->public()->inCollection('avatars')->createOne();
         Storage::disk('public')->put($keeper->getPath() ?? '', 'keeper');
         Storage::disk('local')->put('avatars/stray-on-private-disk.webp', 'stray');
 
         artisanCommand($this, 'media:cleanup', ['--force' => true])
-            ->expectsOutputToContain('No orphan files found.')
+            ->expectsOutputToContain('Found 1 orphan file(s):')
+            ->expectsOutputToContain('Deleted 1 orphan file(s).')
             ->assertSuccessful();
 
         Storage::disk('public')->assertExists($keeper->getPath() ?? '');
-        // Orphan detection is scoped to media.disk by design.
-        Storage::disk('local')->assertExists('avatars/stray-on-private-disk.webp');
+        Storage::disk('local')->assertMissing('avatars/stray-on-private-disk.webp');
+    });
+
+    it('does not scan the same disk twice when both settings match', function (): void {
+        config(['media.disk' => 'public', 'media.private_disk' => 'public']);
+
+        $keeper = MediaFactory::new()->public()->inCollection('avatars')->createOne();
+        Storage::disk('public')->put($keeper->getPath() ?? '', 'keeper');
+        Storage::disk('public')->put('avatars/orphan.webp', 'orphan');
+
+        artisanCommand($this, 'media:cleanup', ['--force' => true])
+            ->expectsOutputToContain('Found 1 orphan file(s):')
+            ->assertSuccessful();
+
+        Storage::disk('public')->assertMissing('avatars/orphan.webp');
+        Event::assertDispatched(fn (MessageLogged $event): bool => $event->level === 'warning'
+            && str_contains((string) $event->message, 'Media orphan files detected.')
+            && ($event->context['count'] ?? null) === 1);
     });
 
     it('applies the media prefix when scanning for orphans', function (): void {

@@ -8,8 +8,8 @@ use Modules\Media\Events\MediaDeleted;
 use Modules\Media\Models\Media;
 
 /**
- * Remove the Media row; storage cleanup runs once in the observer
- * deleting hook while conversion rows are still readable.
+ * Remove the Media row; the observer captures storage paths in `deleting`
+ * and deletes those files only after the row removal commits.
  */
 final readonly class DeleteMediaAction
 {
