@@ -82,6 +82,10 @@ describe('AVIF and HEIC conversion pipeline (observed behavior)', function (): v
     });
 
     it('currently generates AVIF conversions and responsive siblings with GD', function (): void {
+        if (! function_exists('imageavif') || (gd_info()['AVIF Support'] ?? false) !== true) {
+            $this->markTestSkipped('GD does not support AVIF in this environment.');
+        }
+
         $owner = mediaFormatOwner();
 
         $media = $owner->addMedia(UploadedFile::fake()->createWithContent('still.avif', mediaFormatBytes('avif')))

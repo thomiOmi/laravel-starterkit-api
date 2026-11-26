@@ -10,6 +10,7 @@ use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
 use Modules\Media\Observers\MediaObserver;
 use Modules\Media\Support\FileRemover\MediaFileRemover;
+use Modules\Media\Tests\Support\RecordingOrderFileRemover;
 use Modules\Media\Tests\Support\ThrowingFileRemover;
 
 covers(MediaObserver::class);
@@ -32,6 +33,10 @@ describe('media delete after commit', function (): void {
     });
 
     it('keeps the row and the file when the transaction rolls back', function (): void {
+        config(['media.file_remover' => RecordingOrderFileRemover::class]);
+        app()->forgetInstance(MediaFileRemover::class);
+        RecordingOrderFileRemover::$observations = [];
+
         $media = MediaFactory::new()->createOne();
         $path = $media->getPath() ?? '';
         Storage::disk($media->disk)->put($path, 'original');
@@ -46,7 +51,8 @@ describe('media delete after commit', function (): void {
             // Expected: the enclosing transaction is rolled back.
         }
 
-        expect(Media::query()->whereKey($media->id)->exists())->toBeTrue();
+        expect(Media::query()->whereKey($media->id)->exists())->toBeTrue()
+            ->and(RecordingOrderFileRemover::$observations)->toBeEmpty();
         Storage::disk($media->disk)->assertExists($path);
     });
 
@@ -98,10 +104,11 @@ describe('media delete after commit', function (): void {
         expect(fn (): ?bool => $media->delete())->not->toThrow(Throwable::class)
             ->and(ThrowingFileRemover::$calls)->toBe(1)
             ->and($warnings)->toHaveCount(1)
-            ->and($warnings[0]['message'])->toBe('Media file cleanup failed.')
+            ->and($warnings[0]['message'])->toBe('Media file deletion failed.')
             ->and($warnings[0]['context']['media_id'])->toBe((string) $media->id)
             ->and($warnings[0]['context']['path'])->toBe($path)
-            ->and($warnings[0]['context']['disk'])->toBe($media->disk);
+            ->and($warnings[0]['context']['disk'])->toBe($media->disk)
+            ->and($warnings[0]['context']['error'])->toBe('storage down');
     });
 
     it('removes conversions and responsive files even though their rows cascade', function (): void {
@@ -135,5 +142,87 @@ describe('media delete after commit', function (): void {
         Storage::disk('local')->assertMissing($conversion);
         Storage::disk('local')->assertMissing($responsive);
         Storage::disk('local')->assertMissing($derived);
+    });
+
+    it('removes files only after the row is gone without a transaction', function (): void {
+        config(['media.file_remover' => RecordingOrderFileRemover::class]);
+        app()->forgetInstance(MediaFileRemover::class);
+        RecordingOrderFileRemover::$observations = [];
+
+        $media = MediaFactory::new()->createOne();
+        $media->delete();
+
+        $observation = RecordingOrderFileRemover::first();
+
+        expect(RecordingOrderFileRemover::$observations)->toHaveCount(1)
+            ->and($observation['media_id'])->toBe((string) $media->id)
+            ->and($observation['row_exists'])->toBeFalse()
+            ->and($observation['transaction_level'])->toBe(1);
+    });
+
+    it('keeps the file when deleting is cancelled', function (): void {
+        $media = MediaFactory::new()->createOne([
+            'conversions_disk' => 'local',
+            'responsive_images' => [320 => ['path' => 'default/responsive-images/320-photo.png', 'size' => 10]],
+        ]);
+        $path = $media->getPath() ?? '';
+        $conversion = 'conversions/'.$media->id.'/thumbnail.webp';
+        $responsive = 'default/responsive-images/320-photo.png';
+        $derived = 'conversions/derived/'.$media->id;
+
+        Storage::disk($media->disk)->put($path, 'original');
+        Storage::disk('local')->put($conversion, 'conversion');
+        Storage::disk('local')->put($responsive, 'responsive');
+        Storage::disk('local')->put($derived.'/w32-abcdef12.webp', 'variant');
+
+        $media->conversions()->create([
+            'name' => 'thumbnail',
+            'disk' => 'local',
+            'path' => $conversion,
+            'mime_type' => 'image/webp',
+            'size' => 10,
+            'etag' => 'test',
+        ]);
+
+        Media::observe(new class
+        {
+            public function deleting(Media $media): bool
+            {
+                return false;
+            }
+        });
+
+        try {
+            expect($media->delete())->toBeFalse()
+                ->and(Media::query()->whereKey($media->id)->exists())->toBeTrue();
+
+            Storage::disk($media->disk)->assertExists($path);
+            Storage::disk('local')->assertExists($conversion);
+            Storage::disk('local')->assertExists($responsive);
+            Storage::disk('local')->assertExists($derived);
+        } finally {
+            Media::flushEventListeners();
+            Media::observe(new MediaObserver);
+        }
+    });
+
+    it('waits for commit when deleting inside a transaction', function (): void {
+        config(['media.file_remover' => RecordingOrderFileRemover::class]);
+        app()->forgetInstance(MediaFileRemover::class);
+        RecordingOrderFileRemover::$observations = [];
+
+        $media = MediaFactory::new()->createOne();
+
+        DB::transaction(function () use ($media): void {
+            $media->delete();
+
+            expect(RecordingOrderFileRemover::$observations)->toBeEmpty();
+        });
+
+        $observation = RecordingOrderFileRemover::first();
+
+        expect(RecordingOrderFileRemover::$observations)->toHaveCount(1)
+            ->and($observation['row_exists'])->toBeFalse()
+            ->and($observation['transaction_level'])->toBe(1);
     });
 });
