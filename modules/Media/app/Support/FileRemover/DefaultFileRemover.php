@@ -23,17 +23,27 @@ final readonly class DefaultFileRemover implements MediaFileRemover
     {
         foreach ($snapshot->files as $file) {
             try {
-                $this->removeFile($file['path'], $file['disk']);
+                // With a non-throwing disk a failed delete is reported only
+                // through its return value, so inspect it explicitly.
+                $deleted = Storage::disk($file['disk'])->delete($file['path']);
+
+                if ($deleted === false) {
+                    $this->reportFailure($snapshot->mediaId, $file['path'], $file['disk'], 'delete returned false');
+                }
             } catch (Throwable $throwable) {
-                $this->reportFailure($snapshot->mediaId, $file['path'], $file['disk'], $throwable);
+                $this->reportFailure($snapshot->mediaId, $file['path'], $file['disk'], $throwable->getMessage());
             }
         }
 
         foreach ($snapshot->directories as $directory) {
             try {
-                Storage::disk($directory['disk'])->deleteDirectory($directory['directory']);
+                $deleted = Storage::disk($directory['disk'])->deleteDirectory($directory['directory']);
+
+                if ($deleted === false) {
+                    $this->reportFailure($snapshot->mediaId, $directory['directory'], $directory['disk'], 'deleteDirectory returned false');
+                }
             } catch (Throwable $throwable) {
-                $this->reportFailure($snapshot->mediaId, $directory['directory'], $directory['disk'], $throwable);
+                $this->reportFailure($snapshot->mediaId, $directory['directory'], $directory['disk'], $throwable->getMessage());
             }
         }
     }
@@ -65,13 +75,13 @@ final readonly class DefaultFileRemover implements MediaFileRemover
     /**
      * Storage failures leave an orphan, never a failed request or a silent miss.
      */
-    private function reportFailure(string $mediaId, string $path, string $disk, Throwable $throwable): void
+    private function reportFailure(string $mediaId, string $path, string $disk, string $error): void
     {
         Log::warning('Media file deletion failed.', [
             'media_id' => $mediaId,
             'path' => $path,
             'disk' => $disk,
-            'error' => $throwable->getMessage(),
+            'error' => $error,
         ]);
     }
 }

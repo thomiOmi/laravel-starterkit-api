@@ -143,9 +143,20 @@ describe('MediaResource conversion and fallback mapping', function (): void {
         $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne();
         $media->load('model');
 
-        $data = new MediaResource($media, 'https://signed.example.test/media')->resolve(new Request);
+        $data = new MediaResource($media)->withResolvedUrl('https://signed.example.test/media')->resolve(new Request);
 
         expect($data['url'])->toBe('https://signed.example.test/media');
+    });
+
+    it('does not let collection keys replace the url in resource collections', function (): void {
+        $owner = fallbackOwner();
+
+        $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne();
+
+        $data = MediaResource::collection([$media])->resolve(new Request);
+        throw_unless(is_array($data[0] ?? null), RuntimeException::class, 'Resource collection did not resolve to an array.');
+
+        expect($data[0]['url'])->toBe('https://cdn.example.test/gallery.webp');
     });
 
     it('ignores a model_type that is not an eloquent model', function (): void {

@@ -18,6 +18,17 @@ use Throwable;
 final class MediaMimeType
 {
     /**
+     * Extension to detected-MIME pairs accepted on top of Symfony's map.
+     * Mimes here are still subject to BLOCKED_MIMES before this check runs.
+     *
+     * @var array<string, list<string>>
+     */
+    private const array EXTENSION_MIME_ALIASES = [
+        'md' => ['text/plain'],
+        'wmv' => ['video/x-ms-asf'],
+    ];
+
+    /**
      * Content mimes that are never accepted regardless of extension.
      *
      * SVG is blocked because it can embed scripts; executable and markup
@@ -110,6 +121,10 @@ final class MediaMimeType
 
         if ($extension === '' || $mime === '') {
             return false;
+        }
+
+        if (in_array($mime, self::EXTENSION_MIME_ALIASES[$extension] ?? [], true)) {
+            return true;
         }
 
         try {

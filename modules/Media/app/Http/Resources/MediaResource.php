@@ -24,15 +24,19 @@ class MediaResource extends JsonResource
 {
     use FormatDate;
 
+    private ?string $resolvedUrl = null;
+
     /**
-     * @param  Media  $resource
-     * @param  string|null  $resolvedUrl  Pre-resolved override (e.g. a signed
-     *                                    link) taking precedence over the
-     *                                    default visibility-based url.
+     * Attach a pre-resolved url (e.g. a signed link) without exposing it as a
+     * constructor argument: resource collections pass their item keys to the
+     * constructor, which would otherwise become the url.
      */
-    public function __construct($resource, private ?string $resolvedUrl = null)
+    public function withResolvedUrl(?string $url): self
     {
-        parent::__construct($resource);
+        $clone = clone $this;
+        $clone->resolvedUrl = $url;
+
+        return $clone;
     }
 
     /**

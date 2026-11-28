@@ -25,6 +25,33 @@ describe('AllowedFileName rule', function (): void {
         expect($accepted->fails())->toBeFalse();
     });
 
+    it('rejects the dll extension and ASCII control characters with the shared message', function (string $name): void {
+        $validator = Validator::make(
+            ['file' => UploadedFile::fake()->createWithContent($name, 'body')],
+            ['file' => [new AllowedFileName]],
+        );
+
+        expect($validator->fails())->toBeTrue()
+            ->and($validator->errors()->first('file'))->toBe(__('validation.media_disallowed_extension'));
+    })->with([
+        'dll extension' => ['payload.dll'],
+        'null byte' => ["a\x00b.txt"],
+        'control character' => ["a\x01b.txt"],
+        'delete character' => ["a\x7Fb.txt"],
+    ]);
+
+    it('accepts unicode, emoji and long names without control characters', function (string $name): void {
+        $validator = Validator::make(
+            ['file' => UploadedFile::fake()->createWithContent($name, 'body')],
+            ['file' => [new AllowedFileName]],
+        );
+
+        expect($validator->fails())->toBeFalse();
+    })->with([
+        'unicode and emoji' => ['nama-日本語-😀.txt'],
+        'long name' => [str_repeat('a', 200).'.txt'],
+    ]);
+
     it('ignores non-file values', function (): void {
         $validator = Validator::make(
             ['file' => 'not-a-file'],

@@ -23,6 +23,24 @@ use Throwable;
  */
 final readonly class MediaConversionService
 {
+    /** @var list<string> */
+    private const array UNDECODABLE_MIMES = ['image/heic', 'image/heif'];
+
+    /**
+     * Names of the conversions configured for this media, including those
+     * that subsequently fail to generate.
+     *
+     * @return list<string>
+     */
+    public function configuredNames(Media $media): array
+    {
+        if (! str_starts_with($media->mime_type, 'image/') || $this->isKnownUndecodable($media->mime_type)) {
+            return [];
+        }
+
+        return array_keys($this->resolveConversions($media));
+    }
+
     /**
      * Generate all configured conversions for the given media.
      *
@@ -30,7 +48,7 @@ final readonly class MediaConversionService
      */
     public function generate(Media $media): array
     {
-        if (! str_starts_with($media->mime_type, 'image/')) {
+        if (! str_starts_with($media->mime_type, 'image/') || $this->isKnownUndecodable($media->mime_type)) {
             return [];
         }
 
@@ -90,6 +108,19 @@ final readonly class MediaConversionService
 
             return null;
         }
+    }
+
+    /**
+     * Formats accepted without a derivative because this install cannot
+     * decode them as a still image. AVIF is only skipped when GD lacks it.
+     */
+    private function isKnownUndecodable(string $mime): bool
+    {
+        if (in_array($mime, self::UNDECODABLE_MIMES, true)) {
+            return true;
+        }
+
+        return $mime === 'image/avif' && (gd_info()['AVIF Support'] ?? false) !== true;
     }
 
     /**

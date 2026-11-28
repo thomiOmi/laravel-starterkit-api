@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Modules\Media\Support;
 
 /**
- * Guards file names against executable or scriptable extensions.
+ * Guards file names against executable or scriptable extensions and ASCII
+ * control characters.
  *
  * Every dot-separated segment is inspected, so shell.php.jpg is
  * rejected even though its final extension looks harmless.
@@ -22,12 +23,16 @@ final class DisallowedExtensions
         'shtml', 'shtm', 'stm',
         'htaccess', 'htpasswd',
         'cgi', 'pl', 'asp', 'aspx', 'jsp', 'jspx',
-        'exe', 'msi', 'com', 'bat', 'cmd', 'sh',
+        'exe', 'msi', 'com', 'bat', 'cmd', 'sh', 'dll',
         'js', 'html', 'htm', 'xhtml', 'svg',
     ];
 
     public static function contains(string $filename): bool
     {
+        if (preg_match('/[\x00-\x1F\x7F]/', $filename) === 1) {
+            return true;
+        }
+
         $denied = self::deniedExtensions();
 
         if ($denied === []) {
