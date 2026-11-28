@@ -33,6 +33,12 @@ final class DisallowedExtensions
             return true;
         }
 
+        // Only directional formatting marks are unsafe in file names; ZWJ,
+        // ZWNJ and LRM/RLM are legitimate in emoji and RTL text.
+        if (preg_match('/[\x{202A}-\x{202E}\x{2066}-\x{2069}]/u', $filename) === 1) {
+            return true;
+        }
+
         $denied = self::deniedExtensions();
 
         if ($denied === []) {
