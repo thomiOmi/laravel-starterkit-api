@@ -61,6 +61,8 @@ Base path `api/v1/media`, route names prefixed `api.v1.media.` (`app/Providers/R
 | DELETE | `/api/v1/media/{media}` | `auth:sanctum`, `active`, `throttle:api` (`modules/Media/routes/V1.php:31`) | `MediaDeleteController` calling `DeleteMediaAction` |
 | GET | `/api/v1/media/{media}/file` | `signed`, `throttle:api` (`modules/Media/routes/V1.php:16-17`) | `MediaFileController`; no bearer token, the signature is the credential |
 
+Sparse field selection (`?fields[media]=id,name`) only narrows the columns read from the media table; `MediaResource` still needs its relation and presentation columns, so the builder always selects those too. A response may therefore contain attributes beyond the requested fields.
+
 Authorization lives in `MediaPolicy` (`app/Policies/MediaPolicy.php:22-74`): view allows public media, the owning model, the uploader, or `media.view` (`:29-41`); delete allows the owner, the uploader, or `media.delete` (`:47-58`); update has no permission and no route exposes it (`:60-74`). The policy is bound with `#[UsePolicy]` (`app/Models/Media.php:61`).
 
 Permissions are `media.view`, `media.create`, `media.delete` (`app/Enums/PermissionEnum.php:25-27`), seeded for every enum case (`modules/IAM/database/seeders/IAMSeeder.php:55-57`); the `user` role receives create only (`:64-69`), and views its own media through the owner/uploader branches of `MediaPolicy` instead of `media.view`.
