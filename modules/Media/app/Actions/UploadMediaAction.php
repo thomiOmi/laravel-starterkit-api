@@ -21,6 +21,7 @@ use Modules\Media\Jobs\ProcessMediaJob;
 use Modules\Media\Models\Media;
 use Modules\Media\Payloads\V1\MediaUploadPayload;
 use Modules\Media\Services\MediaConversionService;
+use Modules\Media\Support\AnimatedImage;
 use Modules\Media\Support\DisallowedExtensions;
 use Modules\Media\Support\FileHash;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
@@ -64,6 +65,14 @@ final readonly class UploadMediaAction
         $this->guardCollectionAcceptance($payload, $model);
 
         if ($payload->preservingOriginal) {
+            return $this->dispatchUploaded($this->storeRaw($payload, $model, $uploader), $payload);
+        }
+
+        $realPath = $payload->file->getRealPath();
+
+        // Animated containers must keep every frame: the GD pipeline would
+        // silently keep only the first one.
+        if (is_string($realPath) && $realPath !== '' && AnimatedImage::fromPath($realPath)) {
             return $this->dispatchUploaded($this->storeRaw($payload, $model, $uploader), $payload);
         }
 
