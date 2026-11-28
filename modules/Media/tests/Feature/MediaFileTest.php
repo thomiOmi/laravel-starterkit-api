@@ -74,6 +74,16 @@ describe('GET /api/v1/media/{media}/file', function (): void {
         $this->get("/api/v1/media/{$media->id}/file")->assertForbidden();
     });
 
+    it('returns 403 rather than 404 for an unsigned request to another user media', function (): void {
+        $owner = loginAsUser();
+        $media = MediaFactory::new()->forModel($owner)->createOne();
+        Storage::disk($media->disk)->put($media->getPath() ?? '', 'content');
+
+        loginAsUser();
+
+        $this->get("/api/v1/media/{$media->id}/file")->assertForbidden();
+    });
+
     it('returns 404 when the underlying file is missing', function (): void {
         $media = MediaFactory::new()->createOne();
 

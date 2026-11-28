@@ -12,6 +12,7 @@ use InvalidArgumentException;
 use Modules\Media\Contracts\HasMedia;
 use Modules\Media\Models\Media;
 use Modules\Media\Models\MediaConversion;
+use Modules\Media\Support\AnimatedImage;
 use Modules\Media\Support\FileNamer\MediaFileNamer;
 use Modules\Media\Support\MediaConversion as MediaConversionDefinition;
 use Modules\Media\Support\StorageOptions;
@@ -34,7 +35,9 @@ final readonly class MediaConversionService
      */
     public function configuredNames(Media $media): array
     {
-        if (! str_starts_with($media->mime_type, 'image/') || $this->isKnownUndecodable($media->mime_type)) {
+        if (! str_starts_with($media->mime_type, 'image/')
+            || $this->isKnownUndecodable($media->mime_type)
+            || $this->isAnimatedSource($media)) {
             return [];
         }
 
@@ -48,7 +51,9 @@ final readonly class MediaConversionService
      */
     public function generate(Media $media): array
     {
-        if (! str_starts_with($media->mime_type, 'image/') || $this->isKnownUndecodable($media->mime_type)) {
+        if (! str_starts_with($media->mime_type, 'image/')
+            || $this->isKnownUndecodable($media->mime_type)
+            || $this->isAnimatedSource($media)) {
             return [];
         }
 
@@ -121,6 +126,33 @@ final readonly class MediaConversionService
         }
 
         return $mime === 'image/avif' && (gd_info()['AVIF Support'] ?? false) !== true;
+    }
+
+    /**
+     * Re-detect animation from the stored bytes. This keeps the upload meta
+     * contract unchanged and also covers media added programmatically.
+     */
+    private function isAnimatedSource(Media $media): bool
+    {
+        $path = $media->getPath();
+
+        if (! is_string($path) || $path === '') {
+            return false;
+        }
+
+        $stream = Storage::disk($media->disk)->readStream($path);
+
+        if ($stream === null) {
+            return false;
+        }
+
+        try {
+            return AnimatedImage::fromStream($stream);
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
     }
 
     /**

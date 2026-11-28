@@ -52,6 +52,43 @@ describe('AllowedFileName rule', function (): void {
         'long name' => [str_repeat('a', 200).'.txt'],
     ]);
 
+    it('rejects bidi formatting marks in client names', function (string $name): void {
+        $validator = Validator::make(
+            ['file' => UploadedFile::fake()->createWithContent($name, 'body')],
+            ['file' => [new AllowedFileName]],
+        );
+
+        expect($validator->fails())->toBeTrue()
+            ->and($validator->errors()->first('file'))->toBe(__('validation.media_disallowed_extension'));
+    })->with([
+        'LRE' => ["photo\u{202A}gnp.png"],
+        'RLE' => ["photo\u{202B}gnp.png"],
+        'PDF' => ["photo\u{202C}gnp.png"],
+        'LRO' => ["photo\u{202D}gnp.png"],
+        'RLO' => ["photo\u{202E}gnp.png"],
+        'LRI' => ["photo\u{2066}gnp.png"],
+        'RLI' => ["photo\u{2067}gnp.png"],
+        'FSI' => ["photo\u{2068}gnp.png"],
+        'PDI' => ["photo\u{2069}gnp.png"],
+    ]);
+
+    it('allows other unicode marks and non-utf8 names without throwing', function (string $name): void {
+        $validator = Validator::make(
+            ['file' => UploadedFile::fake()->createWithContent($name, 'body')],
+            ['file' => [new AllowedFileName]],
+        );
+
+        expect($validator->fails())->toBeFalse();
+    })->with([
+        'ZWJ emoji family' => ['👨‍👩‍👧.txt'],
+        'ZWNJ' => ["نو\u{200C}نویس.txt"],
+        'LRM' => ["a\u{200E}b.txt"],
+        'RLM' => ["a\u{200F}b.txt"],
+        'Arabic' => ['تقرير.txt'],
+        'Hebrew' => ['דוח.txt'],
+        'invalid utf8' => ["\xFF.txt"],
+    ]);
+
     it('ignores non-file values', function (): void {
         $validator = Validator::make(
             ['file' => 'not-a-file'],

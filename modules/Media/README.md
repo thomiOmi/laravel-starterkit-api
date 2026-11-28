@@ -65,6 +65,11 @@ Sparse field selection (`?fields[media]=id,name`) only narrows the columns read 
 
 Authorization lives in `MediaPolicy` (`app/Policies/MediaPolicy.php:22-74`): view allows public media, the owning model, the uploader, or `media.view` (`:29-41`); delete allows the owner, the uploader, or `media.delete` (`:47-58`); update has no permission and no route exposes it (`:60-74`). The policy is bound with `#[UsePolicy]` (`app/Models/Media.php:61`).
 
+### 1.0.0 contract notes
+
+- Access to another user's media returns 403, not 404, for show, file, delete and modifier. This distinction is part of the 1.0.0 contract.
+- Animated GIF, APNG and WebP uploads are stored byte-for-byte without conversions and without EXIF normalization. Static images continue through the WebP re-encode path.
+
 Permissions are `media.view`, `media.create`, `media.delete` (`app/Enums/PermissionEnum.php:25-27`), seeded for every enum case (`modules/IAM/database/seeders/IAMSeeder.php:55-57`); the `user` role receives create only (`:64-69`), and views its own media through the owner/uploader branches of `MediaPolicy` instead of `media.view`.
 
 ## Commands and queue
