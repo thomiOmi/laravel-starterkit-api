@@ -36,7 +36,7 @@ final readonly class MediaShowController extends Controller
             : null;
 
         return new SuccessResponse(
-            data: new MediaResource($media, $url),
+            data: new MediaResource($media)->withResolvedUrl($url),
             title: 'OK',
             detail: __('general.resource_retrieved', ['resource' => 'Media']),
         );
