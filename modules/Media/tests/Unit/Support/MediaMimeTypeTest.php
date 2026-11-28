@@ -35,4 +35,14 @@ describe('MediaMimeType support', function (): void {
             ->and(MediaMimeType::extensionMatchesMime('pdf', 'image/png'))->toBeFalse()
             ->and(MediaMimeType::extensionMatchesMime('unknownext123', 'application/octet-stream'))->toBeTrue();
     });
+
+    it('allows only the agreed extension and mime aliases', function (string $extension, string $mime, bool $expected): void {
+        expect(MediaMimeType::extensionMatchesMime($extension, $mime))->toBe($expected);
+    })->with([
+        'markdown as plain text' => ['md', 'text/plain', true],
+        'wmv as asf' => ['wmv', 'video/x-ms-asf', true],
+        'wma as asf stays rejected' => ['wma', 'video/x-ms-asf', false],
+        'ts as octet stream stays rejected' => ['ts', 'application/octet-stream', false],
+        'aac as m4a stays rejected' => ['aac', 'audio/x-m4a', false],
+    ]);
 });
