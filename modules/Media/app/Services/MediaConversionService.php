@@ -24,6 +24,21 @@ use Throwable;
 final readonly class MediaConversionService
 {
     /**
+     * Names of the conversions configured for this media, including those
+     * that subsequently fail to generate.
+     *
+     * @return list<string>
+     */
+    public function configuredNames(Media $media): array
+    {
+        if (! str_starts_with($media->mime_type, 'image/')) {
+            return [];
+        }
+
+        return array_keys($this->resolveConversions($media));
+    }
+
+    /**
      * Generate all configured conversions for the given media.
      *
      * @return array<string, MediaConversion>

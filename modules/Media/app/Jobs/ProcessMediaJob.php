@@ -57,10 +57,29 @@ final class ProcessMediaJob implements ShouldQueue
             throw_if(! is_string($path) || ! Storage::disk($media->disk)->exists($path), RuntimeException::class, 'The source media file is missing.');
 
             $media->markProcessing();
-            $service->generate($media);
+            $generated = $service->generate($media);
 
             if (GenerateResponsiveImagesAction::wantsResponsive($media)) {
                 $responsive->handle($media);
+            }
+
+            // A configured conversion that could not be generated is a
+            // deterministic failure: record it without throwing so the job
+            // is not released for a pointless retry.
+            $failed = array_values(array_diff($service->configuredNames($media), array_keys($generated)));
+
+            if ($failed !== []) {
+                $reason = 'Conversion failed: '.implode(', ', $failed);
+                $media->markProcessingFailed($reason);
+                event(new MediaProcessingFailed($media, $reason));
+
+                Log::warning('Media processing failed.', [
+                    'media_id' => $media->id,
+                    'duration_ms' => $this->durationMs($startedAt),
+                    'error' => $reason,
+                ]);
+
+                return;
             }
 
             $media->markProcessed();
