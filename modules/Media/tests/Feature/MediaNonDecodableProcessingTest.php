@@ -57,14 +57,34 @@ describe('formats with no decodable still image', function (): void {
         return $owner;
     }
 
-    it('stays processed without a conversion error', function (string $mime, string $extension, string $fixture, int $expectedConversions): void {
+    /**
+     * HEIC/HEIF bytes are irrelevant to the job once the mime is set; AVIF
+     * needs a real image where GD supports it so the legitimate conversion
+     * can succeed. Nothing is read from the developer's local corpus.
+     */
+    function fixtureBytes(string $kind): string
+    {
+        if ($kind !== 'avif' || ! function_exists('imageavif')) {
+            return $kind.' fixture';
+        }
+
+        $image = imagecreatetruecolor(32, 32);
+        ob_start();
+        imageavif($image);
+        $bytes = ob_get_clean();
+        imagedestroy($image);
+
+        return is_string($bytes) ? $bytes : 'avif fixture';
+    }
+
+    it('stays processed without a conversion error', function (string $mime, string $extension, string $kind, int $expectedConversions): void {
         $owner = convertingOwner();
         $media = MediaFactory::new()->forModel($owner, 'gallery')->createOne([
             'mime_type' => $mime,
             'file_name' => 'probe.'.$extension,
             'processing_status' => 'pending',
         ]);
-        Storage::disk($media->disk)->put($media->getPath() ?? '', (string) file_get_contents($fixture));
+        Storage::disk($media->disk)->put($media->getPath() ?? '', fixtureBytes($kind));
 
         new ProcessMediaJob((string) $media->id)->handle(
             resolve(MediaConversionService::class),
@@ -80,8 +100,8 @@ describe('formats with no decodable still image', function (): void {
 
         Event::assertNotDispatched(MediaProcessingFailed::class);
     })->with([
-        'heic' => ['image/heic', 'heic', 'C:/Users/thomi/Downloads/sample-media/images/heic/heic-sample.heic', 0],
-        'heif' => ['image/heif', 'heif', 'C:/Users/thomi/Downloads/sample-media/images/heic/heic-sample.heic', 0],
-        'avif' => ['image/avif', 'avif', 'C:/Users/thomi/Downloads/sample-media/images/avif/avif-sample1.avif', (gd_info()['AVIF Support'] ?? false) ? 1 : 0],
+        'heic' => ['image/heic', 'heic', 'heic', 0],
+        'heif' => ['image/heif', 'heif', 'heif', 0],
+        'avif' => ['image/avif', 'avif', 'avif', function_exists('imageavif') ? 1 : 0],
     ]);
 });
