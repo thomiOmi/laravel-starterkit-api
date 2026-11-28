@@ -37,6 +37,28 @@ describe('urls in media lists', function (): void {
             ->and($privateData['url'])->toBeNull();
     });
 
+    it('keeps private and public urls correct with sparse fields', function (): void {
+        $user = loginAsUser();
+        $private = MediaFactory::new()->forModel($user)->createOne(['file_name' => 'private.png']);
+        $public = MediaFactory::new()->forModel($user)->public()->createOne(['file_name' => 'public.png']);
+        Storage::disk('public')->put($public->getPath() ?? '', 'content');
+
+        $response = $this->getJson('/api/v1/media?fields[media]=id,name');
+
+        assertSuccessResponse($response, 200);
+
+        $data = $response->json('data');
+        throw_unless(is_array($data), RuntimeException::class, 'List data was not an array.');
+
+        $byId = collect($data)->keyBy('id');
+        $privateData = $byId->get($private->id);
+        $publicData = $byId->get($public->id);
+        throw_unless(is_array($privateData) && is_array($publicData), RuntimeException::class, 'List items were not arrays.');
+
+        expect($publicData['url'])->toContain('/storage/')
+            ->and($privateData['url'])->toBeNull();
+    });
+
     it('still mints a signed url on show with expires', function (): void {
         $user = loginAsUser();
         $media = MediaFactory::new()->forModel($user)->createOne();
