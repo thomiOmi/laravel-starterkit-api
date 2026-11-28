@@ -18,14 +18,6 @@ use Throwable;
 final class MediaMimeType
 {
     /**
-     * Content mimes that are never accepted regardless of extension.
-     *
-     * SVG is blocked because it can embed scripts; executable and markup
-     * types are blocked even when the file extension looks innocent.
-     *
-     * @var array<int, string>
-     */
-    /**
      * Extension to detected-MIME pairs accepted on top of Symfony's map.
      * Mimes here are still subject to BLOCKED_MIMES before this check runs.
      *
@@ -36,6 +28,14 @@ final class MediaMimeType
         'wmv' => ['video/x-ms-asf'],
     ];
 
+    /**
+     * Content mimes that are never accepted regardless of extension.
+     *
+     * SVG is blocked because it can embed scripts; executable and markup
+     * types are blocked even when the file extension looks innocent.
+     *
+     * @var array<int, string>
+     */
     private const array BLOCKED_MIMES = [
         'application/x-php',
         'application/php',

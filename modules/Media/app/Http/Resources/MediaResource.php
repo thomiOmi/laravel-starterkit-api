@@ -26,11 +26,6 @@ class MediaResource extends JsonResource
 
     private ?string $resolvedUrl = null;
 
-    public function __construct($resource)
-    {
-        parent::__construct($resource);
-    }
-
     /**
      * Attach a pre-resolved url (e.g. a signed link) without exposing it as a
      * constructor argument: resource collections pass their item keys to the
